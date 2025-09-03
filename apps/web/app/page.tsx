@@ -1,7 +1,13 @@
+import { Footer, Header } from '@etnos/ui/index';
+
 export default function Page() {
-  return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-24">
-      WEB PAGE
-    </main>
-  );
+	return (
+		<div className='flex flex-col w-full min-h-screen'>
+			<Header />
+
+			<main className='flex-1'></main>
+
+			<Footer />
+		</div>
+	);
 }

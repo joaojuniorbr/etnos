@@ -1,1 +1,9 @@
 @import 'tailwindcss' prefix(ui);
+
+@theme {
+	--color-primary: #371f12;
+}
+
+body {
+	background-color: theme('colors.slate.100');
+}

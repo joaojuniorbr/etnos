@@ -32,5 +32,8 @@
 		"eslint": "^9.33.0",
 		"tailwindcss": "^4.1.5",
 		"typescript": "5.9.2"
+	},
+	"dependencies": {
+		"antd": "^5.27.2"
 	}
 }

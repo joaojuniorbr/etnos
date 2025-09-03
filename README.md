@@ -1,147 +1,97 @@
-# Turborepo starter
+# Etnos
 
-This Turborepo starter is maintained by the Turborepo core team.
+Este é o monorepo do projeto **Etnos**, uma plataforma educacional para crianças
+de 10-12 anos que utiliza jogos para ensinar sobre a rica diversidade cultural
+brasileira. O projeto é gerenciado com
+[Turborepo](https://turbo.build/repo/docs) para otimizar a performance, e toda a
+arquitetura é construída com **TypeScript** para garantir escalabilidade e
+segurança de tipos.
 
-## Using this example
+## Estrutura do Monorepo
 
-Run the following command:
+O projeto é organizado em workspaces (`apps`, `packages`, `backend`, `games`),
+garantindo um desenvolvimento modular.
 
-```sh
-npx create-turbo@latest
-```
+### Aplicações Web (`apps`)
 
-## What's inside?
+Estas são as interfaces de usuário da plataforma, cada uma servindo a um
+propósito específico.
 
-This Turborepo includes the following packages/apps:
+- **`web`**: O site principal e público da Etnos. Serve como a página de
+  entrada, apresentando a plataforma, a proposta do projeto e informações para
+  pais e educadores. Acessível em `http://localhost:3000`.
+- **`admin`**: O painel administrativo para gerenciamento completo da
+  plataforma. Aqui, a equipe Etnos pode gerenciar usuários, cadastrar novos
+  jogos, atualizar conteúdo e monitorar o progresso dos estudantes. Acessível em
+  `http://localhost:3001`.
+- **`student`**: O portal do estudante. É a interface onde as crianças acessam
+  os jogos, acompanham seu progresso e exploram o conteúdo educacional de forma
+  interativa. Acessível em `http://localhost:3002`.
+- **`docs`**: A documentação técnica e de negócio do projeto, essencial para a
+  colaboração da equipe. Acessível em `http://localhost:3030`.
 
-### Apps and Packages
+### Jogos (`games`)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@etnos/ui`: a stub React component library shared by both `web` and `docs`
-  applications
-- `@etnos/eslint-config`: `eslint` configurations (includes `eslint-config-next`
-  and `eslint-config-prettier`)
-- `@etnos/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Este workspace é dedicado exclusivamente aos jogos educacionais, permitindo que
+cada jogo seja desenvolvido e mantido de forma independente.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- `@etnos/game-x`
+- `@etnos/game-y`
+- ... (Cada jogo será um pacote separado)
 
-### Utilities
+### Back-end (`backend`)
 
-This Turborepo has some additional tools already setup for you:
+Este workspace centraliza a lógica de negócios da aplicação, gerenciando dados e
+a comunicação com as interfaces.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- `@etnos/api`: O núcleo do back-end, responsável por toda a comunicação com o
+  banco de dados e APIs. Desenvolvido com **NestJS**, garantindo uma arquitetura
+  robusta e escalável.
 
-### Build
+### Pacotes Compartilhados (`packages`)
 
-To build all apps and packages, run the following command:
+Pacotes com código reutilizável, garantindo a consistência e a manutenção
+simplificada entre as aplicações.
 
-```
-cd my-turborepo
+- `@etnos/ui`: Uma biblioteca de componentes React unificada para construir
+  interfaces com a mesma identidade visual e experiência de usuário.
+- `@etnos/eslint-config`: Configurações de ESLint padrão para manter a qualidade
+  e a consistência do código em todo o monorepo.
+- `@etnos/typescript-config`: Configurações de TypeScript (`tsconfig.json`) para
+  uma verificação de tipos rigorosa e consistente.
+- `@etnos/tailwind-config`: Configurações do Tailwind CSS compartilhadas para
+  estilização rápida e padronizada.
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+---
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+## Mapa da Arquitetura
 
-You can build a specific package by using a
-[filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a
-[filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Aqui está uma representação visual da arquitetura do monorepo, destacando a
+organização dos workspaces e seus conteúdos.
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+/etnos
+├── apps/
+│   ├── web/
+│   ├── admin/
+│   ├── student/
+│   └── docs/
+│
+├── games/
+│   ├── game-cultura-indigena/
+│   ├── game-cultura-afrobrasileira/
+│   └── ...
+│
+├── backend/
+│   └── api/
+│
+└── packages/
+    ├── ui/
+    ├── eslint-config/
+    ├── typescript-config/
+    └── tailwind-config/
 ```
 
-### Remote Caching
-
-> [!TIP] Vercel Remote Cache is free for all plans. Get started today at
-> [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as
-[Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to
-share cache artifacts across machines, enabling you to share build caches with
-your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need
-an account with Vercel. If you don't have an account you can
-[create one](https://vercel.com/signup?utm_source=turborepo-examples), then
-enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your
-[Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following
-command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+Essa estrutura permite que a plataforma escale de forma organizada, com a
+possibilidade de adicionar novos jogos ou módulos de back-end sem impactar o
+resto do sistema.

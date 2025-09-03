@@ -5,7 +5,11 @@
 			{
 				"name": "next"
 			}
-		]
+		],
+		"paths": {
+			"@etnos/components": ["./components"],
+			"@etnos/common": ["./common"]
+		}
 	},
 	"include": [
 		"**/*.ts",

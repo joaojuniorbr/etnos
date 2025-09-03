@@ -7,18 +7,7 @@ const nextConfig: NextConfig = {
 	eslint: {
 		ignoreDuringBuilds: true,
 	},
-	// async rewrites() {
-	// 	return [
-	// 		{
-	// 			source: '/admin/:path*',
-	// 			destination: `${process.env.ADMIN_URL}/admin/:path*`,
-	// 		},
-	// 		{
-	// 			source: '/estudante/:path*',
-	// 			destination: `${process.env.STUDENT_URL}/estudante/:path*`,
-	// 		},
-	// 	];
-	// },
+	transpilePackages: ['@etnos/ui'],
 };
 
 export default nextConfig;

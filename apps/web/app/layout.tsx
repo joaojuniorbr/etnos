@@ -1,3 +1,6 @@
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
+
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import '@ant-design/v5-patch-for-react-19';
 
@@ -46,6 +49,8 @@ export default function RootLayout({
 
 								<Footer />
 							</div>
+							<SpeedInsights />
+							<Analytics />
 						</App>
 					</ConfigProvider>
 				</AntdRegistry>

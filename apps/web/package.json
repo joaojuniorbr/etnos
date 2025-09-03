@@ -12,6 +12,8 @@
 	},
 	"dependencies": {
 		"@etnos/ui": "*",
+		"@vercel/analytics": "^1.5.0",
+		"@vercel/speed-insights": "^1.2.0",
 		"antd": "^5.27.2",
 		"next": "^15.4.2",
 		"react": "^19.1.0",

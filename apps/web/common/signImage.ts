@@ -1,23 +1,23 @@
 const images = [
 	{
 		name: 'zeca',
-		url: '/images/sign/zeca.png',
+		url: '/images/sign/zeca.jpg',
 	},
 	{
 		name: 'iara',
-		url: '/images/sign/iara.png',
+		url: '/images/sign/iara.jpg',
 	},
 	{
 		name: 'tonico',
-		url: '/images/sign/tonico.png',
+		url: '/images/sign/tonico.jpg',
 	},
 	{
 		name: 'dandara',
-		url: '/images/sign/dandara.png',
+		url: '/images/sign/dandara.jpg',
 	},
 	{
 		name: 'anita',
-		url: '/images/sign/anita.png',
+		url: '/images/sign/anita.jpg',
 	},
 ];
 

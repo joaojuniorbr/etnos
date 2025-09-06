@@ -1,8 +1,9 @@
 {
 	"extends": "@etnos/typescript-config/react-library.json",
 	"compilerOptions": {
-		"outDir": "dist"
+		"outDir": "dist",
+		"rootDir": "src"
 	},
-	"include": ["src"],
+	"include": ["src", "src/declarations.d.ts"],
 	"exclude": ["dist", "build", "node_modules"]
 }

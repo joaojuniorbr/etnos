@@ -8,13 +8,19 @@
 		"dist"
 	],
 	"exports": {
-		"./styles.css": "./dist/index.css",
-		"./*": "./dist/*.js"
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./styles.css": "./dist/index.css"
 	},
 	"license": "MIT",
 	"scripts": {
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
 		"build:components": "tsc",
+		"build:assets": "cpx \"./src/assets/**/*\" ./dist/assets",
+		"build": "npm run build:styles && npm run build:components && npm run build:assets",
 		"check-types": "tsc --noEmit",
 		"dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
 		"dev:components": "tsc --watch",
@@ -26,9 +32,11 @@
 	"devDependencies": {
 		"@etnos/eslint-config": "*",
 		"@etnos/tailwind-config": "*",
+		"@etnos/tools": "*",
 		"@etnos/typescript-config": "*",
 		"@tailwindcss/cli": "^4.1.5",
 		"@types/react": "^19.1.0",
+		"cpx": "^1.5.0",
 		"eslint": "^9.33.0",
 		"tailwindcss": "^4.1.5",
 		"typescript": "5.9.2"

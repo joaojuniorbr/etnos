@@ -8,7 +8,8 @@
 		],
 		"paths": {
 			"@etnos/components": ["./components"],
-			"@etnos/common": ["./common"]
+			"@etnos/common": ["./common"],
+			"@etnos/hooks": ["./hooks"]
 		}
 	},
 	"include": [

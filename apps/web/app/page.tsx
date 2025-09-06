@@ -1,6 +1,12 @@
 import { Button } from 'antd';
 import Image from 'next/image';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+	title: 'Área do Estudante',
+};
+
 export default function Page() {
 	return (
 		<>

@@ -1,0 +1,21 @@
+{
+	"rewrites": [
+		{
+			"source": "/estudante/:path*",
+			"destination": "/apps/student/:path*"
+		},
+		{
+			"source": "/admin/:path*",
+			"destination": "/apps/admin/:path*"
+		},
+		{
+			"source": "/:path*",
+			"destination": "/apps/web/:path*"
+		}
+	],
+	"build": {
+		"env": {
+			"WEB_APP_URL": "https://etnos.vercel.app"
+		}
+	}
+}

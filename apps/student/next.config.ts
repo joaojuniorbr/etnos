@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
 	eslint: {
 		ignoreDuringBuilds: true,
 	},
-	basePath: '/estudante',
 	assetPrefix: '/estudante',
 };
 

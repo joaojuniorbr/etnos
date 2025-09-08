@@ -13,11 +13,7 @@ const nextConfig: NextConfig = {
 	transpilePackages: ['@etnos/ui', '@etnos/tools'],
 	async rewrites() {
 		const studentUrl =
-			process.env.NEXT_PUBLIC_STUDENT_URL ?? 'https://etnos.vercel.app:3002';
-
-		if (!studentUrl) {
-			return [];
-		}
+			process.env.NEXT_PUBLIC_STUDENT_URL ?? 'https://etnos-student.vercel.app';
 
 		return [
 			{

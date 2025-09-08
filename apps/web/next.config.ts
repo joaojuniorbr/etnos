@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: '/estudante/:path*',
-				destination: `${studentUrl}/estudante/:path*`,
+				destination: `${studentUrl}/:path*`,
 			},
 		];
 	},

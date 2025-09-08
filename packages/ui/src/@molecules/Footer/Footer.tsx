@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import brandHorizontal from '../../assets/images/brand-horizontal.png';
+import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
 
 export const Footer = () => (
 	<div className='ui:py-4 ui:px-8 ui:bg-white ui:shadow-sm'>

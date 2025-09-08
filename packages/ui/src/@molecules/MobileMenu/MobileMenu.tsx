@@ -1,7 +1,7 @@
 import { Drawer, Button } from 'antd';
 import { RiMenu3Line } from 'react-icons/ri';
 import Image from 'next/image';
-import brandHorizontal from '../../assets/images/brand-horizontal.png';
+import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
 
 interface MobileMenuProps {
 	open?: boolean;

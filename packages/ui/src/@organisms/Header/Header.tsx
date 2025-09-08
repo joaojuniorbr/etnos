@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import brandHorizontal from '../../assets/images/brand-horizontal.png';
+import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
 
 import { Button } from 'antd';
 import { HeaderMobile } from './HeaderMobile';

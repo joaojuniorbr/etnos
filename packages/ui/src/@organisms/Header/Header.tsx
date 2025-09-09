@@ -5,12 +5,11 @@ import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
 
 import { Button } from 'antd';
 import { HeaderMobile } from './HeaderMobile';
-import { useUser } from '../../context';
 import { useAuth } from '@etnos/tools';
+import { useUser } from '../../context';
 
 export const Header = () => {
 	const { user } = useUser();
-
 	const { onSignOut } = useAuth();
 
 	const handleOnSignOut = async () => {
@@ -43,7 +42,7 @@ export const Header = () => {
 										/>
 									</div>
 									<span className='ui:text-primary ui:text-sm'>
-										{user.email}
+										{user?.childName || user?.email}
 									</span>
 								</div>
 								<div className='ui:border-l ui:border-slate-300'>

@@ -2,7 +2,7 @@ import '@etnos/ui/styles.css';
 import './globals.css';
 
 import type { Metadata } from 'next';
-import { Providers } from './providers';
+import { AuthProtected, Providers } from '../components/@atoms';
 
 export const metadata: Metadata = {
 	title: 'Etnos | Área do Estudante',
@@ -13,5 +13,9 @@ export default function RootLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	return <Providers>{children}</Providers>;
+	return (
+		<Providers>
+			<AuthProtected>{children}</AuthProtected>
+		</Providers>
+	);
 }

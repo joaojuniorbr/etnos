@@ -1,12 +1,10 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { User } from 'firebase/auth';
-
-import { useAuth } from '@etnos/tools';
+import { useAuth, UserProfileInterface } from '@etnos/tools';
 
 interface UserContextType {
-	user: User | null;
+	user: UserProfileInterface | null;
 	isLoading: boolean;
 }
 

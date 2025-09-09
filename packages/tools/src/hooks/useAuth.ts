@@ -10,8 +10,25 @@ import {
 	onAuthStateChanged,
 	createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { getFirestore, setDoc, doc, getDoc } from 'firebase/firestore';
+import {
+	getFirestore,
+	setDoc,
+	doc,
+	getDoc,
+	serverTimestamp,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+
+import { message } from 'antd';
+
+export interface UserProfileInterface extends User {
+	parentName?: string;
+	childName?: string;
+	childBirthDate?: string;
+	parentPhone?: string;
+	school?: string;
+	updatedAt?: string;
+}
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,17 +41,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+export const dbFirebase = getFirestore(app);
+
+export const authFirebase = getAuth(app);
 
 export const useAuth = () => {
-	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
+	const [user, setUser] = useState<UserProfileInterface | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 
 	const onSignOut = async () => {
 		setIsLoading(true);
 		try {
-			await signOut(auth);
+			await signOut(authFirebase);
 			setUser(null);
 		} catch (error) {
 			console.error(error);
@@ -48,8 +66,12 @@ export const useAuth = () => {
 	): Promise<User | null> => {
 		setIsLoading(true);
 		try {
-			const result = await signInWithEmailAndPassword(auth, email, password);
-			setUser(result.user);
+			const result = await signInWithEmailAndPassword(
+				authFirebase,
+				email,
+				password
+			);
+			setUser(result.user as UserProfileInterface);
 			setIsLoading(false);
 			return result.user;
 		} catch (error) {
@@ -62,12 +84,68 @@ export const useAuth = () => {
 	const onRecoveryPass = async (email: string) => {
 		setIsLoading(true);
 		try {
-			await sendPasswordResetEmail(auth, email);
+			await sendPasswordResetEmail(authFirebase, email);
 			setIsLoading(false);
 		} catch (error) {
 			console.error(error);
 			setIsLoading(false);
 		}
+	};
+
+	const isLoggedIn = !!user;
+
+	const cleanDataForFirestore = (data: object): object => {
+		const cleanedData: { [key: string]: any } = {};
+		for (const [key, value] of Object.entries(data)) {
+			if (value !== undefined) {
+				cleanedData[key] = value;
+			} else {
+				cleanedData[key] = null;
+			}
+		}
+		return cleanedData;
+	};
+
+	const updateUserProfile = async (profile: any, merge: boolean = true) => {
+		if (!user) {
+			message.error('Nenhum usuário autenticado para atualizar o perfil.');
+			return;
+		}
+
+		try {
+			const userDocRef = doc(dbFirebase, 'users', user.uid);
+
+			const dataToSave = {
+				...cleanDataForFirestore(profile),
+				updatedAt: serverTimestamp(),
+			};
+
+			await setDoc(userDocRef, dataToSave, { merge: merge });
+
+			message.success('Perfil atualizado com sucesso!');
+
+			setUser({ ...user, ...profile });
+		} catch (error) {
+			console.log({ error });
+			message.error('Ocorreu um erro ao salvar seu perfil. Tente novamente.');
+		}
+	};
+
+	const getProfile = async (userProfile: UserProfileInterface) => {
+		if (!userProfile) {
+			return;
+		}
+
+		const userDocRef = doc(dbFirebase, 'users', userProfile.uid);
+		const userDoc = await getDoc(userDocRef);
+
+		if (userDoc.exists()) {
+			setUser({ ...userProfile, ...userDoc.data() });
+		} else {
+			setUser(userProfile);
+		}
+
+		setIsLoading(false);
 	};
 
 	// TODO: Adicionar uma interface para os valores
@@ -79,7 +157,9 @@ export const useAuth = () => {
 				return null;
 			}
 
-			const isExistUser = await getDoc(doc(db, 'users', values.parentEmail));
+			const isExistUser = await getDoc(
+				doc(dbFirebase, 'users', values.parentEmail)
+			);
 
 			if (isExistUser.exists()) {
 				setIsLoading(false);
@@ -87,13 +167,13 @@ export const useAuth = () => {
 			}
 
 			const userCredential = await createUserWithEmailAndPassword(
-				auth,
+				authFirebase,
 				values.parentEmail,
 				values.password
 			);
-			const user = userCredential.user;
+			const user = userCredential.user as UserProfileInterface;
 
-			await setDoc(doc(db, 'users', user.uid), {
+			await setDoc(doc(dbFirebase, 'users', user.uid), {
 				school: values?.school,
 				parentName: values?.parentName,
 				email: values?.parentEmail,
@@ -114,13 +194,13 @@ export const useAuth = () => {
 	};
 
 	useEffect(() => {
-		const unsubscribe = onAuthStateChanged(auth, (user) => {
+		const unsubscribe = onAuthStateChanged(authFirebase, (user) => {
 			if (user) {
-				setUser(user);
+				getProfile(user);
 			} else {
 				setUser(null);
+				setIsLoading(false);
 			}
-			setIsLoading(false);
 		});
 
 		return () => unsubscribe();
@@ -129,6 +209,8 @@ export const useAuth = () => {
 	return {
 		isLoading,
 		user,
+		isLoggedIn,
+		updateUserProfile,
 		onRegister,
 		onSignOut,
 		onSignInWithEmailAndPassword,

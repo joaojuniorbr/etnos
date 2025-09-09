@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-	title: 'Etnos | Área do Estudante',
+	title: 'Etnos',
 };
 
 export default function RootLayout({

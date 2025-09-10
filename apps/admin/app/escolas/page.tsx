@@ -12,7 +12,7 @@ import {
 	Table,
 	Typography,
 } from 'antd';
-import { SchoolInterface, schoolService } from '../../services';
+import { SchoolInterface, schoolService } from '@etnos/tools';
 import { useEffect, useState } from 'react';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';

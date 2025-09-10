@@ -15,10 +15,17 @@ const nextConfig: NextConfig = {
 		const studentUrl =
 			process.env.NEXT_PUBLIC_STUDENT_URL ?? 'https://etnos-student.vercel.app';
 
+		const adminUrl =
+			process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://etnos-admin.vercel.app';
+
 		return [
 			{
 				source: '/estudante/:path*',
 				destination: `${studentUrl}/:path*`,
+			},
+			{
+				source: '/admin/:path*',
+				destination: `${adminUrl}/:path*`,
 			},
 		];
 	},

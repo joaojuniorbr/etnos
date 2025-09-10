@@ -1,22 +1,51 @@
 'use client';
 
-import { Button, Divider, Form, Input, message, Select } from 'antd';
+import {
+	Button,
+	DatePicker,
+	Divider,
+	Form,
+	Input,
+	message,
+	Select,
+} from 'antd';
 import Image from 'next/image';
 import { signImage } from '@etnos/common';
-import { useAuth } from '@etnos/tools';
+import { useAuth, useSchools } from '@etnos/tools';
+import dayjs from 'dayjs';
+import { useState } from 'react';
+
+interface SignFormInterface {
+	childBirthDate: dayjs.Dayjs;
+	childName: string;
+	email: string;
+	parentName: string;
+	phone: string;
+	school: string;
+}
 
 export default function CadastroPage() {
-	const { onRegister, isLoading } = useAuth();
+	const [isLoading, setIsLoading] = useState(false);
+	const { onRegister } = useAuth();
 
-	const onFinish = async (values: any) => {
-		onRegister(values).then((user) => {
-			if (user) {
-				message.success('Cadastro realizado com sucesso');
-				window.open('/estudante', '_self');
-			} else {
-				message.error('Erro ao realizar o cadastro');
-			}
-		});
+	const { data: schools } = useSchools();
+
+	const onFinish = async (values: SignFormInterface) => {
+		setIsLoading(true);
+		onRegister({
+			...values,
+			childBirthDate: values.childBirthDate.format('YYYY-MM-DD'),
+		})
+			.then((user) => {
+				if (user) {
+					message.success('Cadastro realizado com sucesso');
+					window.open('/estudante', '_self');
+				} else {
+					message.error('Erro ao realizar o cadastro');
+					setIsLoading(false);
+				}
+			})
+			.catch(() => setIsLoading(false));
 	};
 
 	return (
@@ -44,7 +73,13 @@ export default function CadastroPage() {
 
 						<Form layout='vertical' onFinish={onFinish} disabled={isLoading}>
 							<Form.Item name='school' label='Escola'>
-								<Select placeholder='Selecione a escola' options={[]} />
+								<Select
+									placeholder='Selecione a escola'
+									options={schools?.map((school) => ({
+										value: school.id,
+										label: school.name,
+									}))}
+								/>
 							</Form.Item>
 
 							<Divider />
@@ -84,7 +119,7 @@ export default function CadastroPage() {
 								label='Data de Nascimento da Criança'
 								rules={[{ required: true }]}
 							>
-								<Input placeholder='Digite a data de nascimento da criança' />
+								<DatePicker format='DD/MM/YYYY' className='w-full' />
 							</Form.Item>
 
 							<Divider />

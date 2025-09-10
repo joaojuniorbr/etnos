@@ -3,6 +3,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 import { Providers } from './providers';
+import { QueryProvider } from '../hooks/QueryProvider';
 
 export const metadata: Metadata = {
 	title: 'Etnos',
@@ -13,5 +14,9 @@ export default function RootLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	return <Providers>{children}</Providers>;
+	return (
+		<QueryProvider>
+			<Providers>{children}</Providers>
+		</QueryProvider>
+	);
 }

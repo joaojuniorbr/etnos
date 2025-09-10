@@ -35,11 +35,13 @@ export const Header = () => {
 							<div className='ui:hidden ui:md:flex ui:gap-4 ui:items-center'>
 								<div className='ui:flex ui:items-center ui:gap-2'>
 									<div className='ui:h-10 ui:w-10 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
-										<img
-											src={`https://robohash.org/${user.email}.png`}
-											alt={user.email as string}
-											className='ui:h-10 ui:w-10 ui:object-cover'
-										/>
+										<a href='/estudante'>
+											<img
+												src={`https://robohash.org/${user.email}.png`}
+												alt={user.email as string}
+												className='ui:h-10 ui:w-10 ui:object-cover'
+											/>
+										</a>
 									</div>
 									<span className='ui:text-primary ui:text-sm'>
 										{user?.childName || user?.email}

@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
 		ignoreDuringBuilds: true,
 	},
 	assetPrefix: '/estudante',
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: '**',
+			},
+		],
+	},
 };
 
 export default nextConfig;

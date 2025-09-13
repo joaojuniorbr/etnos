@@ -1,7 +1,10 @@
-import { Drawer, Button } from 'antd';
-import { RiMenu3Line } from 'react-icons/ri';
-import Image from 'next/image';
-import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
+import { Drawer, Button, Menu } from 'antd';
+import {
+	RiMenu3Line,
+	RiUserLine,
+	RiUserHeartLine,
+	RiHomeLine,
+} from 'react-icons/ri';
 import { UserProfileInterface } from '@etnos/tools';
 
 interface MobileMenuProps {
@@ -18,8 +21,8 @@ export const MobileMenu = ({
 	onLogout,
 }: MobileMenuProps) => {
 	return (
-		<div className='ui:md:hidden'>
-			<Button onClick={toggleDrawer} icon={<RiMenu3Line />} />
+		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
+			<Button onClick={toggleDrawer} icon={<RiMenu3Line />} type='primary' />
 			<Drawer
 				open={open}
 				onClose={toggleDrawer}
@@ -30,35 +33,62 @@ export const MobileMenu = ({
 					</Button>
 				}
 			>
-				<div className='ui:flex ui:justify-center ui:mb-10'>
-					<a href='/'>
-						<Image src={brandHorizontal} alt='Etnos' width={180} height={56} />
-					</a>
-				</div>
 				{user ? (
-					<div className='ui:flex ui:flex-col ui:gap-4 ui:items-center ui:mt-6 ui:pt-6 ui:border-t ui:border-slate-200'>
-						<div className='ui:h-24 ui:w-24 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
-							<a href='/estudante'>
+					<>
+						<div className='ui:flex ui:gap-4 ui:items-center ui:pb-6 ui:border-b ui:border-slate-200 ui:mb-2'>
+							<div className='ui:h-18 ui:w-18 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
+								<a href='/estudante/perfil'>
+									<img
+										src={`https://robohash.org/${user.email}.png`}
+										alt={user.email as string}
+										className='ui:h-18 ui:w-18 ui:object-cover'
+									/>
+								</a>
+							</div>
+							<p className='ui:text-primary ui:text-base ui:font-bold ui:text-center'>
+								{user?.childName || user?.email}
+							</p>
+						</div>
+						<Menu
+							items={[
+								{
+									key: 'home',
+									label: <a href='/'>Home</a>,
+									icon: <RiHomeLine />,
+								},
+								{
+									key: 'student',
+									label: <a href='/estudante'>Área do Estudante</a>,
+									icon: <RiUserLine />,
+								},
+								{
+									key: 'profile',
+									label: <a href='/estudante/perfil'>Perfil</a>,
+									icon: <RiUserHeartLine />,
+								},
+							]}
+						/>
+					</>
+				) : (
+					<>
+						<div className='ui:flex ui:justify-center ui:mb-6'>
+							<a href='/'>
 								<img
-									src={`https://robohash.org/${user.email}.png`}
-									alt={user.email as string}
-									className='ui:h-24 ui:w-24 ui:object-cover'
+									src='/images/brand-horizontal.svg'
+									alt='Etnos'
+									className='ui:w-32 ui:h-auto'
 								/>
 							</a>
 						</div>
-						<p className='ui:text-primary ui:text-base ui:font-bold ui:text-center'>
-							{user?.childName || user?.email}
-						</p>
-					</div>
-				) : (
-					<div className='ui:flex ui:gap-4 ui:w-full ui:items-center'>
-						<Button type='primary' block size='large' href='/login'>
-							Entrar
-						</Button>
-						<Button type='primary' block size='large' href='/cadastro'>
-							Cadastrar
-						</Button>
-					</div>
+						<div className='ui:flex ui:gap-4 ui:w-full ui:items-center'>
+							<Button type='primary' block size='large' href='/login'>
+								Entrar
+							</Button>
+							<Button type='primary' block size='large' href='/cadastro'>
+								Cadastrar
+							</Button>
+						</div>
+					</>
 				)}
 			</Drawer>
 		</div>

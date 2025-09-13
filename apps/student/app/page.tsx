@@ -1,43 +1,11 @@
-'use client';
+import { Breadcrumb, Button, Image } from 'antd';
+import { Metadata } from 'next';
 
-import { Breadcrumb, Button, DatePicker, Form, Input } from 'antd';
-import { useAuth } from '@etnos/tools';
-import { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
+export const metadata: Metadata = {
+	title: 'Etnos | Área do Estudante',
+};
 
 export default function Page() {
-	const [form] = Form.useForm();
-	const [isLoading, setIsLoading] = useState(false);
-	const { user, updateUserProfile } = useAuth();
-
-	useEffect(() => {
-		if (!user) {
-			return;
-		}
-
-		form.setFieldsValue({
-			childName: user.childName,
-			childBirthDate: user.childBirthDate ? dayjs(user.childBirthDate) : null,
-			parentName: user.parentName,
-			email: user.email,
-		});
-	}, [user, form]);
-
-	const onFinish = async (values: any) => {
-		setIsLoading(true);
-		await updateUserProfile({
-			...values,
-			childBirthDate: values.childBirthDate
-				? dayjs(values.childBirthDate).format('YYYY-MM-DD')
-				: null,
-		});
-		setIsLoading(false);
-	};
-
-	if (!user) {
-		return null;
-	}
-
 	return (
 		<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
 			<Breadcrumb
@@ -49,71 +17,39 @@ export default function Page() {
 				]}
 			/>
 
-			<div className='flex w-full pt-4 md:flex-row flex-col gap-6'>
-				<div className='md:w-1/3'>
-					<div className='bg-white p-8 rounded shadow'>
-						<img
-							src={user?.photoURL || `https://robohash.org/${user?.email}`}
-							alt={(user?.displayName as string) || (user?.email as string)}
-							width={150}
-							height={150}
-							className='object-cover object-center w-32 h-32 rounded-full border border-slate-200 mx-auto mb-4'
+			<div className='py-8 px-4 bg-slate-50 border border-slate-200 shadow rounded mt-6'>
+				<div className='mx-auto max-w-md text-center'>
+					<h1 className='text-3xl font-black text-primary'>
+						BEM-VINDO AO ETNOS!
+					</h1>
+
+					<h2 className='text-lg font-semibold text-primary mb-4'>
+						Aqui, cada jogo é uma viagem pela cultura brasileira.
+					</h2>
+
+					<p className='text-slate-600 mb-2'>
+						Você está prestes a conhecer histórias, ritmos, sabores e tradições
+						de diferentes regiões do Brasil — tudo de forma divertida,
+						interativa e cheia de significado.
+					</p>
+
+					<p className='text-slate-600 mb-4'>
+						Com a ajuda dos nossos personagens, você vai aprender brincando
+						sobre os povos indígenas, afro-brasileiros, nordestinos, sulistas e
+						muito mais.
+					</p>
+
+					<figure className='flex justify-center mb-6'>
+						<Image
+							src='/estudante/persona-group.jpg'
+							alt='Etnos'
+							className='w-full h-auto'
 						/>
+					</figure>
 
-						<h2 className='text-md text-center font-bold pb-6 mb-6 border-b-2 border-dotted border-slate-200'>
-							{user?.childName || user?.email}
-						</h2>
-
-						<div className='flex flex-col gap-4'>
-							<div className='flex items-center justify-between gap-2 w-full'>
-								<span className='text-xs text-slate-800'>Pontuação</span>
-								<span className='text-xs font-bold text-black'>[WIP]</span>
-							</div>
-
-							<div className='flex items-center justify-between gap-2 w-full'>
-								<span className='text-xs text-slate-800'>Nome da Escola</span>
-								<span className='text-xs font-bold text-black'>[WIP]</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div className='md:w-2/3'>
-					<div className='bg-white p-8 rounded shadow'>
-						<h2 className='text-xl font-bold text-primary mb-6'>
-							Editar Perfil
-						</h2>
-
-						<Form
-							layout='vertical'
-							form={form}
-							onFinish={onFinish}
-							disabled={isLoading}
-						>
-							<div className='grid grid-cols-1 md:grid-cols-2 md:gap-x-8 w-full'>
-								<Form.Item name='childName' label='Nome da Criança'>
-									<Input />
-								</Form.Item>
-
-								<Form.Item name='childBirthDate' label='Data de Nascimento'>
-									<DatePicker className='w-full' format='DD/MM/YYYY' />
-								</Form.Item>
-
-								<Form.Item name='parentName' label='Nome Pai/Mãe'>
-									<Input />
-								</Form.Item>
-
-								<Form.Item name='email' label='Email'>
-									<Input disabled />
-								</Form.Item>
-							</div>
-
-							<div className='text-center pt-4 md:text-left'>
-								<Button type='primary' htmlType='submit' loading={isLoading}>
-									Salvar Alterações
-								</Button>
-							</div>
-						</Form>
-					</div>
+					<Button href='/estudante/selecionar' type='primary' size='large'>
+						Iniciar a Jornada
+					</Button>
 				</div>
 			</div>
 		</div>

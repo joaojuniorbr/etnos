@@ -1,8 +1,5 @@
 'use client';
 
-import Image from 'next/image';
-import brandHorizontal from '@etnos/ui/assets/images/brand-horizontal.png';
-
 import { Button } from 'antd';
 import { HeaderMobile } from './HeaderMobile';
 import { useAuth } from '@etnos/tools';
@@ -23,53 +20,54 @@ export const Header = () => {
 				<div className='ui:container ui:mx-auto'>
 					<header className='ui:w-full ui:flex ui:justify-between ui:items-center'>
 						<a href='/'>
-							<Image
-								src={brandHorizontal}
+							<img
+								src='/images/brand-horizontal.svg'
 								alt='Etnos'
-								width={120}
-								height={24}
+								className='ui:w-32 ui:h-auto'
 							/>
 						</a>
 
-						{user ? (
-							<div className='ui:hidden ui:md:flex ui:gap-4 ui:items-center'>
-								<div className='ui:flex ui:items-center ui:gap-2'>
-									<div className='ui:h-10 ui:w-10 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
-										<a href='/estudante'>
-											<img
-												src={`https://robohash.org/${user.email}.png`}
-												alt={user.email as string}
-												className='ui:h-10 ui:w-10 ui:object-cover'
-											/>
-										</a>
+						<div className='ui:flex ui:items-center ui:gap-4'>
+							{user ? (
+								<div className='ui:hidden ui:md:flex ui:gap-4 ui:items-center'>
+									<div className='ui:flex ui:items-center ui:gap-2'>
+										<div className='ui:h-10 ui:w-10 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
+											<a href='/estudante/perfil'>
+												<img
+													src={`https://robohash.org/${user.email}.png`}
+													alt={user.email as string}
+													className='ui:h-10 ui:w-10 ui:object-cover'
+												/>
+											</a>
+										</div>
+										<span className='ui:text-primary ui:text-sm'>
+											{user?.childName || user?.email}
+										</span>
 									</div>
-									<span className='ui:text-primary ui:text-sm'>
-										{user?.childName || user?.email}
-									</span>
+									<div className='ui:border-l ui:border-slate-300'>
+										<Button type='link' danger onClick={handleOnSignOut}>
+											SAIR
+										</Button>
+									</div>
 								</div>
-								<div className='ui:border-l ui:border-slate-300'>
-									<Button type='link' danger onClick={handleOnSignOut}>
-										SAIR
+							) : (
+								<nav className='ui:gap-4 ui:hidden ui:md:flex'>
+									<Button
+										type='link'
+										className='ui:text-primary!'
+										href='/cadastro'
+									>
+										Cadastrar
 									</Button>
-								</div>
-							</div>
-						) : (
-							<nav className='ui:gap-4 ui:hidden ui:md:flex'>
-								<Button
-									type='link'
-									className='ui:text-primary!'
-									href='/cadastro'
-								>
-									Cadastrar
-								</Button>
 
-								<Button type='primary' href='/login'>
-									Entrar
-								</Button>
-							</nav>
-						)}
+									<Button type='primary' href='/login'>
+										Entrar
+									</Button>
+								</nav>
+							)}
 
-						<HeaderMobile />
+							<HeaderMobile />
+						</div>
 					</header>
 				</div>
 			</header>

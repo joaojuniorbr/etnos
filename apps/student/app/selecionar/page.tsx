@@ -1,4 +1,4 @@
-import { Breadcrumb, Button } from 'antd';
+import { Breadcrumb } from 'antd';
 import { Metadata } from 'next';
 import { CharacterSelect } from '../../components/@organisms';
 

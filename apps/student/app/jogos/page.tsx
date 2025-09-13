@@ -1,6 +1,6 @@
-import { Breadcrumb, Button } from 'antd';
+import { Breadcrumb } from 'antd';
 import { Metadata } from 'next';
-import { CharacterSelect } from '../../components/@organisms';
+import { GameSelect } from '../../components/@organisms';
 
 export const metadata: Metadata = {
 	title: 'Etnos | Selecionar Personagem',
@@ -38,6 +38,8 @@ export default function Page() {
 					<p className='text-slate-600 mb-4'>
 						Qual desafio você quer encarar primeiro?
 					</p>
+
+					<GameSelect />
 				</div>
 			</div>
 		</div>

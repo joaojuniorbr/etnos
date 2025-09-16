@@ -2,6 +2,7 @@ export interface GameInterface {
 	name: string;
 	slug: string;
 	description: string;
+	url: string;
 }
 
 enum GamesEnum {
@@ -14,6 +15,7 @@ const GamesContent = [
 		slug: GamesEnum.MEMORY_GAME,
 		description:
 			'Encontre os pares e descubra símbolos culturais do Brasil enquanto exercita sua memória de forma divertida e educativa!',
+		url: '/estudante/jogos/jogo-da-memoria',
 	},
 ];
 

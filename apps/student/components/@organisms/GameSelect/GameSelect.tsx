@@ -13,18 +13,14 @@ export const GameSelect = () => {
 	}
 
 	return (
-		<div>
-			<h1>Game Select</h1>
-
-			<div className='flex justify-center'>
-				{allGames.map((game) => (
-					<CardGame
-						key={game.slug}
-						game={game}
-						character={selectedCharacter.slug}
-					/>
-				))}
-			</div>
+		<div className='flex justify-center'>
+			{allGames.map((game) => (
+				<CardGame
+					key={game.slug}
+					game={game}
+					character={selectedCharacter.slug}
+				/>
+			))}
 		</div>
 	);
 };

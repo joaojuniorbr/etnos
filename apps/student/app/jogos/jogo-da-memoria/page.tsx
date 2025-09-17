@@ -39,6 +39,22 @@ const cardsData = [
 		name: 'uirapuru',
 		image: '/games/memory-game/iara/cards/uirapuru.jpg',
 	},
+	{
+		name: 'jacare',
+		image: '/games/memory-game/iara/cards/jacare.jpg',
+	},
+	{
+		name: 'sucuri',
+		image: '/games/memory-game/iara/cards/sucuri.jpg',
+	},
+	{
+		name: 'boto',
+		image: '/games/memory-game/iara/cards/boto.jpg',
+	},
+	{
+		name: 'aldeia',
+		image: '/games/memory-game/iara/cards/aldeia.jpg',
+	},
 ];
 
 export default function MemoryGamePage() {

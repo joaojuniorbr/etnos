@@ -1,14 +1,39 @@
 'use client';
 
-import { Button, DatePicker, Form, Image, Input } from 'antd';
-import { useAuth } from '@etnos/tools';
-import { useEffect, useState } from 'react';
+import { Button, DatePicker, Divider, Form, Image, Input } from 'antd';
+import {
+	GameNameEnum,
+	gamesService,
+	ScoreInterface,
+	useAuth,
+} from '@etnos/tools';
+import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 
 export const ProfilePage = () => {
 	const [form] = Form.useForm();
+
 	const [isLoading, setIsLoading] = useState(false);
+	const [score, setScore] = useState<string>();
+	const [games, setGames] = useState<ScoreInterface[]>([]);
+
 	const { user, updateUserProfile } = useAuth();
+
+	const getScore = useCallback(async () => {
+		if (user) {
+			const allScore = await gamesService.getScore(user.uid);
+
+			setGames(allScore);
+
+			if (allScore?.length) {
+				setScore(
+					allScore.reduce((acc, score) => acc + score.score, 0).toString()
+				);
+			} else {
+				setScore('0');
+			}
+		}
+	}, [user]);
 
 	useEffect(() => {
 		if (!user) {
@@ -21,7 +46,9 @@ export const ProfilePage = () => {
 			parentName: user.parentName,
 			email: user.email,
 		});
-	}, [user, form]);
+
+		getScore();
+	}, [user, form, getScore]);
 
 	const onFinish = async (values: {
 		childName: string;
@@ -67,7 +94,7 @@ export const ProfilePage = () => {
 					<div className='flex flex-col gap-4'>
 						<div className='flex items-center justify-between gap-2 w-full'>
 							<span className='text-xs text-slate-800'>Pontuação</span>
-							<span className='text-xs font-bold text-black'>[WIP]</span>
+							<span className='text-xs font-bold text-black'>{score}</span>
 						</div>
 
 						<div className='flex items-center justify-between gap-2 w-full'>
@@ -112,6 +139,42 @@ export const ProfilePage = () => {
 								Salvar Alterações
 							</Button>
 						</div>
+
+						<Divider />
+
+						<>
+							<h2 className='text-xl font-bold text-primary'>Jogos</h2>
+
+							<p className='text-xs text-gray-400 mb-6'>
+								Veja seus melhores resultados nos jogos
+							</p>
+
+							<div className='grid md:grid-cols-2'>
+								{games.map((game) => (
+									<div
+										key={game.slug}
+										className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
+									>
+										<Image
+											src={`/games/${game.slug}/${game.characterSlug}/cover.jpg`}
+											alt={game.slug}
+											width={80}
+											height={80}
+											className='object-cover object-center'
+											preview={false}
+										/>
+										<dl>
+											<dt className='text-primary text-xs uppercase'>
+												{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
+											</dt>
+											<dd className='text-xl font-black text-primary'>
+												{game.score}
+											</dd>
+										</dl>
+									</div>
+								))}
+							</div>
+						</>
 					</Form>
 				</div>
 			</div>

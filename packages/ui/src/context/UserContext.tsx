@@ -2,7 +2,6 @@
 
 import { createContext, useContext } from 'react';
 import { useAuth, UserProfileInterface } from '@etnos/tools';
-
 interface UserContextType {
 	user: UserProfileInterface | null;
 	isLoading: boolean;

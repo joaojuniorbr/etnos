@@ -1,5 +1,3 @@
-# _config.yml (Coloque na raiz do repositório)
-
 title: Etnos - Plataforma Educacional
 description:
   Projeto em Gestão de Tecnologia focado em jogos infantis para diversidade
@@ -23,4 +21,4 @@ nav:
   - title: Entregas
     children:
       - title: Primeira Entrega - Projeto Interdisciplinar I
-        url: /2025-p1.md
+        url: /2025-p1

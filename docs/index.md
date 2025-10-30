@@ -1,3 +1,10 @@
+---
+layout: default
+title: Apresentação do Projeto (Início)
+has_children: false
+nav_order: 1
+---
+
 # 💡 Sobre o Projeto
 
 Este repositório contém o projeto de Trabalho de Conclusão de Curso (TCC) em

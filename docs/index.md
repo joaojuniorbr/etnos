@@ -1,129 +1,56 @@
-# Etnos
+# 💡 Sobre o Projeto
 
-Este é o monorepo do projeto **Etnos**, uma plataforma educacional para crianças
-de 10 a 12 anos que utiliza jogos para ensinar sobre a rica diversidade cultural
-brasileira. O projeto é gerenciado com
-[Turborepo](https://turbo.build/repo/docs) para otimizar a performance, e toda a
-arquitetura é construída com **TypeScript** para garantir escalabilidade e
-segurança de tipos.
+Este repositório contém o projeto de Trabalho de Conclusão de Curso (TCC) em
+**Gestão de Tecnologia** focado no desenvolvimento de uma plataforma de jogos
+educativos para a rede pública de ensino. O produto principal, o jogo **Etnos**,
+é uma ferramenta pedagógica digital que visa promover o **respeito às
+diferenças** e valorizar a **diversidade étnico-racial** na formação da
+sociedade brasileira.
 
-## Estrutura do Monorepo
+Em um país de dimensões continentais e rica pluralidade cultural como o Brasil,
+é fundamental que as crianças desenvolvam consciência, empatia e um senso
+crítico sobre sua própria identidade e a importância das diversas culturas que
+nos compõem.
 
-O projeto é organizado em workspaces, principalmente `apps` e `packages`,
-garantindo um desenvolvimento modular e escalável.
+# 🎯 Objetivo Principal do Jogo
 
-### Aplicações (`apps`)
+O **Etnos** busca oferecer uma experiência lúdica e interativa para:
 
-Estas são as interfaces de usuário da plataforma, cada uma servindo a um
-propósito específico.
+- **Promover o respeito** às diferentes identidades étnico-raciais.
+- **Destacar as contribuições** dos povos afro-brasileiros, indígenas e de
+  outras culturas na construção da sociedade brasileira.
+- Estimular **reflexões sobre identidade, respeito, convivência, empatia e
+  justiça social** nos estudantes.
 
-- **`web`**: O site principal e público da Etnos. Serve como a página de
-  entrada, apresentando a plataforma, a proposta do projeto e informações para
-  pais e educadores.
-- **`admin`**: O painel administrativo para gerenciamento completo da
-  plataforma. Aqui, a equipe Etnos pode gerenciar usuários, cadastrar novos
-  jogos, atualizar conteúdo e monitorar o progresso dos estudantes.
-- **`student`**: O portal do estudante. É a interface onde as crianças acessam
-  os jogos, acompanham seu progresso e exploram o conteúdo educacional de forma
-  interativa.
-- **`docs`**: A documentação técnica e de negócio do projeto, essencial para a
-  colaboração da equipe.
+# 🧑‍🤝‍🧑 Público-Alvo e Local de Aplicação
 
-### Pacotes Compartilhados (`packages`)
+O jogo foi desenvolvido para ser aplicado com:
 
-Pacotes com código reutilizável, garantindo a consistência e a manutenção
-simplificada entre as aplicações.
+- **Público:** Estudantes do **5º ano do Ensino Fundamental** (faixa etária de
+  10-11 anos).
+- **Local de Implementação:** Turmas do 5º ano da **Escola Municipal João
+  Leopoldo Jacomel**, em Pinhais, Paraná.
 
-- **`@etnos/ui`**: Uma biblioteca de componentes React unificada para construir
-  interfaces com a mesma identidade visual e experiência de usuário.
-- **`@etnos/eslint-config`**: Configurações de ESLint padrão para manter a
-  qualidade e a consistência do código em todo o monorepo.
-- **`@etnos/typescript-config`**: Configurações de TypeScript (`tsconfig.json`)
-  para uma verificação de tipos rigorosa e consistente.
-- **`@etnos/tailwind-config`**: Configurações do Tailwind CSS compartilhadas
-  para estilização rápida e padronizada.
-- **`@etnos/tools`**: Ferramentas de desenvolvimento e scripts compartilhados
-  utilizados no monorepo.
+# 🕹️ Mecânicas e Fases do Jogo
 
----
+A premissa central é que o jogador acompanhe um personagem em uma **jornada por
+diferentes etnias e regiões do Brasil**.
 
-## Mapa da Arquitetura
+Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
+**desafios simples e interativos**, projetados para serem realizados de forma
+**coletiva** e incentivar a cooperação e o combate a preconceitos.
 
-Aqui está uma representação visual da arquitetura atual do monorepo:
+## Fases e Personagens Principais:
 
-```
-/etnos
-├── apps/
-│   ├── web/
-│   ├── admin/
-│   ├── student/
-│   └── docs/
-│
-└── packages/
-    ├── ui/
-    ├── eslint-config/
-    ├── typescript-config/
-    ├── tailwind-config/
-    └── tools/
-```
+| Região             | Tema                    | Personagem       | Foco Cultural                                   |
+| :----------------- | :---------------------- | :--------------- | :---------------------------------------------- |
+| **Amazônia**       | Saberes da Floresta     | Iara Curumim     | Indígena, Lendas, Botânica                      |
+| **Minas Gerais**   | Tradições e Sabores     | Tonico do Fogão  | Culinária Afetiva, Artesanato, Histórias        |
+| **Rio de Janeiro** | Ritmos e Resistência    | Dandara do Morro | Cultura Afro-Brasileira, Samba, Jongo, Carnaval |
+| **Nordeste**       | Sol, Festa e Fé         | Zeca do Sertão   | Literatura de Cordel, Forró, Festas Juninas     |
+| **Sul do Brasil**  | Tradições e Territórios | Anita dos Pampas | Cultura Gaúcha, Chimarrão, Folclore             |
 
-Essa estrutura permite que a plataforma escale de forma organizada, facilitando
-a manutenção e o desenvolvimento de novas funcionalidades.
+## Tipos de Desafios (Mecânicas de Jogo):
 
-## Começando
-
-Para começar a desenvolver, clone o repositório e instale as dependências:
-
-```bash
-git clone https://github.com/joaojuniorbr/etnos.git
-cd etnos
-yarn install
-```
-
-## Desenvolvimento
-
-Para rodar todas as aplicações em modo de desenvolvimento, execute:
-
-```bash
-yarn dev
-```
-
-Isso iniciará cada uma das aplicações em `apps` em suas respectivas portas.
-
-Você também pode rodar uma aplicação específica:
-
-```bash
-# Rodar a aplicação web (disponível em http://localhost:3000)
-yarn dev --filter=web
-
-# Rodar o painel do admin (disponível em http://localhost:3001)
-yarn dev --filter=admin
-
-# Rodar o portal do estudante (disponível em http://localhost:3002)
-yarn dev --filter=student
-
-# Rodar a documentação (disponível em http://localhost:3003)
-yarn dev --filter=docs
-```
-
-## Build
-
-Para construir todas as aplicações para produção, execute:
-
-```bash
-yarn build
-```
-
-Para construir uma aplicação específica:
-
-```bash
-yarn build --filter=web
-```
-
-## Linting
-
-Para verificar a qualidade do código em todo o monorepo, execute:
-
-```bash
-yarn lint
-```
+- **Quizzes:** Perguntas e respostas sobre as culturas.
+- **Jogos da Memória:** Associação de conceitos, imagens ou fatos culturais.

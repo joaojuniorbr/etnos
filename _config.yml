@@ -1,0 +1,26 @@
+# _config.yml (Coloque na raiz do repositório)
+
+title: Etnos - Plataforma Educacional
+description:
+  Projeto em Gestão de Tecnologia focado em jogos infantis para diversidade
+  cultural.
+
+remote_theme: just-the-docs
+
+nav_external_links:
+  - title: Repositório Principal (GitHub)
+    url: https://github.com/joaojuniorbr/etnos
+    hide_icon: true
+
+aux_links:
+  'TCC':
+    - '/index.md'
+
+nav_sort: title
+nav:
+  - title: Apresentação do Projeto (Início)
+    url: /
+  - title: Entregas
+    children:
+      - title: Primeira Entrega - Projeto Interdisciplinar I
+        url: /2025-p1.md

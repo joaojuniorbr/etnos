@@ -3,7 +3,8 @@ description:
   Projeto em Gestão de Tecnologia focado em jogos infantis para diversidade
   cultural.
 
-remote_theme: just-the-docs
+theme: minima
+search_enabled: true
 
 nav_external_links:
   - title: Repositório Principal (GitHub)

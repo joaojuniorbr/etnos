@@ -52,14 +52,16 @@ export default function CadastroPage() {
 		<div className='p-0 pb-1 md:p-8'>
 			<div className='container mx-auto'>
 				<div className='flex flex-col w-full rounded bg-white md:flex-row'>
-					<Image
-						src={`${signImage?.url}`}
-						alt={`${signImage?.name}`}
-						width={800}
-						height={800}
-						className='object-cover object-center w-full md:w-1/2 md:order-2 md:rounded-tr md:rounded-br'
-					/>
-
+					{signImage && (
+						<Image
+							src={signImage?.url}
+							alt={signImage?.name}
+							width={800}
+							height={800}
+							className='object-cover object-center w-full md:w-1/2 md:order-2 md:rounded-tr md:rounded-br'
+							suppressHydrationWarning
+						/>
+					)}
 					<div className='p-8 md:w-1/2'>
 						<h1 className='text-xl uppercase font-bold text-primary mb-2'>
 							Cadastre-se para começar a jogar

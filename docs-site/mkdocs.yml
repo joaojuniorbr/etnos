@@ -1,0 +1,23 @@
+site_name: Etnos
+site_url: https://joaojuniorbr.github.io/etnos
+
+theme:
+  name: material
+  language: pt-BR
+  font:
+    text: IBM Plex Sans
+    code: Fira Code
+  features:
+    - navigation.expand
+    - search.highlight
+    - search.suggest
+
+plugins:
+  - search
+
+nav:
+  - Início: index.md
+  - Entregas:
+      - Primeira Entrega: 2025-p1.md
+
+site_dir: ../site

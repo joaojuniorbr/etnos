@@ -1,4 +1,6 @@
-# 💡 Sobre o Projeto
+# ETNOS: Gamificando a diversidade
+
+## 💡 Sobre o Projeto
 
 Este repositório contém o projeto de Trabalho de Conclusão de Curso (TCC) em
 **Gestão de Tecnologia** focado no desenvolvimento de uma plataforma de jogos
@@ -12,7 +14,7 @@ Em um país de dimensões continentais e rica pluralidade cultural como o Brasil
 crítico sobre sua própria identidade e a importância das diversas culturas que
 nos compõem.
 
-# 🎯 Objetivo Principal do Jogo
+## 🎯 Objetivo Principal do Jogo
 
 O **Etnos** busca oferecer uma experiência lúdica e interativa para:
 
@@ -22,7 +24,7 @@ O **Etnos** busca oferecer uma experiência lúdica e interativa para:
 - Estimular **reflexões sobre identidade, respeito, convivência, empatia e
   justiça social** nos estudantes.
 
-# 🧑‍🤝‍🧑 Público-Alvo e Local de Aplicação
+## 🧑‍🤝‍🧑 Público-Alvo e Local de Aplicação
 
 O jogo foi desenvolvido para ser aplicado com:
 
@@ -31,7 +33,7 @@ O jogo foi desenvolvido para ser aplicado com:
 - **Local de Implementação:** Turmas do 5º ano da **Escola Municipal João
   Leopoldo Jacomel**, em Pinhais, Paraná.
 
-# 🕹️ Mecânicas e Fases do Jogo
+## 🕹️ Mecânicas e Fases do Jogo
 
 A premissa central é que o jogador acompanhe um personagem em uma **jornada por
 diferentes etnias e regiões do Brasil**.
@@ -40,7 +42,7 @@ Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
 **desafios simples e interativos**, projetados para serem realizados de forma
 **coletiva** e incentivar a cooperação e o combate a preconceitos.
 
-## Fases e Personagens Principais:
+### Fases e Personagens Principais:
 
 | Região             | Tema                    | Personagem       | Foco Cultural                                   |
 | :----------------- | :---------------------- | :--------------- | :---------------------------------------------- |
@@ -50,7 +52,7 @@ Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
 | **Nordeste**       | Sol, Festa e Fé         | Zeca do Sertão   | Literatura de Cordel, Forró, Festas Juninas     |
 | **Sul do Brasil**  | Tradições e Territórios | Anita dos Pampas | Cultura Gaúcha, Chimarrão, Folclore             |
 
-## Tipos de Desafios (Mecânicas de Jogo):
+### Tipos de Desafios (Mecânicas de Jogo):
 
 - **Quizzes:** Perguntas e respostas sobre as culturas.
 - **Jogos da Memória:** Associação de conceitos, imagens ou fatos culturais.

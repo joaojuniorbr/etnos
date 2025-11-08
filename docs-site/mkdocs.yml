@@ -16,8 +16,8 @@ plugins:
   - search
 
 nav:
-  - Início: index.md
+  - Home: index.md
   - Entregas:
-      - Primeira Entrega: 2025-p1.md
+      - Entrega 01: 2025-p1.md
 
 site_dir: ../site

@@ -19,5 +19,6 @@ nav:
   - Home: index.md
   - Entregas:
       - Entrega 01: 2025-p1.md
+      - Entrega 02: 2025-p2.md
 
 site_dir: ../site

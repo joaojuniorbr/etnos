@@ -45,78 +45,62 @@ na construção da sociedade brasileira.
 
 ### 1.1 Gestão de Usuários
 
-| Código | Requisito Funcional                                                                                       |
-| ------ | --------------------------------------------------------------------------------------------------------- |
-| RF001  | O sistema deve permitir cadastro de usuários (pais/responsáveis) com informações pessoais e da criança    |
-| RF002  | O sistema deve validar dados obrigatórios no cadastro (nome, email, senha, data de nascimento da criança) |
-| RF003  | O sistema deve permitir login de usuários autenticados via email e senha                                  |
-| RF004  | O sistema deve permitir recuperação de senha via email                                                    |
-| RF005  | O sistema deve manter sessão do usuário logado                                                            |
-| RF006  | O sistema deve permitir logout seguro do usuário                                                          |
-| RF007  | O sistema deve validar se o email já existe antes do cadastro                                             |
-| RF008  | O sistema deve armazenar perfil do usuário no Firebase Firestore                                          |
+| Código | Requisito Funcional                                                      |
+| ------ | ------------------------------------------------------------------------ |
+| RF001  | O sistema deve permitir cadastro de usuários (pais/responsáveis)         |
+| RF002  | O sistema deve validar dados obrigatórios no cadastro                    |
+| RF003  | O sistema deve permitir login de usuários autenticados via email e senha |
+| RF004  | O sistema deve permitir recuperação de senha via email                   |
+| RF005  | O sistema deve validar se o email já existe antes do cadastro            |
 
 ### 1.2 Gestão de Escolas
 
 | Código | Requisito Funcional                                                  |
 | ------ | -------------------------------------------------------------------- |
-| RF009  | O sistema deve permitir cadastro de escolas no painel administrativo |
-| RF010  | O sistema deve listar escolas disponíveis para seleção no cadastro   |
-| RF011  | O sistema deve permitir edição de dados das escolas                  |
-| RF012  | O sistema deve permitir exclusão de escolas                          |
-| RF013  | O sistema deve armazenar dados das escolas (nome, cidade, estado)    |
+| RF006  | O sistema deve permitir cadastro de escolas no painel administrativo |
 
 ### 1.3 Sistema de Personagens
 
-| Código | Requisito Funcional                                                                        |
-| ------ | ------------------------------------------------------------------------------------------ |
-| RF014  | O sistema deve apresentar 5 personagens representando diferentes regiões do Brasil         |
-| RF015  | O sistema deve permitir seleção de um personagem pelo estudante                            |
-| RF016  | O sistema deve armazenar a seleção do personagem no localStorage                           |
-| RF017  | O sistema deve exibir informações do personagem selecionado (nome, região, descrição)      |
-| RF018  | O sistema deve validar se um personagem foi selecionado antes de permitir acesso aos jogos |
+| Código | Requisito Funcional                                                              |
+| ------ | -------------------------------------------------------------------------------- |
+| RF007  | O sistema deve apresentar personagens representando diferentes regiões do Brasil |
+| RF008  | O sistema deve permitir seleção de um personagem                                 |
+| RF009  | O sistema deve exibir informações do personagem selecionado                      |
+| RF010  | O sistema deve validar personagem antes de permitir acesso aos jogos             |
 
 ### 1.4 Sistema de Jogos da Memória
 
 | Código | Requisito Funcional                                                         |
 | ------ | --------------------------------------------------------------------------- |
 | RF019  | O sistema deve oferecer jogo da memória com elementos culturais brasileiros |
-| RF020  | O sistema deve apresentar 12 cartas com elementos da culturais              |
-| RF021  | O sistema deve embaralhar as cartas aleatoriamente a cada partida           |
-| RF022  | O sistema deve permitir virar duas cartas por vez                           |
-| RF023  | O sistema deve verificar se as cartas viradas formam um par                 |
-| RF024  | O sistema deve manter cartas viradas quando formam par                      |
-| RF025  | O sistema deve virar cartas de volta quando não formam par                  |
-| RF026  | O sistema deve calcular pontuação baseada no tempo e tentativas             |
-| RF027  | O sistema deve salvar pontuação do jogador no Firebase                      |
-| RF028  | O sistema deve exibir pontuação final ao completar o jogo                   |
+| RF020  | O sistema deve salvar pontuação do jogador no Firebase                      |
+| RF021  | O sistema deve exibir pontuação final ao completar o jogo                   |
 
 ### 1.5 Interface do Estudante
 
-| Código | Requisito Funcional                                                                   |
-| ------ | ------------------------------------------------------------------------------------- |
-| RF029  | O sistema deve apresentar página inicial de boas-vindas para estudantes               |
-| RF030  | O sistema deve permitir navegação entre seções (seleção de personagem, jogos, perfil) |
-| RF031  | O sistema deve exibir breadcrumbs para navegação                                      |
-| RF032  | O sistema deve proteger rotas que requerem autenticação                               |
-| RF033  | O sistema deve redirecionar usuários não autenticados para login                      |
+| Código | Requisito Funcional                                                     |
+| ------ | ----------------------------------------------------------------------- |
+| RF022  | O sistema deve apresentar página inicial de boas-vindas para estudantes |
+| RF023  | O sistema deve permitir navegação entre seções                          |
+| RF024  | O sistema deve exibir breadcrumbs para navegação                        |
+| RF025  | O sistema deve proteger rotas que requerem autenticação                 |
 
 ### 1.6 Interface Administrativa
 
 | Código | Requisito Funcional                                                     |
 | ------ | ----------------------------------------------------------------------- |
-| RF034  | O sistema deve fornecer painel administrativo para gestão da plataforma |
-| RF035  | O sistema deve permitir gerenciamento de usuários                       |
-| RF036  | O sistema deve permitir monitoramento do progresso dos estudantes       |
+| RF026  | O sistema deve fornecer painel administrativo para gestão da plataforma |
+| RF027  | O sistema deve permitir gerenciamento de usuários                       |
+| RF028  | O sistema deve permitir monitoramento do progresso dos estudantes       |
 
 ### 1.7 Interface Pública
 
 | Código | Requisito Funcional                                               |
 | ------ | ----------------------------------------------------------------- |
-| RF037  | O sistema deve apresentar página inicial com proposta educacional |
-| RF038  | O sistema deve exibir personagem aleatório na página de login     |
-| RF039  | O sistema deve apresentar informações sobre a plataforma          |
-| RF040  | O sistema deve fornecer links para cadastro e login               |
+| RF029  | O sistema deve apresentar página inicial com proposta educacional |
+| RF030  | O sistema deve exibir personagem aleatório na página de login     |
+| RF031  | O sistema deve apresentar informações sobre a plataforma          |
+| RF032  | O sistema deve fornecer links para cadastro e login               |
 
 ## 2. Lista de Requisitos Não Funcionais
 
@@ -140,13 +124,11 @@ na construção da sociedade brasileira.
 
 ### 2.3 Segurança
 
-| Código | Requisito Não Funcional                                       |
-| ------ | ------------------------------------------------------------- |
-| RNF009 | O sistema deve criptografar senhas dos usuários               |
-| RNF010 | O sistema deve validar dados de entrada para prevenir injeção |
-| RNF011 | O sistema deve implementar autenticação segura via Firebase   |
-| RNF012 | O sistema deve proteger rotas administrativas                 |
-| RNF013 | O sistema deve validar permissões de acesso por usuário       |
+| Código | Requisito Não Funcional                                     |
+| ------ | ----------------------------------------------------------- |
+| RNF009 | O sistema deve criptografar senhas dos usuários             |
+| RNF010 | O sistema deve implementar autenticação segura via Firebase |
+| RNF011 | O sistema deve proteger rotas administrativas               |
 
 ### 2.4 Escalabilidade
 
@@ -154,7 +136,6 @@ na construção da sociedade brasileira.
 | ------ | -------------------------------------------------------------- |
 | RNF014 | O sistema deve suportar crescimento de usuários sem degradação |
 | RNF015 | O sistema deve usar arquitetura de microserviços (monorepo)    |
-| RNF016 | O sistema deve permitir adição de novos jogos facilmente       |
 
 ### 2.6 Compatibilidade
 

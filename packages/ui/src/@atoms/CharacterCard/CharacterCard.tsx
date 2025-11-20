@@ -24,7 +24,7 @@ export const CharacterCard = ({
 			height={80}
 			className='ui:w-28 ui:h-28 md:ui:w-24 md:ui:h-24'
 		/>
-		<dl className='ui:flex ui:flex-col ui:text-left ui:w-full'>
+		<dl className='ui:flex ui:flex-col ui:text-left ui:w-full ui:pr-4'>
 			<dt className='ui:text-sm md:ui:text-xs ui:text-slate-800 ui:m-0'>
 				{character.region}
 			</dt>

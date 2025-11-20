@@ -5,7 +5,13 @@
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
-			"outputs": ["dist/**", "out/**", ".next/**", "!.next/cache/**"]
+			"outputs": [
+				"dist/**",
+				"out/**",
+				".next/**",
+				"!.next/cache/**",
+				"storybook-static/**"
+			]
 		},
 		"lint": {
 			"dependsOn": ["^lint"]

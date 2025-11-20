@@ -1,0 +1,8 @@
+@import 'tailwindcss' prefix(ui);
+
+@theme {
+	--color-primary: #371f12;
+}
+
+@source "../stories/**/*.{js,jsx,ts,tsx,mdx}";
+@source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";

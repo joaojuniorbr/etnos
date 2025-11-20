@@ -58,7 +58,16 @@ const config: StorybookConfig = {
 			alias: {
 				...config.resolve?.alias,
 				'next/image': fileURLToPath(
-					new URL('./next-image.mock.tsx', import.meta.url)
+					new URL('./__mocks__/next-image.mock.tsx', import.meta.url)
+				),
+				'firebase/app': fileURLToPath(
+					new URL('./__mocks__/firebaseApp.ts', import.meta.url)
+				),
+				'firebase/auth': fileURLToPath(
+					new URL('./__mocks__/firebaseAuth.ts', import.meta.url)
+				),
+				'firebase/firestore': fileURLToPath(
+					new URL('./__mocks__/firebaseFirestore.ts', import.meta.url)
 				),
 			},
 		};

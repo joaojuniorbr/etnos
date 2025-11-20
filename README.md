@@ -120,10 +120,10 @@ Para construir uma aplicação específica:
 yarn build --filter=web
 ```
 
-## Linting
+## UI/UX
 
-Para verificar a qualidade do código em todo o monorepo, execute:
+Storybook do Projeto:
+[Acessar](https://www.chromatic.com/library?appId=691f7645d388cc8aa2a047b6)
 
-```bash
-yarn lint
-```
+Protótipo do Projeto:
+[Figma](https://www.figma.com/proto/DC1bYnTWGpp1ppCLhuOm1e/Etnos?node-id=2-6&p=f&t=D7YYcgs2oQdpQxIR-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=2%3A6)

@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScoreHighlight } from './ScoreHighlight';
 import { Spin } from 'antd';
+import { useSearchParams } from 'next/navigation';
 
 type CardData = {
 	name: string;
@@ -24,17 +25,67 @@ type MemoryCard = CardData & {
 	isMatched: boolean;
 };
 
-type MemoryGameProps = {
-	cardsData: CardData[];
-};
-
 const shuffleArray = <T,>(array: T[]): T[] => {
 	return [...array].sort(() => Math.random() - 0.5);
 };
 
 const GAME_SLUG = GamesEnum.MEMORY_GAME;
 
-export const MemoryGame = ({ cardsData }: MemoryGameProps) => {
+const cardsData = [
+	{
+		name: 'vitoria-regia',
+		image: '/games/memory-game/iara/cards/vitoria-regia.jpg',
+	},
+	{
+		name: 'acai',
+		image: '/games/memory-game/iara/cards/acai.jpg',
+	},
+	{
+		name: 'curipira',
+		image: '/games/memory-game/iara/cards/curipira.jpg',
+	},
+	{
+		name: 'guarana',
+		image: '/games/memory-game/iara/cards/guarana.jpg',
+	},
+	{
+		name: 'onca-pintada',
+		image: '/games/memory-game/iara/cards/onca-pintada.jpg',
+	},
+	{
+		name: 'peixe-boi',
+		image: '/games/memory-game/iara/cards/peixe-boi.jpg',
+	},
+	{
+		name: 'seringueira',
+		image: '/games/memory-game/iara/cards/seringueira.jpg',
+	},
+	{
+		name: 'uirapuru',
+		image: '/games/memory-game/iara/cards/uirapuru.jpg',
+	},
+	{
+		name: 'jacare',
+		image: '/games/memory-game/iara/cards/jacare.jpg',
+	},
+	{
+		name: 'sucuri',
+		image: '/games/memory-game/iara/cards/sucuri.jpg',
+	},
+	{
+		name: 'boto',
+		image: '/games/memory-game/iara/cards/boto.jpg',
+	},
+	{
+		name: 'aldeia',
+		image: '/games/memory-game/iara/cards/aldeia.jpg',
+	},
+];
+
+export const MemoryGame = () => {
+	const searchParams = useSearchParams();
+	const character = searchParams.get('personagem');
+
 	const [cards, setCards] = useState<MemoryCard[]>([]);
 	const [flippedCards, setFlippedCards] = useState<number[]>([]);
 	const [isChecking, setIsChecking] = useState(false);
@@ -54,7 +105,7 @@ export const MemoryGame = ({ cardsData }: MemoryGameProps) => {
 	} = useGameScore(
 		user?.uid ?? '',
 		GamesEnum.MEMORY_GAME,
-		selectedCharacter?.slug ?? ''
+		character ?? selectedCharacter?.slug ?? ''
 	);
 
 	const sounds = {
@@ -90,11 +141,15 @@ export const MemoryGame = ({ cardsData }: MemoryGameProps) => {
 		setFlippedCards([]);
 		setIsChecking(false);
 		setMoves(0);
-	}, [cardsData]);
+	}, []);
 
 	useEffect(() => {
 		initializeGame();
-	}, [cardsData, initializeGame]);
+	}, [initializeGame]);
+
+	useEffect(() => {
+		scoreGameRefetch();
+	}, [selectedCharacter, scoreGameRefetch]);
 
 	const handleCardClick = (id: number) => {
 		if (isChecking || isFinished) return;
@@ -184,6 +239,9 @@ export const MemoryGame = ({ cardsData }: MemoryGameProps) => {
 
 	return (
 		<Spin spinning={isLoading || scoreIsLoading}>
+			<h1 className='text-center text-2xl font-bold uppercase mb-4'>
+				Jogo de Memória APPS
+			</h1>
 			<div className='flex flex-col items-center gap-6'>
 				{Object.values(sounds).map((sound) => (
 					<audio

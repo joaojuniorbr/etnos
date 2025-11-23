@@ -75,13 +75,18 @@ export const gamesService = {
 	async getFromGameScore(slug: string, characterSlug: string, userId: string) {
 		const collectionRef = collection(dbFirebase, COLLECTION);
 		const getScoreGame = await getDocs(collectionRef);
-		return getScoreGame.docs
-			.map((doc) => doc.data() as ScoreInterface)
-			.find(
-				(doc) =>
-					doc.slug === slug &&
-					doc.characterSlug === characterSlug &&
-					doc.userId === userId
-			);
+
+		if (userId) {
+			return getScoreGame.docs
+				.map((doc) => doc.data() as ScoreInterface)
+				.find(
+					(doc) =>
+						doc.slug === slug &&
+						doc.characterSlug === characterSlug &&
+						doc.userId === userId
+				);
+		} else {
+			return null;
+		}
 	},
 };

@@ -17,7 +17,10 @@ export const GameSelect = () => {
 			{allGames.map((game) => (
 				<CardGame
 					key={game.slug}
-					game={game}
+					game={{
+						...game,
+						url: game.url + `?personagem=${selectedCharacter.slug}`,
+					}}
 					character={selectedCharacter.slug}
 				/>
 			))}

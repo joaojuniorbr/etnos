@@ -7,7 +7,7 @@ export const useGameScore = (
 	characterSlug: string
 ) =>
 	useQuery({
-		queryKey: ['games', 'score', slug],
+		queryKey: ['games', 'score', slug, userId],
 		queryFn: () =>
 			gamesService
 				.getFromGameScore(slug, characterSlug, userId)

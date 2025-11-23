@@ -29,6 +29,7 @@ export const onAuthStateChanged = (
 		uid: 'mock-uid',
 		email: 'mock@example.com',
 		displayName: 'Usuário Mock',
+		childName: 'Usuário Mock',
 	});
 	return () => {};
 };

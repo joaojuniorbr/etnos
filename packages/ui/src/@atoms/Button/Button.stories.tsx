@@ -5,7 +5,7 @@ import { fn } from 'storybook/test';
 import { Button } from '.';
 
 const meta = {
-	title: 'UI/Button',
+	title: 'UI/@atoms/Button',
 	component: Button,
 	parameters: {
 		layout: 'centered',

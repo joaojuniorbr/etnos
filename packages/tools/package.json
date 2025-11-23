@@ -6,16 +6,21 @@
 	"types": "src/index.ts",
 	"scripts": {
 		"dev": "tsc --watch",
-		"build": "node esbuild.js"
+		"build": "node esbuild.js",
+		"test": "vitest --watch=false --coverage"
 	},
 	"peerDependencies": {
 		"react": "^19"
 	},
 	"devDependencies": {
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.0",
 		"dotenv": "^17.2.2",
 		"esbuild": "^0.25.9",
 		"firebase": "^10.8.0",
-		"typescript": "^5.2.2"
+		"jsdom": "^27.2.0",
+		"typescript": "^5.2.2",
+		"vitest": "^4.0.13"
 	},
 	"dependencies": {
 		"@tanstack/react-query": "^5.87.1",

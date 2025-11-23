@@ -5,7 +5,7 @@ import { CharactersContent } from '@etnos/tools';
 const charactersMap = CharactersContent;
 
 const meta: Meta<typeof CharacterCard> = {
-	title: 'UI/CharacterCard',
+	title: 'UI/@atoms/CharacterCard',
 	component: CharacterCard,
 	parameters: {
 		layout: 'centered',

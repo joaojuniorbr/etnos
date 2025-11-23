@@ -55,7 +55,6 @@ export const useAuth = () => {
 			await signOut(authFirebase);
 			setUser(null);
 		} catch (error) {
-			console.error(error);
 			setIsLoading(false);
 		}
 	};
@@ -75,7 +74,6 @@ export const useAuth = () => {
 			setIsLoading(false);
 			return result.user;
 		} catch (error) {
-			console.error(error);
 			setIsLoading(false);
 			return null;
 		}
@@ -87,7 +85,6 @@ export const useAuth = () => {
 			await sendPasswordResetEmail(authFirebase, email);
 			setIsLoading(false);
 		} catch (error) {
-			console.error(error);
 			setIsLoading(false);
 		}
 	};
@@ -126,7 +123,6 @@ export const useAuth = () => {
 
 			setUser({ ...user, ...profile });
 		} catch (error) {
-			console.log({ error });
 			message.error('Ocorreu um erro ao salvar seu perfil. Tente novamente.');
 		}
 	};
@@ -187,7 +183,6 @@ export const useAuth = () => {
 			setIsLoading(false);
 			return user;
 		} catch (error) {
-			console.error(error);
 			setIsLoading(false);
 			return null;
 		}
@@ -210,6 +205,8 @@ export const useAuth = () => {
 		isLoading,
 		user,
 		isLoggedIn,
+		cleanDataForFirestore,
+		getProfile,
 		updateUserProfile,
 		onRegister,
 		onSignOut,

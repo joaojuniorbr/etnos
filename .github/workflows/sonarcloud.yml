@@ -21,7 +21,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run tests with coverage
-        run: yarn turbo run test -- --coverage
+        run: yarn test
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master

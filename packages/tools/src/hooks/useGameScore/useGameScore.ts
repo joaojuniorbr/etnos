@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { gamesService } from '../services';
+import { gamesService } from '../../services';
 
 export const useGameScore = (
 	userId: string,
@@ -12,5 +12,4 @@ export const useGameScore = (
 			gamesService
 				.getFromGameScore(slug, characterSlug, userId)
 				.then((res) => res),
-		enabled: !!userId,
 	});

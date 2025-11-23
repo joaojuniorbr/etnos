@@ -3,7 +3,7 @@ import {
 	CharacterInterface,
 	getAllCharacters,
 	getCharacterBySlug,
-} from '../characters';
+} from '../../characters';
 
 const CHARACTER_STORAGE_KEY = 'selectedCharacter';
 

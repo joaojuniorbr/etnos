@@ -1,4 +1,4 @@
-import { gamesService } from '../services';
+import { gamesService } from '../../services';
 import { message } from 'antd';
 
 export interface GameInterface {

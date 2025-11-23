@@ -269,15 +269,17 @@ describe('useAuth hook', () => {
 		expect(result.current.isLoading).toBe(false);
 	});
 
-	it('deve substituir valores undefined por null', () => {
+	it('deve substituir valores undefined por null', async () => {
 		const { result } = renderHook(() => useAuth());
 
-		const input = { parentName: 'João', childName: undefined };
-		const output = (result.current as any).cleanDataForFirestore(input);
+		await act(async () => {
+			const input = { parentName: 'João', childName: undefined };
+			const output = (result.current as any).cleanDataForFirestore(input);
 
-		expect(output).toEqual({
-			parentName: 'João',
-			childName: null,
+			expect(output).toEqual({
+				parentName: 'João',
+				childName: null,
+			});
 		});
 	});
 

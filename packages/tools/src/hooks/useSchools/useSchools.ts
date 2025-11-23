@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { schoolService } from '../services';
+import { schoolService } from '../../services';
 
 export const useSchools = () =>
 	useQuery({

@@ -1,4 +1,5 @@
 import '@etnos/ui/styles.css';
+import '@etnos/games/styles.css';
 import './globals.css';
 
 import type { Metadata } from 'next';

@@ -9,9 +9,6 @@
 		"build": "node esbuild.js",
 		"test": "vitest --watch=false --coverage"
 	},
-	"peerDependencies": {
-		"react": "^19"
-	},
 	"devDependencies": {
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.0",

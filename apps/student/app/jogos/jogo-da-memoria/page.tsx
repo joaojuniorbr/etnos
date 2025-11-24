@@ -1,12 +1,19 @@
-import { MemoryGame } from '@etnos/games';
 import { Breadcrumb } from 'antd';
 import { Metadata } from 'next';
+import { Games } from '../../../components/@molecules';
 
 export const metadata: Metadata = {
 	title: 'Etnos | Jogo da Memória',
 };
 
-export default function MemoryGamePage() {
+export default async function MemoryGamePage({
+	searchParams,
+}: {
+	searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+	const params = await searchParams;
+	const character = params?.personagem;
+
 	return (
 		<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
 			<Breadcrumb
@@ -27,7 +34,7 @@ export default function MemoryGamePage() {
 			/>
 
 			<div className='p-4 bg-white border border-slate-200 shadow rounded mt-6'>
-				<MemoryGame />
+				<Games type='memory-game' characterSlug={character} />
 			</div>
 		</div>
 	);

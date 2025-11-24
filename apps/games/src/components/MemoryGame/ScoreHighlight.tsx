@@ -1,9 +1,7 @@
-import { ReactNode } from 'react';
-
 interface ScoreHighlightProps extends React.HTMLAttributes<HTMLDListElement> {
-	icon: ReactNode;
+	icon: React.ReactNode;
 	label: string;
-	score?: ReactNode;
+	score?: React.ReactNode;
 	className?: string;
 }
 

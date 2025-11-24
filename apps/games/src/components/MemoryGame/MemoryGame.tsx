@@ -12,7 +12,6 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScoreHighlight } from './ScoreHighlight';
 import { Spin } from 'antd';
-import { useSearchParams } from 'next/navigation';
 
 type CardData = {
 	name: string;
@@ -82,10 +81,7 @@ const cardsData = [
 	},
 ];
 
-export const MemoryGame = () => {
-	const searchParams = useSearchParams();
-	const character = searchParams.get('personagem');
-
+export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [cards, setCards] = useState<MemoryCard[]>([]);
 	const [flippedCards, setFlippedCards] = useState<number[]>([]);
 	const [isChecking, setIsChecking] = useState(false);
@@ -105,7 +101,7 @@ export const MemoryGame = () => {
 	} = useGameScore(
 		user?.uid ?? '',
 		GamesEnum.MEMORY_GAME,
-		character ?? selectedCharacter?.slug ?? ''
+		characterSlug ?? selectedCharacter?.slug ?? ''
 	);
 
 	const sounds = {
@@ -259,21 +255,18 @@ export const MemoryGame = () => {
 						score={score}
 						className='border-primary text-primary  bg-white'
 					/>
-
 					<ScoreHighlight
 						icon={<RiArrowLeftRightFill />}
 						label='Movimentos'
 						score={moves}
 						className='border-indigo-800 text-indigo-800 bg-white'
 					/>
-
 					<ScoreHighlight
 						icon={<RiCheckDoubleLine />}
 						label='Acertos'
 						score={`${matchedPairs}/${totalPairs}`}
 						className='border-green-800 text-green-800 bg-white'
 					/>
-
 					<ScoreHighlight
 						icon={<RiStarFill />}
 						label='Recorde'

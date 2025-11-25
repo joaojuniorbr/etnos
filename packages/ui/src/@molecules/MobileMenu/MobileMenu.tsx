@@ -5,13 +5,16 @@ import {
 	RiUserHeartLine,
 	RiHomeLine,
 } from 'react-icons/ri';
-import { UserProfileInterface } from '@etnos/tools';
+import { CharacterInterface, UserProfileInterface } from '@etnos/tools';
+import { Image } from 'antd';
 
 interface MobileMenuProps {
 	open?: boolean;
 	toggleDrawer?: () => void;
 	user?: UserProfileInterface | null;
 	onLogout?: () => void;
+	toggleCharacter?: () => void;
+	selectedCharacter?: CharacterInterface | null;
 }
 
 export const MobileMenu = ({
@@ -19,6 +22,8 @@ export const MobileMenu = ({
 	open,
 	user,
 	onLogout,
+	toggleCharacter,
+	selectedCharacter,
 }: MobileMenuProps) => {
 	return (
 		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
@@ -49,6 +54,37 @@ export const MobileMenu = ({
 								{user?.childName || user?.email}
 							</p>
 						</div>
+
+						{selectedCharacter && (
+							<div className='ui:border-b ui:border-slate-200 ui:pb-4 ui:pt-2 ui:mb-2'>
+								<div className='ui:text-sm ui:font-bold ui:text-primary ui:mb-1 ui:uppercase'>
+									Personagem Selecionado
+								</div>
+								<div className='ui:flex ui:gap-4 ui:items-center ui:mb-4'>
+									<div className='ui:w-20'>
+										<Image
+											src={`/images/character/md/${selectedCharacter.slug}.png`}
+											alt={selectedCharacter.name}
+											preview={false}
+										/>
+									</div>
+									<div className='ui:flex-1'>
+										<div className='ui:text-base ui:text-black ui:font-bold'>
+											{selectedCharacter.name}
+										</div>
+										<div className='ui:text-xs ui:text-gray-400'>
+											{selectedCharacter.description}
+										</div>
+									</div>
+								</div>
+								<button
+									className='ui:text-xs ui:text-primary ui:uppercase ui:underline'
+									onClick={toggleCharacter}
+								>
+									Alterar Personagem
+								</button>
+							</div>
+						)}
 						<Menu
 							items={[
 								{

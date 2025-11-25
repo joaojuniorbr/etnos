@@ -71,7 +71,6 @@ export const useAuth = () => {
 				password
 			);
 			setUser(result.user as UserProfileInterface);
-			setIsLoading(false);
 			return result.user;
 		} catch (error) {
 			setIsLoading(false);

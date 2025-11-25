@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScoreHighlight } from './ScoreHighlight';
 import { Spin } from 'antd';
+import { getCards } from './MemoryGameContent';
 
 type CardData = {
 	name: string;
@@ -29,57 +30,6 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 const GAME_SLUG = GamesEnum.MEMORY_GAME;
-
-const cardsData = [
-	{
-		name: 'vitoria-regia',
-		image: '/games/memory-game/iara/cards/vitoria-regia.jpg',
-	},
-	{
-		name: 'acai',
-		image: '/games/memory-game/iara/cards/acai.jpg',
-	},
-	{
-		name: 'curipira',
-		image: '/games/memory-game/iara/cards/curipira.jpg',
-	},
-	{
-		name: 'guarana',
-		image: '/games/memory-game/iara/cards/guarana.jpg',
-	},
-	{
-		name: 'onca-pintada',
-		image: '/games/memory-game/iara/cards/onca-pintada.jpg',
-	},
-	{
-		name: 'peixe-boi',
-		image: '/games/memory-game/iara/cards/peixe-boi.jpg',
-	},
-	{
-		name: 'seringueira',
-		image: '/games/memory-game/iara/cards/seringueira.jpg',
-	},
-	{
-		name: 'uirapuru',
-		image: '/games/memory-game/iara/cards/uirapuru.jpg',
-	},
-	{
-		name: 'jacare',
-		image: '/games/memory-game/iara/cards/jacare.jpg',
-	},
-	{
-		name: 'sucuri',
-		image: '/games/memory-game/iara/cards/sucuri.jpg',
-	},
-	{
-		name: 'boto',
-		image: '/games/memory-game/iara/cards/boto.jpg',
-	},
-	{
-		name: 'aldeia',
-		image: '/games/memory-game/iara/cards/aldeia.jpg',
-	},
-];
 
 export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [cards, setCards] = useState<MemoryCard[]>([]);
@@ -123,6 +73,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		},
 	};
 
+	const cardsData = getCards(characterSlug);
+
 	const totalPairs = cardsData.length;
 	const matchedPairs = cards.filter((card) => card.isMatched).length / 2;
 
@@ -137,11 +89,11 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		setFlippedCards([]);
 		setIsChecking(false);
 		setMoves(0);
-	}, []);
+	}, [cardsData]);
 
 	useEffect(() => {
 		initializeGame();
-	}, [initializeGame]);
+	}, [initializeGame, cardsData]);
 
 	useEffect(() => {
 		scoreGameRefetch();
@@ -235,8 +187,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	return (
 		<Spin spinning={isLoading || scoreIsLoading}>
-			<h1 className='text-center text-2xl font-bold uppercase mb-4'>
-				Jogo de Memória APPS
+			<h1 className='text-center text-2xl font-bold uppercase mb-6'>
+				Jogo da Memória
 			</h1>
 			<div className='flex flex-col items-center gap-6'>
 				{Object.values(sounds).map((sound) => (
@@ -270,7 +222,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 					<ScoreHighlight
 						icon={<RiStarFill />}
 						label='Recorde'
-						score={scoreGame?.score}
+						score={scoreGame?.score || 0}
 						className='bg-primary text-white'
 					/>
 				</div>

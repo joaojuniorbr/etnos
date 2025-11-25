@@ -149,7 +149,7 @@ export const ProfilePage = () => {
 								Veja seus melhores resultados nos jogos
 							</p>
 
-							<div className='grid md:grid-cols-2'>
+							<div className='grid md:grid-cols-2 gap-4'>
 								{games.map((game) => (
 									<div
 										key={game.slug}

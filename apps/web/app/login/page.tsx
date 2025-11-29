@@ -1,15 +1,18 @@
 'use client';
 
-import { Button, Form, Input, message, Spin } from 'antd';
+import { Button, Divider, Form, Input, message, Spin } from 'antd';
 import Image from 'next/image';
 import { useAuth } from '@etnos/tools';
 
 import { useRandomCharacter } from '@etnos/hooks';
+import { useState } from 'react';
 
 export default function LoginPage() {
+	const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
 	const { character } = useRandomCharacter();
 
-	const { onSignInWithEmailAndPassword, isLoading } = useAuth();
+	const { onSignInWithEmailAndPassword, isLoading, loginWithGoogle } =
+		useAuth();
 
 	const onFinish = async (values: { login: string; password: string }) => {
 		const user = await onSignInWithEmailAndPassword(
@@ -23,8 +26,18 @@ export default function LoginPage() {
 		}
 	};
 
+	const onLoginWithGoogle = async () => {
+		setIsLoadingGoogle(true);
+		const user = await loginWithGoogle();
+		if (user?.email) {
+			window.open('/estudante', '_self');
+		} else {
+			setIsLoadingGoogle(false);
+		}
+	};
+
 	return (
-		<Spin spinning={isLoading}>
+		<Spin spinning={isLoading || isLoadingGoogle}>
 			<div className='p-0 pb-1 md:p-8'>
 				<div className='container mx-auto'>
 					<div className='flex flex-col w-full rounded bg-white md:flex-row'>
@@ -64,6 +77,21 @@ export default function LoginPage() {
 									</Button>
 								</div>
 							</Form>
+
+							<Divider>ou</Divider>
+
+							<button
+								onClick={onLoginWithGoogle}
+								className='border border-gray-200 rounded-full py-2 px-4 inline-flex align-center gap-2 justify-center font-bold text-black mx-auto text-sm'
+							>
+								<Image
+									src='/google-icon.svg'
+									alt='Google'
+									width={20}
+									height={20}
+								/>
+								ENTRAR COM GOOGLE
+							</button>
 						</div>
 					</div>
 				</div>

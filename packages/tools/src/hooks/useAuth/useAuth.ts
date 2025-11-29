@@ -9,6 +9,8 @@ import {
 	User,
 	onAuthStateChanged,
 	createUserWithEmailAndPassword,
+	GoogleAuthProvider,
+	signInWithPopup,
 } from 'firebase/auth';
 import {
 	getFirestore,
@@ -44,6 +46,8 @@ const app = initializeApp(firebaseConfig);
 export const dbFirebase = getFirestore(app);
 
 export const authFirebase = getAuth(app);
+
+export const googleProvider = new GoogleAuthProvider();
 
 export const useAuth = () => {
 	const [user, setUser] = useState<UserProfileInterface | null>(null);
@@ -187,6 +191,16 @@ export const useAuth = () => {
 		}
 	};
 
+	const loginWithGoogle = async () => {
+		try {
+			const result = await signInWithPopup(authFirebase, googleProvider);
+			setUser(result.user as UserProfileInterface);
+			return result.user;
+		} catch (error) {
+			console.error('Erro no login com Google:', error);
+		}
+	};
+
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(authFirebase, (user) => {
 			if (user) {
@@ -211,5 +225,6 @@ export const useAuth = () => {
 		onSignOut,
 		onSignInWithEmailAndPassword,
 		onRecoveryPass,
+		loginWithGoogle,
 	};
 };

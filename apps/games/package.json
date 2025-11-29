@@ -17,9 +17,8 @@
 		"./styles.css": "./dist/index.css"
 	},
 	"scripts": {
-		"dev": "vite",
+		"dev": "tsc --watch",
 		"lint": "eslint .",
-		"preview": "vite preview",
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
 		"build": "npm run build:styles && npm run build:components",
 		"build:components": "tsc",

@@ -187,7 +187,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	return (
 		<Spin spinning={isLoading || scoreIsLoading}>
-			<h1 className='text-center text-2xl font-bold uppercase mb-6'>
+			<h1 className='text-center text-2xl font-bold uppercase mb-8'>
 				Jogo da Memória
 			</h1>
 			<div className='flex flex-col items-center gap-6'>

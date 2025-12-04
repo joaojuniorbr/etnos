@@ -26,6 +26,8 @@ export const MobileMenu = ({
 	toggleCharacter,
 	selectedCharacter,
 }: MobileMenuProps) => {
+	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
+
 	return (
 		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
 			<Button onClick={toggleDrawer} icon={<RiMenu3Line />} type='primary' />
@@ -45,7 +47,7 @@ export const MobileMenu = ({
 							<div className='ui:h-18 ui:w-18 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
 								<a href='/estudante/perfil'>
 									<img
-										src={`https://robohash.org/${user.email}.png`}
+										src={profileImage}
 										alt={user.email as string}
 										className='ui:h-18 ui:w-18 ui:object-cover'
 									/>

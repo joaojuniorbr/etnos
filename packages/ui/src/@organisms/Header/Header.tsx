@@ -14,6 +14,8 @@ export const Header = () => {
 		window.open('/login', '_self');
 	};
 
+	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
+
 	return (
 		<>
 			<header className='ui:bg-white ui:shadow-sm ui:w-full ui:py-4 ui:px-8'>
@@ -34,7 +36,7 @@ export const Header = () => {
 										<div className='ui:h-10 ui:w-10 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
 											<a href='/estudante/perfil'>
 												<img
-													src={`https://robohash.org/${user.email}.png`}
+													src={profileImage}
 													alt={user.email as string}
 													className='ui:h-10 ui:w-10 ui:object-cover'
 												/>

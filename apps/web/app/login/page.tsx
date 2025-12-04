@@ -85,7 +85,7 @@ export default function LoginPage() {
 								className='border border-gray-200 rounded-full py-2 px-4 inline-flex align-center gap-2 justify-center font-bold text-black mx-auto text-sm'
 							>
 								<Image
-									src='/google-icon.svg'
+									src='/images/google-icon.svg'
 									alt='Google'
 									width={20}
 									height={20}

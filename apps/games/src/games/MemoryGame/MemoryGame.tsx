@@ -7,12 +7,12 @@ import {
 	RiTrophyLine,
 } from 'react-icons/ri';
 import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
-import { Button, useUser } from '@etnos/ui';
+import { useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Spin } from 'antd';
 import { getCards } from './MemoryGameContent';
-import { ScoreHighlight } from '../../components';
+import { FinishGame, ScoreHighlight } from '../../components';
 
 type CardData = {
 	name: string;
@@ -228,39 +228,13 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				</div>
 
 				{isFinished ? (
-					<div className='text-center'>
-						<h2 className='text-3xl font-bold text-primary m-0'>Parabéns!</h2>
-						<h3 className='text-lg text-primary'>Você completou o desafio.</h3>
-
-						{selectedCharacter?.slug && (
-							<Image
-								src={`/games/${GAME_SLUG}/${selectedCharacter?.slug}/success.png`}
-								width={400}
-								height={400}
-								alt={selectedCharacter?.name as string}
-							/>
-						)}
-
-						<div className='grid grid-cols-2 gap-4 max-w-md mx-auto'>
-							<Button
-								onClick={handleRestart}
-								loading={isLoading}
-								disabled={isLoading}
-								block
-							>
-								Reiniciar Jogo
-							</Button>
-							<Button
-								type='primary'
-								onClick={handleSaveScore}
-								loading={isLoading}
-								disabled={isLoading}
-								block
-							>
-								Salvar Pontuação
-							</Button>
-						</div>
-					</div>
+					<FinishGame
+						selectedCharacter={selectedCharacter}
+						isLoading={isLoading}
+						isLoser={!isFinished}
+						handleRestart={handleRestart}
+						handleSaveScore={handleSaveScore}
+					/>
 				) : (
 					<div className='grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 w-full'>
 						{cards.map((card) => (
@@ -279,7 +253,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 									className={`absolute inset-0 rounded-lg flex items-center justify-center transform transition-transform duration-500 backface-hidden ${card.isFlipped || card.isMatched ? 'rotate-y-180' : 'rotate-y-0'}`}
 								>
 									<Image
-										src={`/games/${GAME_SLUG}/${selectedCharacter?.slug}/cover.jpg`}
+										src={`/games/${GAME_SLUG}/cover/${selectedCharacter?.slug}.jpg`}
 										alt={selectedCharacter?.name as string}
 										width={500}
 										height={500}

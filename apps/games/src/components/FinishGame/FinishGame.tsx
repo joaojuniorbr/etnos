@@ -12,7 +12,6 @@ interface FinishGameProps {
 }
 
 export const FinishGame = ({
-	gameSlug,
 	selectedCharacter,
 	isLoading,
 	isLoser,
@@ -30,11 +29,7 @@ export const FinishGame = ({
 		{selectedCharacter?.slug && (
 			<div className='flex justify-center'>
 				<Image
-					src={
-						gameSlug
-							? `/games/${gameSlug}/${selectedCharacter?.slug}/success.png`
-							: `/games/success/${selectedCharacter?.slug}.png`
-					}
+					src={`/games/${isLoser ? 'error' : 'success'}/${selectedCharacter?.slug}.jpg`}
 					width={400}
 					height={400}
 					alt={selectedCharacter?.name as string}

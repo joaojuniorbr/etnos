@@ -21,7 +21,7 @@ import { FinishGame, ScoreHighlight } from '../../components';
 
 const CHARACTER_DEFAULT = '•';
 
-const TOTAL_GUESS = 10;
+const TOTAL_GUESS = 3;
 
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [word, setWord] = useState('');
@@ -233,51 +233,59 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 				preload='auto'
 			/>
 
-			{isFinished ? (
-				<FinishGame
-					selectedCharacter={selectedCharacter}
-					handleRestart={handleRestart}
-					isLoading={isLoading}
-					handleSaveScore={handleSaveScore}
-					isLoser={isLoser}
+			<h1 className='text-2xl mb-4 font-bold uppercase text-primary text-center'>
+				Jogo Adivinhe a Palavra
+			</h1>
+
+			<Divider />
+
+			<div className='grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full'>
+				<ScoreHighlight
+					icon={<RiTrophyLine />}
+					label='Pontuação'
+					score={score}
+					className='border-primary text-primary  bg-white'
 				/>
+				<ScoreHighlight
+					icon={<RiInformationLine />}
+					label='Dicas'
+					score={(content?.tips.length ?? 0) - countTips}
+					className='border-blue-800 text-blue-800 bg-white'
+				/>
+				<ScoreHighlight
+					icon={<RiCheckDoubleLine />}
+					label='Tentativas'
+					score={TOTAL_GUESS - countGuess}
+					className='border-green-800 text-green-800 bg-white'
+				/>
+				<ScoreHighlight
+					icon={<RiStarFill />}
+					label='Recorde'
+					score={scoreGame?.score ?? 0}
+					className='bg-primary text-white'
+				/>
+			</div>
+
+			<Divider />
+
+			{isFinished ? (
+				<>
+					<div className='text-xl uppercase text-center mb-10 flex items-center justify-center gap-2'>
+						A palavra correta é:
+						<span className='text-primary underline text-2xl font-bold'>
+							{content?.word}
+						</span>
+					</div>
+					<FinishGame
+						selectedCharacter={selectedCharacter}
+						handleRestart={handleRestart}
+						isLoading={isLoading}
+						handleSaveScore={handleSaveScore}
+						isLoser={isLoser}
+					/>
+				</>
 			) : (
 				<>
-					<h1 className='text-2xl mb-4 font-bold uppercase text-primary text-center'>
-						Jogo Adivinhe a Palavra
-					</h1>
-
-					<Divider />
-
-					<div className='grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full'>
-						<ScoreHighlight
-							icon={<RiTrophyLine />}
-							label='Pontuação'
-							score={score}
-							className='border-primary text-primary  bg-white'
-						/>
-						<ScoreHighlight
-							icon={<RiInformationLine />}
-							label='Dicas'
-							score={(content?.tips.length ?? 0) - countTips}
-							className='border-blue-800 text-blue-800 bg-white'
-						/>
-						<ScoreHighlight
-							icon={<RiCheckDoubleLine />}
-							label='Tentativas'
-							score={TOTAL_GUESS - countGuess}
-							className='border-green-800 text-green-800 bg-white'
-						/>
-						<ScoreHighlight
-							icon={<RiStarFill />}
-							label='Recorde'
-							score={scoreGame?.score ?? 0}
-							className='bg-primary text-white'
-						/>
-					</div>
-
-					<Divider />
-
 					<dl className='mb-4'>
 						<dt className='font-bold uppercase text-lg mb-1'>Dicas</dt>
 						<dd>

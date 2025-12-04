@@ -14,7 +14,7 @@ export const CardGame = ({ game, character, ...props }: CardGameProps) => (
 			{...props}
 		>
 			<Image
-				src={`/games/${game.slug}/${character}/cover.jpg`}
+				src={`/games/${game.slug}/cover/${character}.jpg`}
 				alt={game.name}
 				width={300}
 				height={300}

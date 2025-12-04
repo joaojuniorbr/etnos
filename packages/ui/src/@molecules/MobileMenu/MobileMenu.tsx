@@ -4,6 +4,7 @@ import {
 	RiUserLine,
 	RiUserHeartLine,
 	RiHomeLine,
+	RiGameLine,
 } from 'react-icons/ri';
 import { CharacterInterface, UserProfileInterface } from '@etnos/tools';
 import { Image } from 'antd';
@@ -97,6 +98,13 @@ export const MobileMenu = ({
 									label: <a href='/estudante'>Área do Estudante</a>,
 									icon: <RiUserLine />,
 								},
+								selectedCharacter
+									? {
+											key: 'games',
+											label: <a href='/estudante/jogos'>Jogos</a>,
+											icon: <RiGameLine />,
+										}
+									: null,
 								{
 									key: 'profile',
 									label: <a href='/estudante/perfil'>Perfil</a>,

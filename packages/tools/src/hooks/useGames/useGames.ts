@@ -10,10 +10,12 @@ export interface GameInterface {
 
 export enum GamesEnum {
 	MEMORY_GAME = 'memory-game',
+	GUESS_GAME = 'guess-game',
 }
 
 export enum GameNameEnum {
 	'memory-game' = 'Jogo da Memória',
+	'guess-game' = 'Adivinhe',
 }
 
 const GamesContent = [
@@ -23,6 +25,13 @@ const GamesContent = [
 		description:
 			'Encontre os pares e descubra símbolos culturais do Brasil enquanto exercita sua memória de forma divertida e educativa!',
 		url: '/estudante/jogos/jogo-da-memoria',
+	},
+	{
+		name: GameNameEnum['guess-game'],
+		slug: GamesEnum.GUESS_GAME,
+		description:
+			'Encontre a palavra, digite uma letra de cada vez, teste suas habilidades de adivinhação e desvenda os segredos culturais do Brasil!',
+		url: '/estudante/jogos/advinhe',
 	},
 ];
 

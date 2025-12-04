@@ -1,0 +1,358 @@
+'use client';
+
+import { Button, Divider, Input, Spin } from 'antd';
+import Image from 'next/image';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	RiInformationLine,
+	RiTrophyLine,
+	RiCheckDoubleLine,
+	RiStarFill,
+} from 'react-icons/ri';
+import { FinishGame } from '../FinishGame';
+import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
+import {
+	GuessGameContent,
+	GuessGameContentInterface,
+} from './GuessGameContent';
+import { ScoreHighlight } from '../ScoreHighlight';
+import { useUser } from '@etnos/ui';
+
+const CHARACTER_DEFAULT = '•';
+
+const TOTAL_GUESS = 10;
+
+export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
+	const [word, setWord] = useState('');
+	const [content, setContent] = useState<GuessGameContentInterface>();
+
+	const { selectedCharacter } = useCharacter();
+	const [isLoading, setIsLoading] = useState(false);
+
+	const [guesses, setGuesses] = useState<string>('');
+
+	const [attempt, setAttempt] = useState<string>('');
+
+	const [countTips, setCountTips] = useState<number>(0);
+	const [countGuess, setCountGuess] = useState<number>(0);
+	const [score, setScore] = useState<number>(0);
+
+	const [isFinished, setIsFinished] = useState(false);
+	const [isLoser, setIsLoser] = useState(false);
+
+	const { user } = useUser();
+	const { saveGameScore } = useGames(user?.uid);
+
+	const {
+		data: scoreGame,
+		refetch: scoreGameRefetch,
+		isLoading: scoreIsLoading,
+	} = useGameScore(
+		user?.uid ?? '',
+		GamesEnum.GUESS_GAME,
+		characterSlug ?? selectedCharacter?.slug ?? ''
+	);
+
+	const sounds = {
+		flip: {
+			source: '/games/sounds/flap.mp3',
+			ref: useRef<HTMLAudioElement | null>(null),
+		},
+		success: {
+			source: '/games/sounds/success.mp3',
+			ref: useRef<HTMLAudioElement | null>(null),
+		},
+		error: {
+			source: '/games/sounds/error.mp3',
+			ref: useRef<HTMLAudioElement | null>(null),
+		},
+		finish: {
+			source: '/games/sounds/finish.mp3',
+			ref: useRef<HTMLAudioElement | null>(null),
+		},
+	};
+
+	const playSound = (sound: keyof typeof sounds) => {
+		const audio = sounds[sound].ref.current;
+		if (audio) {
+			audio.currentTime = 0;
+			audio.play();
+		}
+	};
+
+	const checkGuess = (guess: string) => {
+		const letter = guess.toLowerCase();
+
+		const tempWord = word.toLocaleLowerCase();
+
+		if (!tempWord.includes(letter)) {
+			playSound('error');
+			handleAddGuess();
+			return;
+		}
+
+		playSound('flip');
+
+		const newGuesses = guesses.split('');
+
+		for (let i = 0; i < tempWord.length; i++) {
+			if (tempWord[i] === letter) {
+				newGuesses[i] = letter.toLocaleUpperCase();
+			}
+		}
+
+		setScore((prev) => prev + 10);
+
+		const updated = newGuesses.join('');
+		setGuesses(updated);
+
+		if (!updated.toLowerCase().includes(CHARACTER_DEFAULT)) {
+			handleSuccess();
+		}
+	};
+
+	const checkWord = () => {
+		if (attempt.toLowerCase() === word.toLowerCase()) {
+			handleSuccess();
+		} else {
+			handleAddGuess();
+			playSound('error');
+		}
+	};
+
+	const getTips = () => {
+		if (content && countTips < content?.tips.length) {
+			setCountTips(countTips + 1);
+		} else {
+			playSound('error');
+		}
+	};
+
+	const handleAddGuess = () => {
+		if (TOTAL_GUESS > countGuess) {
+			setCountGuess(countGuess + 1);
+			setScore((prev) => Math.max(prev - 5, 0));
+		} else {
+			setIsLoser(true);
+			setIsFinished(true);
+		}
+	};
+
+	const handleSuccess = () => {
+		const total = word.length;
+		const revealed = guesses
+			.split('')
+			.filter((c) => c !== CHARACTER_DEFAULT).length;
+		const percentage = (revealed / total) * 100;
+
+		let bonus = 0;
+
+		if (percentage >= 80) bonus = 50;
+		else if (percentage >= 50) bonus = 30;
+		else bonus = 10;
+
+		setScore((prev) => prev + bonus);
+
+		setGuesses(word);
+		playSound('finish');
+		setIsFinished(true);
+	};
+
+	const handleRestart = () => {
+		setIsFinished(false);
+		setGuesses('');
+		setScore(0);
+		setCountGuess(0);
+		setCountTips(0);
+		setIsLoser(false);
+		startContent();
+	};
+
+	const handleSaveScore = async () => {
+		setIsLoading(true);
+
+		if (!user?.uid || !selectedCharacter?.slug) return;
+
+		await saveGameScore(GamesEnum.GUESS_GAME, selectedCharacter.slug, score);
+
+		setIsLoading(false);
+
+		scoreGameRefetch();
+	};
+
+	const startContent = useCallback(() => {
+		setIsLoading(true);
+
+		scoreGameRefetch();
+
+		setAttempt('');
+		setCountTips(0);
+
+		const characterContent =
+			GuessGameContent[
+				selectedCharacter?.slug as keyof typeof GuessGameContent
+			];
+
+		if (characterContent) {
+			const selectContent =
+				characterContent[Math.floor(Math.random() * characterContent.length)];
+
+			if (selectContent) {
+				setContent(selectContent);
+				setWord(selectContent.word);
+				setGuesses(CHARACTER_DEFAULT.repeat(selectContent.word.length));
+			}
+		}
+
+		setIsLoading(false);
+	}, [selectedCharacter, scoreGameRefetch]);
+
+	useEffect(() => {
+		startContent();
+	}, [startContent]);
+
+	return (
+		<Spin spinning={isLoading || scoreIsLoading}>
+			<audio ref={sounds.flip.ref} src={sounds.flip.source} preload='auto' />
+			<audio
+				ref={sounds.success.ref}
+				src={sounds.success.source}
+				preload='auto'
+			/>
+			<audio ref={sounds.error.ref} src={sounds.error.source} preload='auto' />
+			<audio
+				ref={sounds.finish.ref}
+				src={sounds.finish.source}
+				preload='auto'
+			/>
+
+			{isFinished ? (
+				<FinishGame
+					selectedCharacter={selectedCharacter}
+					handleRestart={handleRestart}
+					isLoading={isLoading}
+					handleSaveScore={handleSaveScore}
+					isLoser={isLoser}
+				/>
+			) : (
+				<>
+					<h1 className='text-2xl mb-4 font-bold uppercase text-primary text-center'>
+						Jogo Adivinhe a Palavra
+					</h1>
+
+					<Divider />
+
+					<div className='grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full'>
+						<ScoreHighlight
+							icon={<RiTrophyLine />}
+							label='Pontuação'
+							score={score}
+							className='border-primary text-primary  bg-white'
+						/>
+						<ScoreHighlight
+							icon={<RiInformationLine />}
+							label='Dicas'
+							score={(content?.tips.length ?? 0) - countTips}
+							className='border-blue-800 text-blue-800 bg-white'
+						/>
+						<ScoreHighlight
+							icon={<RiCheckDoubleLine />}
+							label='Tentativas'
+							score={TOTAL_GUESS - countGuess}
+							className='border-green-800 text-green-800 bg-white'
+						/>
+						<ScoreHighlight
+							icon={<RiStarFill />}
+							label='Recorde'
+							score={scoreGame?.score ?? 0}
+							className='bg-primary text-white'
+						/>
+					</div>
+
+					<Divider />
+
+					<dl className='mb-4'>
+						<dt className='font-bold uppercase text-lg mb-1'>Dicas</dt>
+						<dd>
+							<ul>
+								{content?.tips.map((tip, index) => (
+									<li key={index}>
+										{countTips > index && (
+											<div className='flex gap-1 items-center text-sm'>
+												<span className='text-orange-400 text-xl'>
+													<RiInformationLine />
+												</span>
+												{tip}
+											</div>
+										)}
+									</li>
+								))}
+							</ul>
+						</dd>
+					</dl>
+
+					<Button
+						type='primary'
+						icon={<RiInformationLine />}
+						onClick={getTips}
+						disabled={content && countTips >= content?.tips.length}
+					>
+						Pedir uma dica
+					</Button>
+
+					<Divider />
+
+					{content && (
+						<div className='mb-6 flex justify-center'>
+							<Image
+								src={content?.image}
+								alt={content?.word}
+								width={300}
+								height={300}
+							/>
+						</div>
+					)}
+
+					<div className='text-center'>
+						<Input.OTP
+							disabled
+							length={word.length}
+							size='large'
+							value={guesses}
+						/>
+					</div>
+
+					<Divider />
+
+					<div className='flex gap-2 items-center justify-center'>
+						<span className='font-bold text-xl uppercase'>
+							Escolha uma letra
+						</span>
+						<Input.OTP
+							formatter={(str) => str.toUpperCase()}
+							length={1}
+							size='large'
+							onChange={checkGuess}
+						/>
+					</div>
+
+					<Divider />
+
+					<div className='text-center flex flex-col gap-2 justify-center items-center'>
+						<Input.OTP
+							formatter={(str) => str.toUpperCase()}
+							length={word.length}
+							size='large'
+							value={attempt}
+							onChange={setAttempt}
+						/>
+
+						<Button type='primary' onClick={checkWord}>
+							VERIFICAR
+						</Button>
+					</div>
+				</>
+			)}
+		</Spin>
+	);
+};

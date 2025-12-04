@@ -10,7 +10,7 @@ import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
 import { Button, useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScoreHighlight } from './ScoreHighlight';
+import { ScoreHighlight } from '../ScoreHighlight';
 import { Spin } from 'antd';
 import { getCards } from './MemoryGameContent';
 
@@ -56,19 +56,19 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const sounds = {
 		flip: {
-			source: `/games/${GAME_SLUG}/flap.mp3`,
+			source: `/games/sounds/flap.mp3`,
 			ref: useRef<HTMLAudioElement | null>(null),
 		},
 		success: {
-			source: `/games/${GAME_SLUG}/success.mp3`,
+			source: `/games/sounds/success.mp3`,
 			ref: useRef<HTMLAudioElement | null>(null),
 		},
 		error: {
-			source: `/games/${GAME_SLUG}/error.mp3`,
+			source: `/games/sounds/error.mp3`,
 			ref: useRef<HTMLAudioElement | null>(null),
 		},
 		finish: {
-			source: `/games/${GAME_SLUG}/finish.mp3`,
+			source: `/games/sounds/finish.mp3`,
 			ref: useRef<HTMLAudioElement | null>(null),
 		},
 	};

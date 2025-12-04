@@ -17,7 +17,7 @@
 		"./styles.css": "./dist/index.css"
 	},
 	"scripts": {
-		"dev": "tsc --watch",
+		"dev": "tsc --watch && npm run build:styles",
 		"lint": "eslint .",
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
 		"build": "npm run build:styles && npm run build:components",

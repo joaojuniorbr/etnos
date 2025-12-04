@@ -13,7 +13,7 @@ export const GameSelect = () => {
 	}
 
 	return (
-		<div className='flex justify-center'>
+		<div className='flex flex-col md:flex-row justify-center gap-4'>
 			{allGames.map((game) => (
 				<CardGame
 					key={game.slug}

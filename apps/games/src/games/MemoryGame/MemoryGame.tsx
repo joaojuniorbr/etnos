@@ -10,9 +10,9 @@ import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
 import { Button, useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScoreHighlight } from '../ScoreHighlight';
 import { Spin } from 'antd';
 import { getCards } from './MemoryGameContent';
+import { ScoreHighlight } from '../../components';
 
 type CardData = {
 	name: string;

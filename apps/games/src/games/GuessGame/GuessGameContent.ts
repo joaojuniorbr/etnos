@@ -846,14 +846,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 	zeca: [
 		{
 			word: 'Arte',
-			image: 'apps/web/public/games/memory-game/zeca/cards/artesanato.jpg',
+			image: '/games/memory-game/zeca/cards/artesanato.jpg',
 			tips: ['Sou criativa.', 'Sou feita à mão.', 'Sou muito colorida.'],
 			about:
 				'A arte é feita com criatividade e pode usar materiais simples, como madeira e barro.',
 		},
 		{
 			word: 'Barro',
-			image: 'apps/web/public/games/memory-game/zeca/cards/artesanato.jpg',
+			image: '/games/memory-game/zeca/cards/artesanato.jpg',
 			tips: ['Sou mole.', 'Viro objetos.', 'Sou usado no artesanato.'],
 			about:
 				'O barro é usado por artesãos para criar potes, bonecos e esculturas.',
@@ -861,30 +861,28 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Baiana',
-			image: 'apps/web/public/games/memory-game/zeca/cards/baiana.jpg',
+			image: '/games/memory-game/zeca/cards/baiana.jpg',
 			tips: ['Uso vestido grande.', 'Tenho turbante.', 'Sou símbolo da Bahia.'],
 			about:
 				'A baiana usa roupas coloridas e é símbolo da cultura e da culinária da Bahia.',
 		},
 		{
 			word: 'Vestido',
-			image: 'apps/web/public/games/memory-game/zeca/cards/baiana.jpg',
+			image: '/games/memory-game/zeca/cards/baiana.jpg',
 			tips: ['Sou rodado.', 'Sou colorido.', 'Sou usado pela baiana.'],
 			about: 'O vestido da baiana é largo e cheio de cores, muito tradicional.',
 		},
 
 		{
 			word: 'Boneco',
-			image:
-				'apps/web/public/games/memory-game/zeca/cards/boneco-de-olinda.jpg',
+			image: '/games/memory-game/zeca/cards/boneco-de-olinda.jpg',
 			tips: ['Sou gigante.', 'Desfilo no carnaval.', 'Sou muito colorido.'],
 			about:
 				'O boneco gigante é um personagem alto e divertido que aparece no carnaval de Olinda.',
 		},
 		{
 			word: 'Olinda',
-			image:
-				'apps/web/public/games/memory-game/zeca/cards/boneco-de-olinda.jpg',
+			image: '/games/memory-game/zeca/cards/boneco-de-olinda.jpg',
 			tips: [
 				'Sou uma cidade.',
 				'Fico em Pernambuco.',
@@ -896,7 +894,7 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Cangaço',
-			image: 'apps/web/public/games/memory-game/zeca/cards/cangaco.jpg',
+			image: '/games/memory-game/zeca/cards/cangaco.jpg',
 			tips: [
 				'Sou parte da história.',
 				'Uso chapéu de couro.',
@@ -907,7 +905,7 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 		},
 		{
 			word: 'Couro',
-			image: 'apps/web/public/games/memory-game/zeca/cards/cangaco.jpg',
+			image: '/games/memory-game/zeca/cards/cangaco.jpg',
 			tips: ['Sou resistente.', 'Viro chapéu.', 'Sou usado no cangaço.'],
 			about:
 				'O couro é um material forte usado para fazer roupas e acessórios do sertão.',
@@ -915,14 +913,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Capoeira',
-			image: 'apps/web/public/games/memory-game/zeca/cards/capoeira.jpg',
+			image: '/games/memory-game/zeca/cards/capoeira.jpg',
 			tips: ['Sou uma luta.', 'Tenho música.', 'Sou cheia de movimentos.'],
 			about:
 				'A capoeira mistura luta, dança e música, criada por povos africanos no Brasil.',
 		},
 		{
 			word: 'Roda',
-			image: 'apps/web/public/games/memory-game/zeca/cards/capoeira.jpg',
+			image: '/games/memory-game/zeca/cards/capoeira.jpg',
 			tips: [
 				'Sou em círculo.',
 				'A capoeira acontece em mim.',
@@ -934,7 +932,7 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Feira',
-			image: 'apps/web/public/games/memory-game/zeca/cards/caruaru.jpg',
+			image: '/games/memory-game/zeca/cards/caruaru.jpg',
 			tips: [
 				'Sou movimentada.',
 				'Vendo muitas coisas.',
@@ -945,7 +943,7 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 		},
 		{
 			word: 'Caruaru',
-			image: 'apps/web/public/games/memory-game/zeca/cards/caruaru.jpg',
+			image: '/games/memory-game/zeca/cards/caruaru.jpg',
 			tips: [
 				'Sou uma cidade.',
 				'Fico em Pernambuco.',
@@ -957,14 +955,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Prato',
-			image: 'apps/web/public/games/memory-game/zeca/cards/comida.jpg',
+			image: '/games/memory-game/zeca/cards/comida.jpg',
 			tips: ['Seguro comida.', 'Fico na mesa.', 'Sou redondo.'],
 			about:
 				'O prato é onde a comida é servida, podendo ter sabores típicos do Nordeste.',
 		},
 		{
 			word: 'Sabor',
-			image: 'apps/web/public/games/memory-game/zeca/cards/comida.jpg',
+			image: '/games/memory-game/zeca/cards/comida.jpg',
 			tips: [
 				'Sou gostoso.',
 				'Mudo conforme o prato.',
@@ -976,14 +974,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Fogueira',
-			image: 'apps/web/public/games/memory-game/zeca/cards/festa-junina.jpg',
+			image: '/games/memory-game/zeca/cards/festa-junina.jpg',
 			tips: ['Sou de madeira.', 'Sou acesa na festa.', 'Sou bem quentinha.'],
 			about:
 				'A fogueira é acesa nas festas juninas para iluminar e animar a celebração.',
 		},
 		{
 			word: 'Bandeira',
-			image: 'apps/web/public/games/memory-game/zeca/cards/festa-junina.jpg',
+			image: '/games/memory-game/zeca/cards/festa-junina.jpg',
 			tips: ['Sou colorida.', 'Sou triangular.', 'Decoro festas.'],
 			about:
 				'As bandeirinhas são usadas para enfeitar as festas juninas com muitas cores.',
@@ -991,14 +989,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Olodum',
-			image: 'apps/web/public/games/memory-game/zeca/cards/olodum.jpg',
+			image: '/games/memory-game/zeca/cards/olodum.jpg',
 			tips: ['Sou um grupo musical.', 'Uso tambores.', 'Sou da Bahia.'],
 			about:
 				'O Olodum é um grupo musical baiano que usa tambores e ritmos africanos.',
 		},
 		{
 			word: 'Tambor',
-			image: 'apps/web/public/games/memory-game/zeca/cards/olodum.jpg',
+			image: '/games/memory-game/zeca/cards/olodum.jpg',
 			tips: [
 				'Sou tocado com a mão.',
 				'Faço tum-tum.',
@@ -1010,14 +1008,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Sertão',
-			image: 'apps/web/public/games/memory-game/zeca/cards/sertao.jpg',
+			image: '/games/memory-game/zeca/cards/sertao.jpg',
 			tips: ['Sou quente.', 'Sou do Nordeste.', 'Tenho paisagens secas.'],
 			about:
 				'O sertão é uma região quente e seca do Nordeste, cheia de cultura e histórias.',
 		},
 		{
 			word: 'Mandacaru',
-			image: 'apps/web/public/games/memory-game/zeca/cards/sertao.jpg',
+			image: '/games/memory-game/zeca/cards/sertao.jpg',
 			tips: ['Sou um cacto.', 'Tenho espinhos.', 'Vivo no sertão.'],
 			about:
 				'O mandacaru é um cacto alto que cresce no sertão e resiste ao calor.',
@@ -1025,13 +1023,13 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Teatro',
-			image: 'apps/web/public/games/memory-game/zeca/cards/teatro.jpg',
+			image: '/games/memory-game/zeca/cards/teatro.jpg',
 			tips: ['Tenho atores.', 'Conto histórias.', 'Sou apresentado no palco.'],
 			about: 'O teatro é onde artistas interpretam histórias para o público.',
 		},
 		{
 			word: 'Palco',
-			image: 'apps/web/public/games/memory-game/zeca/cards/teatro.jpg',
+			image: '/games/memory-game/zeca/cards/teatro.jpg',
 			tips: [
 				'Fico na frente.',
 				'Atores sobem em mim.',
@@ -1042,14 +1040,14 @@ export const GuessGameContent: Record<string, GuessGameContentInterface[]> = {
 
 		{
 			word: 'Vaquejada',
-			image: 'apps/web/public/games/memory-game/zeca/cards/vaquejada.jpg',
+			image: '/games/memory-game/zeca/cards/vaquejada.jpg',
 			tips: ['Sou um esporte.', 'Tenho cavalos.', 'Sou do Nordeste.'],
 			about:
 				'A vaquejada é uma tradição nordestina com cavalos e habilidade dos vaqueiros.',
 		},
 		{
 			word: 'Vaqueiro',
-			image: 'apps/web/public/games/memory-game/zeca/cards/vaquejada.jpg',
+			image: '/games/memory-game/zeca/cards/vaquejada.jpg',
 			tips: ['Ando a cavalo.', 'Uso chapéu.', 'Sou do sertão.'],
 			about: 'O vaqueiro é quem cuida do gado e participa das vaquejadas.',
 		},

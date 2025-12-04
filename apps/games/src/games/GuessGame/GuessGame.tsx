@@ -9,14 +9,15 @@ import {
 	RiCheckDoubleLine,
 	RiStarFill,
 } from 'react-icons/ri';
-import { FinishGame } from '../FinishGame';
+
 import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
 import {
 	GuessGameContent,
 	GuessGameContentInterface,
 } from './GuessGameContent';
-import { ScoreHighlight } from '../ScoreHighlight';
+
 import { useUser } from '@etnos/ui';
+import { FinishGame, ScoreHighlight } from '../../components';
 
 const CHARACTER_DEFAULT = '•';
 
@@ -72,6 +73,12 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 		},
 	};
 
+	const normalize = (str: string) =>
+		str
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase();
+
 	const playSound = (sound: keyof typeof sounds) => {
 		const audio = sounds[sound].ref.current;
 		if (audio) {
@@ -81,9 +88,9 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	};
 
 	const checkGuess = (guess: string) => {
-		const letter = guess.toLowerCase();
+		const letter = normalize(guess);
 
-		const tempWord = word.toLocaleLowerCase();
+		const tempWord = normalize(word);
 
 		if (!tempWord.includes(letter)) {
 			playSound('error');
@@ -95,9 +102,9 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 		const newGuesses = guesses.split('');
 
-		for (let i = 0; i < tempWord.length; i++) {
-			if (tempWord[i] === letter) {
-				newGuesses[i] = letter.toLocaleUpperCase();
+		for (let i = 0; i < word.length; i++) {
+			if (word[i] && normalize(word[i] as string) === letter) {
+				newGuesses[i] = word[i]?.toUpperCase() as string;
 			}
 		}
 
@@ -106,13 +113,13 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 		const updated = newGuesses.join('');
 		setGuesses(updated);
 
-		if (!updated.toLowerCase().includes(CHARACTER_DEFAULT)) {
+		if (!normalize(updated).includes(normalize(CHARACTER_DEFAULT))) {
 			handleSuccess();
 		}
 	};
 
 	const checkWord = () => {
-		if (attempt.toLowerCase() === word.toLowerCase()) {
+		if (normalize(attempt) === normalize(word)) {
 			handleSuccess();
 		} else {
 			handleAddGuess();

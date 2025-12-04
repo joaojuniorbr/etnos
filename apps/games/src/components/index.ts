@@ -1,2 +1,2 @@
-export * from './MemoryGame';
-export * from './GuessGame';
+export * from './FinishGame';
+export * from './ScoreHighlight';

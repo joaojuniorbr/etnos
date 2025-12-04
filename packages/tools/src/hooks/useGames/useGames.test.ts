@@ -32,6 +32,13 @@ describe('useGames hook', () => {
 					'Encontre os pares e descubra símbolos culturais do Brasil enquanto exercita sua memória de forma divertida e educativa!',
 				url: '/estudante/jogos/jogo-da-memoria',
 			},
+			{
+				description:
+					'Encontre a palavra, digite uma letra de cada vez, teste suas habilidades de adivinhação e desvenda os segredos culturais do Brasil!',
+				name: 'Adivinhe',
+				slug: 'guess-game',
+				url: '/estudante/jogos/advinhe',
+			},
 		]);
 	});
 

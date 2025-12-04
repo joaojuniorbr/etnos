@@ -16,6 +16,19 @@ vi.mock('firebase/app', () => {
 	};
 });
 
+class MockGoogleAuthProvider {
+	// Propriedades são necessárias para o TypeScript/IntelliSense, mas o constructor as define.
+	addScope;
+	setCustomParameters;
+	provider;
+	constructor() {
+		// Mocks das funções que são chamadas na instância
+		this.addScope = vi.fn();
+		this.setCustomParameters = vi.fn();
+		this.provider = vi.fn();
+	}
+}
+
 vi.mock('firebase/auth', () => {
 	return {
 		getAuth: vi.fn(() => ({ auth: 'mocked-auth' })),
@@ -30,6 +43,10 @@ vi.mock('firebase/auth', () => {
 		}),
 		createUserWithEmailAndPassword: vi.fn(() =>
 			Promise.resolve({ user: { uid: '456', email: 'new@test.com' } })
+		),
+		GoogleAuthProvider: MockGoogleAuthProvider,
+		signInWithPopup: vi.fn(() =>
+			Promise.resolve({ user: { uid: '123', email: 'test@test.com' } })
 		),
 	};
 });

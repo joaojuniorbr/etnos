@@ -41,3 +41,13 @@ export const createUserWithEmailAndPassword = async (
 ) => ({
 	user: { uid: 'new-mock-uid', email, password },
 });
+
+export const signInWithPopup = async (_auth: any, _provider: any) => ({
+	user: {
+		uid: 'mock-uid',
+		email: 'mock@example.com',
+		displayName: 'Usuário Mock',
+	},
+});
+
+export class GoogleAuthProvider {}

@@ -64,6 +64,25 @@ describe('gamesService', () => {
 		});
 	});
 
+	it('deve retornar null específico de um jogo/personagem/usuário', async () => {
+		const docs = [
+			{
+				data: () =>
+					({
+						slug: 'game1',
+						characterSlug: 'iara',
+						userId: 'user123',
+						score: 100,
+					}) as ScoreInterface,
+			},
+		];
+		(getDocs as any).mockResolvedValue({ docs });
+
+		const result = await gamesService.getFromGameScore('game1', 'iara', '');
+
+		expect(result).toEqual(null);
+	});
+
 	it('deve atualizar score usando scoreDoc.ref quando existe', async () => {
 		const existingDoc = {
 			data: () => ({

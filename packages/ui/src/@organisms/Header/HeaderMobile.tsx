@@ -43,7 +43,7 @@ export const HeaderMobile = () => {
 			>
 				<div className='ui:flex ui:flex-col ui:gap-2'>
 					{characters.map((character) => (
-						<div
+						<button
 							key={character.slug}
 							className={`
 								ui:flex ui:items-center ui:gap-2 ui:border ui:p-2 ui:rounded ui:cursor-pointer  
@@ -64,7 +64,7 @@ export const HeaderMobile = () => {
 								</div>
 								<div className='ui:text-xs'>{character.description}</div>
 							</div>
-						</div>
+						</button>
 					))}
 				</div>
 			</Modal>

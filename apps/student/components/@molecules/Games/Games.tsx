@@ -13,7 +13,7 @@ export const Games = ({
 		case 'memory-game':
 			return <MemoryGame characterSlug={characterSlug} />;
 		case 'guess-game':
-			return <GuessGame />;
+			return <GuessGame characterSlug={characterSlug} />;
 		default:
 			return null;
 	}

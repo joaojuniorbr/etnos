@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useAuth, UserProfileInterface } from '@etnos/tools';
 interface UserContextType {
 	user: UserProfileInterface | null;
@@ -20,9 +20,9 @@ export const useUser = () => {
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = useAuth();
 
-	return (
-		<UserContext.Provider value={{ user, isLoading }}>
-			{children}
-		</UserContext.Provider>
-	);
+	const value = useMemo(() => {
+		return { user, isLoading };
+	}, [user, isLoading]);
+
+	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

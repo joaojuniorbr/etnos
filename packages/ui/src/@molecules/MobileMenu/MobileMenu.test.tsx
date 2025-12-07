@@ -36,6 +36,12 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={mockUser}
 				onLogout={() => {}}
+				selectedCharacter={{
+					slug: 'iara',
+					name: 'Iara',
+					description: 'Teste de Funcionamento',
+					region: 'norte',
+				}}
 			/>
 		);
 

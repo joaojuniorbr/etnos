@@ -21,7 +21,7 @@ import { FinishGame, ScoreHighlight } from '../../components';
 
 const CHARACTER_DEFAULT = '•';
 
-const TOTAL_GUESS = 3;
+const TOTAL_GUESS = 10;
 
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [word, setWord] = useState('');
@@ -271,7 +271,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			{isFinished ? (
 				<>
 					<div className='text-xl uppercase text-center mb-10 flex items-center justify-center gap-2'>
-						A palavra correta é:
+						A palavra correta é: &nbsp;
 						<span className='text-primary underline text-2xl font-bold'>
 							{content?.word}
 						</span>
@@ -291,7 +291,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 						<dd>
 							<ul>
 								{content?.tips.map((tip, index) => (
-									<li key={index}>
+									<li key={tip}>
 										{countTips > index && (
 											<div className='flex gap-1 items-center text-sm'>
 												<span className='text-orange-400 text-xl'>

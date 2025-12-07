@@ -34,7 +34,7 @@ export default async function GuessGamePage({
 			/>
 
 			<div className='p-4 bg-white border border-slate-200 shadow rounded mt-6'>
-				<Games type='guess-game' />
+				<Games type='guess-game' characterSlug={character} />
 			</div>
 		</div>
 	);

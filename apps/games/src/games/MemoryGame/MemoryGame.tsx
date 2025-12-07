@@ -127,7 +127,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				const firstCard = newCards.find((card) => card.id === firstId);
 				const secondCard = newCards.find((card) => card.id === secondId);
 
-				let updatedCards = newCards;
+				let updatedCards;
+
 				if (firstCard?.name === secondCard?.name) {
 					updatedCards = newCards.map((card) =>
 						card.id === firstId || card.id === secondId
@@ -238,7 +239,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				) : (
 					<div className='grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 w-full'>
 						{cards.map((card) => (
-							<div
+							<button
 								key={card.id}
 								onClick={() => handleCardClick(card.id)}
 								className={`
@@ -272,7 +273,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 										className='object-cover aspect-square'
 									/>
 								</div>
-							</div>
+							</button>
 						))}
 					</div>
 				)}

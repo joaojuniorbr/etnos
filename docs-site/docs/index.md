@@ -54,5 +54,5 @@ Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
 
 ### Tipos de Desafios (Mecânicas de Jogo):
 
-- **Quizzes:** Perguntas e respostas sobre as culturas.
+- **Adivinhe a palavra:** Adivinhar as palavras dos personagens.
 - **Jogos da Memória:** Associação de conceitos, imagens ou fatos culturais.

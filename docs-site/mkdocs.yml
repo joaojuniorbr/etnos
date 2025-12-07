@@ -20,5 +20,6 @@ nav:
   - Entregas:
       - Entrega 01: 2025-p1.md
       - Entrega 02: 2025-p2.md
+      - Wipex: 2025-wipex.md
 
 site_dir: ../site

@@ -8,6 +8,7 @@ import {
 	sendPasswordResetEmail,
 	createUserWithEmailAndPassword,
 	onAuthStateChanged,
+	signInWithPopup,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -297,5 +298,38 @@ describe('useAuth hook', () => {
 			expect(result.current.user).toBeNull();
 			expect(result.current.isLoading).toBe(false);
 		});
+	});
+
+	it('deve fazer login com Google com sucesso, setar o usuário e retornar o usuário', async () => {
+		const { result } = renderHook(() => useAuth());
+		const googleUser = { uid: 'google-uid', email: 'google@test.com' };
+
+		(signInWithPopup as any).mockResolvedValueOnce({
+			user: googleUser,
+		});
+
+		await act(async () => {
+			const user = await result.current.loginWithGoogle();
+			expect(user).toEqual(googleUser);
+		});
+
+		expect(signInWithPopup).toHaveBeenCalled();
+
+		expect(result.current.user?.email).toBe('google@test.com');
+		expect(result.current.isLoggedIn).toBe(true);
+	});
+
+	it('deve capturar erro no login com Google, logar e retornar undefined', async () => {
+		const { result } = renderHook(() => useAuth());
+		const error = new Error('Google login failed');
+
+		(signInWithPopup as any).mockRejectedValueOnce(error);
+
+		await act(async () => {
+			const user = await result.current.loginWithGoogle();
+			expect(user).toBeUndefined();
+		});
+
+		expect(result.current.user).toBeNull();
 	});
 });

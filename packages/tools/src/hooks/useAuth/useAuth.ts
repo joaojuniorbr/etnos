@@ -147,8 +147,15 @@ export const useAuth = () => {
 		setIsLoading(false);
 	};
 
-	// TODO: Adicionar uma interface para os valores
-	const onRegister = async (values: any) => {
+	const onRegister = async (values: {
+		parentEmail?: string;
+		password?: string;
+		school?: string;
+		parentName?: string;
+		parentPhone?: string;
+		childName?: string;
+		childBirthDate?: string;
+	}) => {
 		setIsLoading(true);
 		try {
 			if (!values?.parentEmail || !values?.password) {

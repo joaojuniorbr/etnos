@@ -1,0 +1,7 @@
+organization=joaojuniorbr
+projectKey=joaojuniorbr_etnos
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.77094
+dashboardUrl=https://sonarcloud.io/dashboard?id=joaojuniorbr_etnos
+ceTaskId=AZr8BD630pU3xlccRylZ
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZr8BD630pU3xlccRylZ

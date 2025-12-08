@@ -18,7 +18,7 @@ const makeQueryClient = () => {
 let browserQueryClient: QueryClient | undefined = undefined;
 
 const getQueryClient = () => {
-	if (typeof globalThis.window === 'undefined') {
+	if (globalThis.window === undefined) {
 		return makeQueryClient();
 	}
 

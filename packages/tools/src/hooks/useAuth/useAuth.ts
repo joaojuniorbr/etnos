@@ -129,6 +129,7 @@ export const useAuth = () => {
 
 			setUser({ ...user, ...profile });
 		} catch (error) {
+			console.log('Erro ao atualizar perfil', error);
 			message.error('Ocorreu um erro ao salvar seu perfil. Tente novamente.');
 		}
 	};

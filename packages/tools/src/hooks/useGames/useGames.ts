@@ -38,6 +38,13 @@ const GamesContent = [
 export const useGames = (userId?: string) => {
 	const allGames = GamesContent;
 
+	const sounds = {
+		flip: '/games/sounds/flap.mp3',
+		success: '/games/sounds/success.mp3',
+		error: '/games/sounds/error.mp3',
+		finish: '/games/sounds/finish.mp3',
+	};
+
 	const saveGameScore = (
 		slug: string,
 		characterSlug: string,
@@ -57,8 +64,21 @@ export const useGames = (userId?: string) => {
 			});
 	};
 
+	const playSound = (sound: keyof typeof sounds) => {
+		const audio = new Audio(sounds[sound]);
+
+		audio.play().catch((error) => {
+			console.warn(`Failed to play sound ${sound}:`, error);
+		});
+
+		audio.onended = () => {
+			audio.remove();
+		};
+	};
+
 	return {
 		allGames,
 		saveGameScore,
+		playSound,
 	};
 };

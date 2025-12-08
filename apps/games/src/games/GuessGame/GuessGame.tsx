@@ -2,7 +2,7 @@
 
 import { Button, Divider, Input, Spin } from 'antd';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
 	RiInformationLine,
 	RiTrophyLine,
@@ -42,7 +42,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [isLoser, setIsLoser] = useState(false);
 
 	const { user } = useUser();
-	const { saveGameScore } = useGames(user?.uid);
+	const { saveGameScore, playSound } = useGames(user?.uid);
 
 	const {
 		data: scoreGame,
@@ -54,38 +54,11 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 		characterSlug ?? selectedCharacter?.slug ?? ''
 	);
 
-	const sounds = {
-		flip: {
-			source: '/games/sounds/flap.mp3',
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		success: {
-			source: '/games/sounds/success.mp3',
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		error: {
-			source: '/games/sounds/error.mp3',
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		finish: {
-			source: '/games/sounds/finish.mp3',
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-	};
-
 	const normalize = (str: string) =>
 		str
 			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
+			.replaceAll(/[\u0300-\u036f]/g, '')
 			.toLowerCase();
-
-	const playSound = (sound: keyof typeof sounds) => {
-		const audio = sounds[sound].ref.current;
-		if (audio) {
-			audio.currentTime = 0;
-			audio.play();
-		}
-	};
 
 	const checkGuess = (guess: string) => {
 		const letter = normalize(guess);
@@ -220,19 +193,6 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	return (
 		<Spin spinning={isLoading || scoreIsLoading}>
-			<audio ref={sounds.flip.ref} src={sounds.flip.source} preload='auto' />
-			<audio
-				ref={sounds.success.ref}
-				src={sounds.success.source}
-				preload='auto'
-			/>
-			<audio ref={sounds.error.ref} src={sounds.error.source} preload='auto' />
-			<audio
-				ref={sounds.finish.ref}
-				src={sounds.finish.source}
-				preload='auto'
-			/>
-
 			<h1 className='text-2xl mb-4 font-bold uppercase text-primary text-center'>
 				Jogo Adivinhe a Palavra
 			</h1>
@@ -271,7 +231,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			{isFinished ? (
 				<>
 					<div className='text-xl uppercase text-center mb-10 flex items-center justify-center gap-2'>
-						A palavra correta é: &nbsp;
+						<span className='pr-2'>A palavra correta é:</span>
 						<span className='text-primary underline text-2xl font-bold'>
 							{content?.word}
 						</span>

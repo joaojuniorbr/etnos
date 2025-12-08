@@ -9,7 +9,7 @@ import {
 import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
 import { useUser } from '@etnos/ui';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { getCards } from './MemoryGameContent';
 import { FinishGame, ScoreHighlight } from '../../components';
@@ -42,7 +42,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const { selectedCharacter } = useCharacter();
 	const { user } = useUser();
-	const { saveGameScore } = useGames(user?.uid);
+	const { saveGameScore, playSound } = useGames(user?.uid);
 
 	const {
 		data: scoreGame,
@@ -53,25 +53,6 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		GamesEnum.MEMORY_GAME,
 		characterSlug ?? selectedCharacter?.slug ?? ''
 	);
-
-	const sounds = {
-		flip: {
-			source: `/games/sounds/flap.mp3`,
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		success: {
-			source: `/games/sounds/success.mp3`,
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		error: {
-			source: `/games/sounds/error.mp3`,
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-		finish: {
-			source: `/games/sounds/finish.mp3`,
-			ref: useRef<HTMLAudioElement | null>(null),
-		},
-	};
 
 	const cardsData = getCards(characterSlug);
 
@@ -105,10 +86,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		const clickedCard = cards.find((card) => card.id === id);
 		if (!clickedCard || clickedCard.isFlipped || clickedCard.isMatched) return;
 
-		if (sounds.flip.ref.current) {
-			sounds.flip.ref.current.currentTime = 0;
-			sounds.flip.ref.current.play();
-		}
+		playSound('flip');
 
 		const newCards = cards.map((card) =>
 			card.id === id ? { ...card, isFlipped: true } : card
@@ -135,16 +113,11 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 							? { ...card, isMatched: true }
 							: card
 					);
-					if (sounds.success.ref.current) {
-						sounds.success.ref.current.currentTime = 0;
-						sounds.success.ref.current.play();
-					}
+					playSound('success');
 					setScore((prev) => prev + 100);
 				} else {
-					if (sounds.error.ref.current) {
-						sounds.error.ref.current.currentTime = 0;
-						sounds.error.ref.current.play();
-					}
+					playSound('error');
+
 					updatedCards = newCards.map((card) =>
 						card.id === firstId || card.id === secondId
 							? { ...card, isFlipped: false }
@@ -160,10 +133,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				const allMatched = updatedCards.every((card) => card.isMatched);
 				if (allMatched) {
 					setIsFinished(true);
-					if (sounds.finish.ref.current) {
-						sounds.finish.ref.current.currentTime = 0;
-						sounds.finish.ref.current.play();
-					}
+					playSound('finish');
 				}
 			}, 1000);
 		}
@@ -192,15 +162,6 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				Jogo da Memória
 			</h1>
 			<div className='flex flex-col items-center gap-6'>
-				{Object.values(sounds).map((sound) => (
-					<audio
-						key={sound.source}
-						ref={sound.ref}
-						src={sound.source}
-						preload='auto'
-					/>
-				))}
-
 				<div className='grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full'>
 					<ScoreHighlight
 						icon={<RiTrophyLine />}

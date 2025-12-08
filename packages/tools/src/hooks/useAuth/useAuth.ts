@@ -59,6 +59,7 @@ export const useAuth = () => {
 			await signOut(authFirebase);
 			setUser(null);
 		} catch (error) {
+			console.error('Erro ao fazer logout:', error);
 			setIsLoading(false);
 		}
 	};
@@ -77,6 +78,7 @@ export const useAuth = () => {
 			setUser(result.user as UserProfileInterface);
 			return result.user;
 		} catch (error) {
+			console.error('Erro ao fazer login com email e senha:', error);
 			setIsLoading(false);
 			return null;
 		}
@@ -88,6 +90,7 @@ export const useAuth = () => {
 			await sendPasswordResetEmail(authFirebase, email);
 			setIsLoading(false);
 		} catch (error) {
+			console.error('Erro ao fazer recuperação de senha:', error);
 			setIsLoading(false);
 		}
 	};
@@ -97,10 +100,10 @@ export const useAuth = () => {
 	const cleanDataForFirestore = (data: object): object => {
 		const cleanedData: { [key: string]: any } = {};
 		for (const [key, value] of Object.entries(data)) {
-			if (value !== undefined) {
-				cleanedData[key] = value;
-			} else {
+			if (value === undefined) {
 				cleanedData[key] = null;
+			} else {
+				cleanedData[key] = value;
 			}
 		}
 		return cleanedData;
@@ -193,6 +196,7 @@ export const useAuth = () => {
 			setIsLoading(false);
 			return user;
 		} catch (error) {
+			console.error('Erro ao realizar registro', error);
 			setIsLoading(false);
 			return null;
 		}

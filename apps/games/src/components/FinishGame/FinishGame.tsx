@@ -6,7 +6,6 @@ interface FinishGameProps {
 	handleRestart: () => void;
 	isLoading: boolean;
 	handleSaveScore: () => void;
-	gameSlug?: string;
 	selectedCharacter?: CharacterInterface;
 	isLoser?: boolean;
 }
@@ -29,10 +28,10 @@ export const FinishGame = ({
 		{selectedCharacter?.slug && (
 			<div className='flex justify-center'>
 				<Image
-					src={`/games/${isLoser ? 'error' : 'success'}/${selectedCharacter?.slug}.jpg`}
+					src={`/games/${isLoser ? 'error' : 'success'}/${selectedCharacter.slug}.jpg`}
 					width={400}
 					height={400}
-					alt={selectedCharacter?.name as string}
+					alt={selectedCharacter.name}
 					className='rounded'
 				/>
 			</div>

@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default async function MemoryGamePage({
 	searchParams,
-}: {
+}: Readonly<{
 	searchParams: Promise<{ [key: string]: string | undefined }>;
-}) {
+}>) {
 	const params = await searchParams;
 	const character = params?.personagem;
 

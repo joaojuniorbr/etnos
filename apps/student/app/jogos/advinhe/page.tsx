@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default async function GuessGamePage({
 	searchParams,
-}: {
+}: Readonly<{
 	searchParams: Promise<{ [key: string]: string | undefined }>;
-}) {
+}>) {
 	const params = await searchParams;
 	const character = params?.personagem;
 

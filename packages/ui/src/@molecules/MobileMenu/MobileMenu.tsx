@@ -1,4 +1,4 @@
-import { Drawer, Button, Menu } from 'antd';
+import { Drawer, Button, Menu, Image } from 'antd';
 import {
 	RiMenu3Line,
 	RiUserLine,
@@ -7,7 +7,6 @@ import {
 	RiGameLine,
 } from 'react-icons/ri';
 import { CharacterInterface, UserProfileInterface } from '@etnos/tools';
-import { Image } from 'antd';
 
 interface MobileMenuProps {
 	open?: boolean;

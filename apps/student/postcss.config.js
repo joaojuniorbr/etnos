@@ -1,3 +1,1 @@
-import { postcssConfig } from '@etnos/tailwind-config/postcss';
-
-export default postcssConfig;
+export { postcssConfig as default } from '@etnos/tailwind-config/postcss';

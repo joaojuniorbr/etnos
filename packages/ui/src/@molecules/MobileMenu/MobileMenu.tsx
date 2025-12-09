@@ -29,7 +29,12 @@ export const MobileMenu = ({
 
 	return (
 		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
-			<Button onClick={toggleDrawer} icon={<RiMenu3Line />} type='primary' />
+			<Button
+				onClick={toggleDrawer}
+				icon={<RiMenu3Line />}
+				type='primary'
+				aria-label='Menu'
+			/>
 			<Drawer
 				open={open}
 				onClose={toggleDrawer}
@@ -82,6 +87,7 @@ export const MobileMenu = ({
 								<button
 									className='ui:text-xs ui:text-primary ui:uppercase ui:underline'
 									onClick={toggleCharacter}
+									aria-label='Alterar Personagem'
 								>
 									Alterar Personagem
 								</button>

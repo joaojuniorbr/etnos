@@ -4,6 +4,19 @@ import { useGames } from './';
 import { message } from 'antd';
 import { gamesService } from '../../services';
 
+class MockAudio {
+	src: string;
+	play = vi.fn().mockResolvedValue(undefined);
+	remove = vi.fn();
+	onended: (() => void) | null = null;
+
+	constructor(src: string) {
+		this.src = src;
+	}
+}
+
+vi.stubGlobal('Audio', MockAudio);
+
 vi.mock('antd', () => ({
 	message: {
 		success: vi.fn(),
@@ -18,8 +31,29 @@ vi.mock('../../services', () => ({
 }));
 
 describe('useGames hook', () => {
+	let instances: any[] = [];
+
+	class MockAudio {
+		src: string;
+		play = vi.fn().mockResolvedValue(undefined);
+		remove = vi.fn();
+		onended: (() => void) | null = null;
+
+		constructor(src: string) {
+			this.src = src;
+			instances.push(this);
+		}
+	}
+
 	beforeEach(() => {
+		instances = [];
+
 		vi.clearAllMocks();
+
+		Object.defineProperty(global, 'Audio', {
+			value: MockAudio,
+			configurable: true,
+		});
 	});
 
 	it('deve retornar todos os jogos', () => {
@@ -84,5 +118,21 @@ describe('useGames hook', () => {
 
 		expect(gamesService.saveScore).toHaveBeenCalled();
 		expect(message.error).toHaveBeenCalledWith('Erro ao salvar pontuação!');
+	});
+
+	it('deve tocar o som correto ao chamar playSound()', () => {
+		const { playSound } = useGames();
+
+		playSound('flip');
+
+		const instance = instances[0];
+
+		expect(instance).toBeTruthy();
+		expect(instance.src).toBe('/games/sounds/flap.mp3');
+		expect(instance.play).toHaveBeenCalled();
+
+		instance.onended?.();
+
+		expect(instance.remove).toHaveBeenCalled();
 	});
 });

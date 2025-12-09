@@ -2,11 +2,13 @@
 
 import { MemoryGame, GuessGame } from '@etnos/games';
 
+export type GameType = 'memory-game' | 'guess-game';
+
 export const Games = ({
 	type,
 	characterSlug,
 }: {
-	type: 'memory-game' | 'guess-game';
+	type: GameType;
 	characterSlug?: string;
 }) => {
 	switch (type) {

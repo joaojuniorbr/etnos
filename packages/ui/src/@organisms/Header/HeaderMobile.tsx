@@ -50,6 +50,7 @@ export const HeaderMobile = () => {
 								${selectedCharacter?.slug === character.slug ? 'ui:border-primary' : 'ui:border-slate-200'}
 							`}
 							onClick={() => handleCharacter(character.slug)}
+							aria-label={`Selecionar Personagem: ${character.name}`}
 						>
 							<div className='ui:w-26'>
 								<Image

@@ -67,9 +67,7 @@ export const useGames = (userId?: string) => {
 	const playSound = (sound: keyof typeof sounds) => {
 		const audio = new Audio(sounds[sound]);
 
-		audio.play().catch((error) => {
-			console.warn(`Failed to play sound ${sound}:`, error);
-		});
+		audio.play();
 
 		audio.onended = () => {
 			audio.remove();

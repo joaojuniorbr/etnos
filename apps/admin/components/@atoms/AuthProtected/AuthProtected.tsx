@@ -7,7 +7,8 @@ export const AuthProtected = ({ children }: { children: React.ReactNode }) => {
 	const { user, isLoading } = useAuth();
 
 	if (!isLoading && !user) {
-		window.location.href = '/login';
+		globalThis.location.href = '/login';
+		return null;
 	}
 
 	return <Spin spinning={isLoading}>{children}</Spin>;

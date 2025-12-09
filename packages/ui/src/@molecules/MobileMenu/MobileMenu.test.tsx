@@ -84,7 +84,10 @@ describe('MobileMenu', () => {
 			/>
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: '' }));
+		const menuButton = screen.getByRole('button', { name: /menu/i });
+
+		fireEvent.click(menuButton);
+
 		expect(toggleDrawer).toHaveBeenCalled();
 	});
 

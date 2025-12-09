@@ -19,6 +19,8 @@ import {
 import { useUser } from '@etnos/ui';
 import { FinishGame, ScoreHighlight } from '../../components';
 
+const { OTP: InputOtp } = Input;
+
 const CHARACTER_DEFAULT = '•';
 
 const TOTAL_GUESS = 10;
@@ -289,7 +291,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 					)}
 
 					<div className='text-center'>
-						<Input.OTP
+						<InputOtp
 							disabled
 							length={word.length}
 							size='large'
@@ -303,7 +305,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 						<span className='font-bold text-xl uppercase'>
 							Escolha uma letra
 						</span>
-						<Input.OTP
+						<InputOtp
 							formatter={(str) => str.toUpperCase()}
 							length={1}
 							size='large'
@@ -314,7 +316,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 					<Divider />
 
 					<div className='text-center flex flex-col gap-2 justify-center items-center'>
-						<Input.OTP
+						<InputOtp
 							formatter={(str) => str.toUpperCase()}
 							length={word.length}
 							size='large'

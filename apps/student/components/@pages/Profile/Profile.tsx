@@ -156,7 +156,7 @@ export const ProfilePage = () => {
 										className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
 									>
 										<Image
-											src={`/games/${game.slug}/${game.characterSlug}/cover.jpg`}
+											src={`/games/${game.slug}/cover/${game.characterSlug}.jpg`}
 											alt={game.slug}
 											width={80}
 											height={80}

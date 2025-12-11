@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { gamesService, ScoreInterface } from './';
+import { gamesService, ScoreInterface } from '..';
 import { getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 
 describe('gamesService', () => {

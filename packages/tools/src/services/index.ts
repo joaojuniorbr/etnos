@@ -1,2 +1,4 @@
-export * from './school.service';
-export * from './games.service';
+export * from './characters';
+export * from './games';
+export * from './midia';
+export * from './school';

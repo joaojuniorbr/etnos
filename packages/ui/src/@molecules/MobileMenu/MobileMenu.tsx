@@ -5,6 +5,10 @@ import {
 	RiUserHeartLine,
 	RiHomeLine,
 	RiGameLine,
+	RiLockStarLine,
+	RiStarLine,
+	RiImageLine,
+	RiSchoolLine,
 } from 'react-icons/ri';
 import { CharacterInterface, UserProfileInterface } from '@etnos/tools';
 
@@ -26,6 +30,8 @@ export const MobileMenu = ({
 	selectedCharacter,
 }: MobileMenuProps) => {
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
+
+	const isAdmin = user?.role?.includes('admin');
 
 	return (
 		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
@@ -94,6 +100,7 @@ export const MobileMenu = ({
 							</div>
 						)}
 						<Menu
+							mode='inline'
 							items={[
 								{
 									key: 'home',
@@ -110,6 +117,31 @@ export const MobileMenu = ({
 											key: 'games',
 											label: <a href='/estudante/jogos'>Jogos</a>,
 											icon: <RiGameLine />,
+										}
+									: null,
+
+								isAdmin
+									? {
+											key: 'admin',
+											label: <a href='/admin'>Área do administrador</a>,
+											icon: <RiLockStarLine />,
+											children: [
+												{
+													key: 'characters',
+													label: <a href='/admin/personagens'>Personagens</a>,
+													icon: <RiStarLine />,
+												},
+												{
+													key: 'midia',
+													label: <a href='/admin/midia'>Midia</a>,
+													icon: <RiImageLine />,
+												},
+												{
+													key: 'schools',
+													label: <a href='/admin/escolas'>Escolas</a>,
+													icon: <RiSchoolLine />,
+												},
+											],
 										}
 									: null,
 								{

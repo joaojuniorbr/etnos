@@ -19,6 +19,8 @@ import {
 	getDoc,
 	serverTimestamp,
 } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+
 import { useEffect, useState } from 'react';
 
 import { message } from 'antd';
@@ -30,6 +32,7 @@ export interface UserProfileInterface extends User {
 	parentPhone?: string;
 	school?: string;
 	updatedAt?: string;
+	role?: string[];
 }
 
 const firebaseConfig = {
@@ -48,6 +51,8 @@ export const dbFirebase = getFirestore(app);
 export const authFirebase = getAuth(app);
 
 export const googleProvider = new GoogleAuthProvider();
+
+export const storageFirebase = getStorage(app);
 
 export const useAuth = () => {
 	const [user, setUser] = useState<UserProfileInterface | null>(null);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { schoolService, SchoolInterface } from './';
+import { schoolService, SchoolInterface } from '..';
 import { getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 
 describe('schoolService', () => {

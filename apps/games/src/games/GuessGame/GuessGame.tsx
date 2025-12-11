@@ -11,10 +11,9 @@ import {
 } from 'react-icons/ri';
 
 import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
-import {
-	GuessGameContent,
-	GuessGameContentInterface,
-} from './GuessGameContent';
+
+import { GuessGameContent } from './GuessGameContent';
+import { GuessGameContentInterface } from './GuessGameHelper';
 
 import { useUser } from '@etnos/ui';
 import { FinishGame, ScoreHighlight } from '../../components';

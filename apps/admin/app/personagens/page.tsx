@@ -2,34 +2,89 @@
 
 import {
 	Breadcrumb,
-	Button,
-	Form,
-	Input,
-	message,
+	Divider,
+	Modal,
 	Spin,
 	Typography,
+	FloatButton,
+	message,
+	Table,
+	Image,
+	Button,
 } from 'antd';
-import { UploadImage } from '../../components/@Molecules';
 import { useUser } from '@etnos/ui';
+import { FormCharacter } from '@etnos/components';
+import { useState } from 'react';
+
+import { RiAddLine, RiEditLine } from 'react-icons/ri';
+import {
+	CharacterInterface,
+	charactersService,
+	useCharacter,
+} from '@etnos/tools';
 
 export default function PersonagensPage() {
-	const [form] = Form.useForm();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [openCharacter, setOpenCharacter] = useState<boolean>(false);
+	const [characterData, setDataCharacter] = useState<CharacterInterface>();
 
 	const { user } = useUser();
 
-	const slugfy = (str: string) => {
-		const slug = str
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-');
+	const { data, refetch } = useCharacter();
 
-		form.setFieldValue('slug', slug);
+	const toggleCharacter = () => setOpenCharacter(!openCharacter);
+
+	const onCloseModal = () => {
+		setOpenCharacter(false);
+		setDataCharacter(undefined);
 	};
 
-	const onUpload = (url: string) => {
-		form.setFieldValue('imageUrl', url);
-		message.success(url);
+	const onSubmitAddCharacter = (character: CharacterInterface) => {
+		setIsLoading(true);
+		charactersService
+			.save(character)
+			.then(() => {
+				setOpenCharacter(false);
+				message.success('Personagem adicionado com sucesso');
+			})
+			.catch((err) => {
+				console.log(err);
+				message.error('Erro ao adicionar personagem');
+			})
+			.finally(() => {
+				setIsLoading(false);
+				refetch();
+			});
+	};
+
+	const onSubmitEditCharacter = (character: CharacterInterface) => {
+		setIsLoading(true);
+		charactersService
+			.update(character)
+			.then((res) => {
+				console.log({ res });
+			})
+			.catch((err) => {
+				console.log(err);
+				message.error('Erro ao atualizar personagem');
+			})
+			.finally(() => {
+				setIsLoading(false);
+				refetch();
+			});
+	};
+
+	const onSubmit = (character: CharacterInterface) => {
+		if (characterData) {
+			onSubmitEditCharacter({ ...characterData, ...character });
+		} else {
+			onSubmitAddCharacter(character);
+		}
+	};
+
+	const onEditCharacter = (character: CharacterInterface) => {
+		setOpenCharacter(true);
+		setDataCharacter(character);
 	};
 
 	if (!user) {
@@ -37,7 +92,7 @@ export default function PersonagensPage() {
 	}
 
 	return (
-		<Spin spinning={false}>
+		<Spin spinning={isLoading}>
 			<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
 				<Breadcrumb
 					items={[
@@ -56,28 +111,65 @@ export default function PersonagensPage() {
 					Personagens
 				</Typography.Title>
 
-				<div className='p-10 bg-white rounded'>
-					<Form layout='vertical' form={form}>
-						<UploadImage userId={user.uid} onUpload={onUpload} />
+				<FloatButton
+					icon={<RiAddLine className='text-2xl' />}
+					onClick={toggleCharacter}
+					type='primary'
+				/>
 
-						<Form.Item name='name' label='Nome do Personagem:'>
-							<Input />
-						</Form.Item>
+				<Modal
+					open={openCharacter}
+					title='Novo Personagem'
+					footer={null}
+					destroyOnHidden
+					onCancel={onCloseModal}
+				>
+					<Divider />
+					<FormCharacter
+						data={characterData}
+						user={user}
+						onSubmit={onSubmit}
+						isLoading={isLoading}
+					/>
+				</Modal>
 
-						<Form.Item name='slug' label='Slug'>
-							<Input onChange={(e) => slugfy(e.target.value)} />
-						</Form.Item>
-
-						<Form.Item name='region' label='Região'>
-							<Input />
-						</Form.Item>
-
-						<Form.Item name='description' label='Descrição'>
-							<Input />
-						</Form.Item>
-
-						<Button type='primary'>Salvar</Button>
-					</Form>
+				<div className='bg-white rounded shadow'>
+					<Table
+						rowKey='slug'
+						dataSource={data}
+						pagination={false}
+						columns={[
+							{
+								title: 'Imagem',
+								render: (item) => (
+									<div className='w-20 border border-slate-200 rounded flex overflow-hidden'>
+										<Image src={item.imageUrl} />
+									</div>
+								),
+							},
+							{
+								dataIndex: 'name',
+								title: 'Nome',
+							},
+							{
+								dataIndex: 'region',
+								title: 'Região',
+							},
+							{
+								dataIndex: 'description',
+								title: 'Descrição',
+							},
+							{
+								title: 'Editar',
+								render: (item) => (
+									<Button
+										onClick={() => onEditCharacter(item)}
+										icon={<RiEditLine />}
+									/>
+								),
+							},
+						]}
+					/>
 				</div>
 			</div>
 		</Spin>

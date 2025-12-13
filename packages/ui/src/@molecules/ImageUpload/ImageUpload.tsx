@@ -5,19 +5,19 @@ import { RiAddLine } from 'react-icons/ri';
 
 import { midiaService } from '@etnos/tools';
 
-interface UploadImageProps {
+interface ImageUploadProps {
 	userId: string;
 	defaultImage?: string;
 	folder?: string;
 	onUpload?: (url: string) => void;
 }
 
-export const UploadImage = ({
+export const ImageUpload = ({
 	userId,
 	defaultImage,
 	folder,
 	onUpload,
-}: UploadImageProps) => {
+}: ImageUploadProps) => {
 	const [imageUrl, setImageUrl] = useState<string | undefined>(defaultImage);
 	const [loading, setLoading] = useState(false);
 
@@ -54,7 +54,7 @@ export const UploadImage = ({
 					className='border-2 border-dotted border-slate-400 rounded flex justify-center items-center overflow-hidden'
 				>
 					{imageUrl ? (
-						<Image src={imageUrl} alt='Upload Image' />
+						<Image src={imageUrl} />
 					) : (
 						<div className='p-6 text-4xl text-slate-600 flex flex-col items-center gap-1'>
 							<RiAddLine />

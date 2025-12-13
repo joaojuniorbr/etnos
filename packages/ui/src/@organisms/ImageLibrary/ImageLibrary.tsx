@@ -1,26 +1,36 @@
 'use client';
 
-import { MidiaInterface, useMidia } from '@etnos/tools';
-import { useUser } from '@etnos/ui';
+import { MidiaInterface, useMidia, UserProfileInterface } from '@etnos/tools';
+import { ImageMultiUpload } from '@etnos/ui';
 import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
-import { Image, Button, Spin, Drawer, Typography } from 'antd';
-import { MultiUploadImages } from '../../components/@Molecules';
+import { Image, Button, Spin, Drawer, Typography, Popconfirm } from 'antd';
 import { useState } from 'react';
 
-export const MidiaSelector = () => {
+interface ImageLibraryProps {
+	folder?: string;
+	user?: UserProfileInterface;
+	limitPage?: number;
+	onSelect?: (url: string) => void;
+}
+
+export const ImageLibrary = ({
+	folder,
+	user,
+	limitPage = 8,
+	onSelect,
+}: ImageLibraryProps) => {
 	const [openUpload, setOpenUpload] = useState<boolean>();
 
-	const { user } = useUser();
 	const {
 		data: library,
-		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-		refetch,
 		isLoading,
 		isRefetching,
+		refetch,
+		fetchNextPage,
 		deleteMidia,
-	} = useMidia(user?.uid, 8);
+	} = useMidia(user?.uid, limitPage);
 
 	const handleDeleteMidia = (item: MidiaInterface) => {
 		deleteMidia(item).finally(refetch);
@@ -29,6 +39,8 @@ export const MidiaSelector = () => {
 	const toggleUpload = () => {
 		setOpenUpload(!openUpload);
 	};
+
+	const isOnSelect = !!onSelect;
 
 	if (!user) {
 		return null;
@@ -57,17 +69,27 @@ export const MidiaSelector = () => {
 							<div key={item.id} className='relative'>
 								<Image
 									src={item.url}
-									className='aspect-square object-cover object-center rounded block'
+									className='aspect-square object-cover object-center rounded block cursor-pointer border border-slate-200'
+									preview={!isOnSelect}
+									onClick={() => onSelect?.(item.url)}
 								/>
-								<span className='absolute top-0 right-0'>
-									<Button
-										icon={<RiDeleteBinLine />}
-										type='text'
-										danger
-										size='small'
-										onClick={() => handleDeleteMidia(item as MidiaInterface)}
-									/>
-								</span>
+								{!isOnSelect && (
+									<span className='absolute top-0 right-0'>
+										<Popconfirm
+											title='Tem certeza que deseja excluir esta imagem?'
+											onConfirm={() =>
+												handleDeleteMidia(item as MidiaInterface)
+											}
+										>
+											<Button
+												icon={<RiDeleteBinLine />}
+												type='text'
+												danger
+												size='small'
+											/>
+										</Popconfirm>
+									</span>
+								)}
 							</div>
 						))
 					)}
@@ -96,10 +118,10 @@ export const MidiaSelector = () => {
 				destroyOnHidden
 			>
 				<div className='relative'>
-					<MultiUploadImages
+					<ImageMultiUpload
 						userId={user.uid}
 						onUpload={onUpload}
-						folder='library'
+						folder={folder || 'library'}
 					/>
 				</div>
 			</Drawer>

@@ -4,17 +4,17 @@ import { UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { midiaService } from '@etnos/tools';
 
-interface MultiUploadProps {
+interface ImageMultiUploadProps {
 	userId: string;
 	folder?: string;
 	onUpload?: (urls: string[]) => void;
 }
 
-export const MultiUploadImages = ({
+export const ImageMultiUpload = ({
 	userId,
 	folder,
 	onUpload,
-}: MultiUploadProps) => {
+}: ImageMultiUploadProps) => {
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
 
 	const handleUpload = async (file: UploadFile) => {

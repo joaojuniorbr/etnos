@@ -1,4 +1,5 @@
-import { gamesService } from '../../services';
+import { useQuery } from '@tanstack/react-query';
+import { configGamesService, scoreGamesService } from '../../services';
 import { message } from 'antd';
 
 export interface GameInterface {
@@ -54,7 +55,7 @@ export const useGames = (userId?: string) => {
 			message.error('Usuário não encontrado!');
 			return;
 		}
-		return gamesService
+		return scoreGamesService
 			.saveScore(slug, characterSlug, score, userId)
 			.then(() => {
 				message.success('Pontuação salva com sucesso!');

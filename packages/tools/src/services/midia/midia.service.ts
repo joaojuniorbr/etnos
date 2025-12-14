@@ -18,6 +18,7 @@ import {
 	limit,
 	startAfter,
 	QueryDocumentSnapshot,
+	QueryConstraint,
 } from 'firebase/firestore';
 
 const COLLECTION = 'midia';
@@ -69,26 +70,29 @@ export const midiaService = {
 	async getMidia(
 		userId: string,
 		limitNumber: number,
-		cursor?: QueryDocumentSnapshot
+		cursor?: QueryDocumentSnapshot,
+		folder?: string
 	) {
 		const collectionRef = collection(dbFirebase, COLLECTION);
 
-		let q = query(
-			collectionRef,
+		const constraints: QueryConstraint[] = [
 			where('userId', '==', userId),
-			limit(limitNumber)
-		);
+			limit(limitNumber),
+		];
 
-		if (cursor) {
-			q = query(
-				collectionRef,
-				where('userId', '==', userId),
-				startAfter(cursor),
-				limit(limitNumber)
-			);
+		if (folder) {
+			constraints.unshift(where('folder', '==', folder));
 		}
 
+		if (cursor) {
+			constraints.push(startAfter(cursor));
+		}
+
+		const q = query(collectionRef, ...constraints);
+
 		const snapshot = await getDocs(q);
+
+		const hasNextPage = snapshot.docs.length === limitNumber;
 
 		return {
 			data: snapshot.docs.map((doc) => ({
@@ -96,13 +100,11 @@ export const midiaService = {
 				...doc.data(),
 			})) as MidiaInterface[],
 
-			nextCursor:
-				snapshot.docs.length > 0
-					? snapshot.docs[snapshot.docs.length - 1]
-					: null,
+			nextCursor: hasNextPage
+				? snapshot.docs[snapshot.docs.length - 1]
+				: undefined,
 		};
 	},
-
 	async saveMidia(props: MidiaInterface) {
 		const collectionRef = collection(dbFirebase, COLLECTION);
 		const docRef = doc(collectionRef);
@@ -150,5 +152,29 @@ export const midiaService = {
 			console.error('Erro ao apagar arquivo por URL:', error);
 			return false;
 		}
+	},
+
+	async getFolders(userId: string) {
+		const collectionRef = collection(dbFirebase, COLLECTION);
+
+		const q = query(collectionRef, where('userId', '==', userId));
+
+		const snapshot = await getDocs(q);
+
+		const map = new Map<string, number>();
+
+		snapshot.docs.forEach((doc) => {
+			const folder = doc.data().folder;
+			if (!folder) return;
+
+			map.set(folder, (map.get(folder) ?? 0) + 1);
+		});
+
+		return Array.from(map.entries())
+			.map(([folder, count]) => ({
+				folder,
+				count,
+			}))
+			.sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));
 	},
 };

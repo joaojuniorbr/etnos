@@ -37,6 +37,7 @@ describe('MobileMenu', () => {
 				user={mockUser}
 				onLogout={() => {}}
 				selectedCharacter={{
+					id: 'iara',
 					slug: 'iara',
 					name: 'Iara',
 					description: 'Teste de Funcionamento',

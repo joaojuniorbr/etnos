@@ -3,7 +3,7 @@
 import { Button, DatePicker, Divider, Form, Image, Input } from 'antd';
 import {
 	GameNameEnum,
-	gamesService,
+	scoreGamesService,
 	ScoreInterface,
 	useAuth,
 } from '@etnos/tools';
@@ -21,7 +21,7 @@ export const ProfilePage = () => {
 
 	const getScore = useCallback(async () => {
 		if (user) {
-			const allScore = await gamesService.getScore(user.uid);
+			const allScore = await scoreGamesService.getScore(user.uid);
 
 			setGames(allScore);
 

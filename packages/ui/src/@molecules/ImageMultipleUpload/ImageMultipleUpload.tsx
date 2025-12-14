@@ -36,8 +36,6 @@ export const ImageMultiUpload = ({
 			setFileList((prev) => [...prev]);
 
 			onUpload?.(fileList.filter((f) => f.url).map((f) => f.url!));
-
-			message.success(`${file.name} enviado!`);
 		} catch (error) {
 			console.error(error);
 			file.status = 'error';

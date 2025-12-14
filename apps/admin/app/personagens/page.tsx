@@ -61,9 +61,6 @@ export default function PersonagensPage() {
 		setIsLoading(true);
 		charactersService
 			.update(character)
-			.then((res) => {
-				console.log({ res });
-			})
 			.catch((err) => {
 				console.log(err);
 				message.error('Erro ao atualizar personagem');

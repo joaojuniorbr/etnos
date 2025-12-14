@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	transpilePackages: ['@etnos/ui', '@etnos/tools'],
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: '**',
+			},
+		],
+	},
 	async rewrites() {
 		const studentUrl =
 			process.env.NEXT_PUBLIC_STUDENT_URL ?? 'https://etnos-student.vercel.app';

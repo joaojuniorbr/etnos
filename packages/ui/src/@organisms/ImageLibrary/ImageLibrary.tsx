@@ -3,13 +3,14 @@
 import { MidiaInterface, useMidia, UserProfileInterface } from '@etnos/tools';
 import { ImageMultiUpload } from '@etnos/ui';
 import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
-import { Image, Button, Spin, Drawer, Typography, Popconfirm } from 'antd';
+import { Image, Button, Spin, Drawer, Popconfirm, Select } from 'antd';
 import { useState } from 'react';
 
 interface ImageLibraryProps {
 	folder?: string;
 	user?: UserProfileInterface;
 	limitPage?: number;
+	itemsSelected?: string[];
 	onSelect?: (url: string) => void;
 }
 
@@ -17,8 +18,10 @@ export const ImageLibrary = ({
 	folder,
 	user,
 	limitPage = 8,
+	itemsSelected,
 	onSelect,
 }: ImageLibraryProps) => {
+	const [selectFolder, setSelectFolder] = useState<string>();
 	const [openUpload, setOpenUpload] = useState<boolean>();
 
 	const {
@@ -27,10 +30,13 @@ export const ImageLibrary = ({
 		isFetchingNextPage,
 		isLoading,
 		isRefetching,
+		folders,
+		isLoadingFolders,
+		refetchFolders,
 		refetch,
 		fetchNextPage,
 		deleteMidia,
-	} = useMidia(user?.uid, limitPage);
+	} = useMidia(user?.uid, limitPage, selectFolder);
 
 	const handleDeleteMidia = (item: MidiaInterface) => {
 		deleteMidia(item).finally(refetch);
@@ -40,86 +46,94 @@ export const ImageLibrary = ({
 		setOpenUpload(!openUpload);
 	};
 
-	const isOnSelect = !!onSelect;
+	const onSelectFolder = (folder: string) => {
+		setSelectFolder(folder);
+	};
 
-	if (!user) {
-		return null;
-	}
+	const isOnSelect = !!onSelect;
 
 	const onUpload = () => {
 		refetch();
+		refetchFolders();
 	};
 
-	return (
-		<Spin spinning={isLoading || isRefetching || isFetchingNextPage}>
-			<Typography.Title level={1} className='mb-10 mt-4'>
-				Biblioteca de Mídia
-			</Typography.Title>
+	const isSelected = (url: string) => itemsSelected?.includes(url);
 
-			<div className='bg-white p-6 shadow-md rounded border border-slate-200'>
-				<div className='mb-4'>
-					<Button onClick={toggleUpload} type='primary' icon={<RiImageLine />}>
-						Inserir Imagens
+	return (
+		<Spin
+			spinning={
+				isLoading || isRefetching || isFetchingNextPage || isLoadingFolders
+			}
+		>
+			<div className='ui:mb-4 ui:flex ui:justify-between'>
+				<Button onClick={toggleUpload} type='primary' icon={<RiImageLine />}>
+					Inserir Imagens
+				</Button>
+
+				<Select
+					options={folders?.map((item) => ({
+						value: item.folder,
+						label: `${item.folder} (${item.count})`,
+					}))}
+					placeholder='Selecione uma pasta'
+					onChange={onSelectFolder}
+				/>
+			</div>
+
+			<section className='ui:grid ui:grid-cols-8 ui:gap-4 md:ui:grid-cols-6 lg:ui:grid-cols-8'>
+				{library?.pages.flatMap((page) =>
+					page.data.map((item) => (
+						<div key={item.id} className='relative'>
+							<Image
+								src={item.url}
+								className={`ui:aspect-square ui:object-cover ui:object-center ui:rounded ui:block ui:cursor-pointer ${isSelected(item.url) ? 'ui:border-4 ui:border-green-400' : 'ui: border ui:border-slate-200'}`}
+								preview={!isOnSelect}
+								onClick={() => onSelect?.(item.url)}
+							/>
+							{!isOnSelect && (
+								<span className='ui:absolute ui:top-0 ui:right-0'>
+									<Popconfirm
+										title='Tem certeza que deseja excluir esta imagem?'
+										onConfirm={() => handleDeleteMidia(item as MidiaInterface)}
+									>
+										<Button
+											icon={<RiDeleteBinLine />}
+											type='text'
+											danger
+											size='small'
+										/>
+									</Popconfirm>
+								</span>
+							)}
+						</div>
+					))
+				)}
+			</section>
+
+			{hasNextPage && (
+				<div className='ui:flex ui:justify-center ui:pt-4'>
+					<Button
+						onClick={() => fetchNextPage()}
+						loading={isFetchingNextPage}
+						disabled={isFetchingNextPage}
+						className='uppercase'
+					>
+						{isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
 					</Button>
 				</div>
-
-				<section className='grid grid-cols-2 gap-4 md:grid-cols-6 lg:grid-cols-8'>
-					{library?.pages.flatMap((page) =>
-						page.data.map((item) => (
-							<div key={item.id} className='relative'>
-								<Image
-									src={item.url}
-									className='aspect-square object-cover object-center rounded block cursor-pointer border border-slate-200'
-									preview={!isOnSelect}
-									onClick={() => onSelect?.(item.url)}
-								/>
-								{!isOnSelect && (
-									<span className='absolute top-0 right-0'>
-										<Popconfirm
-											title='Tem certeza que deseja excluir esta imagem?'
-											onConfirm={() =>
-												handleDeleteMidia(item as MidiaInterface)
-											}
-										>
-											<Button
-												icon={<RiDeleteBinLine />}
-												type='text'
-												danger
-												size='small'
-											/>
-										</Popconfirm>
-									</span>
-								)}
-							</div>
-						))
-					)}
-				</section>
-
-				{hasNextPage && (
-					<div className='flex justify-center pt-4'>
-						<Button
-							onClick={() => fetchNextPage()}
-							loading={isFetchingNextPage}
-							disabled={isFetchingNextPage}
-							className='uppercase'
-						>
-							{isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
-						</Button>
-					</div>
-				)}
-			</div>
+			)}
 
 			<Drawer
 				title='Adicionar Imagens'
 				open={openUpload}
 				onClose={toggleUpload}
 				placement='bottom'
-				height='90%'
+				size='large'
 				destroyOnHidden
 			>
 				<div className='relative'>
 					<ImageMultiUpload
-						userId={user.uid}
+						userId={user!.uid}
 						onUpload={onUpload}
 						folder={folder || 'library'}
 					/>

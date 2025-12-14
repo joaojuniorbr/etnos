@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { gamesService, ScoreInterface } from '..';
+import { scoreGamesService, ScoreInterface } from '../..';
 import { getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 
-describe('gamesService', () => {
+describe('scoreGamesService', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -12,7 +12,7 @@ describe('gamesService', () => {
 		const mockDocRef = { id: 'new-doc' };
 		(doc as any).mockReturnValue(mockDocRef);
 
-		await gamesService.saveScore('game1', 'iara', 100, 'user123');
+		await scoreGamesService.saveScore('game1', 'iara', 100, 'user123');
 
 		expect(setDoc).toHaveBeenCalledWith(mockDocRef, {
 			slug: 'game1',
@@ -31,7 +31,7 @@ describe('gamesService', () => {
 		];
 		(getDocs as any).mockResolvedValue({ docs });
 
-		const result = await gamesService.getScore('user123');
+		const result = await scoreGamesService.getScore('user123');
 
 		expect(result).toEqual([{ userId: 'user123', slug: 'game1', score: 50 }]);
 	});
@@ -50,7 +50,7 @@ describe('gamesService', () => {
 		];
 		(getDocs as any).mockResolvedValue({ docs });
 
-		const result = await gamesService.getFromGameScore(
+		const result = await scoreGamesService.getFromGameScore(
 			'game1',
 			'iara',
 			'user123'
@@ -78,7 +78,11 @@ describe('gamesService', () => {
 		];
 		(getDocs as any).mockResolvedValue({ docs });
 
-		const result = await gamesService.getFromGameScore('game1', 'iara', '');
+		const result = await scoreGamesService.getFromGameScore(
+			'game1',
+			'iara',
+			''
+		);
 
 		expect(result).toEqual(null);
 	});
@@ -97,7 +101,7 @@ describe('gamesService', () => {
 		const mockDocRef = { id: 'new-doc' };
 		(doc as any).mockReturnValue(mockDocRef);
 
-		await gamesService.saveScore('game1', 'iara', 200, 'user123');
+		await scoreGamesService.saveScore('game1', 'iara', 200, 'user123');
 
 		expect(updateDoc).toHaveBeenCalledWith(existingDoc.ref, {
 			score: 200,
@@ -118,7 +122,7 @@ describe('gamesService', () => {
 		const mockDocRef = { id: 'new-doc' };
 		(doc as any).mockReturnValue(mockDocRef);
 
-		await gamesService.saveScore('game1', 'iara', 300, 'user123');
+		await scoreGamesService.saveScore('game1', 'iara', 300, 'user123');
 
 		expect(updateDoc).toHaveBeenCalledWith(mockDocRef, {
 			score: 300,

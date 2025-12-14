@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CharacterCard } from './CharacterCard';
-import { CharactersContent } from '@etnos/tools';
 
-const charactersMap = CharactersContent;
+const mockCharacter = {
+	id: 'iara',
+	slug: 'iara',
+	name: 'Iara',
+	region: 'Norte',
+	description: 'Descrição do personagem',
+} as const;
 
 const meta: Meta<typeof CharacterCard> = {
 	title: 'UI/@atoms/CharacterCard',
@@ -12,17 +17,12 @@ const meta: Meta<typeof CharacterCard> = {
 	},
 	tags: ['autodocs'],
 	args: {
-		character: charactersMap.iara,
+		character: mockCharacter,
 		selected: false,
 	},
 	argTypes: {
 		selected: {
 			control: { type: 'boolean' },
-		},
-		character: {
-			control: { type: 'radio' },
-			options: Object.keys(charactersMap),
-			mapping: charactersMap,
 		},
 	},
 };

@@ -8,7 +8,7 @@ import {
 	serverTimestamp,
 } from 'firebase/firestore';
 
-const COLLECTION = 'games';
+const COLLECTION = 'score-games';
 
 export interface ScoreInterface {
 	characterSlug: string;
@@ -19,7 +19,7 @@ export interface ScoreInterface {
 	createdAt?: string;
 }
 
-export const gamesService = {
+export const scoreGamesService = {
 	async saveScore(
 		slug: string,
 		characterSlug: string,

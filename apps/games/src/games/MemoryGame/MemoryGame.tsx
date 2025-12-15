@@ -6,12 +6,18 @@ import {
 	RiStarFill,
 	RiTrophyLine,
 } from 'react-icons/ri';
-import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
+import {
+	GamesEnum,
+	useCharacter,
+	useGames,
+	useGamesConfig,
+	useGameScore,
+	useMemoryGameContent,
+} from '@etnos/tools';
 import { useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 import { Spin } from 'antd';
-import { getCards } from './MemoryGameContent';
 import { FinishGame, ScoreHighlight } from '../../components';
 
 type CardData = {
@@ -54,22 +60,28 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		characterSlug ?? selectedCharacter?.slug ?? ''
 	);
 
-	const cardsData = getCards(characterSlug);
+	const { data: cardsData } = useMemoryGameContent(
+		characterSlug ?? selectedCharacter?.slug ?? ''
+	);
 
-	const totalPairs = cardsData.length;
+	const { data: gamesConfig } = useGamesConfig(GamesEnum.MEMORY_GAME);
+
+	const totalPairs = cardsData?.length;
 	const matchedPairs = cards.filter((card) => card.isMatched).length / 2;
 
 	const initializeGame = useCallback(() => {
-		const duplicated = cardsData.flatMap((card, index) => [
-			{ ...card, id: index * 2, isFlipped: false, isMatched: false },
-			{ ...card, id: index * 2 + 1, isFlipped: false, isMatched: false },
-		]);
-		setCards(shuffleArray(duplicated));
-		setScore(0);
-		setIsFinished(false);
-		setFlippedCards([]);
-		setIsChecking(false);
-		setMoves(0);
+		if (cardsData) {
+			const duplicated = cardsData.flatMap((card, index) => [
+				{ ...card, id: index * 2, isFlipped: false, isMatched: false },
+				{ ...card, id: index * 2 + 1, isFlipped: false, isMatched: false },
+			]);
+			setCards(shuffleArray(duplicated));
+			setScore(0);
+			setIsFinished(false);
+			setFlippedCards([]);
+			setIsChecking(false);
+			setMoves(0);
+		}
 	}, [cardsData]);
 
 	useEffect(() => {
@@ -156,6 +168,16 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		scoreGameRefetch();
 	};
 
+	const imageCover = () => {
+		if (gamesConfig && selectedCharacter) {
+			return gamesConfig.find(
+				(game) => game.characterSlug === selectedCharacter.slug
+			)?.imageCoverUrl;
+		}
+
+		return `/games/${GAME_SLUG}/cover/${selectedCharacter?.slug}.jpg`;
+	};
+
 	return (
 		<Spin spinning={isLoading || scoreIsLoading}>
 			<h1 className='text-center text-2xl font-bold uppercase mb-8'>
@@ -215,7 +237,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 									className={`absolute inset-0 rounded-lg flex items-center justify-center transform transition-transform duration-500 backface-hidden ${card.isFlipped || card.isMatched ? 'rotate-y-180' : 'rotate-y-0'}`}
 								>
 									<Image
-										src={`/games/${GAME_SLUG}/cover/${selectedCharacter?.slug}.jpg`}
+										src={imageCover() as string}
 										alt={selectedCharacter?.name as string}
 										width={500}
 										height={500}

@@ -55,4 +55,18 @@ export const memoryGameContentService = {
 			return false;
 		}
 	},
+
+	async getMemoryGameImages(
+		characterSlug: string
+	): Promise<{ name: string; image: string; id: string }[]> {
+		const q = query(collectionRef, where('slug', '==', characterSlug));
+
+		const snapshot = await getDocs(q);
+
+		return snapshot.docs.map((doc, index) => ({
+			id: doc.id,
+			name: `${characterSlug}-${index + 1}`,
+			image: doc.data().url,
+		}));
+	},
 };

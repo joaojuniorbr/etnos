@@ -10,7 +10,7 @@ import {
 	onAuthStateChanged,
 	signInWithPopup,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getDoc, setDoc } from 'firebase/firestore';
 
 describe('useAuth hook', () => {
 	beforeEach(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { MidiaInterface, useMidia, UserProfileInterface } from '@etnos/tools';
-import { ImageMultiUpload } from '@etnos/ui';
+import { ImageMultipleUpload } from '@etnos/ui';
 import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
 import { Image, Button, Spin, Drawer, Popconfirm, Select } from 'antd';
 import { useState } from 'react';
@@ -132,7 +132,7 @@ export const ImageLibrary = ({
 				destroyOnHidden
 			>
 				<div className='relative'>
-					<ImageMultiUpload
+					<ImageMultipleUpload
 						userId={user!.uid}
 						onUpload={onUpload}
 						folder={folder || 'library'}

@@ -8,6 +8,7 @@
 		"dev": "tsc --watch",
 		"build": "node esbuild.js",
 		"test": "vitest --watch=false --coverage",
+		"test:dev": "vitest --coverage",
 		"test:ui": "vitest --coverage --ui"
 	},
 	"devDependencies": {

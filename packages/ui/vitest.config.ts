@@ -4,7 +4,7 @@ export default defineConfig({
 	test: {
 		environment: 'jsdom',
 		globals: true,
-		setupFiles: ['./src/test/setup.ts'],
+		setupFiles: ['./src/test/setup.tsx'],
 		include: ['**/*.{test,spec}.{ts,tsx}'],
 		coverage: {
 			reporter: ['text', 'json', 'html', 'lcov'],

@@ -29,4 +29,22 @@ export const getDocs = async (_colRefOrQuery: any) => ({
 	forEach: (fn: (doc: any) => void) => {},
 });
 
+export const query = async (_colRefOrQuery: any) => ({
+	docs: [] as Array<{
+		id: string;
+		data: () => Record<string, any>;
+	}>,
+	empty: true,
+	size: 0,
+	forEach: (fn: (doc: any) => void) => {},
+});
+
+export const orderBy = async (_docRef: any) => true;
+
+export const where = async (_docRef: any) => true;
+
+export const limit = async (_docRef: any) => true;
+
+export const startAfter = async (_docRef: any) => true;
+
 export const serverTimestamp = () => new Date();

@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { StorybookConfig } from '@storybook/react-vite';
 
 import { dirname } from 'path';
@@ -68,6 +70,9 @@ const config: StorybookConfig = {
 				),
 				'firebase/firestore': fileURLToPath(
 					new URL('./__mocks__/firebaseFirestore.ts', import.meta.url)
+				),
+				'firebase/storage': fileURLToPath(
+					new URL('./__mocks__/firebaseStorage.ts', import.meta.url)
 				),
 			},
 		};

@@ -17,12 +17,10 @@ vi.mock('firebase/app', () => {
 });
 
 class MockGoogleAuthProvider {
-	// Propriedades são necessárias para o TypeScript/IntelliSense, mas o constructor as define.
 	addScope;
 	setCustomParameters;
 	provider;
 	constructor() {
-		// Mocks das funções que são chamadas na instância
 		this.addScope = vi.fn();
 		this.setCustomParameters = vi.fn();
 		this.provider = vi.fn();
@@ -67,5 +65,11 @@ vi.mock('firebase/firestore', () => {
 		updateDoc: vi.fn(() => Promise.resolve()),
 		serverTimestamp: vi.fn(() => 'mocked-timestamp'),
 		collection: vi.fn(() => ({ id: 'mocked-collection' })),
+	};
+});
+
+vi.mock('firebase/storage', () => {
+	return {
+		getStorage: vi.fn(() => ({})),
 	};
 });

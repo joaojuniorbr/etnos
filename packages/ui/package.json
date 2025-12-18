@@ -27,8 +27,8 @@
 		"dev:components": "tsc --watch",
 		"lint": "eslint src --max-warnings 0",
 		"test": "vitest --coverage --watch=false",
-		"test:watch": "vitest --watch --coverage",
-		"test:ui": "vitest --ui --coverage --open=false"
+		"test:dev": "vitest --watch --coverage",
+		"test:ui": "vitest --ui --coverage"
 	},
 	"devDependencies": {
 		"@etnos/eslint-config": "*",

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { HeaderMobile } from './HeaderMobile';
 
@@ -28,7 +28,7 @@ const mockHandleSelectedCharacter = vi.fn();
 
 const mockUseCharacter = {
 	selectedCharacter: mockSelectedCharacter,
-	characters: mockCharacters,
+	data: mockCharacters,
 	selectCharacter: mockHandleSelectedCharacter,
 };
 
@@ -42,32 +42,31 @@ vi.mock('../../context', () => ({
 }));
 
 describe('HeaderMobile', () => {
-	it('passa as props corretas e o estado inicial para MobileMenu', async () => {
+	it('abre menu, abre modal e seleciona personagem', async () => {
 		render(<HeaderMobile />);
 
 		const menuButton = screen.getByRole('button', { name: /menu/i });
 
-		expect(menuButton).toBeInTheDocument();
-
-		fireEvent.click(menuButton);
+		await act(async () => {
+			fireEvent.click(menuButton);
+		});
 
 		const changeCharacterButton = screen.getByRole('button', {
-			name: /Alterar Personagem/i,
+			name: /alterar personagem/i,
 		});
 
-		expect(changeCharacterButton).toBeInTheDocument();
+		await act(async () => {
+			fireEvent.click(changeCharacterButton);
+		});
 
-		fireEvent.click(changeCharacterButton);
+		const selectCharacterButton = screen.getByRole('button', {
+			name: /Selecionar Personagem: Zeca/i,
+		});
 
-		waitFor(() => {
-			const selectCharacterButton = screen.getByRole('button', {
-				name: /Selecionar Personagem: Zeca/i,
-			});
-			expect(selectCharacterButton).toBeInTheDocument();
-
+		await act(async () => {
 			fireEvent.click(selectCharacterButton);
-
-			expect(mockHandleSelectedCharacter).toHaveBeenCalledWith('Zeca');
 		});
+
+		expect(mockHandleSelectedCharacter).toHaveBeenCalledWith('zeca');
 	});
 });

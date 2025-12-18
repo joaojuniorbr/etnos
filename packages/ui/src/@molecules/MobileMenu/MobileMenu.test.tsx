@@ -107,4 +107,20 @@ describe('MobileMenu', () => {
 
 		expect(onLogout).toHaveBeenCalled();
 	});
+
+	it('renderezia menu do usuário admin', async () => {
+		render(
+			<MobileMenu
+				open={true}
+				toggleDrawer={() => {}}
+				user={{ ...mockUser, role: ['admin'] }}
+				onLogout={() => {}}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(/Usuário Mock/i)).toBeInTheDocument();
+			expect(screen.getByText(/Área do administrador/i)).toBeInTheDocument();
+		});
+	});
 });

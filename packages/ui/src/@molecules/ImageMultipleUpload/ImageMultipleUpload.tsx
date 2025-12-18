@@ -19,13 +19,11 @@ export const ImageMultipleUpload = ({
 
 	const handleUpload = async (file: UploadFile) => {
 		try {
-			if (!file.originFileObj) return;
-
 			file.status = 'uploading';
 			setFileList((prev) => [...prev]);
 
 			const uploaded = await midiaService.uploadImage(
-				file.originFileObj,
+				file.originFileObj as File,
 				folder ?? '',
 				userId
 			);
@@ -33,14 +31,17 @@ export const ImageMultipleUpload = ({
 			file.url = uploaded.url;
 			file.status = 'done';
 
-			setFileList((prev) => [...prev]);
-
-			onUpload?.(fileList.filter((f) => f.url).map((f) => f.url!));
+			setFileList((prev) => {
+				const updated = [...prev];
+				onUpload?.(updated.filter((f) => f.url).map((f) => f.url!));
+				return updated;
+			});
 		} catch (error) {
-			console.error(error);
 			file.status = 'error';
 			setFileList((prev) => [...prev]);
-			message.error(`Erro ao enviar ${file.name}`);
+			if (error instanceof Error) {
+				message.error(`Erro ao enviar ${file.name}: ${error.message}`);
+			}
 		}
 	};
 
@@ -65,9 +66,9 @@ export const ImageMultipleUpload = ({
 			}}
 			onRemove={async (file) => {
 				await midiaService.deleteMidiaFromUrl(file.url!);
-				const filtred = fileList.filter((f) => f.uid !== file?.uid);
+				const filtred = fileList.filter((f) => f.uid !== file.uid);
 				setFileList(filtred);
-				onUpload?.(filtred.map((f) => f.url!));
+				onUpload?.(filtred.map((f) => f.url as string));
 			}}
 			key='uid'
 		>

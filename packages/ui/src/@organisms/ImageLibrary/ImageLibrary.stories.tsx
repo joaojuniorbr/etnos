@@ -11,12 +11,10 @@ const mockUser = {
 const meta: Meta<typeof ImageLibrary> = {
 	title: 'UI/@organisms/ImageLibrary',
 	component: ImageLibrary,
-	parameters: {
-		layout: 'centered',
-	},
 	tags: ['autodocs'],
 	args: {
-		user: mockUser
+		user: mockUser,
+		folder: 'storybook',
 	},
 	argTypes: {},
 };

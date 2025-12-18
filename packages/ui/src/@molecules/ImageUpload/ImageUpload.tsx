@@ -32,9 +32,12 @@ export const ImageUpload = ({
 			onUpload?.(url.url);
 
 			message.success('Imagem enviada com sucesso!');
-		} catch (err) {
-			console.error(err);
-			message.error('Erro ao fazer upload.');
+		} catch (error) {
+			if (error instanceof Error) {
+				message.error(error.message);
+			} else {
+				message.error('Erro ao fazer upload.');
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -51,14 +54,16 @@ export const ImageUpload = ({
 			>
 				<button
 					disabled={loading}
-					className='border-2 border-dotted border-slate-400 rounded flex justify-center items-center overflow-hidden'
+					className='ui:border-2 ui:border-dotted ui:border-slate-400 ui:rounded ui:flex ui:justify-center ui:items-center ui:overflow-hidden'
 				>
 					{imageUrl ? (
 						<Image src={imageUrl} />
 					) : (
-						<div className='p-6 text-4xl text-slate-600 flex flex-col items-center gap-1'>
+						<div className='ui:p-6 ui:text-4xl ui:text-slate-600 ui:flex ui:flex-col ui:items-center ui:gap-1'>
 							<RiAddLine />
-							<span className='uppercase text-xs font-bold'>Adicionar</span>
+							<span className='ui:uppercase ui:text-xs ui:font-bold'>
+								Adicionar
+							</span>
 						</div>
 					)}
 				</button>

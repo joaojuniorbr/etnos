@@ -41,14 +41,14 @@
 		"@testing-library/react": "^16.1.0",
 		"@types/jest": "^30.0.0",
 		"@types/react": "^19.1.0",
-		"@vitest/coverage-v8": "^4.0.12",
-		"@vitest/ui": "^2.1.4",
+		"@vitest/coverage-v8": "^4.0.16",
+		"@vitest/ui": "^4.0.16",
 		"cpx": "^1.5.0",
 		"eslint": "^9.33.0",
 		"jsdom": "^26.0.0",
 		"tailwindcss": "^4.1.5",
 		"typescript": "5.9.2",
-		"vitest": "^4.0.12"
+		"vitest": "^4.0.16"
 	},
 	"dependencies": {
 		"antd": "^6.1.0",

@@ -9,23 +9,23 @@ export const useCharacter = () => {
 	const [selectedCharacter, setSelectedCharacter] =
 		useState<CharacterInterface>();
 
-	const selectCharacter = (character: string) => {
-		localStorage.setItem(CHARACTER_STORAGE_KEY, character);
-		charactersService.getCharacterBySlug(character).then((res) => {
+	const setCharacter = (slug: string) => {
+		charactersService.getCharacterBySlug(slug).then((res) => {
 			if (res) {
 				setSelectedCharacter(res);
 			}
 		});
 	};
 
+	const selectCharacter = (character: string) => {
+		localStorage.setItem(CHARACTER_STORAGE_KEY, character);
+		setCharacter(character);
+	};
+
 	useEffect(() => {
 		const storedCharacter = localStorage.getItem(CHARACTER_STORAGE_KEY);
 		if (storedCharacter) {
-			charactersService.getCharacterBySlug(storedCharacter).then((res) => {
-				if (res) {
-					setSelectedCharacter(res);
-				}
-			});
+			setCharacter(storedCharacter);
 		}
 	}, []);
 

@@ -24,6 +24,7 @@ import { getStorage } from 'firebase/storage';
 import { useEffect, useState } from 'react';
 
 import { message } from 'antd';
+import { errorMessage } from '../../helpers';
 
 export interface UserProfileInterface extends User {
 	parentName?: string;
@@ -64,7 +65,7 @@ export const useAuth = () => {
 			await signOut(authFirebase);
 			setUser(null);
 		} catch (error) {
-			console.error('Erro ao fazer logout:', error);
+			errorMessage(error);
 			setIsLoading(false);
 		}
 	};
@@ -83,7 +84,7 @@ export const useAuth = () => {
 			setUser(result.user as UserProfileInterface);
 			return result.user;
 		} catch (error) {
-			console.error('Erro ao fazer login com email e senha:', error);
+			errorMessage(error);
 			setIsLoading(false);
 			return null;
 		}
@@ -95,7 +96,7 @@ export const useAuth = () => {
 			await sendPasswordResetEmail(authFirebase, email);
 			setIsLoading(false);
 		} catch (error) {
-			console.error('Erro ao fazer recuperação de senha:', error);
+			errorMessage(error);
 			setIsLoading(false);
 		}
 	};
@@ -134,8 +135,12 @@ export const useAuth = () => {
 
 			setUser({ ...user, ...profile });
 		} catch (error) {
-			console.log('Erro ao atualizar perfil', error);
-			message.error('Ocorreu um erro ao salvar seu perfil. Tente novamente.');
+			message.error(
+				errorMessage(
+					error,
+					'Ocorreu um erro ao salvar seu perfil. Tente novamente.'
+				)
+			);
 		}
 	};
 
@@ -202,7 +207,7 @@ export const useAuth = () => {
 			setIsLoading(false);
 			return user;
 		} catch (error) {
-			console.error('Erro ao realizar registro', error);
+			errorMessage(error);
 			setIsLoading(false);
 			return null;
 		}
@@ -214,7 +219,7 @@ export const useAuth = () => {
 			setUser(result.user as UserProfileInterface);
 			return result.user;
 		} catch (error) {
-			console.error('Erro no login com Google:', error);
+			message.error(errorMessage(error));
 		}
 	};
 

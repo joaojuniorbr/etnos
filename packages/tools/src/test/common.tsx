@@ -1,25 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
-
-class ResizeObserverMock {
-	observe() {}
-	unobserve() {}
-	disconnect() {}
-}
-
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
-vi.stubGlobal('getComputedStyle', () => {
-	return {
-		getPropertyValue: () => '',
-	};
-});
 
 export const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
+			queries: {
+				retry: false,
+			},
 		},
 	});
 

@@ -78,6 +78,7 @@ export const ImageLibrary = ({
 					}))}
 					placeholder='Selecione uma pasta'
 					onChange={onSelectFolder}
+					data-testid='select-folder'
 				/>
 			</div>
 
@@ -87,6 +88,7 @@ export const ImageLibrary = ({
 						<div key={item.id} className='relative'>
 							<Image
 								src={item.url}
+								alt={item.url}
 								className={`ui:aspect-square ui:object-cover ui:object-center ui:rounded ui:block ui:cursor-pointer ${isSelected(item.url) ? 'ui:border-4 ui:border-green-400' : 'ui: border ui:border-slate-200'}`}
 								preview={!isOnSelect}
 								onClick={() => onSelect?.(item.url)}
@@ -102,6 +104,7 @@ export const ImageLibrary = ({
 											type='text'
 											danger
 											size='small'
+											aria-label='Excluir imagem'
 										/>
 									</Popconfirm>
 								</span>
@@ -119,7 +122,7 @@ export const ImageLibrary = ({
 						disabled={isFetchingNextPage}
 						className='uppercase'
 					>
-						{isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+						Carregar mais
 					</Button>
 				</div>
 			)}
@@ -133,6 +136,7 @@ export const ImageLibrary = ({
 				destroyOnHidden
 			>
 				<div className='relative'>
+					teste - {user?.uid}
 					{user?.uid && (
 						<ImageMultipleUpload
 							userId={user.uid}

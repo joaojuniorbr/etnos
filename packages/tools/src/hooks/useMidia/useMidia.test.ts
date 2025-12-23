@@ -6,19 +6,14 @@ import { midiaService } from '../../services';
 
 const mockId = 'user-123';
 
-vi.mock('../../services', async () => {
-	const actual = await vi.importActual('../../services');
-
-	return {
-		...actual,
-		midiaService: {
-			getMidia: vi.fn(),
-			getFolders: vi.fn(),
-			deleteMidia: vi.fn(),
-			deleteMidiaFromUrl: vi.fn(),
-		},
-	};
-});
+vi.mock('../../services', async () => ({
+	midiaService: {
+		getMidia: vi.fn(),
+		getFolders: vi.fn(),
+		deleteMidia: vi.fn(),
+		deleteMidiaFromUrl: vi.fn(),
+	},
+}));
 
 describe('useMidia', () => {
 	beforeEach(() => {

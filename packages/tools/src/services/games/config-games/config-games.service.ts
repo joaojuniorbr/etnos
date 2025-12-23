@@ -1,24 +1,13 @@
-import { dbFirebase } from '@etnos/tools';
-import {
-	collection,
-	doc,
-	setDoc,
-	getDoc,
-	getDocs,
-	deleteDoc,
-	query,
-	where,
-	serverTimestamp,
-} from 'firebase/firestore';
-
-const COLLECTION = 'config-games';
-const collectionRef = collection(dbFirebase, COLLECTION);
+import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
 
 export interface ConfigGamesInterface {
+	id?: string;
 	gameSlug: string;
 	characterSlug: string;
 	imageCoverUrl: string;
 }
+
+const repo = new FirestoreRepository<ConfigGamesInterface>('config-games');
 
 const getConfigId = (gameSlug: string, characterSlug: string) =>
 	`${gameSlug}_${characterSlug}`;
@@ -26,17 +15,8 @@ const getConfigId = (gameSlug: string, characterSlug: string) =>
 export const configGamesService = {
 	async save(data: ConfigGamesInterface) {
 		const id = getConfigId(data.gameSlug, data.characterSlug);
-		const docRef = doc(collectionRef, id);
 
-		await setDoc(
-			docRef,
-			{
-				...data,
-				timestamp: serverTimestamp(),
-				createdAt: serverTimestamp(),
-			},
-			{ merge: true }
-		);
+		await repo.update(id, data);
 
 		return {
 			id,
@@ -46,34 +26,22 @@ export const configGamesService = {
 
 	async get(gameSlug: string, characterSlug: string) {
 		const id = getConfigId(gameSlug, characterSlug);
-		const docRef = doc(collectionRef, id);
 
-		const snapshot = await getDoc(docRef);
-
-		if (!snapshot.exists()) return null;
-
-		return {
-			id: snapshot.id,
-			...snapshot.data(),
-		} as ConfigGamesInterface & { id: string };
+		return repo.findOne({
+			where: [fs.where('__name__', '==', id)],
+		});
 	},
 
 	async getByGame(gameSlug: string) {
-		const q = query(collectionRef, where('gameSlug', '==', gameSlug));
-		const snapshot = await getDocs(q);
-
-		return snapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		})) as (ConfigGamesInterface & { id: string })[];
+		return repo.findMany({
+			where: [fs.where('gameSlug', '==', gameSlug)],
+		});
 	},
 
 	async remove(gameSlug: string, characterSlug: string) {
 		const id = getConfigId(gameSlug, characterSlug);
-		const docRef = doc(collectionRef, id);
 
-		await deleteDoc(docRef);
-
+		await repo.delete(id);
 		return true;
 	},
 };

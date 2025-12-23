@@ -1,132 +1,101 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { scoreGamesService, ScoreInterface } from '../..';
-import { getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { scoreGamesService } from './score-games.service';
+import { mockRepo } from '../../../test';
 
 describe('scoreGamesService', () => {
+	const mockScore = {
+		slug: 'memory-game',
+		characterSlug: 'mario',
+		score: 100,
+		userId: 'user-123',
+	};
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('deve salvar um novo score quando não existe ainda', async () => {
-		(getDocs as any).mockResolvedValue({ docs: [] });
-		const mockDocRef = { id: 'new-doc' };
-		(doc as any).mockReturnValue(mockDocRef);
+	describe('saveScore', () => {
+		it('deve atualizar o score se já existir um registro para o usuário e jogo', async () => {
+			const existingId = 'doc-abc';
+			mockRepo.findOne.mockResolvedValueOnce({ id: existingId, ...mockScore });
+			mockRepo.update.mockResolvedValueOnce({ id: existingId });
 
-		await scoreGamesService.saveScore('game1', 'iara', 100, 'user123');
+			await scoreGamesService.saveScore(
+				'memory-game',
+				'mario',
+				200,
+				'user-123'
+			);
 
-		expect(setDoc).toHaveBeenCalledWith(mockDocRef, {
-			slug: 'game1',
-			characterSlug: 'iara',
-			score: 100,
-			userId: 'user123',
-			timestamp: 'mocked-timestamp',
-			createdAt: 'mocked-timestamp',
+			expect(mockRepo.update).toHaveBeenCalledWith(existingId, { score: 200 });
+			expect(mockRepo.create).not.toHaveBeenCalled();
+		});
+
+		it('deve criar um novo score se não existir registro prévio', async () => {
+			mockRepo.findOne.mockResolvedValueOnce(null);
+			mockRepo.create.mockResolvedValueOnce({ id: 'new-doc' });
+
+			await scoreGamesService.saveScore(
+				'memory-game',
+				'mario',
+				100,
+				'user-123'
+			);
+
+			expect(mockRepo.create).toHaveBeenCalledWith(
+				expect.objectContaining(mockScore)
+			);
+			expect(mockRepo.update).not.toHaveBeenCalled();
 		});
 	});
 
-	it('deve retornar scores de um usuário', async () => {
-		const docs = [
-			{ data: () => ({ userId: 'user123', slug: 'game1', score: 50 }) },
-			{ data: () => ({ userId: 'user456', slug: 'game2', score: 80 }) },
-		];
-		(getDocs as any).mockResolvedValue({ docs });
+	describe('getScore', () => {
+		it('deve retornar todos os scores de um usuário específico', async () => {
+			const mockList = [mockScore, { ...mockScore, score: 50 }];
+			mockRepo.findMany.mockResolvedValueOnce(mockList);
 
-		const result = await scoreGamesService.getScore('user123');
+			const result = await scoreGamesService.getScore('user-123');
 
-		expect(result).toEqual([{ userId: 'user123', slug: 'game1', score: 50 }]);
-	});
-
-	it('deve retornar score específico de um jogo/personagem/usuário', async () => {
-		const docs = [
-			{
-				data: () =>
-					({
-						slug: 'game1',
-						characterSlug: 'iara',
-						userId: 'user123',
-						score: 100,
-					}) as ScoreInterface,
-			},
-		];
-		(getDocs as any).mockResolvedValue({ docs });
-
-		const result = await scoreGamesService.getFromGameScore(
-			'game1',
-			'iara',
-			'user123'
-		);
-
-		expect(result).toEqual({
-			slug: 'game1',
-			characterSlug: 'iara',
-			userId: 'user123',
-			score: 100,
+			expect(result).toEqual(mockList);
+			expect(mockRepo.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.arrayContaining([
+						expect.objectContaining({ field: 'userId', value: 'user-123' }),
+					]),
+				})
+			);
 		});
 	});
 
-	it('deve retornar null específico de um jogo/personagem/usuário', async () => {
-		const docs = [
-			{
-				data: () =>
-					({
-						slug: 'game1',
-						characterSlug: 'iara',
-						userId: 'user123',
-						score: 100,
-					}) as ScoreInterface,
-			},
-		];
-		(getDocs as any).mockResolvedValue({ docs });
-
-		const result = await scoreGamesService.getFromGameScore(
-			'game1',
-			'iara',
-			''
-		);
-
-		expect(result).toEqual(null);
-	});
-
-	it('deve atualizar score usando scoreDoc.ref quando existe', async () => {
-		const existingDoc = {
-			data: () => ({
-				slug: 'game1',
-				characterSlug: 'iara',
-				userId: 'user123',
-			}),
-			ref: { id: 'existing-doc' },
-		};
-
-		(getDocs as any).mockResolvedValue({ docs: [existingDoc] });
-		const mockDocRef = { id: 'new-doc' };
-		(doc as any).mockReturnValue(mockDocRef);
-
-		await scoreGamesService.saveScore('game1', 'iara', 200, 'user123');
-
-		expect(updateDoc).toHaveBeenCalledWith(existingDoc.ref, {
-			score: 200,
-			timestamp: 'mocked-timestamp',
+	describe('getFromGameScore', () => {
+		it('deve retornar null se userId não for fornecido', async () => {
+			const result = await scoreGamesService.getFromGameScore(
+				'slug',
+				'char',
+				''
+			);
+			expect(result).toBeNull();
+			expect(mockRepo.findOne).not.toHaveBeenCalled();
 		});
-	});
 
-	it('deve atualizar score usando docRef quando scoreDoc.ref não existe', async () => {
-		const existingDoc = {
-			data: () => ({
-				slug: 'game1',
-				characterSlug: 'iara',
-				userId: 'user123',
-			}),
-		};
+		it('deve buscar o score específico se o userId for fornecido', async () => {
+			mockRepo.findOne.mockResolvedValueOnce(mockScore);
 
-		(getDocs as any).mockResolvedValue({ docs: [existingDoc] });
-		const mockDocRef = { id: 'new-doc' };
-		(doc as any).mockReturnValue(mockDocRef);
+			const result = await scoreGamesService.getFromGameScore(
+				'memory-game',
+				'mario',
+				'user-123'
+			);
 
-		await scoreGamesService.saveScore('game1', 'iara', 300, 'user123');
-
-		expect(updateDoc).toHaveBeenCalledWith(mockDocRef, {
-			score: 300,
-			timestamp: 'mocked-timestamp',
+			expect(result).toEqual(mockScore);
+			expect(mockRepo.findOne).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.arrayContaining([
+						expect.objectContaining({ field: 'slug', value: 'memory-game' }),
+						expect.objectContaining({ field: 'userId', value: 'user-123' }),
+					]),
+				})
+			);
 		});
 	});
 });

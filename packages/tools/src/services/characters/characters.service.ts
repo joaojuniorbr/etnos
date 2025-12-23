@@ -1,19 +1,4 @@
-import {
-	collection,
-	doc,
-	getDocs,
-	orderBy,
-	query,
-	serverTimestamp,
-	setDoc,
-	updateDoc,
-	where,
-} from 'firebase/firestore';
-import { dbFirebase } from '../../hooks';
-
-const COLLECTION = 'character';
-
-const collectionRef = collection(dbFirebase, COLLECTION);
+import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
 
 export interface CharacterInterface {
 	id: string;
@@ -23,61 +8,38 @@ export interface CharacterInterface {
 	slug: string;
 }
 
+const repo = new FirestoreRepository<CharacterInterface>('character');
+
 export const charactersService = {
-	async save(props: CharacterInterface) {
-		const q = query(collectionRef, where('slug', '==', props.slug));
-		const snap = await getDocs(q);
-
-		if (!snap.empty) return null;
-
-		const docRef = doc(collectionRef);
-
-		await setDoc(docRef, {
-			...props,
-			createdAt: serverTimestamp(),
-			timestamp: serverTimestamp(),
+	async save(character: CharacterInterface) {
+		const exists = await repo.findOne({
+			where: [fs.where('slug', '==', character.slug)],
 		});
 
-		return docRef;
+		if (exists) return null;
+
+		return repo.create(character);
 	},
 
-	async update(props: CharacterInterface) {
-		const q = query(collectionRef, where('slug', '==', props.slug));
-		const snap = await getDocs(q);
-
-		if (snap && !snap.empty) {
-			const foundId = snap.docs[0]?.id;
-
-			if (foundId !== props.id) return null;
-		}
-
-		const docRef = doc(collectionRef, props.id);
-
-		await updateDoc(docRef, {
-			...props,
-			timestamp: serverTimestamp(),
+	async update(character: CharacterInterface) {
+		const existing = await repo.findOne({
+			where: [fs.where('slug', '==', character.slug)],
 		});
 
-		return docRef;
+		if (existing && existing.id !== character.id) return null;
+
+		return repo.update(character.id, character);
 	},
 
-	async getCharacters() {
-		const q = query(collectionRef, orderBy('name', 'asc'));
-
-		const snapshot = await getDocs(q);
-
-		return snapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		})) as CharacterInterface[];
+	getCharacters() {
+		return repo.findMany({
+			orderBy: fs.orderBy('name', 'asc'),
+		});
 	},
 
-	async getCharacterBySlug(slug: string) {
-		const q = query(collectionRef, where('slug', '==', slug));
-		const snap = await getDocs(q);
-
-		if (!snap || snap.empty || !snap.docs[0]) return null;
-
-		return snap.docs[0].data() as CharacterInterface;
+	getCharacterBySlug(slug: string) {
+		return repo.findOne({
+			where: [fs.where('slug', '==', slug)],
+		});
 	},
 };

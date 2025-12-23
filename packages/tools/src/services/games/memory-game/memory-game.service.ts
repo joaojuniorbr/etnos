@@ -1,18 +1,4 @@
-import {
-	collection,
-	deleteDoc,
-	doc,
-	getDocs,
-	query,
-	serverTimestamp,
-	setDoc,
-	where,
-} from 'firebase/firestore';
-import { dbFirebase } from '../../../hooks';
-
-const COLLECTION = 'game-memory-game';
-
-const collectionRef = collection(dbFirebase, COLLECTION);
+import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
 
 export interface MemoryGameContentInterface {
 	id: string;
@@ -21,37 +7,27 @@ export interface MemoryGameContentInterface {
 	idCharacter: string;
 }
 
+const repo = new FirestoreRepository<MemoryGameContentInterface>(
+	'game-memory-game'
+);
+
 export const memoryGameContentService = {
 	async saveContent(props: Partial<MemoryGameContentInterface>) {
-		const docRef = doc(collectionRef);
-
-		await setDoc(docRef, {
-			...props,
-			createdAt: serverTimestamp(),
-			timestamp: serverTimestamp(),
-		});
-
-		return docRef;
+		return repo.create(props as MemoryGameContentInterface);
 	},
 
 	async getContent(slug: string) {
-		const q = query(collectionRef, where('slug', '==', slug));
-
-		const snapshot = await getDocs(q);
-
-		return snapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		})) as MemoryGameContentInterface[];
+		return repo.findMany({
+			where: [fs.where('slug', '==', slug)],
+		});
 	},
 
 	async deleteContent(id: string) {
 		try {
-			await deleteDoc(doc(dbFirebase, COLLECTION, id));
-
+			await repo.delete(id);
 			return true;
 		} catch (error) {
-			console.error('Erro ao apagar contenúdo:', error);
+			console.error('Erro ao apagar conteúdo:', error);
 			return false;
 		}
 	},
@@ -59,14 +35,12 @@ export const memoryGameContentService = {
 	async getMemoryGameImages(
 		characterSlug: string
 	): Promise<{ name: string; image: string; id: string }[]> {
-		const q = query(collectionRef, where('slug', '==', characterSlug));
+		const docs = await this.getContent(characterSlug);
 
-		const snapshot = await getDocs(q);
-
-		return snapshot.docs.map((doc, index) => ({
+		return docs.map((doc, index) => ({
 			id: doc.id,
 			name: `${characterSlug}-${index + 1}`,
-			image: doc.data().url,
+			image: doc.url,
 		}));
 	},
 };

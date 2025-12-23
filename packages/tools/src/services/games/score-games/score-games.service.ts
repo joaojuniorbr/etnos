@@ -1,23 +1,16 @@
-import { dbFirebase } from '@etnos/tools';
-import {
-	getDocs,
-	collection,
-	doc,
-	setDoc,
-	updateDoc,
-	serverTimestamp,
-} from 'firebase/firestore';
-
-const COLLECTION = 'score-games';
+import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
 
 export interface ScoreInterface {
+	id?: string;
 	characterSlug: string;
 	score: number;
 	slug: string;
-	timestamp: string;
+	timestamp?: any;
 	userId: string;
-	createdAt?: string;
+	createdAt?: any;
 }
+
+const repo = new FirestoreRepository<ScoreInterface>('score-games');
 
 export const scoreGamesService = {
 	async saveScore(
@@ -26,67 +19,41 @@ export const scoreGamesService = {
 		score: number,
 		userId: string
 	) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef);
+		const existingScore = await repo.findOne({
+			where: [
+				fs.where('slug', '==', slug),
+				fs.where('characterSlug', '==', characterSlug),
+				fs.where('userId', '==', userId),
+			],
+		});
 
-		const getScoreGame = await getDocs(collectionRef);
-
-		const scoreGame = getScoreGame.docs
-			.map((doc) => doc.data())
-			.find(
-				(doc) =>
-					doc.slug === slug &&
-					doc.userId === userId &&
-					doc.characterSlug === characterSlug
-			);
-
-		if (scoreGame) {
-			const scoreDoc = getScoreGame.docs.find(
-				(d) =>
-					d.data().slug === slug &&
-					d.data().userId === userId &&
-					d.data().characterSlug === characterSlug
-			);
-
-			return updateDoc(scoreDoc?.ref ?? docRef, {
-				score,
-				timestamp: serverTimestamp(),
-			});
+		if (existingScore?.id) {
+			return repo.update(existingScore.id, { score });
 		}
 
-		return setDoc(docRef, {
+		return repo.create({
 			slug,
 			characterSlug,
 			score,
 			userId,
-			timestamp: serverTimestamp(),
-			createdAt: serverTimestamp(),
-		});
+		} as ScoreInterface);
 	},
 
 	async getScore(userId: string) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const getScoreGame = await getDocs(collectionRef);
-		return getScoreGame.docs
-			.filter((doc) => doc.data().userId === userId)
-			.map((doc) => doc.data() as ScoreInterface);
+		return repo.findMany({
+			where: [fs.where('userId', '==', userId)],
+		});
 	},
 
 	async getFromGameScore(slug: string, characterSlug: string, userId: string) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const getScoreGame = await getDocs(collectionRef);
+		if (!userId) return null;
 
-		if (userId) {
-			return getScoreGame.docs
-				.map((doc) => doc.data() as ScoreInterface)
-				.find(
-					(doc) =>
-						doc.slug === slug &&
-						doc.characterSlug === characterSlug &&
-						doc.userId === userId
-				);
-		} else {
-			return null;
-		}
+		return repo.findOne({
+			where: [
+				fs.where('slug', '==', slug),
+				fs.where('characterSlug', '==', characterSlug),
+				fs.where('userId', '==', userId),
+			],
+		});
 	},
 };

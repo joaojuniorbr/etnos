@@ -175,8 +175,9 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			];
 
 		if (characterContent) {
-			const selectContent =
-				characterContent[Math.floor(Math.random() * characterContent.length)];
+			// nosonar
+			const index = Math.random() * characterContent.length;
+			const selectContent = characterContent[Math.floor(index)];
 
 			if (selectContent) {
 				setContent(selectContent);

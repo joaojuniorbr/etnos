@@ -1,32 +1,26 @@
 'use client';
 
-import { initializeApp } from 'firebase/app';
+import { useEffect, useState } from 'react';
 import {
-	getAuth,
 	signOut,
 	signInWithEmailAndPassword,
 	sendPasswordResetEmail,
 	User,
 	onAuthStateChanged,
 	createUserWithEmailAndPassword,
-	GoogleAuthProvider,
 	signInWithPopup,
 } from 'firebase/auth';
-import {
-	getFirestore,
-	setDoc,
-	doc,
-	getDoc,
-	serverTimestamp,
-} from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-
-import { useEffect, useState } from 'react';
-
 import { message } from 'antd';
-import { errorMessage } from '../../helpers';
+import {
+	authFirebase,
+	errorMessage,
+	googleProvider,
+	firestoreAdapter as fs,
+	FirestoreRepository,
+} from '@etnos/tools';
 
 export interface UserProfileInterface extends User {
+	id?: string;
 	parentName?: string;
 	childName?: string;
 	childBirthDate?: string;
@@ -36,36 +30,35 @@ export interface UserProfileInterface extends User {
 	role?: string[];
 }
 
-const firebaseConfig = {
-	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-	authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-	projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-	storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-	messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-	appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-export const dbFirebase = getFirestore(app);
-
-export const authFirebase = getAuth(app);
-
-export const googleProvider = new GoogleAuthProvider();
-
-export const storageFirebase = getStorage(app);
+const userRepo = new FirestoreRepository<UserProfileInterface>('users');
 
 export const useAuth = () => {
 	const [user, setUser] = useState<UserProfileInterface | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const onSignOut = async () => {
-		setIsLoading(true);
+	const isLoggedIn = !!user;
+
+	const cleanDataForFirestore = (data: any) => {
+		return Object.keys(data).reduce((acc: any, key) => {
+			acc[key] = data[key] === undefined ? null : data[key];
+			return acc;
+		}, {});
+	};
+
+	const getProfile = async (firebaseUser: User) => {
 		try {
-			await signOut(authFirebase);
-			setUser(null);
+			const userProfile = await userRepo.findOne({
+				where: [fs.where('__name__', '==', firebaseUser.uid)],
+			});
+
+			if (userProfile) {
+				setUser({ ...firebaseUser, ...userProfile } as UserProfileInterface);
+			} else {
+				setUser(firebaseUser as UserProfileInterface);
+			}
 		} catch (error) {
 			errorMessage(error);
+		} finally {
 			setIsLoading(false);
 		}
 	};
@@ -73,7 +66,7 @@ export const useAuth = () => {
 	const onSignInWithEmailAndPassword = async (
 		email: string,
 		password: string
-	): Promise<User | null> => {
+	) => {
 		setIsLoading(true);
 		try {
 			const result = await signInWithEmailAndPassword(
@@ -81,12 +74,23 @@ export const useAuth = () => {
 				email,
 				password
 			);
-			setUser(result.user as UserProfileInterface);
 			return result.user;
 		} catch (error) {
 			errorMessage(error);
 			setIsLoading(false);
 			return null;
+		}
+	};
+
+	const onSignOut = async () => {
+		setIsLoading(true);
+		try {
+			await signOut(authFirebase);
+			setUser(null);
+		} catch (error) {
+			message.error(errorMessage(error));
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -94,145 +98,81 @@ export const useAuth = () => {
 		setIsLoading(true);
 		try {
 			await sendPasswordResetEmail(authFirebase, email);
-			setIsLoading(false);
+			message.success('E-mail de recuperação enviado!');
 		} catch (error) {
-			errorMessage(error);
+			message.error(errorMessage(error));
+		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const isLoggedIn = !!user;
-
-	const cleanDataForFirestore = (data: object): object => {
-		const cleanedData: { [key: string]: any } = {};
-		for (const [key, value] of Object.entries(data)) {
-			if (value === undefined) {
-				cleanedData[key] = null;
-			} else {
-				cleanedData[key] = value;
-			}
-		}
-		return cleanedData;
-	};
-
-	const updateUserProfile = async (profile: any, merge: boolean = true) => {
-		if (!user) {
-			message.error('Nenhum usuário autenticado para atualizar o perfil.');
-			return;
-		}
+	const updateUserProfile = async (profile: Partial<UserProfileInterface>) => {
+		if (!user) return message.error('Nenhum usuário autenticado.');
 
 		try {
-			const userDocRef = doc(dbFirebase, 'users', user.uid);
-
 			const dataToSave = {
 				...cleanDataForFirestore(profile),
-				updatedAt: serverTimestamp(),
+				updatedAt: fs.serverTimestamp(),
 			};
 
-			await setDoc(userDocRef, dataToSave, { merge: merge });
+			await userRepo.update(user.uid, dataToSave);
 
-			message.success('Perfil atualizado com sucesso!');
-
-			setUser({ ...user, ...profile });
+			setUser((prev) => (prev ? { ...prev, ...profile } : null));
+			message.success('Perfil atualizado!');
 		} catch (error) {
-			message.error(
-				errorMessage(
-					error,
-					'Ocorreu um erro ao salvar seu perfil. Tente novamente.'
-				)
-			);
+			message.error(errorMessage(error, 'Erro ao salvar perfil.'));
 		}
 	};
 
-	const getProfile = async (userProfile: UserProfileInterface) => {
-		if (!userProfile) {
-			return;
-		}
-
-		const userDocRef = doc(dbFirebase, 'users', userProfile.uid);
-		const userDoc = await getDoc(userDocRef);
-
-		if (userDoc.exists()) {
-			setUser({ ...userProfile, ...userDoc.data() });
-		} else {
-			setUser(userProfile);
-		}
-
-		setIsLoading(false);
-	};
-
-	const onRegister = async (values: {
-		parentEmail?: string;
-		password?: string;
-		school?: string;
-		parentName?: string;
-		parentPhone?: string;
-		childName?: string;
-		childBirthDate?: string;
-	}) => {
+	const onRegister = async (values: any) => {
 		setIsLoading(true);
 		try {
-			if (!values?.parentEmail || !values?.password) {
-				setIsLoading(false);
-				return null;
-			}
-
-			const isExistUser = await getDoc(
-				doc(dbFirebase, 'users', values.parentEmail)
-			);
-
-			if (isExistUser.exists()) {
-				setIsLoading(false);
-				return null;
-			}
-
 			const userCredential = await createUserWithEmailAndPassword(
 				authFirebase,
 				values.parentEmail,
 				values.password
 			);
-			const user = userCredential.user as UserProfileInterface;
 
-			await setDoc(doc(dbFirebase, 'users', user.uid), {
-				school: values?.school,
-				parentName: values?.parentName,
-				email: values?.parentEmail,
-				phone: values?.parentPhone,
-				childName: values?.childName,
-				childBirthDate: values?.childBirthDate,
-				createdAt: new Date(),
-			});
+			const newUser = userCredential.user;
 
-			setUser(user);
-			setIsLoading(false);
-			return user;
+			await userRepo.update(newUser.uid, {
+				school: values.school,
+				parentName: values.parentName,
+				email: values.parentEmail,
+				phone: values.parentPhone,
+				childName: values.childName,
+				childBirthDate: values.childBirthDate,
+			} as any);
+
+			return newUser;
 		} catch (error) {
-			errorMessage(error);
-			setIsLoading(false);
+			message.error(errorMessage(error));
 			return null;
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	const loginWithGoogle = async () => {
 		try {
 			const result = await signInWithPopup(authFirebase, googleProvider);
-			setUser(result.user as UserProfileInterface);
+
 			return result.user;
 		} catch (error) {
 			message.error(errorMessage(error));
+			return null;
 		}
 	};
 
 	useEffect(() => {
-		const unsubscribe = onAuthStateChanged(authFirebase, (user) => {
-			if (user) {
-				getProfile(user);
+		const unsubscribe = onAuthStateChanged(authFirebase, (firebaseUser) => {
+			if (firebaseUser) {
+				getProfile(firebaseUser);
 			} else {
 				setUser(null);
 				setIsLoading(false);
 			}
 		});
-
 		return () => unsubscribe();
 	}, []);
 
@@ -240,8 +180,6 @@ export const useAuth = () => {
 		isLoading,
 		user,
 		isLoggedIn,
-		cleanDataForFirestore,
-		getProfile,
 		updateUserProfile,
 		onRegister,
 		onSignOut,

@@ -1,14 +1,4 @@
-import { dbFirebase } from '@etnos/tools';
-import {
-	getDocs,
-	collection,
-	doc,
-	setDoc,
-	deleteDoc,
-	getDoc,
-} from 'firebase/firestore';
-
-const COLLECTION = 'schools';
+import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
 
 export interface SchoolInterface {
 	id: string;
@@ -17,46 +7,45 @@ export interface SchoolInterface {
 	state?: string;
 }
 
+const repo = new FirestoreRepository<SchoolInterface>('schools');
+
 export const schoolService = {
 	async getAll(): Promise<SchoolInterface[]> {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const querySnapshot = await getDocs(collectionRef);
-		const schools: any[] = querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		}));
-		return schools;
-	},
-
-	async create(school: SchoolInterface) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef);
-		return setDoc(docRef, school);
-	},
-
-	async update(id: string, school: Partial<SchoolInterface>) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef, id);
-
-		const docSnap = await getDoc(docRef);
-		const data = docSnap.data();
-
-		return setDoc(docRef, {
-			...data,
-			...school,
+		return repo.findMany({
+			orderBy: fs.orderBy('name', 'asc'),
 		});
 	},
 
-	async delete(id: string) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef, id);
-		return deleteDoc(docRef);
+	async create(school: SchoolInterface) {
+		const exists = await repo.findOne({
+			where: [fs.where('name', '==', school.name)],
+		});
+
+		if (exists) return null;
+
+		return repo.create(school);
 	},
 
-	async getOne(id: string) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef, id);
-		const docSnap = await getDoc(docRef);
-		return docSnap.data() as SchoolInterface;
+	async update(id: string, school: Partial<SchoolInterface>) {
+		const existing = await repo.findOne({
+			where: [
+				fs.where('name', '==', school.name),
+				fs.where('city', '==', school.city ?? null),
+			],
+		});
+
+		if (existing && existing.id !== id) return null;
+
+		return repo.update(id, school);
+	},
+
+	async delete(id: string) {
+		return repo.delete(id);
+	},
+
+	async getOne(id: string): Promise<SchoolInterface | null> {
+		return repo.findOne({
+			where: [fs.where('__name__', '==', id)],
+		});
 	},
 };

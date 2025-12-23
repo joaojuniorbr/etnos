@@ -4,22 +4,18 @@ import { CharacterInterface, charactersService } from '../../services';
 import { vi } from 'vitest';
 import { createWrapper } from '../../test';
 
-vi.mock('../../services', async () => {
-	const actualModule = await vi.importActual('../../services');
-
-	return {
-		...actualModule,
-		charactersService: {
-			getCharacters: vi.fn(),
-			getCharacterBySlug: vi.fn(),
-		},
-	};
-});
+vi.mock('../../services', async () => ({
+	charactersService: {
+		getCharacters: vi.fn(),
+		getCharacterBySlug: vi.fn(),
+	},
+}));
 
 describe('useCharacter', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		localStorage.clear();
+
 		vi.mocked(charactersService.getCharacters).mockResolvedValue([]);
 	});
 

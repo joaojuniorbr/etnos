@@ -1,21 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useGameScore } from './useGameScore';
 import { scoreGamesService } from '../../services';
-import React from 'react';
+import { createWrapper } from '../../test';
 
 vi.mock('../../services', () => ({
 	scoreGamesService: {
 		getFromGameScore: vi.fn(),
 	},
 }));
-
-const createWrapper = () => {
-	const queryClient = new QueryClient();
-	return ({ children }: any) =>
-		React.createElement(QueryClientProvider, { client: queryClient }, children);
-};
 
 describe('useGameScore hook', () => {
 	beforeEach(() => {

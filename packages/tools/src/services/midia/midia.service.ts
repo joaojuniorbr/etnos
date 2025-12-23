@@ -4,32 +4,24 @@ import {
 	getDownloadURL,
 	deleteObject,
 } from 'firebase/storage';
-
-import { dbFirebase, storageFirebase } from '@etnos/tools';
 import {
-	getDocs,
-	collection,
-	doc,
-	setDoc,
-	serverTimestamp,
-	deleteDoc,
-	query,
-	where,
-	limit,
-	startAfter,
-	QueryDocumentSnapshot,
-	QueryConstraint,
-} from 'firebase/firestore';
+	storageFirebase,
+	firestoreAdapter as fs,
+	FirestoreRepository,
+	errorMessage,
+} from '@etnos/tools';
 
-const COLLECTION = 'midia';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
+
+const repo = new FirestoreRepository<MidiaInterface>('midia');
 
 export interface MidiaInterface {
 	id?: string;
 	url: string;
 	userId: string;
 	folder?: string;
-	timestamp?: string;
-	createdAt?: string;
+	timestamp?: any;
+	createdAt?: any;
 }
 
 export const midiaService = {
@@ -37,25 +29,17 @@ export const midiaService = {
 		const decodeUrl = decodeURIComponent(url);
 		const start = decodeUrl.indexOf('/o/') + 3;
 		const end = decodeUrl.indexOf('?');
-
 		return decodeUrl.substring(start, end);
 	},
 
 	async uploadImage(file: File, folder: string, userId: string) {
-		const fileRef = ref(
-			storageFirebase,
-			`${folder}/${Date.now()}-${file.name}`
-		);
+		const path = `${folder}/${Date.now()}-${file.name}`;
+		const fileRef = ref(storageFirebase, path);
 
 		await uploadBytes(fileRef, file);
-
 		const url = await getDownloadURL(fileRef);
 
-		this.saveMidia({
-			url,
-			userId,
-			folder,
-		});
+		await this.saveMidia({ url, userId, folder });
 
 		return { url };
 	},
@@ -73,61 +57,40 @@ export const midiaService = {
 		cursor?: QueryDocumentSnapshot,
 		folder?: string
 	) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
+		const whereConstraints = [fs.where('userId', '==', userId)];
 
-		const constraints: QueryConstraint[] = [
-			where('userId', '==', userId),
-			limit(limitNumber),
-		];
+		if (folder) whereConstraints.push(fs.where('folder', '==', folder));
 
-		if (folder) {
-			constraints.unshift(where('folder', '==', folder));
-		}
+		const { data, lastDoc } = await repo.findWithPaginate({
+			where: whereConstraints,
+			limit: limitNumber + 1,
+			startAfter: cursor,
+		});
 
-		if (cursor) {
-			constraints.push(startAfter(cursor));
-		}
-
-		const q = query(collectionRef, ...constraints);
-
-		const snapshot = await getDocs(q);
-
-		const hasNextPage = snapshot.docs.length === limitNumber;
+		const hasNextPage = data.length > limitNumber;
+		const items = hasNextPage ? data.slice(0, limitNumber) : data;
 
 		return {
-			data: snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as MidiaInterface[],
-
-			nextCursor: hasNextPage
-				? snapshot.docs[snapshot.docs.length - 1]
-				: undefined,
+			data: items,
+			nextCursor: hasNextPage ? lastDoc : undefined,
 		};
 	},
+
 	async saveMidia(props: MidiaInterface) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-		const docRef = doc(collectionRef);
-		return setDoc(docRef, {
-			...props,
-			timestamp: serverTimestamp(),
-			createdAt: serverTimestamp(),
-		});
+		return repo.create(props);
 	},
 
 	async deleteMidia(item: MidiaInterface) {
 		try {
 			const path = this.getPathFromUrl(item.url);
-
 			const fileRef = ref(storageFirebase, path);
 
 			await deleteObject(fileRef);
-
-			await deleteDoc(doc(dbFirebase, COLLECTION, item.id!));
+			await repo.delete(item.id!);
 
 			return true;
 		} catch (error) {
-			console.error('Erro ao apagar arquivo:', error);
+			errorMessage(error);
 			return false;
 		}
 	},
@@ -135,46 +98,38 @@ export const midiaService = {
 	async deleteMidiaFromUrl(url: string) {
 		try {
 			const path = this.getPathFromUrl(url);
-
 			const fileRef = ref(storageFirebase, path);
 			await deleteObject(fileRef);
 
-			const collectionRef = collection(dbFirebase, COLLECTION);
-			const q = query(collectionRef, where('url', '==', url));
-			const querySnapshot = await getDocs(q);
+			const items = await repo.findMany({
+				where: [fs.where('url', '==', url)],
+			});
 
-			for (const docSnap of querySnapshot.docs) {
-				await deleteDoc(docSnap.ref);
+			for (const item of items) {
+				await repo.delete(item.id!);
 			}
 
 			return true;
 		} catch (error) {
-			console.error('Erro ao apagar arquivo por URL:', error);
+			errorMessage(error);
 			return false;
 		}
 	},
 
 	async getFolders(userId: string) {
-		const collectionRef = collection(dbFirebase, COLLECTION);
-
-		const q = query(collectionRef, where('userId', '==', userId));
-
-		const snapshot = await getDocs(q);
+		const docs = await repo.findMany({
+			where: [fs.where('userId', '==', userId)],
+		});
 
 		const map = new Map<string, number>();
 
-		snapshot.docs.forEach((doc) => {
-			const folder = doc.data().folder;
-			if (!folder) return;
-
-			map.set(folder, (map.get(folder) ?? 0) + 1);
+		docs.forEach((doc) => {
+			if (!doc.folder) return;
+			map.set(doc.folder, (map.get(doc.folder) ?? 0) + 1);
 		});
 
 		return Array.from(map.entries())
-			.map(([folder, count]) => ({
-				folder,
-				count,
-			}))
+			.map(([folder, count]) => ({ folder, count }))
 			.sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));
 	},
 };

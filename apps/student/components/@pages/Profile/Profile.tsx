@@ -61,7 +61,7 @@ export const ProfilePage = () => {
 			...values,
 			childBirthDate: values.childBirthDate
 				? dayjs(values.childBirthDate).format('YYYY-MM-DD')
-				: null,
+				: undefined,
 		});
 		setIsLoading(false);
 	};

@@ -1,80 +1,108 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { schoolService, SchoolInterface } from '..';
-import { getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { SchoolInterface, schoolService } from './school.service';
+import { mockRepo } from '../../test';
 
 describe('schoolService', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('deve retornar todas as escolas', async () => {
-		const docs = [
-			{ id: '1', data: () => ({ name: 'Escola A', city: 'Curitiba' }) },
-			{ id: '2', data: () => ({ name: 'Escola B', state: 'PR' }) },
+	it('retorna escolas ordenadas por nome', async () => {
+		const schools: SchoolInterface[] = [
+			{ id: '1', name: 'IFPR' },
+			{ id: '2', name: 'UTFPR' },
 		];
-		(getDocs as any).mockResolvedValue({ docs });
+
+		mockRepo.findMany.mockResolvedValueOnce(schools);
 
 		const result = await schoolService.getAll();
 
-		expect(result).toEqual([
-			{ id: '1', name: 'Escola A', city: 'Curitiba' },
-			{ id: '2', name: 'Escola B', state: 'PR' },
-		]);
+		expect(result).toEqual(schools);
+		expect(mockRepo.findMany).toHaveBeenCalledOnce();
 	});
 
-	it('deve criar uma nova escola', async () => {
-		const mockDocRef = { id: 'new-doc' };
-		(doc as any).mockReturnValue(mockDocRef);
-		(setDoc as any).mockResolvedValue('mocked-setDoc');
+	it('cria escola quando não existe duplicada', async () => {
+		const school: SchoolInterface = {
+			id: '1',
+			name: 'IFPR',
+			city: 'Curitiba',
+		};
 
-		const school: SchoolInterface = { id: '1', name: 'Nova Escola' };
+		mockRepo.findOne.mockResolvedValueOnce(null);
+		mockRepo.create.mockResolvedValueOnce({ id: 'generated-id' });
+
 		const result = await schoolService.create(school);
 
-		expect(setDoc).toHaveBeenCalledWith(mockDocRef, school);
-		expect(result).toBe('mocked-setDoc');
+		expect(mockRepo.findOne).toHaveBeenCalledOnce();
+		expect(mockRepo.create).toHaveBeenCalledWith(school);
+		expect(result).toEqual({ id: 'generated-id' });
 	});
 
-	it('deve atualizar uma escola existente', async () => {
-		const mockDocRef = { id: '1' };
-		(doc as any).mockReturnValue(mockDocRef);
-		(getDoc as any).mockResolvedValue({
-			data: () => ({ id: '1', name: 'Escola Antiga', city: 'Curitiba' }),
-		});
-		(setDoc as any).mockResolvedValue('mocked-update');
+	it('retorna null se escola já existir', async () => {
+		mockRepo.findOne.mockResolvedValueOnce({ id: '1' });
 
-		const result = await schoolService.update('1', {
-			name: 'Escola Atualizada',
-		});
-
-		expect(setDoc).toHaveBeenCalledWith(mockDocRef, {
-			id: '1',
-			name: 'Escola Atualizada',
+		const result = await schoolService.create({
+			id: '2',
+			name: 'IFPR',
 			city: 'Curitiba',
 		});
-		expect(result).toBe('mocked-update');
+
+		expect(result).toBeNull();
+		expect(mockRepo.create).not.toHaveBeenCalled();
 	});
 
-	it('deve deletar uma escola', async () => {
-		const mockDocRef = { id: '1' };
-		(doc as any).mockReturnValue(mockDocRef);
-		(deleteDoc as any).mockResolvedValue('mocked-delete');
+	it('atualiza escola quando não há conflito', async () => {
+		mockRepo.findOne.mockResolvedValueOnce(null);
+		mockRepo.update.mockResolvedValueOnce({ id: '1' });
 
-		const result = await schoolService.delete('1');
-
-		expect(deleteDoc).toHaveBeenCalledWith(mockDocRef);
-		expect(result).toBe('mocked-delete');
-	});
-
-	it('deve retornar uma escola específica', async () => {
-		const mockDocRef = { id: '1' };
-		(doc as any).mockReturnValue(mockDocRef);
-		(getDoc as any).mockResolvedValue({
-			data: () => ({ id: '1', name: 'Escola Única', state: 'PR' }),
+		const result = await schoolService.update('1', {
+			name: 'IFPR Atualizado',
 		});
+
+		expect(mockRepo.update).toHaveBeenCalledWith('1', {
+			name: 'IFPR Atualizado',
+		});
+		expect(result).toEqual({ id: '1' });
+	});
+
+	it('retorna null se existir outra escola com mesmo nome e cidade', async () => {
+		mockRepo.findOne.mockResolvedValueOnce({ id: '2' });
+
+		const result = await schoolService.update('1', {
+			name: 'IFPR',
+			city: 'Curitiba',
+		});
+
+		expect(result).toBeNull();
+		expect(mockRepo.update).not.toHaveBeenCalled();
+	});
+
+	it('deleta escola pelo id', async () => {
+		mockRepo.delete.mockResolvedValueOnce(undefined);
+
+		await schoolService.delete('1');
+
+		expect(mockRepo.delete).toHaveBeenCalledWith('1');
+	});
+
+	it('retorna escola quando existir', async () => {
+		const school: SchoolInterface = {
+			id: '1',
+			name: 'IFPR',
+		};
+
+		mockRepo.findOne.mockResolvedValueOnce(school);
 
 		const result = await schoolService.getOne('1');
 
-		expect(getDoc).toHaveBeenCalledWith(mockDocRef);
-		expect(result).toEqual({ id: '1', name: 'Escola Única', state: 'PR' });
+		expect(result).toEqual(school);
+	});
+
+	it('retorna null quando não existir', async () => {
+		mockRepo.findOne.mockResolvedValueOnce(null);
+
+		const result = await schoolService.getOne('999');
+
+		expect(result).toBeNull();
 	});
 });

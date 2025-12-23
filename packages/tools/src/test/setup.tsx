@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import { firebaseMock, mockRepo } from './__mocks__';
 
 vi.mock('antd', () => {
 	return {
@@ -13,6 +14,40 @@ vi.mock('antd', () => {
 vi.mock('firebase/app', () => {
 	return {
 		initializeApp: vi.fn(() => ({ app: 'mocked-app' })),
+	};
+});
+
+vi.mock('@etnos/tools', () => ({
+	authFirebase: vi.fn(),
+	googleProvider: vi.fn(),
+	errorMessage: vi.fn(),
+	storageFirebase: vi.fn(),
+	firestoreAdapter: {
+		...firebaseMock,
+		query: vi.fn(),
+		where: vi.fn((field, op, value) => ({ field, op, value })),
+		orderBy: vi.fn((a, b) => ({ a, b })),
+	},
+	FirestoreRepository: class {
+		findMany = mockRepo.findMany;
+		findOne = mockRepo.findOne;
+		create = mockRepo.create;
+		update = mockRepo.update;
+		delete = mockRepo.delete;
+		findWithPaginate = mockRepo.findWithPaginate;
+	},
+}));
+
+vi.mock('firebase/firestore', () => {
+	return {
+		...firebaseMock,
+		getFirestore: vi.fn(() => ({ firestore: 'mocked-firestore' })),
+		getDoc: vi.fn(() =>
+			Promise.resolve({
+				exists: () => true,
+				data: () => ({ parentName: 'Mocked Parent' }),
+			})
+		),
 	};
 });
 

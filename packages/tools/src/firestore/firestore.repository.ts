@@ -53,7 +53,7 @@ export class FirestoreRepository<T extends { id?: string }> {
 
 		return {
 			data,
-			lastDoc: snap.docs[snap.docs.length - 1], // Este é o cursor
+			lastDoc: snap.docs.at(-1),
 		};
 	}
 

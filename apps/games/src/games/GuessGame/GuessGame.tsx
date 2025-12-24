@@ -10,7 +10,13 @@ import {
 	RiStarFill,
 } from 'react-icons/ri';
 
-import { GamesEnum, useCharacter, useGames, useGameScore } from '@etnos/tools';
+import {
+	GamesEnum,
+	getRandomIndex,
+	useCharacter,
+	useGames,
+	useGameScore,
+} from '@etnos/tools';
 
 import { GuessGameContent } from './GuessGameContent';
 import { GuessGameContentInterface } from './GuessGameHelper';
@@ -175,9 +181,8 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			];
 
 		if (characterContent) {
-			// nosonar
-			const index = Math.random() * characterContent.length;
-			const selectContent = characterContent[Math.floor(index)];
+			const selectContent =
+				characterContent[getRandomIndex(characterContent.length)];
 
 			if (selectContent) {
 				setContent(selectContent);

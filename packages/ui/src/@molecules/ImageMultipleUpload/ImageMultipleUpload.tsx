@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { midiaService } from '@etnos/tools';
+import { getRandomIndex, midiaService } from '@etnos/tools';
 
 interface ImageMultipleUploadProps {
 	userId: string;
@@ -52,7 +52,7 @@ export const ImageMultipleUpload = ({
 			fileList={fileList}
 			beforeUpload={(file) => {
 				const uploadFile: UploadFile = {
-					uid: String(Date.now()) + Math.random(),
+					uid: String(Date.now()) + getRandomIndex(10000000).toString(),
 					name: file.name,
 					status: 'uploading',
 					originFileObj: file,
@@ -66,9 +66,9 @@ export const ImageMultipleUpload = ({
 			}}
 			onRemove={async (file) => {
 				await midiaService.deleteMidiaFromUrl(file.url!);
-				const filtred = fileList.filter((f) => f.uid !== file.uid);
-				setFileList(filtred);
-				onUpload?.(filtred.map((f) => f.url as string));
+				const filtered = fileList.filter((f) => f.uid !== file.uid);
+				setFileList(filtered);
+				onUpload?.(filtered.map((f) => f.url as string));
 			}}
 			key='uid'
 		>

@@ -3,9 +3,15 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 class ResizeObserverMock {
-	observe() {}
-	unobserve() {}
-	disconnect() {}
+	observe() {
+		return null;
+	}
+	unobserve() {
+		return null;
+	}
+	disconnect() {
+		return null;
+	}
 }
 
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);

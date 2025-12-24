@@ -26,7 +26,7 @@ import {
 export default function PersonagensPage() {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [openCharacter, setOpenCharacter] = useState<boolean>(false);
-	const [characterData, setDataCharacter] = useState<CharacterInterface>();
+	const [characterData, setCharacterData] = useState<CharacterInterface>();
 
 	const { user } = useUser();
 
@@ -36,7 +36,7 @@ export default function PersonagensPage() {
 
 	const onCloseModal = () => {
 		setOpenCharacter(false);
-		setDataCharacter(undefined);
+		setCharacterData(undefined);
 	};
 
 	const onSubmitAddCharacter = (character: CharacterInterface) => {
@@ -81,7 +81,7 @@ export default function PersonagensPage() {
 
 	const onEditCharacter = (character: CharacterInterface) => {
 		setOpenCharacter(true);
-		setDataCharacter(character);
+		setCharacterData(character);
 	};
 
 	if (!user) {

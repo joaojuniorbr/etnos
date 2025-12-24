@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import { configGamesService, scoreGamesService } from '../../services';
+import { scoreGamesService } from '../../services';
 import { message } from 'antd';
 
 export interface GameInterface {

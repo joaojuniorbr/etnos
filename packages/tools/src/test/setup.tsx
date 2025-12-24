@@ -36,6 +36,7 @@ vi.mock('@etnos/tools', () => ({
 		delete = mockRepo.delete;
 		findWithPaginate = mockRepo.findWithPaginate;
 	},
+	getRandomIndex: vi.fn(),
 }));
 
 vi.mock('firebase/firestore', () => {

@@ -16,6 +16,7 @@ vi.mock('@etnos/tools', () => ({
 		uploadImage: vi.fn(),
 		deleteMidiaFromUrl: vi.fn(),
 	},
+	getRandomIndex: vi.fn().mockReturnValue(0),
 }));
 
 vi.mock('antd', async () => {
@@ -70,7 +71,7 @@ vi.mock('antd', async () => {
 	};
 });
 
-import { midiaService } from '@etnos/tools';
+import { getRandomIndex, midiaService } from '@etnos/tools';
 import { message, UploadFile } from 'antd';
 
 describe('<ImageMultipleUpload />', () => {

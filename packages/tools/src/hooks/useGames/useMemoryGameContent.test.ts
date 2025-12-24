@@ -1,7 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useMemoryGameContent } from './useMemoryGameContent';
-import { GamesEnum } from './useGames';
 import { memoryGameContentService } from '../../services';
 import { createWrapper } from '../../test';
 

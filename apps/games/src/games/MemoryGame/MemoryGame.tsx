@@ -32,7 +32,16 @@ type MemoryCard = CardData & {
 };
 
 const shuffleArray = <T,>(array: T[]): T[] => {
-	return [...array].sort(() => Math.random() - 0.5);
+	const shuffled = [...array];
+	const randomValues = new Uint32Array(shuffled.length);
+	crypto.getRandomValues(randomValues);
+
+	for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor((randomValues[i]! / (0xffffffff + 1)) * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+	}
+
+	return shuffled;
 };
 
 const GAME_SLUG = GamesEnum.MEMORY_GAME;

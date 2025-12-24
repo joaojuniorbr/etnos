@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getRandomIndex } from '@etnos/tools';
 
 const DATA_CHARACTERS = [
 	{ name: 'zeca', featureImageUrl: '/images/sign/zeca.jpg' },
@@ -12,7 +13,7 @@ export const useRandomCharacter = () => {
 	const [character, setCharacter] = useState(DATA_CHARACTERS[0]);
 
 	useEffect(() => {
-		const randomCharacter = Math.floor(Math.random() * DATA_CHARACTERS.length);
+		const randomCharacter = getRandomIndex(DATA_CHARACTERS.length);
 		setCharacter(DATA_CHARACTERS[randomCharacter]);
 	}, []);
 

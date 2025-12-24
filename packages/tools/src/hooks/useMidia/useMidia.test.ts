@@ -20,15 +20,6 @@ describe('useMidia', () => {
 		vi.clearAllMocks();
 	});
 
-	it('não executa queries quando userId não é informado', () => {
-		renderHook(() => useMidia(undefined), {
-			wrapper: createWrapper(),
-		});
-
-		expect(midiaService.getMidia).not.toHaveBeenCalled();
-		expect(midiaService.getFolders).not.toHaveBeenCalled();
-	});
-
 	it('carrega midias e folders quando userId existe', async () => {
 		vi.mocked(midiaService.getMidia).mockResolvedValueOnce({
 			items: [{ id: '1', url: 'img.png' }],

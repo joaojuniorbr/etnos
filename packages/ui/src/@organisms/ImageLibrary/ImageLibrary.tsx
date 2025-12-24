@@ -97,7 +97,7 @@ export const ImageLibrary = ({
 								<span className='ui:absolute ui:top-0 ui:right-0'>
 									<Popconfirm
 										title='Tem certeza que deseja excluir esta imagem?'
-										onConfirm={() => handleDeleteMidia(item as MidiaInterface)}
+										onConfirm={() => handleDeleteMidia(item)}
 									>
 										<Button
 											icon={<RiDeleteBinLine />}

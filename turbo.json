@@ -3,7 +3,7 @@
 	"ui": "tui",
 	"tasks": {
 		"build": {
-			"dependsOn": ["^build"],
+			"dependsOn": ["^build", "build:components", "build:styles"],
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
 			"outputs": [
 				"dist/**",
@@ -12,6 +12,14 @@
 				"!.next/cache/**",
 				"storybook-static/**"
 			]
+		},
+		"build:components": {
+			"dependsOn": ["^build:components"],
+			"outputs": ["dist/**"]
+		},
+		"build:styles": {
+			"dependsOn": ["^build:styles"],
+			"outputs": ["dist/**"]
 		},
 		"lint": {
 			"dependsOn": ["^lint"]

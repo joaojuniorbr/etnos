@@ -1,67 +1,109 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useCharacter } from './';
-import { getAllCharacters, getCharacterBySlug } from '../../characters';
+import { renderHook, waitFor } from '@testing-library/react';
+import { useCharacter } from './useCharacter';
+import { CharacterInterface, charactersService } from '../../services';
+import { vi } from 'vitest';
+import { createWrapper } from '../../test';
 
-vi.mock('../../characters', () => ({
-	getAllCharacters: vi.fn(() => [
-		{ slug: 'iara', name: 'Iara' },
-		{ slug: 'saci', name: 'Saci' },
-	]),
-	getCharacterBySlug: vi.fn((slug: string) => ({
-		slug,
-		name: `Mocked ${slug}`,
-	})),
+vi.mock('../../services', async () => ({
+	charactersService: {
+		getCharacters: vi.fn(),
+		getCharacterBySlug: vi.fn(),
+	},
 }));
 
-const CHARACTER_STORAGE_KEY = 'selectedCharacter';
-
-describe('useCharacter hook', () => {
+describe('useCharacter', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		localStorage.clear();
+
+		vi.mocked(charactersService.getCharacters).mockResolvedValue([]);
 	});
 
-	it('deve retornar todos os personagens', () => {
-		const { result } = renderHook(() => useCharacter());
-		expect(getAllCharacters).toHaveBeenCalled();
-		expect(result.current.characters).toEqual([
-			{ slug: 'iara', name: 'Iara' },
-			{ slug: 'saci', name: 'Saci' },
-		]);
-	});
+	it('inicia com selectedCharacter undefined e carrega characters', async () => {
+		vi.mocked(charactersService.getCharacters).mockResolvedValueOnce([
+			{ id: 1, name: 'Zeca' },
+			{ id: 2, name: 'Iara' },
+		] as unknown as CharacterInterface[]);
 
-	it('deve selecionar um personagem e salvar no localStorage', async () => {
-		const { result } = renderHook(() => useCharacter());
-
-		await act(async () => {
-			result.current.selectCharacter('iara');
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
 		});
 
-		expect(localStorage.getItem(CHARACTER_STORAGE_KEY)).toBe('iara');
-		expect(getCharacterBySlug).toHaveBeenCalledWith('iara');
-		expect(result.current.selectedCharacter).toEqual({
-			slug: 'iara',
-			name: 'Mocked iara',
-		});
-	});
-
-	it('deve inicializar selectedCharacter a partir do localStorage', async () => {
-		localStorage.setItem(CHARACTER_STORAGE_KEY, 'saci');
-
-		const { result } = renderHook(() => useCharacter());
+		expect(result.current.selectedCharacter).toBeUndefined();
+		expect(result.current.isLoading).toBe(true);
 
 		await waitFor(() => {
-			expect(getCharacterBySlug).toHaveBeenCalledWith('saci');
-			expect(result.current.selectedCharacter).toEqual({
-				slug: 'saci',
-				name: 'Mocked saci',
-			});
+			expect(result.current.data).toBeDefined();
 		});
+
+		expect(charactersService.getCharacters).toHaveBeenCalledTimes(1);
+		expect(result.current.data).toHaveLength(2);
 	});
 
-	it('não deve setar selectedCharacter se localStorage estiver vazio', () => {
-		const { result } = renderHook(() => useCharacter());
+	it('seleciona personagem, salva no localStorage e atualiza estado', async () => {
+		const mockCharacter = {
+			name: 'Link',
+			slug: 'link',
+		};
+
+		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
+			mockCharacter as unknown as CharacterInterface
+		);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		result.current.selectCharacter('link');
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual(mockCharacter);
+		});
+
+		expect(localStorage.getItem('selectedCharacter')).toBe('link');
+		expect(charactersService.getCharacterBySlug).toHaveBeenCalledWith('link');
+	});
+
+	it('carrega personagem salvo no localStorage ao montar', async () => {
+		const mockCharacter = {
+			name: 'Zelda',
+			slug: 'zelda',
+		};
+
+		localStorage.setItem('selectedCharacter', 'zelda');
+
+		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
+			mockCharacter as any
+		);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual(mockCharacter);
+		});
+
+		expect(charactersService.getCharacterBySlug).toHaveBeenCalledWith('zelda');
+	});
+
+	it('não atualiza selectedCharacter ao montar se personagem salvo não existir', async () => {
+		localStorage.setItem('selectedCharacter', 'unknown');
+
+		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValueOnce(
+			null as unknown as CharacterInterface
+		);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(charactersService.getCharacterBySlug).toHaveBeenCalledWith(
+				'unknown'
+			);
+		});
+
 		expect(result.current.selectedCharacter).toBeUndefined();
 	});
 });

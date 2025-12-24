@@ -1,21 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useGameScore } from './useGameScore';
-import { gamesService } from '../../services';
-import React from 'react';
+import { scoreGamesService } from '../../services';
+import { createWrapper } from '../../test';
 
 vi.mock('../../services', () => ({
-	gamesService: {
+	scoreGamesService: {
 		getFromGameScore: vi.fn(),
 	},
 }));
-
-const createWrapper = () => {
-	const queryClient = new QueryClient();
-	return ({ children }: any) =>
-		React.createElement(QueryClientProvider, { client: queryClient }, children);
-};
 
 describe('useGameScore hook', () => {
 	beforeEach(() => {
@@ -23,7 +16,7 @@ describe('useGameScore hook', () => {
 	});
 
 	it('deve retornar dados quando userId é válido', async () => {
-		(gamesService.getFromGameScore as any).mockResolvedValueOnce({
+		(scoreGamesService.getFromGameScore as any).mockResolvedValueOnce({
 			score: 100,
 		});
 
@@ -36,7 +29,7 @@ describe('useGameScore hook', () => {
 			expect(result.current.isSuccess).toBe(true);
 		});
 
-		expect(gamesService.getFromGameScore).toHaveBeenCalledWith(
+		expect(scoreGamesService.getFromGameScore).toHaveBeenCalledWith(
 			'memory-game',
 			'iara',
 			'user123'

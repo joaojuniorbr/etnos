@@ -5,7 +5,10 @@
 			{
 				"name": "next"
 			}
-		]
+		],
+		"paths": {
+			"@etnos/components": ["./components"]
+		}
 	},
 	"include": [
 		"**/*.ts",

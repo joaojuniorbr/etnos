@@ -1,3 +1,5 @@
+import { getRandomIndex } from '@etnos/tools';
+
 const images = [
 	{
 		name: 'zeca',
@@ -21,6 +23,6 @@ const images = [
 	},
 ];
 
-const RANDOM_IMAGE = Math.floor(Math.random() * images.length);
+const RANDOM_IMAGE = getRandomIndex(images.length);
 
 export const signImage = images[RANDOM_IMAGE];

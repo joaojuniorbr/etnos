@@ -37,6 +37,7 @@ describe('MobileMenu', () => {
 				user={mockUser}
 				onLogout={() => {}}
 				selectedCharacter={{
+					id: 'iara',
 					slug: 'iara',
 					name: 'Iara',
 					description: 'Teste de Funcionamento',
@@ -105,5 +106,21 @@ describe('MobileMenu', () => {
 		await userEvent.click(screen.getByRole('button', { name: /SAIR/i }));
 
 		expect(onLogout).toHaveBeenCalled();
+	});
+
+	it('renderezia menu do usuário admin', async () => {
+		render(
+			<MobileMenu
+				open={true}
+				toggleDrawer={() => {}}
+				user={{ ...mockUser, role: ['admin'] }}
+				onLogout={() => {}}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(/Usuário Mock/i)).toBeInTheDocument();
+			expect(screen.getByText(/Área do administrador/i)).toBeInTheDocument();
+		});
 	});
 });

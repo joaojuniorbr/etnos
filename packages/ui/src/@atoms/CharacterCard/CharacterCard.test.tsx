@@ -10,6 +10,7 @@ vi.mock('next/image', () => ({
 }));
 
 const mockCharacter = {
+	id: 'aragorn',
 	slug: 'aragorn',
 	name: 'Aragorn',
 	region: 'Gondor',

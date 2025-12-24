@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGames } from './';
 import { message } from 'antd';
-import { gamesService } from '../../services';
+import { scoreGamesService } from '../../services';
 
 class MockAudio {
 	src: string;
@@ -25,7 +25,7 @@ vi.mock('antd', () => ({
 }));
 
 vi.mock('../../services', () => ({
-	gamesService: {
+	scoreGamesService: {
 		saveScore: vi.fn(),
 	},
 }));
@@ -84,11 +84,11 @@ describe('useGames hook', () => {
 		});
 
 		expect(message.error).toHaveBeenCalledWith('Usuário não encontrado!');
-		expect(gamesService.saveScore).not.toHaveBeenCalled();
+		expect(scoreGamesService.saveScore).not.toHaveBeenCalled();
 	});
 
 	it('deve salvar pontuação com sucesso', async () => {
-		(gamesService.saveScore as any).mockResolvedValueOnce('ok');
+		(scoreGamesService.saveScore as any).mockResolvedValueOnce('ok');
 
 		const { result } = renderHook(() => useGames('user123'));
 
@@ -96,7 +96,7 @@ describe('useGames hook', () => {
 			await result.current.saveGameScore('memory-game', 'iara', 200);
 		});
 
-		expect(gamesService.saveScore).toHaveBeenCalledWith(
+		expect(scoreGamesService.saveScore).toHaveBeenCalledWith(
 			'memory-game',
 			'iara',
 			200,
@@ -108,7 +108,9 @@ describe('useGames hook', () => {
 	});
 
 	it('deve mostrar erro ao falhar salvar pontuação', async () => {
-		(gamesService.saveScore as any).mockRejectedValueOnce(new Error('fail'));
+		(scoreGamesService.saveScore as any).mockRejectedValueOnce(
+			new Error('fail')
+		);
 
 		const { result } = renderHook(() => useGames('user123'));
 
@@ -116,7 +118,7 @@ describe('useGames hook', () => {
 			await result.current.saveGameScore('memory-game', 'iara', 300);
 		});
 
-		expect(gamesService.saveScore).toHaveBeenCalled();
+		expect(scoreGamesService.saveScore).toHaveBeenCalled();
 		expect(message.error).toHaveBeenCalledWith('Erro ao salvar pontuação!');
 	});
 

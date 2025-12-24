@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import {
-	CharacterInterface,
-	getAllCharacters,
-	getCharacterBySlug,
-} from '../../characters';
+
+import { useQuery } from '@tanstack/react-query';
+import { CharacterInterface, charactersService } from '../../services';
 
 const CHARACTER_STORAGE_KEY = 'selectedCharacter';
 
@@ -11,23 +9,32 @@ export const useCharacter = () => {
 	const [selectedCharacter, setSelectedCharacter] =
 		useState<CharacterInterface>();
 
-	const characters = getAllCharacters();
+	const setCharacter = (slug: string) => {
+		charactersService.getCharacterBySlug(slug).then((res) => {
+			if (res) {
+				setSelectedCharacter(res);
+			}
+		});
+	};
 
 	const selectCharacter = (character: string) => {
 		localStorage.setItem(CHARACTER_STORAGE_KEY, character);
-		setSelectedCharacter(getCharacterBySlug(character));
+		setCharacter(character);
 	};
 
 	useEffect(() => {
 		const storedCharacter = localStorage.getItem(CHARACTER_STORAGE_KEY);
 		if (storedCharacter) {
-			setSelectedCharacter(getCharacterBySlug(storedCharacter));
+			setCharacter(storedCharacter);
 		}
 	}, []);
 
 	return {
-		characters,
 		selectedCharacter,
 		selectCharacter,
+		...useQuery({
+			queryKey: ['character'],
+			queryFn: charactersService.getCharacters,
+		}),
 	};
 };

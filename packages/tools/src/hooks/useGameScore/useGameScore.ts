@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { gamesService } from '../../services';
+import { scoreGamesService } from '../../services';
 
 export const useGameScore = (
 	userId: string,
@@ -9,7 +9,7 @@ export const useGameScore = (
 	useQuery({
 		queryKey: ['games', 'score', slug, userId],
 		queryFn: () =>
-			gamesService
+			scoreGamesService
 				.getFromGameScore(slug, characterSlug, userId)
 				.then((res) => res),
 	});

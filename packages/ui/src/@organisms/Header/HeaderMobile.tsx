@@ -18,7 +18,7 @@ export const HeaderMobile = () => {
 
 	const { user } = useUser();
 
-	const { selectedCharacter, characters, selectCharacter } = useCharacter();
+	const { selectedCharacter, data, selectCharacter } = useCharacter();
 
 	const handleCharacter = (slug: string) => {
 		selectCharacter(slug);
@@ -42,7 +42,7 @@ export const HeaderMobile = () => {
 				onCancel={toggleCharacter}
 			>
 				<div className='ui:flex ui:flex-col ui:gap-2'>
-					{characters.map((character) => (
+					{data?.map((character) => (
 						<button
 							key={character.slug}
 							className={`

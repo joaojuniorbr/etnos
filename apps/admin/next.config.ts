@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	assetPrefix: '/admin',
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: '**',
+			},
+		],
+	},
 };
 
 export default nextConfig;

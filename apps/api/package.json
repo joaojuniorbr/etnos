@@ -85,7 +85,8 @@
       ".guard.ts$",
       ".dto.ts$",
       ".interface.ts$",
-      ".entity.ts$"
+      ".entity.ts$",
+      "firebase"
     ]
   }
 }

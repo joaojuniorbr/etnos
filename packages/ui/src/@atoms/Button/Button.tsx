@@ -1,11 +1,16 @@
 import { Button as ButtonAnt, ButtonProps } from 'antd';
 
-interface Props extends Omit<ButtonProps, 'type' | 'size'> {
+interface EtnosButtonProps extends Omit<ButtonProps, 'type' | 'size'> {
 	type?: ButtonProps['type'] | 'secondary';
 	size?: ButtonProps['size'] | 'xl';
 }
 
-export const Button = ({ type, size, className, ...props }: Props) => {
+export const Button = ({
+	type,
+	size,
+	className,
+	...props
+}: EtnosButtonProps) => {
 	const isSecondary = type === 'secondary';
 
 	const isXl = size === 'xl';

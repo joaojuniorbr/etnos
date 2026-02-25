@@ -20,15 +20,19 @@ export const Button = ({
 		: '';
 
 	const xlClasses = isXl
-		? 'ui:px-10! ui:py-6! ui:text-md! ui:md:text-xl! md:ui:px-12! md:ui:py-8! '
+		? 'ui:px-10! ui:py-6! ui:text-base! ui:md:text-xl! ui:md:px-12! ui:md:py-8!'
 		: '';
+
+	const classes = [secondaryClasses, xlClasses, className]
+		.filter(Boolean)
+		.join(' ');
 
 	return (
 		<ButtonAnt
 			{...props}
 			size={isXl ? 'large' : size}
 			type={isSecondary ? 'default' : type}
-			className={`${secondaryClasses} ${xlClasses} ${className || ''}`}
+			className={classes}
 		/>
 	);
 };

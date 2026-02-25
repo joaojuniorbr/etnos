@@ -1,3 +1,5 @@
+'use client';
+
 import { scoreGamesService } from '../../services';
 import { message } from 'antd';
 

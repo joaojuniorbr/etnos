@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 export const HeroHome = () => {
 	return (
-		<section className='relative px-6 pt-10 lg:px-0 lg:py-12 xl:py-20'>
+		<section className='relative px-6 pt-10 lg:py-12 xl:py-20'>
 			<div className='container mx-auto'>
 				<div className='flex items-center flex-col gap-8 lg:gap-0 lg:flex-row'>
 					<article className='flex-1 text-center lg:text-left 2xl:pr-40'>

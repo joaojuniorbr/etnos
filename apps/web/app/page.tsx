@@ -1,4 +1,4 @@
-import { HeroHome } from '@components';
+import { GameHighlight, HeroHome } from '@components';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,5 +6,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-	return <HeroHome />;
+	return (
+		<>
+			<HeroHome />
+			<GameHighlight />
+		</>
+	);
 }

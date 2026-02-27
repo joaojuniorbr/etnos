@@ -36,14 +36,6 @@ export class AuthController {
   @ApiBody({
     type: LoginDto,
     description: 'Credenciais de acesso',
-    examples: {
-      login: {
-        value: {
-          email: 'email@example.com',
-          password: 'password',
-        },
-      },
-    },
   })
   @ApiResponse({
     status: 201,

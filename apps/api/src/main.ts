@@ -20,8 +20,6 @@ async function bootstrap() {
 
   const port = parseInt(process.env.PORT) || 8080;
 
-  await app.listen(port), '0.0.0.0';
-
-  console.warn('🚀 Etnos iniciado em: ' + port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

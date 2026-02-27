@@ -59,6 +59,32 @@ O comando mostra:
 - notas/changelog que seriam montadas
 - quais plugins seriam executados
 
+## Padrao de commit no projeto
+
+Este repositório usa:
+
+- `commitizen` com `cz-conventional-changelog`
+- `commitlint` com `@commitlint/config-conventional`
+- hook `husky` em `commit-msg`
+
+Para criar commit no formato correto:
+
+```bash
+yarn commit
+```
+
+Formato esperado:
+
+```text
+type(scope): assunto
+```
+
+Exemplo:
+
+```text
+feat(home): adiciona area "Como funciona o Etnos"
+```
+
 ## Pré-requisitos no GitHub
 
 - Workflow permissions com `contents: write` (já definido no workflow).

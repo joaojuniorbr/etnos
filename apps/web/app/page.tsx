@@ -1,4 +1,4 @@
-import { GameHighlight, HeroHome, WhatLearn } from '@components';
+import { GameHighlight, HeroHome, HowWork, WhatLearn } from '@components';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,6 +11,7 @@ export default function Page() {
 			<HeroHome />
 			<GameHighlight />
 			<WhatLearn />
+			<HowWork />
 		</>
 	);
 }

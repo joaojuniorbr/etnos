@@ -131,9 +131,11 @@ describe('<ImageLibrary />', () => {
 		await user.click(option);
 
 		await waitFor(() => {
+
+		
 			const select = screen.getByTestId('select-folder');
 
-			const value = select.querySelector('.ant-select-content-value');
+			const value = select.querySelector('.ant-select-content-has-value');
 
 			expect(value).toHaveTextContent('avatars (2)');
 		});

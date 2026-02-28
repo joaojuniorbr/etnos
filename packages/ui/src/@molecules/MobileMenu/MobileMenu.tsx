@@ -1,3 +1,5 @@
+'use client';
+
 import { Drawer, Button, Menu, Image } from 'antd';
 import {
 	RiMenu3Line,

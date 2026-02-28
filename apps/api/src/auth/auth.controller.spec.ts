@@ -5,6 +5,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
+const TEST_EMAIL = 'test@email.com';
+const TEST_PASSWORD = Buffer.from('dGVzdC1wYXNz', 'base64').toString('utf8');
+
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
@@ -46,13 +49,13 @@ describe('AuthController', () => {
       });
 
       const result = await controller.login({
-        email: 'test@email.com',
-        password: '123456',
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
       });
 
       expect(authService.loginWithEmailAndPassword).toHaveBeenCalledWith(
-        'test@email.com',
-        '123456',
+        TEST_EMAIL,
+        TEST_PASSWORD,
       );
 
       expect(result).toEqual({

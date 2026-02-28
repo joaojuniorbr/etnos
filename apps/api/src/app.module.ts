@@ -4,6 +4,8 @@ import { AuthModule } from './auth';
 import { FirebaseModule } from './firebase';
 import { GamesModule } from './games/games.module';
 import { CharactersModule } from './characters/characters.module';
+import { PublicModule } from './public/public.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { CharactersModule } from './characters/characters.module';
     FirebaseModule,
     GamesModule,
     CharactersModule,
+    PublicModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [],

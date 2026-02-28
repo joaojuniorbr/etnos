@@ -4,7 +4,7 @@ import { fn } from 'storybook/test';
 
 import { Button } from '.';
 
-const meta = {
+const meta: Meta<typeof Button> = {
 	title: 'UI/@atoms/Button',
 	component: Button,
 	parameters: {
@@ -21,11 +21,15 @@ const meta = {
 			control: { type: 'boolean' },
 		},
 		type: {
-			options: ['primary', 'default', 'dashed', 'link', 'text'],
+			options: ['primary', 'default', 'dashed', 'link', 'text', 'secondary'],
+			control: { type: 'select' },
+		},
+		size: {
+			options: ['small', 'middle', 'large', 'xl'],
 			control: { type: 'select' },
 		},
 	},
-} satisfies Meta<typeof Button>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;

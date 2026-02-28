@@ -17,7 +17,7 @@ export const Header = () => {
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
 
 	return (
-		<header className='ui:bg-white ui:shadow-sm ui:w-full ui:py-4 ui:px-8'>
+		<header className='ui:bg-white ui:shadow-sm ui:w-full ui:py-4 ui:px-6'>
 			<div className='ui:container ui:mx-auto'>
 				<header className='ui:w-full ui:flex ui:justify-between ui:items-center'>
 					<a href='/'>

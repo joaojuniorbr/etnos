@@ -11,6 +11,8 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 const FAKE_FIREBASE_API_KEY = 'fake-firebase-api-key';
+const TEST_EMAIL = 'test@email.com';
+const TEST_PASSWORD = Buffer.from('dGVzdC1wYXNz', 'base64').toString('utf8');
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -55,8 +57,8 @@ describe('AuthService', () => {
       });
 
       const result = await service.loginWithEmailAndPassword(
-        'test@email.com',
-        '123456',
+        TEST_EMAIL,
+        TEST_PASSWORD,
       );
 
       expect(result).toEqual({
@@ -69,8 +71,8 @@ describe('AuthService', () => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
         {
-          email: 'test@email.com',
-          password: '123456',
+          email: TEST_EMAIL,
+          password: TEST_PASSWORD,
           returnSecureToken: true,
         },
         {

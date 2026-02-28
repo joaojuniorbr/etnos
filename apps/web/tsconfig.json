@@ -6,8 +6,10 @@
 				"name": "next"
 			}
 		],
+		"baseUrl": ".",
 		"paths": {
-			"@etnos/components": ["./components"],
+			"@components": ["./components/index.ts"],
+			"@components/*": ["./components/*"],
 			"@etnos/common": ["./common"],
 			"@etnos/hooks": ["./hooks"]
 		}

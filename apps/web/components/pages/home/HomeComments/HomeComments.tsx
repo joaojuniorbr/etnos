@@ -70,7 +70,11 @@ export const HomeComments = () => {
 								<h3 className='font-bold text-xl mb-2 mt-1'>{comment.name}</h3>
 								<div className='flex justify-center gap-1 mb-4'>
 									{Array.from({ length: comment.rate }).map((_, i) => (
-										<RiStarFill key={i} size={16} className='text-amber-400' />
+										<RiStarFill
+											key={`${comment.name}-${i}`}
+											size={16}
+											className='text-amber-400'
+										/>
 									))}
 								</div>
 								<p className='leading-5 font-light text-base'>

@@ -8,7 +8,7 @@ type ContactForm = {
 	phone: string;
 };
 
-const normalizePhone = (value: string) => value.replace(/\D/g, '');
+const normalizePhone = (value: string) => value.replaceAll(/\D/g, '');
 const formatPhoneBR = (value: string) => {
 	const digits = normalizePhone(value).slice(0, 11);
 

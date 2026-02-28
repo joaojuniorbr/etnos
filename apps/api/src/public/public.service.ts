@@ -10,7 +10,7 @@ export class PublicService {
       throw new BadRequestException('Telefone inválido.');
     }
 
-    const normalizedPhone = phone.replace(/\D/g, '');
+    const normalizedPhone = phone.replaceAll(/\D/g, '');
 
     if (normalizedPhone.length < 10 || normalizedPhone.length > 11) {
       throw new BadRequestException('Telefone inválido.');

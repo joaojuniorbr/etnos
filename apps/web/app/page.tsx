@@ -1,6 +1,7 @@
 import {
 	GameHighlight,
 	HeroHome,
+	HomeComments,
 	HowWork,
 	Journey,
 	WhatLearn,
@@ -19,6 +20,7 @@ export default function Page() {
 			<WhatLearn />
 			<HowWork />
 			<Journey />
+			<HomeComments />
 		</>
 	);
 }

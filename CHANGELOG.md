@@ -1,3 +1,7 @@
+## <small>1.0.1 (2026-02-28)</small>
+
+* ci(actions): ajuste de cache, concorrencia e formato do changelog ([c6cc91171ec24e44d4030bca4d34967ae287f011](https://github.com/joaojuniorbr/etnos/commit/c6cc91171ec24e44d4030bca4d34967ae287f011))
+
 ## 1.0.0 (2026-02-28)
 
 * chore(geral): ajuste na versao das actions ([ab5a70c](https://github.com/joaojuniorbr/etnos/commit/ab5a70c))

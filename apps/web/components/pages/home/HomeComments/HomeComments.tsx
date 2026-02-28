@@ -40,12 +40,12 @@ export const HomeComments = () => {
 					<RiArrowLeftSLine size={32} />
 				</button>
 
-				<div
+				<button
 					className='absolute top-1/2 translate-x-full -translate-y-6 -right-4 rounded-full w-12 h-12 justify-center items-center bg-yellow-400/40 hidden cursor-pointer text-primary lg:flex'
 					onClick={handleNext}
 				>
 					<RiArrowRightSLine size={32} />
-				</div>
+				</button>
 
 				<Swiper
 					ref={sliderRef}

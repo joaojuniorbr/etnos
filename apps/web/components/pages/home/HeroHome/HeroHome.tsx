@@ -1,5 +1,6 @@
 import { Button } from '@etnos/ui';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const HeroHome = () => {
 	return (
@@ -22,9 +23,11 @@ export const HeroHome = () => {
 							sociedade.
 						</p>
 
-						<Button type='secondary' size='xl' href='/cadastro'>
-							COMECE AGORA
-						</Button>
+						<Link href='/cadastro'>
+							<Button type='secondary' size='xl'>
+								COMECE AGORA
+							</Button>
+						</Link>
 					</article>
 					<div className='lg:w-140'>
 						<Image
@@ -33,7 +36,7 @@ export const HeroHome = () => {
 							height={520}
 							width={446}
 							className='w-full h-auto'
-							loading='lazy'
+							priority
 						/>
 					</div>
 				</div>

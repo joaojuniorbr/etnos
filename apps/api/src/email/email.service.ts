@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
 @Injectable()
 export class EmailService {
@@ -8,7 +12,9 @@ export class EmailService {
     this.resendApiKey = process.env.RESEND_API_KEY;
 
     if (!this.resendApiKey) {
-      throw new ConflictException('Configuração de email ausente no servidor.');
+      throw new InternalServerErrorException(
+        'Configuração de email ausente no servidor.',
+      );
     }
   }
 
@@ -38,7 +44,7 @@ export class EmailService {
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
 
-      throw new ConflictException('Falha ao enviar email.', {
+      throw new BadGatewayException('Falha ao enviar email.', {
         description: errorText,
       });
     }

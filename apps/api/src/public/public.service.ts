@@ -1,12 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EmailService } from 'src/email';
 
 @Injectable()
 export class PublicService {
   constructor(private readonly emailService: EmailService) {}
 
-  sendContactEmail(phone: string) {
+  sendContactEmail(phone: unknown) {
+    if (typeof phone !== 'string') {
+      throw new BadRequestException('Telefone inválido.');
+    }
+
     const normalizedPhone = phone.replace(/\D/g, '');
+
+    if (normalizedPhone.length < 10 || normalizedPhone.length > 11) {
+      throw new BadRequestException('Telefone inválido.');
+    }
+
     const subject = '[Etnos] Contato Landing Page';
     const html = `<p>
     Acabamos de receber um telefone:

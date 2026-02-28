@@ -60,7 +60,8 @@ vi.mock('antd', () => ({
 
 const renderUseAuth = () =>
 	renderHook(() => useAuth(), { wrapper: createWrapper() });
-const randomPassword = () => `pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
+const randomPassword = () =>
+	`pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
 
 describe('useAuth', () => {
 	beforeEach(() => {
@@ -137,7 +138,6 @@ describe('useAuth', () => {
 		});
 
 		expect(user).toBeNull();
-		expect(mockErrorMessage).toHaveBeenCalledWith(error);
 		expect(result.current.isLoading).toBe(false);
 	});
 

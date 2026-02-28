@@ -18,6 +18,14 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  private readonly profileAllowedFields = new Set([
+    'parentName',
+    'childName',
+    'childBirthDate',
+    'parentPhone',
+    'school',
+  ]);
+
   async loginWithEmailAndPassword(email: string, password: string) {
     try {
       const response = await axios.post(
@@ -63,13 +71,26 @@ export class AuthService {
     };
   }
 
-  async updateProfile(id: string, data: Partial<Record<string, unknown>>) {
+  async updateProfile(
+    id: string,
+    data: Partial<{
+      parentName: unknown;
+      childName: unknown;
+      childBirthDate: unknown;
+      parentPhone: unknown;
+      school: unknown;
+    }>,
+  ) {
     const user = await this.getProfile(id);
 
     if (!user) {
       throw new NotFoundException('Usuario nao encontrado');
     }
 
-    return this.firebaseService.update('users', user.uid, data);
+    const safeData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => this.profileAllowedFields.has(key)),
+    );
+
+    return this.firebaseService.update('users', user.uid, safeData);
   }
 }

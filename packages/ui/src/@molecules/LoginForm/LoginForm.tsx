@@ -31,11 +31,15 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
 	const onLoginWithGoogle = async () => {
 		setIsLoadingGoogle(true);
-		const user = await loginWithGoogle();
-		if (user?.email) {
-			onLoginSuccess();
-			form.resetFields();
-		} else {
+		try {
+			const user = await loginWithGoogle();
+			if (user?.email) {
+				onLoginSuccess();
+				form.resetFields();
+			}
+		} catch {
+			message.error('Erro ao entrar com Google');
+		} finally {
 			setIsLoadingGoogle(false);
 		}
 	};

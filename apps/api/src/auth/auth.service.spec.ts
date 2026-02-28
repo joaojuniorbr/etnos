@@ -157,6 +157,30 @@ describe('AuthService', () => {
       expect(result).toEqual({ ok: true });
     });
 
+    it('deve ignorar campos sensíveis no updateProfile', async () => {
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'user-123',
+      } as any);
+      firebaseService.update.mockResolvedValueOnce({
+        ok: true,
+      } as any);
+
+      await service.updateProfile(
+        'user-123',
+        {
+          parentName: 'Novo Nome',
+          role: ['admin'],
+          uid: 'hack',
+        } as any,
+      );
+
+      expect(firebaseService.update).toHaveBeenCalledWith(
+        'users',
+        'user-123',
+        { parentName: 'Novo Nome' },
+      );
+    });
+
     it('deve lançar NotFoundException quando getProfile retornar null', async () => {
       jest.spyOn(service, 'getProfile').mockResolvedValueOnce(null as any);
 

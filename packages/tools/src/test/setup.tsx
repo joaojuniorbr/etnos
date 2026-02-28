@@ -26,7 +26,7 @@ vi.mock('@etnos/tools', () => ({
 		...firebaseMock,
 		query: vi.fn(),
 		where: vi.fn((field, op, value) => ({ field, op, value })),
-		orderBy: vi.fn((a, b) => ({ a, b })),
+		orderBy: vi.fn((field, direction) => ({ field, direction })),
 	},
 	FirestoreRepository: class {
 		findMany = mockRepo.findMany;
@@ -44,7 +44,7 @@ vi.mock('../helpers', () => ({
 		...firebaseMock,
 		query: vi.fn(),
 		where: vi.fn((field, op, value) => ({ field, op, value })),
-		orderBy: vi.fn((a, b) => ({ a, b })),
+		orderBy: vi.fn((field, direction) => ({ field, direction })),
 	},
 	errorMessage: vi.fn(),
 	storageFirebase: {},

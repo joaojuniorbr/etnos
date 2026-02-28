@@ -145,7 +145,7 @@ export class AuthController {
     type: ProfileResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
-  async updateProfile(@Req() req, @Body() body) {
+  async updateProfile(@Req() req, @Body() body: UpdateProfileDto) {
     if (!req.user) {
       throw new UnauthorizedException();
     }

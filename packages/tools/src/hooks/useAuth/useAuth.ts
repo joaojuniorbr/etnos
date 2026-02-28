@@ -79,8 +79,7 @@ export const useAuth = () => {
 
 				return res.data.user;
 			})
-			.catch((error) => {
-				errorMessage(error);
+			.catch(() => {
 				setIsLoading(false);
 				return null;
 			});

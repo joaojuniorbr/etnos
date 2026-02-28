@@ -1,6 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { PublicService } from './public.service';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags, ApiProperty } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiProperty,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 class ContactDto {
   @ApiProperty({
@@ -34,7 +40,7 @@ export class PublicController {
   })
   @ApiResponse({ status: 201, description: 'Contato encaminhado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Telefone inválido.' })
-  sendContactEmail(@Body('phone') phone: string) {
-    return this.publicService.sendContactEmail(phone);
+  sendContactEmail(@Body() body: ContactDto) {
+    return this.publicService.sendContactEmail(body.phone);
   }
 }

@@ -5,7 +5,8 @@ import { message } from 'antd';
 
 const resetFieldsMock = vi.fn();
 const useAuthMock = vi.fn();
-const randomPassword = () => `pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
+const randomPassword = () =>
+	`pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
 
 vi.mock('@etnos/tools', () => ({
 	useAuth: () => useAuthMock(),
@@ -18,11 +19,13 @@ vi.mock('../../@atoms', () => ({
 		...props
 	}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
 		htmlType?: 'button' | 'submit' | 'reset';
-	}) => (
-		<button type={htmlType ?? 'button'} {...props}>
-			{children}
-		</button>
-	),
+	}) => {
+		return (
+			<button type={htmlType ?? 'button'} {...props}>
+				{children}
+			</button>
+		);
+	},
 }));
 
 vi.mock('antd', async () => {
@@ -227,7 +230,9 @@ describe('LoginForm', () => {
 
 		render(<LoginForm onLoginSuccess={onLoginSuccess} />);
 
-		fireEvent.click(screen.getByRole('button', { name: /entrar com google/i }));
+		fireEvent.click(
+			screen.getByRole('button', { name: /entrar com conta google/i })
+		);
 
 		await waitFor(() => {
 			expect(loginWithGoogle).toHaveBeenCalledTimes(1);
@@ -254,7 +259,7 @@ describe('LoginForm', () => {
 		render(<LoginForm onLoginSuccess={vi.fn()} />);
 
 		const googleButton = screen.getByRole('button', {
-			name: /entrar com google/i,
+			name: /entrar com conta google/i,
 		});
 		fireEvent.click(googleButton);
 
@@ -268,6 +273,30 @@ describe('LoginForm', () => {
 		resolveGoogle?.(null);
 
 		await waitFor(() => {
+			expect(screen.getByTestId('spin')).toHaveAttribute(
+				'data-spinning',
+				'false'
+			);
+		});
+	});
+
+	it('mostra erro quando login com Google lança exceção', async () => {
+		const loginWithGoogle = vi.fn().mockRejectedValue(new Error('google down'));
+
+		useAuthMock.mockReturnValue({
+			onSignInWithEmailAndPassword: vi.fn(),
+			isLoading: false,
+			loginWithGoogle,
+		});
+
+		render(<LoginForm onLoginSuccess={vi.fn()} />);
+
+		fireEvent.click(
+			screen.getByRole('button', { name: /entrar com conta google/i })
+		);
+
+		await waitFor(() => {
+			expect(message.error).toHaveBeenCalledWith('Erro ao entrar com Google');
 			expect(screen.getByTestId('spin')).toHaveAttribute(
 				'data-spinning',
 				'false'

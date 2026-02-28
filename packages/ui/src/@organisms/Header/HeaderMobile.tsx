@@ -26,7 +26,7 @@ export const HeaderMobile = () => {
 
 	const onLogout = async () => {
 		await onSignOut();
-		toggleDrawer();
+		setOpen(false);
 		window.open('/login', '_self');
 	};
 

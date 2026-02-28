@@ -69,4 +69,22 @@ describe('HeaderMobile', () => {
 
 		expect(mockHandleSelectedCharacter).toHaveBeenCalledWith('zeca');
 	});
+
+	it('abre menu e faz logout', async () => {
+		render(<HeaderMobile />);
+
+		const menuButton = screen.getByRole('button', { name: /menu/i });
+
+		await act(async () => {
+			fireEvent.click(menuButton);
+		});
+
+		const logoutButton = screen.getByRole('button', { name: /sair/i });
+
+		await act(async () => {
+			fireEvent.click(logoutButton);
+		});
+
+		expect(mockUseAuth.onSignOut).toHaveBeenCalled();
+	});
 });

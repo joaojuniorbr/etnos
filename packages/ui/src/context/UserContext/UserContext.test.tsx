@@ -29,6 +29,7 @@ describe('UserContext', () => {
 		vi.mocked(useAuth).mockReturnValue({
 			user: mockUser as UserProfileInterface,
 			isLoading: false,
+			isProfileLoading: false,
 			isLoggedIn: true,
 			updateUserProfile: vi.fn(),
 			onRegister: vi.fn(),

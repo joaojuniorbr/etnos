@@ -1,16 +1,49 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createWrapper } from '../../test/common';
 import { useAuth } from './useAuth';
-import { mockRepo } from '../../test';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import * as authMethods from 'firebase/auth';
 import { message } from 'antd';
+
+const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
+	mockApiGet: vi.fn(),
+	mockApiPost: vi.fn(),
+	mockErrorMessage: vi.fn((error: unknown, fallback?: string) => {
+		if (fallback) return fallback;
+		if (error instanceof Error) return error.message;
+		return 'Erro inesperado';
+	}),
+}));
+
+const storageState: Record<string, string> = {};
+
+vi.stubGlobal('localStorage', {
+	getItem: vi.fn((key: string) => storageState[key] ?? null),
+	setItem: vi.fn((key: string, value: string) => {
+		storageState[key] = value;
+	}),
+	removeItem: vi.fn((key: string) => {
+		delete storageState[key];
+	}),
+	clear: vi.fn(() => {
+		Object.keys(storageState).forEach((key) => delete storageState[key]);
+	}),
+});
+
+vi.mock('@etnos/tools', () => ({
+	authFirebase: { id: 'auth-mock' },
+	googleProvider: { id: 'google-provider-mock' },
+	api: {
+		get: mockApiGet,
+		post: mockApiPost,
+	},
+	errorMessage: mockErrorMessage,
+}));
 
 vi.mock('firebase/auth', async () => {
 	const actual = await vi.importActual('firebase/auth');
 	return {
 		...actual,
-		onAuthStateChanged: vi.fn(() => vi.fn()),
-		signInWithEmailAndPassword: vi.fn(),
 		signOut: vi.fn(),
 		sendPasswordResetEmail: vi.fn(),
 		createUserWithEmailAndPassword: vi.fn(),
@@ -20,312 +53,297 @@ vi.mock('firebase/auth', async () => {
 
 vi.mock('antd', () => ({
 	message: {
-		error: vi.fn(),
 		success: vi.fn(),
+		error: vi.fn(),
 	},
 }));
+
+const renderUseAuth = () =>
+	renderHook(() => useAuth(), { wrapper: createWrapper() });
+const randomPassword = () => `pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
 
 describe('useAuth', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		localStorage.clear();
+		mockApiGet.mockResolvedValue({ data: null });
 	});
 
-	const setupAuth = (user: any = null) => {
-		(authMethods.onAuthStateChanged as any).mockImplementation(
-			(auth: any, cb: any) => {
-				cb(user);
-				return () => {};
-			}
-		);
-	};
+	it('carrega perfil via API ao montar', async () => {
+		mockApiGet.mockResolvedValueOnce({
+			data: { uid: '123', email: 'test@test.com', parentName: 'Joao' },
+		});
 
-	it('deve carregar o perfil do usuário ao montar (Fluxo Sucesso)', async () => {
-		setupAuth({ uid: '123', email: 'test@test.com' });
-		mockRepo.findOne.mockResolvedValueOnce({ parentName: 'João' });
+		const { result } = renderUseAuth();
 
-		const { result } = renderHook(() => useAuth());
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
 
-		await waitFor(() => expect(result.current.isLoading).toBe(false));
-		expect(result.current.user?.parentName).toBe('João');
+		expect(mockApiGet).toHaveBeenCalledWith('/auth/profile');
+		expect(result.current.user?.parentName).toBe('Joao');
 		expect(result.current.isLoggedIn).toBe(true);
 	});
 
-	it('deve carregar apenas dados do firebase se não houver perfil no firestore', async () => {
-		setupAuth({ uid: '123' });
-		mockRepo.findOne.mockResolvedValueOnce(null);
+	it('retorna user null quando falha ao carregar perfil', async () => {
+		const error = new Error('profile failed');
+		mockApiGet.mockRejectedValueOnce(error);
 
-		const { result } = renderHook(() => useAuth());
+		const { result } = renderUseAuth();
 
-		await waitFor(() => expect(result.current.isLoading).toBe(false));
-		expect(result.current.user?.uid).toBe('123');
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
+
+		expect(result.current.user).toBeNull();
+		expect(mockErrorMessage).toHaveBeenCalledWith(error);
 	});
 
-	it('deve deslogar o usuário (onSignOut)', async () => {
-		setupAuth({ uid: '123' });
-		const { result } = renderHook(() => useAuth());
+	it('faz login com email/senha e salva token', async () => {
+		const password = randomPassword();
+		const apiUser = { uid: '123', email: 'test@test.com' };
+		mockApiPost.mockResolvedValueOnce({
+			data: { idToken: 'token-123', user: apiUser },
+		});
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.onSignInWithEmailAndPassword(
+				'test@test.com',
+				password
+			);
+		});
+
+		expect(mockApiPost).toHaveBeenCalledWith('/auth/login', {
+			email: 'test@test.com',
+			password,
+		});
+		expect(localStorage.getItem('etnos_auth_token')).toBe('token-123');
+		expect(user).toEqual(apiUser);
+		expect(result.current.isLoading).toBe(false);
+	});
+
+	it('trata erro no login com email/senha', async () => {
+		const error = new Error('invalid');
+		const password = randomPassword();
+		mockApiPost.mockRejectedValueOnce(error);
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.onSignInWithEmailAndPassword(
+				'err@test.com',
+				password
+			);
+		});
+
+		expect(user).toBeNull();
+		expect(mockErrorMessage).toHaveBeenCalledWith(error);
+		expect(result.current.isLoading).toBe(false);
+	});
+
+	it('faz login com Google e salva token', async () => {
+		const googleUser = {
+			uid: 'google-id',
+			email: 'google@test.com',
+			getIdTokenResult: vi.fn().mockResolvedValue({ token: 'google-token' }),
+		};
+		vi.mocked(authMethods.signInWithPopup).mockResolvedValueOnce({
+			user: googleUser,
+		} as any);
+
+		const { result } = renderUseAuth();
+
+		let response: unknown;
+		await act(async () => {
+			response = await result.current.loginWithGoogle();
+		});
+
+		expect(authMethods.signInWithPopup).toHaveBeenCalledWith(
+			{ id: 'auth-mock' },
+			{ id: 'google-provider-mock' }
+		);
+		expect(localStorage.getItem('etnos_auth_token')).toBe('google-token');
+		expect(response).toEqual(googleUser);
+	});
+
+	it('trata erro no login com Google', async () => {
+		const error = new Error('google fail');
+		vi.mocked(authMethods.signInWithPopup).mockRejectedValueOnce(error);
+		mockErrorMessage.mockReturnValueOnce('Google Error');
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.loginWithGoogle();
+		});
+
+		expect(user).toBeNull();
+		expect(message.error).toHaveBeenCalledWith('Google Error');
+	});
+
+	it('desloga com sucesso', async () => {
+		localStorage.setItem('etnos_auth_token', 'abc');
+		vi.mocked(authMethods.signOut).mockResolvedValueOnce(undefined);
+
+		const { result } = renderUseAuth();
 
 		await act(async () => {
 			await result.current.onSignOut();
 		});
 
-		expect(authMethods.signOut).toHaveBeenCalled();
-		expect(result.current.user).toBeNull();
-	});
-
-	it('deve logar com email e senha', async () => {
-		setupAuth(null);
-		const { result } = renderHook(() => useAuth());
-		(authMethods.signInWithEmailAndPassword as any).mockResolvedValueOnce({
-			user: { uid: '123' },
-		});
-
-		await act(async () => {
-			await result.current.onSignInWithEmailAndPassword(
-				'test@test.com',
-				'123456'
-			);
-		});
-
-		expect(authMethods.signInWithEmailAndPassword).toHaveBeenCalled();
-	});
-
-	it('deve tratar erro no login com email e senha', async () => {
-		setupAuth(null);
-		const { result } = renderHook(() => useAuth());
-		(authMethods.signInWithEmailAndPassword as any).mockRejectedValueOnce(
-			new Error('Auth Error')
-		);
-
-		await act(async () => {
-			const user = await result.current.onSignInWithEmailAndPassword(
-				'err@test.com',
-				'123'
-			);
-			expect(user).toBeNull();
-		});
+		expect(authMethods.signOut).toHaveBeenCalledWith({ id: 'auth-mock' });
+		expect(localStorage.getItem('etnos_auth_token')).toBeNull();
+		expect(message.success).toHaveBeenCalledWith('Desconectado com sucesso!');
 		expect(result.current.isLoading).toBe(false);
 	});
 
-	it('deve recuperar senha (onRecoveryPass)', async () => {
-		const { result } = renderHook(() => useAuth());
+	it('trata erro no onSignOut', async () => {
+		const error = new Error('signout fail');
+		vi.mocked(authMethods.signOut).mockRejectedValueOnce(error);
+		mockErrorMessage.mockReturnValueOnce('Signout Error');
+
+		const { result } = renderUseAuth();
+
+		await act(async () => {
+			await result.current.onSignOut();
+		});
+
+		expect(message.error).toHaveBeenCalledWith('Signout Error');
+		expect(result.current.isLoading).toBe(false);
+	});
+
+	it('envia email de recuperação com sucesso', async () => {
+		vi.mocked(authMethods.sendPasswordResetEmail).mockResolvedValueOnce(
+			undefined
+		);
+		const { result } = renderUseAuth();
+
 		await act(async () => {
 			await result.current.onRecoveryPass('test@test.com');
 		});
-		expect(authMethods.sendPasswordResetEmail).toHaveBeenCalled();
+
+		expect(authMethods.sendPasswordResetEmail).toHaveBeenCalledWith(
+			{ id: 'auth-mock' },
+			'test@test.com'
+		);
 		expect(message.success).toHaveBeenCalledWith(
 			'E-mail de recuperação enviado!'
 		);
+		expect(result.current.isLoading).toBe(false);
 	});
 
-	it('deve atualizar o perfil do usuário (updateUserProfile)', async () => {
-		setupAuth({ uid: '123' });
-		const { result } = renderHook(() => useAuth());
-
-		await waitFor(() => expect(result.current.user).not.toBeNull());
+	it('trata erro no onRecoveryPass', async () => {
+		const error = new Error('reset fail');
+		vi.mocked(authMethods.sendPasswordResetEmail).mockRejectedValueOnce(error);
+		mockErrorMessage.mockReturnValueOnce('Reset Error');
+		const { result } = renderUseAuth();
 
 		await act(async () => {
-			await result.current.updateUserProfile({ childName: 'Enzo' });
+			await result.current.onRecoveryPass('test@test.com');
 		});
 
-		expect(mockRepo.update).toHaveBeenCalled();
-		expect(result.current.user?.childName).toBe('Enzo');
+		expect(message.error).toHaveBeenCalledWith('Reset Error');
+		expect(result.current.isLoading).toBe(false);
 	});
 
-	it('deve falhar ao atualizar perfil se usuário não estiver logado', async () => {
-		setupAuth(null);
-		const { result } = renderHook(() => useAuth());
+	it('atualiza perfil e converte undefined para null', async () => {
+		mockApiPost.mockResolvedValueOnce({ data: { ok: true } });
+		mockApiGet.mockResolvedValueOnce({
+			data: { uid: '123', childName: 'Old' },
+		});
+		const { result } = renderUseAuth();
+
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
 
 		await act(async () => {
-			await result.current.updateUserProfile({ childName: 'Erro' });
+			await result.current.updateUserProfile({
+				childName: undefined,
+				parentName: 'Joao Silva',
+			});
 		});
 
-		expect(message.error).toHaveBeenCalledWith('Nenhum usuário autenticado.');
+		expect(mockApiPost).toHaveBeenCalledWith('/auth/profile', {
+			childName: null,
+			parentName: 'Joao Silva',
+		});
+		expect(message.success).toHaveBeenCalledWith('Perfil atualizado!');
+		expect(mockApiGet).toHaveBeenCalledTimes(2);
 	});
 
-	it('deve registrar novo usuário (onRegister)', async () => {
-		const { result } = renderHook(() => useAuth());
-		(authMethods.createUserWithEmailAndPassword as any).mockResolvedValueOnce({
-			user: { uid: 'new-user' },
-		});
+	it('trata erro no updateUserProfile', async () => {
+		const error = new Error('profile update fail');
+		mockApiPost.mockRejectedValueOnce(error);
+		mockErrorMessage.mockReturnValueOnce('Erro ao salvar perfil.');
+		const { result } = renderUseAuth();
 
 		await act(async () => {
-			const newUser = await result.current.onRegister({
+			await result.current.updateUserProfile({ parentName: 'Novo nome' });
+		});
+
+		expect(mockApiPost).toHaveBeenCalledWith('/auth/profile', {
+			parentName: 'Novo nome',
+		});
+		expect(mockErrorMessage).toHaveBeenCalledWith(
+			error,
+			'Erro ao salvar perfil.'
+		);
+		expect(message.error).toHaveBeenCalledWith('Erro ao salvar perfil.');
+	});
+
+	it('registra novo usuário com sucesso', async () => {
+		const password = randomPassword();
+		const createdUser = { uid: 'new-user' };
+		vi.mocked(authMethods.createUserWithEmailAndPassword).mockResolvedValueOnce(
+			{
+				user: createdUser,
+			} as any
+		);
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.onRegister({
 				parentEmail: 'new@test.com',
-				password: 'password',
+				password,
 				parentName: 'Pai',
+				parentPhone: '99999',
+				childName: 'Filho',
+				childBirthDate: '2020-01-01',
+				school: 'Escola',
 			});
-			expect(newUser!.uid).toBe('new-user');
 		});
 
-		expect(mockRepo.update).toHaveBeenCalled();
-	});
-
-	it('deve logar com Google e retornar o usuário', async () => {
-		const mockGoogleUser = { uid: 'google-id', email: 'google@test.com' };
-
-		vi.mocked(authMethods.signInWithPopup).mockResolvedValueOnce({
-			user: mockGoogleUser,
-		} as any);
-
-		const { result } = renderHook(() => useAuth());
-
-		let userResponse;
-		await act(async () => {
-			userResponse = await result.current.loginWithGoogle();
-		});
-
-		expect(authMethods.signInWithPopup).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.anything()
+		expect(authMethods.createUserWithEmailAndPassword).toHaveBeenCalledWith(
+			{ id: 'auth-mock' },
+			'new@test.com',
+			password
 		);
-		expect(userResponse).not.toBeNull();
-		expect(userResponse!.uid).toBe('google-id');
+		expect(user).toEqual(createdUser);
+		expect(result.current.isLoading).toBe(false);
 	});
 
-	it('deve tratar erro no login com Google', async () => {
-		const { result } = renderHook(() => useAuth());
-		(authMethods.signInWithPopup as any).mockRejectedValueOnce(
-			new Error('Google Error')
+	it('trata erro no onRegister', async () => {
+		const password = randomPassword();
+		const error = new Error('register fail');
+		vi.mocked(authMethods.createUserWithEmailAndPassword).mockRejectedValueOnce(
+			error
 		);
+		mockErrorMessage.mockReturnValueOnce('Register Error');
 
+		const { result } = renderUseAuth();
+
+		let user: unknown;
 		await act(async () => {
-			const user = await result.current.loginWithGoogle();
-			expect(user).toBeNull();
-		});
-		expect(message.error).toHaveBeenCalled();
-	});
-
-	describe('useAuth - Fluxos de Erro', () => {
-		it('deve cobrir erro no onSignOut', async () => {
-			vi.mocked(authMethods.signOut).mockRejectedValueOnce(
-				new Error('Signout Fail')
-			);
-			const { result } = renderHook(() => useAuth());
-
-			await act(async () => {
-				await result.current.onSignOut();
-			});
-
-			expect(message.error).toHaveBeenCalled();
-		});
-
-		it('deve cobrir erro no onRecoveryPass', async () => {
-			vi.mocked(authMethods.sendPasswordResetEmail).mockRejectedValueOnce(
-				new Error('Reset Fail')
-			);
-			const { result } = renderHook(() => useAuth());
-
-			await act(async () => {
-				await result.current.onRecoveryPass('test@test.com');
-			});
-
-			expect(message.error).toHaveBeenCalled();
-		});
-
-		it('deve cobrir erro no updateUserProfile', async () => {
-			(authMethods.onAuthStateChanged as any).mockImplementationOnce(
-				(auth: any, cb: any) => {
-					cb({ uid: '123' });
-					return () => {};
-				}
-			);
-
-			mockRepo.update.mockRejectedValueOnce(new Error('Update Fail'));
-			const { result } = renderHook(() => useAuth());
-
-			await waitFor(() => expect(result.current.user).not.toBeNull());
-
-			await act(async () => {
-				await result.current.updateUserProfile({ parentName: 'Novo' });
-			});
-
-			expect(message.error).toHaveBeenCalled();
-		});
-
-		it('deve cobrir erro no onRegister', async () => {
-			vi.mocked(
-				authMethods.createUserWithEmailAndPassword
-			).mockRejectedValueOnce(new Error('Register Fail'));
-			const { result } = renderHook(() => useAuth());
-
-			await act(async () => {
-				const res = await result.current.onRegister({
-					parentEmail: 'test@t.com',
-					password: '123',
-				});
-				expect(res).toBeNull();
-			});
-
-			expect(message.error).toHaveBeenCalled();
-		});
-
-		it('deve cobrir erro no getProfile', async () => {
-			mockRepo.findOne.mockRejectedValueOnce(new Error('Firestore Fail'));
-
-			(authMethods.onAuthStateChanged as any).mockImplementationOnce(
-				(auth: any, cb: any) => {
-					cb({ uid: '123' });
-					return () => {};
-				}
-			);
-
-			const { result } = renderHook(() => useAuth());
-
-			await waitFor(() => {
-				expect(result.current.isLoading).toBe(false);
+			user = await result.current.onRegister({
+				parentEmail: 'new@test.com',
+				password,
 			});
 		});
-	});
 
-	describe('useAuth - Casos Específicos de Coverage', () => {
-		it('deve converter undefined para null no cleanDataForFirestore', async () => {
-			setupAuth({ uid: '123' });
-			const { result } = renderHook(() => useAuth());
-			await waitFor(() => expect(result.current.user).not.toBeNull());
-
-			await act(async () => {
-				await result.current.updateUserProfile({
-					childName: undefined,
-					parentName: 'João Silva',
-				});
-			});
-
-			expect(mockRepo.update).toHaveBeenCalledWith(
-				'123',
-				expect.objectContaining({
-					childName: null,
-					parentName: 'João Silva',
-				})
-			);
-		});
-
-		it('deve manter o estado como null no setUser se o usuário for deslogado durante o processo', async () => {
-			setupAuth({ uid: '123' });
-			const { result } = renderHook(() => useAuth());
-			await waitFor(() => expect(result.current.user).not.toBeNull());
-
-			let resolveUpdate: (value: any) => void;
-			mockRepo.update.mockReturnValueOnce(
-				new Promise((resolve) => {
-					resolveUpdate = resolve;
-				})
-			);
-
-			let promise: Promise<any>;
-			await act(async () => {
-				promise = result.current.updateUserProfile({ childName: 'Teste' });
-			});
-
-			await act(async () => {
-				result.current.onSignOut();
-			});
-
-			await act(async () => {
-				resolveUpdate!({});
-				await promise;
-			});
-
-			expect(result.current.user).toBeNull();
-		});
+		expect(user).toBeNull();
+		expect(message.error).toHaveBeenCalledWith('Register Error');
+		expect(result.current.isLoading).toBe(false);
 	});
 });

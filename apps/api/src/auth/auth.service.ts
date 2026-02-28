@@ -10,7 +10,8 @@ import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
-  private firebaseApiKey = this.configService.get<string>('FIREBASE_API_KEY');
+  private readonly firebaseApiKey =
+    this.configService.get<string>('FIREBASE_API_KEY');
 
   constructor(
     private readonly firebaseService: FirebaseService,

@@ -16,10 +16,44 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      responseInterceptor: (response: any) => {
+        const obj = response?.obj;
+        const rawBody = response?.data ?? response?.body;
+        let body: any = obj;
 
-  const port = parseInt(process.env.PORT) || 8080;
+        if (!body && typeof rawBody === 'string') {
+          try {
+            body = JSON.parse(rawBody);
+          } catch {
+            body = undefined;
+          }
+        }
 
-  await app.listen(port, '0.0.0.0');
+        const token = body?.idToken;
+
+        if (token && typeof window !== 'undefined') {
+          window.localStorage.setItem('swagger_token', token);
+        }
+
+        return response;
+      },
+      requestInterceptor: (request: any) => {
+        if (typeof window === 'undefined') return request;
+        const token = window.localStorage.getItem('swagger_token');
+        if (token) {
+          request.headers = request.headers || {};
+          request.headers.Authorization = `Bearer ${token}`;
+        }
+        return request;
+      },
+    },
+  });
+
+  const port = Number.parseInt(process.env.PORT) || 8080;
+
+  app.listen(port, '0.0.0.0');
 }
 bootstrap();

@@ -5,6 +5,7 @@ import { message } from 'antd';
 
 const resetFieldsMock = vi.fn();
 const useAuthMock = vi.fn();
+const randomPassword = () => `pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
 
 vi.mock('@etnos/tools', () => ({
 	useAuth: () => useAuthMock(),
@@ -131,6 +132,7 @@ describe('LoginForm', () => {
 	});
 
 	it('chama onLoginSuccess quando login por email retorna usuário', async () => {
+		const password = randomPassword();
 		const onLoginSuccess = vi.fn();
 		const onSignInWithEmailAndPassword = vi.fn().mockResolvedValue({
 			email: 'user@test.com',
@@ -148,20 +150,21 @@ describe('LoginForm', () => {
 			target: { value: 'user@test.com' },
 		});
 		fireEvent.change(screen.getByPlaceholderText('Digite sua senha'), {
-			target: { value: '123456' },
+			target: { value: password },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'ENTRAR' }));
 
 		await waitFor(() => {
 			expect(onSignInWithEmailAndPassword).toHaveBeenCalledWith(
 				'user@test.com',
-				'123456'
+				password
 			);
 			expect(onLoginSuccess).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	it('mostra erro quando login por email retorna usuário inválido', async () => {
+		const password = randomPassword();
 		const onSignInWithEmailAndPassword = vi.fn().mockResolvedValue(null);
 
 		useAuthMock.mockReturnValue({
@@ -176,7 +179,7 @@ describe('LoginForm', () => {
 			target: { value: 'invalid@test.com' },
 		});
 		fireEvent.change(screen.getByPlaceholderText('Digite sua senha'), {
-			target: { value: 'wrong' },
+			target: { value: password },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'ENTRAR' }));
 
@@ -186,6 +189,7 @@ describe('LoginForm', () => {
 	});
 
 	it('mostra erro quando login por email rejeita promise', async () => {
+		const password = randomPassword();
 		const onSignInWithEmailAndPassword = vi
 			.fn()
 			.mockRejectedValue(new Error('invalid credentials'));
@@ -202,7 +206,7 @@ describe('LoginForm', () => {
 			target: { value: 'invalid@test.com' },
 		});
 		fireEvent.change(screen.getByPlaceholderText('Digite sua senha'), {
-			target: { value: 'wrong' },
+			target: { value: password },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'ENTRAR' }));
 

@@ -7,9 +7,9 @@ import {
 import {
 	storageFirebase,
 	firestoreAdapter as fs,
-	FirestoreRepository,
 	errorMessage,
-} from '@etnos/tools';
+} from '../../helpers';
+import { FirestoreRepository } from '../../firestore';
 
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 

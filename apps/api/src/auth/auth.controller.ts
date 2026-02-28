@@ -70,4 +70,25 @@ export class AuthController {
 
     return this.authService.getProfile(req.user.uid);
   }
+
+  @UseGuards(AuthGuard('firebase-auth'))
+  @Post('profile')
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário autenticado',
+    description: 'Atualiza os dados do perfil do usuário logado.',
+  })
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil atualizado com sucesso.',
+    type: ProfileResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
+  async updateProfile(@Req() req, @Body() body) {
+    if (!req.user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authService.updateProfile(req.user.uid, body);
+  }
 }

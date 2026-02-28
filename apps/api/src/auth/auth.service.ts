@@ -1,7 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { FirebaseService } from 'src/firebase';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
@@ -31,13 +36,19 @@ export class AuthService {
         },
       );
 
+      const decoded = await admin.auth().verifyIdToken(response.data.idToken);
+      const uid = decoded.uid;
+
+      const user = await this.getProfile(uid);
+
       return {
         idToken: response.data.idToken,
         refreshToken: response.data.refreshToken,
         expiresIn: response.data.expiresIn,
         localId: response.data.localId,
+        user,
       };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Email ou senha inválidos');
     }
   }
@@ -49,5 +60,15 @@ export class AuthService {
       ...data,
       uid: id,
     };
+  }
+
+  async updateProfile(id: string, data: Partial<Record<string, unknown>>) {
+    const user = await this.getProfile(id);
+
+    if (!user) {
+      throw new NotFoundException('Usuario nao encontrado');
+    }
+
+    return this.firebaseService.update('users', user.uid, data);
   }
 }

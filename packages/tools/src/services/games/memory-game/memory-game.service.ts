@@ -1,4 +1,5 @@
-import { firestoreAdapter as fs, FirestoreRepository } from '@etnos/tools';
+import { firestoreAdapter as fs } from '../../../helpers';
+import { FirestoreRepository } from '../../../firestore';
 
 export interface MemoryGameContentInterface {
 	id: string;

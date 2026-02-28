@@ -1,23 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
 	signOut,
-	signInWithEmailAndPassword,
 	sendPasswordResetEmail,
 	User,
-	onAuthStateChanged,
 	createUserWithEmailAndPassword,
 	signInWithPopup,
 } from 'firebase/auth';
 import { message } from 'antd';
-import {
-	authFirebase,
-	errorMessage,
-	googleProvider,
-	firestoreAdapter as fs,
-	FirestoreRepository,
-} from '@etnos/tools';
+import { authFirebase, errorMessage, googleProvider, api } from '@etnos/tools';
+import { useQuery } from '@tanstack/react-query';
+
+const KEY_AUTH = 'etnos_auth_token';
 
 export interface UserProfileInterface extends User {
 	id?: string;
@@ -30,13 +25,34 @@ export interface UserProfileInterface extends User {
 	role?: string[];
 }
 
-const userRepo = new FirestoreRepository<UserProfileInterface>('users');
+const userRepo: any = {
+	update: async (uid: string, data: Partial<UserProfileInterface>) =>
+		console.log('Updating user', uid, data),
+};
 
 export const useAuth = () => {
-	const [user, setUser] = useState<UserProfileInterface | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(false);
 
-	const isLoggedIn = !!user;
+	const {
+		data: user,
+		isLoading: isProfileLoading,
+		refetch: refetchProfile,
+	} = useQuery({
+		queryKey: ['profile'],
+		queryFn: async () => {
+			try {
+				const profile = (await api
+					.get(`/auth/profile`)
+					.then((res) => res.data)) as UserProfileInterface;
+
+				return profile;
+			} catch (error) {
+				errorMessage(error);
+				return null;
+			}
+		},
+		retry: 3,
+	});
 
 	const cleanDataForFirestore = (data: any) => {
 		return Object.keys(data).reduce((acc: any, key) => {
@@ -45,39 +61,42 @@ export const useAuth = () => {
 		}, {});
 	};
 
-	const getProfile = async (firebaseUser: User) => {
-		try {
-			const userProfile = await userRepo.findOne({
-				where: [fs.where('__name__', '==', firebaseUser.uid)],
-			});
-
-			if (userProfile) {
-				setUser({ ...firebaseUser, ...userProfile } as UserProfileInterface);
-			} else {
-				setUser(firebaseUser as UserProfileInterface);
-			}
-		} catch (error) {
-			errorMessage(error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+	const saveToken = (token: string) => localStorage.setItem(KEY_AUTH, token);
 
 	const onSignInWithEmailAndPassword = async (
 		email: string,
 		password: string
 	) => {
 		setIsLoading(true);
+		return api
+			.post('/auth/login', { email, password })
+			.then((res) => {
+				const { idToken } = res.data;
+
+				saveToken(idToken);
+
+				setIsLoading(false);
+
+				return res.data.user;
+			})
+			.catch((error) => {
+				errorMessage(error);
+				setIsLoading(false);
+				return null;
+			});
+	};
+
+	const loginWithGoogle = async () => {
 		try {
-			const result = await signInWithEmailAndPassword(
-				authFirebase,
-				email,
-				password
-			);
+			const result = await signInWithPopup(authFirebase, googleProvider);
+
+			const idToken = await result.user.getIdTokenResult();
+
+			saveToken(idToken.token);
+
 			return result.user;
 		} catch (error) {
-			errorMessage(error);
-			setIsLoading(false);
+			message.error(errorMessage(error));
 			return null;
 		}
 	};
@@ -86,7 +105,8 @@ export const useAuth = () => {
 		setIsLoading(true);
 		try {
 			await signOut(authFirebase);
-			setUser(null);
+			localStorage.removeItem(KEY_AUTH);
+			message.success('Desconectado com sucesso!');
 		} catch (error) {
 			message.error(errorMessage(error));
 		} finally {
@@ -107,17 +127,12 @@ export const useAuth = () => {
 	};
 
 	const updateUserProfile = async (profile: Partial<UserProfileInterface>) => {
-		if (!user) return message.error('Nenhum usuário autenticado.');
-
 		try {
-			const dataToSave = {
-				...cleanDataForFirestore(profile),
-				updatedAt: fs.serverTimestamp(),
-			};
+			const dataToSave = cleanDataForFirestore(profile);
 
-			await userRepo.update(user.uid, dataToSave);
+			await api.post('/auth/profile', dataToSave);
 
-			setUser((prev) => (prev ? { ...prev, ...profile } : null));
+			refetchProfile();
 			message.success('Perfil atualizado!');
 		} catch (error) {
 			message.error(errorMessage(error, 'Erro ao salvar perfil.'));
@@ -153,31 +168,11 @@ export const useAuth = () => {
 		}
 	};
 
-	const loginWithGoogle = async () => {
-		try {
-			const result = await signInWithPopup(authFirebase, googleProvider);
-
-			return result.user;
-		} catch (error) {
-			message.error(errorMessage(error));
-			return null;
-		}
-	};
-
-	useEffect(() => {
-		const unsubscribe = onAuthStateChanged(authFirebase, (firebaseUser) => {
-			if (firebaseUser) {
-				getProfile(firebaseUser);
-			} else {
-				setUser(null);
-				setIsLoading(false);
-			}
-		});
-		return () => unsubscribe();
-	}, []);
+	const isLoggedIn = !!user;
 
 	return {
 		isLoading,
+		isProfileLoading,
 		user,
 		isLoggedIn,
 		updateUserProfile,

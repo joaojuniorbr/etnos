@@ -4,12 +4,11 @@ import { Spin } from 'antd';
 import { useAuth } from '@etnos/tools';
 
 export const AuthProtected = ({ children }: { children: React.ReactNode }) => {
-	const { user, isLoading } = useAuth();
-
-	if (!isLoading && !user) {
+	const { user, isProfileLoading } = useAuth();
+	if (!isProfileLoading && !user) {
 		globalThis.location.href = '/login';
 		return null;
 	}
 
-	return <Spin spinning={isLoading}>{children}</Spin>;
+	return <Spin spinning={isProfileLoading}>{children}</Spin>;
 };

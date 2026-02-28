@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-if [ -f "$(dirname -- "$0")/_/husky.sh" ]; then
-  . "$(dirname -- "$0")/_/husky.sh"
+if [ "$CI" = "true" ]; then
+  exit 0
 fi
 
 yarn commitlint --edit "$1"

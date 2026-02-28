@@ -1,4 +1,5 @@
 import {
+	ContactHome,
 	GameHighlight,
 	HeroHome,
 	HomeComments,
@@ -21,6 +22,7 @@ export default function Page() {
 			<HowWork />
 			<Journey />
 			<HomeComments />
+			<ContactHome />
 		</>
 	);
 }

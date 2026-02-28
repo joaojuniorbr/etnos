@@ -25,7 +25,7 @@ describe('EmailService', () => {
     process.env.RESEND_API_KEY = 'resend-token';
     const jsonResponse = { id: 'mail-1' };
 
-    const fetchMock = jest.spyOn(global, 'fetch' as any).mockResolvedValue({
+    const fetchMock = jest.spyOn(globalThis, 'fetch' as any).mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue(jsonResponse),
     } as any);
@@ -53,7 +53,7 @@ describe('EmailService', () => {
   it('deve lançar BadGatewayException quando provedor responder erro', async () => {
     process.env.RESEND_API_KEY = 'resend-token';
 
-    jest.spyOn(global, 'fetch' as any).mockResolvedValue({
+    jest.spyOn(globalThis, 'fetch' as any).mockResolvedValue({
       ok: false,
       text: jest.fn().mockResolvedValue('provider error'),
     } as any);

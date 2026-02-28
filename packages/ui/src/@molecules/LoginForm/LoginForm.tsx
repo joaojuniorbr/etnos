@@ -68,8 +68,15 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 				<button
 					onClick={onLoginWithGoogle}
 					className='ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition'
+					aria-label='Entrar com Conta Google'
 				>
-					<img src='/images/google-icon.svg' alt='Google' className='ui:w-4' />
+					<span className='ui:w-4'>
+						<img
+							src='/images/google-icon.svg'
+							alt='Google'
+							className='ui:w-4'
+						/>
+					</span>
 					ENTRAR COM GOOGLE
 				</button>
 			</div>

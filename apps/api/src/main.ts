@@ -34,15 +34,15 @@ async function bootstrap() {
 
         const token = body?.idToken;
 
-        if (token && typeof window !== 'undefined') {
-          window.localStorage.setItem('swagger_token', token);
+        if (token && typeof globalThis.window !== 'undefined') {
+          globalThis.window.localStorage.setItem('swagger_token', token);
         }
 
         return response;
       },
       requestInterceptor: (request: any) => {
-        if (typeof window === 'undefined') return request;
-        const token = window.localStorage.getItem('swagger_token');
+        if (typeof globalThis.window === 'undefined') return request;
+        const token = globalThis.window.localStorage.getItem('swagger_token');
         if (token) {
           request.headers = request.headers || {};
           request.headers.Authorization = `Bearer ${token}`;

@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useAuth, UserProfileInterface } from '@etnos/tools';
 interface UserContextType {
-	user: UserProfileInterface | null;
+	user: UserProfileInterface | null | undefined;
 	isLoading: boolean;
 }
 

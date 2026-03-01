@@ -21,6 +21,7 @@ describe('AuthController', () => {
           useValue: {
             loginWithEmailAndPassword: jest.fn(),
             getProfile: jest.fn(),
+            updateProfile: jest.fn(),
           },
         },
       ],
@@ -46,6 +47,10 @@ describe('AuthController', () => {
         refreshToken: 'refresh',
         expiresIn: '3600',
         localId: 'uid',
+        user: {
+          uid: 'uid',
+          id: 'uid',
+        },
       });
 
       const result = await controller.login({
@@ -63,6 +68,10 @@ describe('AuthController', () => {
         refreshToken: 'refresh',
         expiresIn: '3600',
         localId: 'uid',
+        user: {
+          uid: 'uid',
+          id: 'uid',
+        },
       });
     });
   });
@@ -97,6 +106,43 @@ describe('AuthController', () => {
       );
 
       expect(authService.getProfile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('deve atualizar o perfil quando usuário autenticado existir', async () => {
+      authService.updateProfile.mockResolvedValueOnce({
+        uid: 'user-1',
+        id: 'user-1',
+        parentName: 'Joao',
+      } as any);
+
+      const req = {
+        user: {
+          uid: 'user-1',
+        },
+      };
+      const body = {
+        parentName: 'Joao',
+      };
+
+      const result = await controller.updateProfile(req, body);
+
+      expect(authService.updateProfile).toHaveBeenCalledWith('user-1', body);
+      expect(result).toEqual({
+        uid: 'user-1',
+        id: 'user-1',
+        parentName: 'Joao',
+      });
+    });
+
+    it('deve lançar UnauthorizedException no updateProfile se req.user não existir', async () => {
+      const req = {};
+
+      await expect(controller.updateProfile(req, { parentName: 'Joao' })).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(authService.updateProfile).not.toHaveBeenCalled();
     });
   });
 });

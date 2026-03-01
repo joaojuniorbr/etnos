@@ -1,6 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { CharactersService } from './characters.service';
-import { CharacterInterface } from '@etnos/tools';
+import { CharactersService, CharacterInterface } from './characters.service';
 import {
   ApiOkResponse,
   ApiOperation,

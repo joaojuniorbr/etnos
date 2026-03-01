@@ -24,13 +24,19 @@ export const HeaderMobile = () => {
 		selectCharacter(slug);
 	};
 
+	const onLogout = async () => {
+		await onSignOut();
+		setOpen(false);
+		window.open('/login', '_self');
+	};
+
 	return (
 		<>
 			<MobileMenu
 				toggleDrawer={toggleDrawer}
 				open={open}
 				user={user}
-				onLogout={onSignOut}
+				onLogout={onLogout}
 				selectedCharacter={selectedCharacter}
 				toggleCharacter={toggleCharacter}
 			/>

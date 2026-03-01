@@ -1,16 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { FirebaseService } from 'src/firebase';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
-  private firebaseApiKey = this.configService.get<string>('FIREBASE_API_KEY');
+  private readonly firebaseApiKey =
+    this.configService.get<string>('FIREBASE_API_KEY');
 
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly configService: ConfigService,
   ) {}
+
+  private readonly profileAllowedFields = new Set([
+    'parentName',
+    'childName',
+    'childBirthDate',
+    'parentPhone',
+    'school',
+  ]);
 
   async loginWithEmailAndPassword(email: string, password: string) {
     try {
@@ -31,13 +45,19 @@ export class AuthService {
         },
       );
 
+      const decoded = await admin.auth().verifyIdToken(response.data.idToken);
+      const uid = decoded.uid;
+
+      const user = await this.getProfile(uid);
+
       return {
         idToken: response.data.idToken,
         refreshToken: response.data.refreshToken,
         expiresIn: response.data.expiresIn,
         localId: response.data.localId,
+        user,
       };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Email ou senha inválidos');
     }
   }
@@ -49,5 +69,28 @@ export class AuthService {
       ...data,
       uid: id,
     };
+  }
+
+  async updateProfile(
+    id: string,
+    data: Partial<{
+      parentName: unknown;
+      childName: unknown;
+      childBirthDate: unknown;
+      parentPhone: unknown;
+      school: unknown;
+    }>,
+  ) {
+    const user = await this.getProfile(id);
+
+    if (!user) {
+      throw new NotFoundException('Usuario nao encontrado');
+    }
+
+    const safeData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => this.profileAllowedFields.has(key)),
+    );
+
+    return this.firebaseService.update('users', user.uid, safeData);
   }
 }

@@ -17,7 +17,7 @@ export class FirebaseAuthStrategy extends PassportStrategy(
   async validate(token: string) {
     try {
       return await admin.auth().verifyIdToken(token, true);
-    } catch (err) {
+    } catch {
       throw new UnauthorizedException();
     }
   }

@@ -26,7 +26,7 @@ vi.mock('@etnos/tools', () => ({
 		...firebaseMock,
 		query: vi.fn(),
 		where: vi.fn((field, op, value) => ({ field, op, value })),
-		orderBy: vi.fn((a, b) => ({ a, b })),
+		orderBy: vi.fn((field, direction) => ({ field, direction })),
 	},
 	FirestoreRepository: class {
 		findMany = mockRepo.findMany;
@@ -37,6 +37,28 @@ vi.mock('@etnos/tools', () => ({
 		findWithPaginate = mockRepo.findWithPaginate;
 	},
 	getRandomIndex: vi.fn(),
+}));
+
+vi.mock('../helpers', () => ({
+	firestoreAdapter: {
+		...firebaseMock,
+		query: vi.fn(),
+		where: vi.fn((field, op, value) => ({ field, op, value })),
+		orderBy: vi.fn((field, direction) => ({ field, direction })),
+	},
+	errorMessage: vi.fn(),
+	storageFirebase: {},
+}));
+
+vi.mock('../firestore', () => ({
+	FirestoreRepository: class {
+		findMany = mockRepo.findMany;
+		findOne = mockRepo.findOne;
+		create = mockRepo.create;
+		update = mockRepo.update;
+		delete = mockRepo.delete;
+		findWithPaginate = mockRepo.findWithPaginate;
+	},
 }));
 
 vi.mock('firebase/firestore', () => {
@@ -85,27 +107,14 @@ vi.mock('firebase/auth', () => {
 	};
 });
 
-vi.mock('firebase/firestore', () => {
-	return {
-		getFirestore: vi.fn(() => ({ firestore: 'mocked-firestore' })),
-		setDoc: vi.fn(() => Promise.resolve()),
-		doc: vi.fn(() => ({ id: 'mocked-doc' })),
-		getDoc: vi.fn(() =>
-			Promise.resolve({
-				exists: () => true,
-				data: () => ({ parentName: 'Mocked Parent' }),
-			})
-		),
-		deleteDoc: vi.fn(() => Promise.resolve()),
-		getDocs: vi.fn(() => Promise.resolve({ docs: [] })),
-		updateDoc: vi.fn(() => Promise.resolve()),
-		serverTimestamp: vi.fn(() => 'mocked-timestamp'),
-		collection: vi.fn(() => ({ id: 'mocked-collection' })),
-	};
-});
-
 vi.mock('firebase/storage', () => {
 	return {
 		getStorage: vi.fn(() => ({})),
+		ref: vi.fn(),
+		uploadBytes: vi.fn(() => Promise.resolve({})),
+		getDownloadURL: vi.fn(() =>
+			Promise.resolve('https://mockurl.com/image.png')
+		),
+		deleteObject: vi.fn(() => Promise.resolve({})),
 	};
 });

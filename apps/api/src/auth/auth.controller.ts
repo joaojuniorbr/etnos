@@ -15,12 +15,58 @@ import {
   ApiBody,
   ApiResponse,
   ApiBearerAuth,
+  ApiProperty,
 } from '@nestjs/swagger';
 import { LoginResponseDto, ProfileResponseDto } from './auth.profile.dto';
 
 class LoginDto {
+  @ApiProperty({
+    example: 'usuario@etnos.com',
+    description: 'Email de acesso do usuário.',
+  })
   email: string;
+
+  @ApiProperty({
+    description: 'Credencial secreta do usuário.',
+  })
   password: string;
+}
+
+class UpdateProfileDto {
+  @ApiProperty({
+    example: 'Joao Silva',
+    required: false,
+    description: 'Nome do responsável.',
+  })
+  parentName?: string;
+
+  @ApiProperty({
+    example: 'Enzo Silva',
+    required: false,
+    description: 'Nome da criança.',
+  })
+  childName?: string;
+
+  @ApiProperty({
+    example: '2019-01-31',
+    required: false,
+    description: 'Data de nascimento da criança (YYYY-MM-DD).',
+  })
+  childBirthDate?: string;
+
+  @ApiProperty({
+    example: '(41) 99999-1234',
+    required: false,
+    description: 'Telefone do responsável.',
+  })
+  parentPhone?: string;
+
+  @ApiProperty({
+    example: 'Escola Municipal Modelo',
+    required: false,
+    description: 'Escola da criança.',
+  })
+  school?: string;
 }
 
 @ApiTags('Autenticação')
@@ -69,5 +115,41 @@ export class AuthController {
     }
 
     return this.authService.getProfile(req.user.uid);
+  }
+
+  @UseGuards(AuthGuard('firebase-auth'))
+  @Post('profile')
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário autenticado',
+    description: 'Atualiza os dados do perfil do usuário logado.',
+  })
+  @ApiBody({
+    type: UpdateProfileDto,
+    description: 'Dados do perfil que podem ser atualizados.',
+    examples: {
+      atualizacaoBasica: {
+        summary: 'Atualização básica',
+        value: {
+          parentName: 'Joao Silva',
+          childName: 'Enzo Silva',
+          school: 'Escola Municipal Modelo',
+          parentPhone: '(41) 99999-1234',
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil atualizado com sucesso.',
+    type: ProfileResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
+  async updateProfile(@Req() req, @Body() body: UpdateProfileDto) {
+    if (!req.user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authService.updateProfile(req.user.uid, body);
   }
 }

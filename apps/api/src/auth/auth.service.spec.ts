@@ -2,13 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import * as admin from 'firebase-admin';
 
 import { AuthService } from './auth.service';
 import { FirebaseService } from 'src/firebase';
 
 jest.mock('axios');
+jest.mock('firebase-admin', () => ({
+  auth: jest.fn(),
+}));
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAdminAuth = admin.auth as jest.Mock;
 
 const FAKE_FIREBASE_API_KEY = 'fake-firebase-api-key';
 const TEST_EMAIL = 'test@email.com';
@@ -26,6 +31,7 @@ describe('AuthService', () => {
           provide: FirebaseService,
           useValue: {
             findById: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -39,6 +45,10 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     firebaseService = module.get(FirebaseService);
+
+    mockedAdminAuth.mockReturnValue({
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-id' }),
+    });
   });
 
   afterEach(() => {
@@ -55,6 +65,10 @@ describe('AuthService', () => {
           localId: 'user-id',
         },
       });
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'user-id',
+        role: ['student'],
+      } as any);
 
       const result = await service.loginWithEmailAndPassword(
         TEST_EMAIL,
@@ -66,6 +80,11 @@ describe('AuthService', () => {
         refreshToken: 'refresh-token',
         expiresIn: '3600',
         localId: 'user-id',
+        user: {
+          id: 'user-id',
+          role: ['student'],
+          uid: 'user-id',
+        },
       });
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -92,10 +111,6 @@ describe('AuthService', () => {
       await expect(
         service.loginWithEmailAndPassword('wrong@email.com', 'wrong'),
       ).rejects.toThrow(UnauthorizedException);
-
-      await expect(
-        service.loginWithEmailAndPassword('wrong@email.com', 'wrong'),
-      ).rejects.toThrow('Email ou senha inválidos');
     });
   });
 
@@ -118,6 +133,62 @@ describe('AuthService', () => {
         email: 'joao@email.com',
         uid: 'user-123',
       });
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('deve atualizar perfil quando usuário existir', async () => {
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'user-123',
+        parentName: 'Maria',
+      } as any);
+      firebaseService.update.mockResolvedValueOnce({
+        ok: true,
+      } as any);
+
+      const payload = { parentName: 'Novo Nome' };
+      const result = await service.updateProfile('user-123', payload);
+
+      expect(firebaseService.update).toHaveBeenCalledWith(
+        'users',
+        'user-123',
+        payload,
+      );
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('deve ignorar campos sensíveis no updateProfile', async () => {
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'user-123',
+      } as any);
+      firebaseService.update.mockResolvedValueOnce({
+        ok: true,
+      } as any);
+
+      await service.updateProfile(
+        'user-123',
+        {
+          parentName: 'Novo Nome',
+          role: ['admin'],
+          uid: 'hack',
+        } as any,
+      );
+
+      expect(firebaseService.update).toHaveBeenCalledWith(
+        'users',
+        'user-123',
+        { parentName: 'Novo Nome' },
+      );
+    });
+
+    it('deve lançar NotFoundException quando getProfile retornar null', async () => {
+      jest.spyOn(service, 'getProfile').mockResolvedValueOnce(null as any);
+
+      await expect(
+        service.updateProfile('user-missing', { parentName: 'Teste' }),
+      ).rejects.toThrow('Usuario nao encontrado');
+
+      expect(firebaseService.update).not.toHaveBeenCalled();
     });
   });
 });

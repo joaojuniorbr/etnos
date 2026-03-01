@@ -43,3 +43,6 @@ yarn-error.log*
 storybook-static
 
 .scannerwork
+
+
+cloudbuild.yaml

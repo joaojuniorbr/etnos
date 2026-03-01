@@ -8,10 +8,10 @@ export function Providers({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<UserProvider>
-			<QueryClientProvider client={client}>
+		<QueryClientProvider client={client}>
+			<UserProvider>
 				<MainLayout>{children}</MainLayout>
-			</QueryClientProvider>
-		</UserProvider>
+			</UserProvider>
+		</QueryClientProvider>
 	);
 }

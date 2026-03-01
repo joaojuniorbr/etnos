@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { HeaderMobile } from './HeaderMobile';
 
 const mockUser = { uid: '123', email: 'user@teste.com' };
@@ -42,6 +42,10 @@ vi.mock('../../context', () => ({
 }));
 
 describe('HeaderMobile', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	it('abre menu, abre modal e seleciona personagem', async () => {
 		render(<HeaderMobile />);
 
@@ -68,5 +72,24 @@ describe('HeaderMobile', () => {
 		});
 
 		expect(mockHandleSelectedCharacter).toHaveBeenCalledWith('zeca');
+	});
+
+	it('abre menu e faz logout', async () => {
+		render(<HeaderMobile />);
+
+		const menuButton = screen.getByRole('button', { name: /menu/i });
+
+		await act(async () => {
+			fireEvent.click(menuButton);
+		});
+
+		const logoutButton = screen.getByRole('button', { name: /sair/i });
+
+		await act(async () => {
+			fireEvent.click(logoutButton);
+		});
+
+		expect(mockUseAuth.onSignOut).toHaveBeenCalled();
+		expect(window.open).toHaveBeenCalledWith('/login', '_self');
 	});
 });

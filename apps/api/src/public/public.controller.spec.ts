@@ -30,7 +30,7 @@ describe('PublicController', () => {
   it('should delegate phone to public service', async () => {
     const phone = '(11) 99999-0000';
 
-    await controller.sendContactEmail(phone);
+    await controller.sendContactEmail({ phone } as any);
 
     expect(publicService.sendContactEmail).toHaveBeenCalledWith(phone);
   });

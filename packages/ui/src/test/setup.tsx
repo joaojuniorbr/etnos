@@ -22,6 +22,8 @@ vi.stubGlobal('getComputedStyle', () => {
 	};
 });
 
+vi.stubGlobal('open', vi.fn());
+
 export const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {

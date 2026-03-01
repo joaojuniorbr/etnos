@@ -4,6 +4,7 @@ import { mockRepo } from '../../test';
 import * as storage from 'firebase/storage';
 
 vi.mock('firebase/storage', () => ({
+	getStorage: vi.fn(() => ({})),
 	ref: vi.fn(),
 	uploadBytes: vi.fn().mockResolvedValue({}),
 	getDownloadURL: vi.fn().mockResolvedValue('http://mockurl.com/image.png'),

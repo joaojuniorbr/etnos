@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/joaojuniorbr/etnos/compare/v1.1.0...v1.1.1) (2026-03-01)
+
+### release
+
+#### 🧪 CI/CD
+
+* ajustes na release ([709403b](https://github.com/joaojuniorbr/etnos/commit/709403b6015890e21569118fffd15dda936926ba))
+
 ## 1.1.0 (2026-03-01)
 
 ### api

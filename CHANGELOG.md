@@ -1,3 +1,18 @@
+## 1.1.0 (2026-03-01)
+
+* feat(login): [CU-86afpzrwf] Autenticação e Login ([b5b930ceb242473d4623b0ad3fd33e3d607c08aa](https://github.com/joaojuniorbr/etnos/commit/b5b930ceb242473d4623b0ad3fd33e3d607c08aa))
+* test(login): [CU-86afpzrwf] Adicionado os testes da API e os de tools ([7512ef518825c9a1cd9a784fd9841cf736b797f3](https://github.com/joaojuniorbr/etnos/commit/7512ef518825c9a1cd9a784fd9841cf736b797f3))
+* test(login): adiciona testes unitarios para o componente de login ([4d176d1b792ad1829376e97fa7e13e8c3acac096](https://github.com/joaojuniorbr/etnos/commit/4d176d1b792ad1829376e97fa7e13e8c3acac096))
+* test(login): ajustes de issues do sonnar ([044e77569de1b94c76270a2f2b901dd0f6773428](https://github.com/joaojuniorbr/etnos/commit/044e77569de1b94c76270a2f2b901dd0f6773428))
+* ci(api): configuracao do deploy para o gcloud ([c586554d6ae79977430ba2a1c05f4fafe5262aff](https://github.com/joaojuniorbr/etnos/commit/c586554d6ae79977430ba2a1c05f4fafe5262aff))
+* ci(chromatic): ajuste da pipeline ([4c2347af1a8df8cd874f3455b336b1dade3f5d49](https://github.com/joaojuniorbr/etnos/commit/4c2347af1a8df8cd874f3455b336b1dade3f5d49))
+* ci(sonnar): ajustes de qualidade ([4be23991b432c0bd9572939b5b8db25d00f1ee0f](https://github.com/joaojuniorbr/etnos/commit/4be23991b432c0bd9572939b5b8db25d00f1ee0f))
+* chore(login): ajustes de code review ([56c5a0ee9701ec8fddd42284963fecea1e48e547](https://github.com/joaojuniorbr/etnos/commit/56c5a0ee9701ec8fddd42284963fecea1e48e547))
+* refactor(geral): [CU-86afpzrwf] Remoção dos arquivos node modules que estavam no projeto ([0af1b6d1f9cddb025a505c869948adbd3188af4c](https://github.com/joaojuniorbr/etnos/commit/0af1b6d1f9cddb025a505c869948adbd3188af4c))
+* refactor(login): redireciona o usuario para caso ele esteja autenticado na tela de login ([a749cc6dfc439e75b6a414055170d372e52a566e](https://github.com/joaojuniorbr/etnos/commit/a749cc6dfc439e75b6a414055170d372e52a566e))
+* fix(login): quando o user estava logado e clicava para sair ficava "preso" na tela ([ee93bedc69786b9a550a1f824b71f2e9749062d9](https://github.com/joaojuniorbr/etnos/commit/ee93bedc69786b9a550a1f824b71f2e9749062d9))
+* feat(login): [CU-86afpzrfw] Login com consumo de serviço de API mas usando firebase auth ([f2b0147d028db0c45c528d503f6aceb30989bcae](https://github.com/joaojuniorbr/etnos/commit/f2b0147d028db0c45c528d503f6aceb30989bcae))
+
 ## <small>1.0.1 (2026-02-28)</small>
 
 * ci(actions): ajuste de cache, concorrencia e formato do changelog ([c6cc91171ec24e44d4030bca4d34967ae287f011](https://github.com/joaojuniorbr/etnos/commit/c6cc91171ec24e44d4030bca4d34967ae287f011))

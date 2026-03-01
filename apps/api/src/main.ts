@@ -34,14 +34,16 @@ async function bootstrap() {
 
         const token = body?.idToken;
 
-        if (token && typeof globalThis.window !== 'undefined') {
+        if (token && globalThis.window) {
           globalThis.window.localStorage.setItem('swagger_token', token);
         }
 
         return response;
       },
       requestInterceptor: (request: any) => {
-        if (typeof globalThis.window === 'undefined') return request;
+        if (typeof globalThis.window) {
+          return request;
+        }
         const token = globalThis.window.localStorage.getItem('swagger_token');
         if (token) {
           request.headers = request.headers || {};

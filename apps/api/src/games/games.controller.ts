@@ -7,8 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { GamesService } from './games.service';
-import { ConfigGamesInterface } from './games.service';
+import { GamesService, ConfigGamesInterface } from './games.service';
 import {
   ApiBearerAuth,
   ApiOkResponse,

@@ -44,6 +44,9 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 		}
 	};
 
+	const styleButton =
+		'ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition';
+
 	return (
 		<Spin spinning={isLoading || isLoadingGoogle}>
 			<div className='ui:flex ui:flex-col ui:justify-center ui:gap-6'>
@@ -71,7 +74,7 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
 				<button
 					onClick={onLoginWithGoogle}
-					className='ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition'
+					className={styleButton}
 					aria-label='Entrar com Conta Google'
 				>
 					<span className='ui:w-4'>
@@ -81,7 +84,7 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 							className='ui:w-4'
 						/>
 					</span>
-					ENTRAR COM GOOGLE
+					<span>ENTRAR COM GOOGLE</span>
 				</button>
 			</div>
 		</Spin>

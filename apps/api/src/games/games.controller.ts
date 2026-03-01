@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
-import { ConfigGamesInterface } from '@etnos/tools';
+import { ConfigGamesInterface } from './games.service';
 import {
   ApiBearerAuth,
   ApiOkResponse,

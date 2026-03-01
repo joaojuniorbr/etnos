@@ -1,10 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
-import { ConfigGamesInterface, ScoreInterface } from '@etnos/tools';
 
 const COLLECTION_NAME = 'config-games';
 
 const COLLECTION_SCORES = 'score-games';
+
+export interface ConfigGamesInterface {
+  id?: string;
+  gameSlug: string;
+  characterSlug: string;
+  imageCoverUrl: string;
+}
+
+export interface ScoreInterface {
+  id?: string;
+  characterSlug: string;
+  score: number;
+  slug: string;
+  timestamp?: unknown;
+  userId: string;
+  createdAt?: unknown;
+}
 
 @Injectable()
 export class GamesService {

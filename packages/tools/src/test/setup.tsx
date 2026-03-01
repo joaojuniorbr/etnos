@@ -113,7 +113,7 @@ vi.mock('firebase/storage', () => {
 		ref: vi.fn(),
 		uploadBytes: vi.fn(() => Promise.resolve({})),
 		getDownloadURL: vi.fn(() =>
-			Promise.resolve('http://mockurl.com/image.png')
+			Promise.resolve('https://mockurl.com/image.png')
 		),
 		deleteObject: vi.fn(() => Promise.resolve({})),
 	};

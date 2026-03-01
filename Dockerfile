@@ -1,18 +1,30 @@
+FROM node:22-alpine AS pruner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY . .
+RUN npx turbo prune api --docker
+
+FROM node:22-alpine AS installer
+RUN apk add --no-cache libc6-compat bash openssl
+WORKDIR /app
+
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/yarn.lock ./yarn.lock
+
+RUN HUSKY=0 CI=true yarn install --frozen-lockfile
+
 FROM node:22-alpine AS builder
 WORKDIR /app
+COPY --from=installer /app/ .
+COPY --from=pruner /app/out/full/ .
 
-COPY . .
-RUN apk add --no-cache bash openssl
-RUN yarn install --frozen-lockfile
-RUN yarn build --filter=api...
+RUN npx turbo build --filter=api
 
-FROM node:22-alpine
+FROM node:22-alpine AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
-ENV PORT=8080
 
-COPY --from=builder /app ./
+COPY --from=builder /app/ .
 
 EXPOSE 8080
 CMD ["node", "apps/api/dist/main"]

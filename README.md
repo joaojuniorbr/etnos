@@ -1,414 +1,792 @@
-Este é o monorepo do projeto **Etnos**, uma plataforma educacional para crianças
-de 10 a 12 anos que utiliza jogos para ensinar sobre a rica diversidade cultural
-brasileira.
+# Etnos - Plataforma Educacional de Jogos Culturais
 
-A plataforma é composta por:
+> Uma plataforma educacional para crianças de 10 a 12 anos que utiliza **jogos interativos** para ensinar sobre a rica diversidade cultural brasileira.
 
-- **Site institucional** (público)
-- **Painel administrativo**
-- **Portal do estudante**, onde os jogos são acessados
-- **Biblioteca de componentes UI** e **biblioteca de jogos reutilizáveis**
-- **Projeto de documentação/Storybook**
-
-O monorepo é gerenciado com [Turborepo](https://turbo.build/repo/docs) e toda a
-arquitetura é construída com **TypeScript**.
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](./CHANGELOG.md)
+![Node](https://img.shields.io/badge/Node-%3E%3D18-green)
+![Yarn](https://img.shields.io/badge/Yarn-1.22.19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue)
+![License](https://img.shields.io/badge/license-UNLICENSED-lightgray)
 
 ---
 
-## Estrutura do Monorepo
+## 📋 Visão Geral
 
-O projeto é organizado em workspaces [apps](apps) e [packages](packages),
-garantindo um desenvolvimento modular e escalável.
+O **Etnos** é um monorepo moderno e escalável construído com [Turborepo](https://turbo.build/repo/docs), TypeScript e as melhores práticas de desenvolvimento web. A plataforma é composta por múltiplas aplicações (Next.js, NestJS) e bibliotecas compartilhadas de componentes e utilitários.
 
-### Aplicações
+### 🎯 Componentes Principais
 
-Interfaces de usuário e documentação:
-
-- **`apps/web`**  
-  Aplicação pública da Etnos (site institucional).
-
-- **`apps/admin`**  
-  Painel administrativo para gerenciamento da plataforma (usuários, jogos,
-  conteúdo, progresso, etc.).
-
-- **`apps/student`**  
-  Portal do estudante, onde as crianças:
-  - escolhem um personagem/guia cultural,
-  - acessam os jogos,
-  - acompanham seu progresso e pontuações.
-
-- **`apps/docs`**  
-  Projeto responsável pela documentação e pelo Storybook da biblioteca de
-  componentes (`@etnos/ui`).
-
-- **`apps/games`**  
-  Biblioteca de jogos da Etnos (`@etnos/games`), construída em React e usada
-  pelo portal do estudante. Contém a implementação dos jogos (ex.: Jogo da
-  Memória, Jogo “Adivinhe a Palavra”).
-
-### Pacotes Compartilhados
-
-Código reutilizável e configurações compartilhadas:
-
-- **`packages/ui` → `@etnos/ui`**  
-  Biblioteca de componentes React da Etnos.  
-  Inclui:
-  - componentes de UI,
-  - stories do Storybook,
-  - testes unitários com Vitest + Testing Library.
-
-- **`packages/eslint-config` → `@etnos/eslint-config`**  
-  Configuração padrão de ESLint para o monorepo.
-
-- **`packages/typescript-config` → `@etnos/typescript-config`**  
-  `tsconfig` compartilhados, garantindo uma verificação de tipos consistente.
-
-- **`packages/tailwind-config` → `@etnos/tailwind-config`**  
-  Configuração compartilhada do Tailwind CSS.
-
-- **`packages/tools` → `@etnos/tools`**  
-  Utilitários e hooks compartilhados entre as aplicações (ex.: hooks de
-  personagem, jogos, placar, etc.).  
-  Também possui testes automatizados com Vitest.
-
-### Mapa da Arquitetura
-
-```text
-/etnos
-├── apps/
-│   ├── web/           # Site institucional
-│   ├── admin/         # Painel administrativo
-│   ├── student/       # Portal do estudante (acesso aos jogos)
-│   ├── docs/          # Storybook / documentação
-│   └── games/         # Biblioteca de jogos (@etnos/games)
-│
-└── packages/
-    ├── ui/                # Biblioteca de componentes (@etnos/ui)
-    ├── eslint-config/     # Configuração ESLint
-    ├── typescript-config/ # Configuração TypeScript
-    ├── tailwind-config/   # Configuração Tailwind
-    └── tools/             # Hooks e utilitários (@etnos/tools)
-```
-
-Essa estrutura permite que a plataforma escale de forma organizada, facilitando
-a manutenção e o desenvolvimento de novas funcionalidades.
+- **Site Institucional** (`web`) - Apresentação pública da plataforma
+- **Painel Administrativo** (`admin`) - Gerenciamento de usuários, jogos e conteúdo
+- **Portal do Estudante** (`student`) - Área interativa para crianças jogarem e aprender
+- **API REST** (`api`) - Backend com NestJS e Firebase
+- **Biblioteca de Componentes** (`ui`) - Componentes React reutilizáveis
+- **Biblioteca de Jogos** (`games`) - Jogos educacionais implementados em React
+- **Documentação** (`docs`) - Storybook com documentação de componentes
 
 ---
 
-## Começando
+## 🚀 Stack Tecnológico
 
-Clone o repositório e instale as dependências:
+### Frontend
+- **Next.js 16** - Framework React com renderização otimizada
+- **React 19** - Biblioteca de UI moderna
+- **TypeScript 5.9.2** - Type safety
+- **Tailwind CSS** - CSS utility-first
+- **@tanstack/react-query** - Gerenciamento de estado assíncrono
+- **Ant Design** - Componentes UI (admin/web)
+- **Firebase SDK** - Autenticação e realtime database
+- **Swiper** - Carrosel e slides
+
+### Backend
+- **NestJS** - Framework Node.js robusto
+- **Passport.js** - Autenticação com Firebase JWT
+- **Express** - Server HTTP
+- **Firebase Admin SDK** - Acesso ao backend Firebase
+
+### Monorepo & Build
+- **Turborepo 2.7** - Orquestrção e caching inteligente
+- **Yarn Workspaces** - Gerenciamento de dependências
+- **TypeScript** - Type checking centralizado
+
+### Teste
+- **Vitest** - Testing framework moderno e rápido
+- **@testing-library** - Testing utilities
+- **Playwright** - E2E testing
+- **Jest** - Testing no backend
+- **jsdom** - Ambiente DOM para testes
+
+### Qualidade & DevOps
+- **ESLint** - Linting configurável
+- **Prettier** - Code formatting
+- **Husky** - Git hooks
+- **CommitLint** - Validação de commits
+- **Docker** - Containerização
+- **Google Cloud Build** - CI/CD pipeline
+- **Google Cloud Run** - Hospedagem serverless
+- **Vercel** - Deploy de apps Next.js
+- **SonarQube** - Análise de qualidade de código
+- **Semantic Release** - Versionamento automático
+- **Chromatic** - Testes visuais e documentação
+
+---
+
+## 📦 Requisitos
+
+- **Node.js** >= 18.x
+- **Yarn** >= 1.22.19
+- **Git**
+- **Docker** (opcional, para container local)
+
+---
+
+## 🛠️ Primeiros Passos
+
+### 1. Clonar o Repositório
 
 ```bash
 git clone https://github.com/joaojuniorbr/etnos.git
 cd etnos
+```
+
+### 2. Instalar Dependências
+
+```bash
 yarn install
 ```
 
----
+### 3. Configurar Variáveis de Ambiente
 
-## Scripts Principais (root)
+Crie arquivos `.env.local` para cada aplicação:
 
-Rodar todas as aplicações em modo de desenvolvimento:
+#### `apps/web/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+#### `apps/admin/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+#### `apps/student/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+#### `apps/api/.env`
+```env
+NODE_ENV=development
+PORT=3333
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_PRIVATE_KEY=your_private_key_json
+FIREBASE_CLIENT_EMAIL=your_firebase_service_account@your_project.iam.gserviceaccount.com
+```
+
+### 4. Iniciar em Desenvolvimento
 
 ```bash
 yarn dev
 ```
 
-Rodar uma aplicação específica:
+Isso iniciará todas as aplicações simultaneamente. Acesse:
+
+- **Web**: http://localhost:3000
+- **Admin**: http://localhost:3001
+- **Student**: http://localhost:3002
+- **API**: http://localhost:3333 (backend)
+- **Storybook**: http://localhost:6006
+
+---
+
+## 📁 Estrutura do Monorepo
+
+```
+etnos/
+├── apps/
+│   ├── web/               # Site institucional (Next.js)
+│   ├── admin/             # Painel administrativo (Next.js)
+│   ├── student/           # Portal do estudante (Next.js)
+│   ├── api/               # API REST backend (NestJS)
+│   ├── games/             # Biblioteca de jogos (React package)
+│   └── docs/              # Storybook e documentação
+│
+├── packages/
+│   ├── ui/                # @etnos/ui - Componentes React
+│   ├── tools/             # @etnos/tools - Hooks e utilitários
+│   ├── eslint-config/     # @etnos/eslint-config
+│   ├── typescript-config/ # @etnos/typescript-config
+│   └── tailwind-config/   # @etnos/tailwind-config
+│
+├── docs-site/             # Documentação MkDocs
+├── turbo.json             # Configuração Turborepo
+├── package.json           # Root package.json
+├── Dockerfile             # Docker para API
+├── cloudbuild.yaml        # Pipeline Google Cloud Build
+└── README.md              # Este arquivo
+```
+
+---
+
+## 📚 Aplicações Detalhadas
+
+### **apps/web** - Site Institucional
+
+Site público com informações sobre a plataforma.
 
 ```bash
-# Web (http://localhost:3000)
+yarn dev --filter=web          # Desenvolvimento
+yarn build --filter=web         # Build
+yarn lint --filter=web          # Lint
+yarn check-types --filter=web   # Verificar tipos
+```
+
+- **Porta**: 3000
+- **URL**: http://localhost:3000
+- **Tecnologia**: Next.js 16, React 19, Tailwind CSS
+- **Dependências**: @etnos/ui, @etnos/tools, Firebase, Ant Design
+
+---
+
+### **apps/admin** - Painel Administrativo
+
+Sistema de gerenciamento da plataforma para administradores.
+
+**Funcionalidades**:
+- Gerenciar usuários e permissões
+- Criar e editar jogos
+- Gerenciar conteúdo educacional
+- Visualizar progresso dos estudantes
+- Gerenciar escolas e turmas
+
+```bash
+yarn dev --filter=admin         # Desenvolvimento
+yarn build --filter=admin       # Build
+yarn lint --filter=admin        # Lint
+yarn check-types --filter=admin # Verificar tipos
+```
+
+- **Porta**: 3001
+- **URL**: http://localhost:3001
+- **Tecnologia**: Next.js 16, React 19, Tailwind CSS, Ant Design
+- **Dependências**: @etnos/ui, @etnos/tools
+
+---
+
+### **apps/student** - Portal do Estudante
+
+Plataforma interativa onde crianças acessam jogos e aprendem.
+
+**Funcionalidades**:
+- Seleção de personagens/guias culturais
+- Acesso aos jogos educacionais
+- Acompanhamento de progresso
+- Sistema de pontuação e badges
+- Integração com biblioteca de jogos
+
+**Rotas Principais**:
+- `/` - Home
+- `/estudante/jogos` - Seleção de jogos
+- `/estudante/jogos/jogo-da-memoria` - Jogo da Memória
+- `/estudante/jogos/advinhe` - Adivinhe a Palavra
+
+```bash
+yarn dev --filter=student         # Desenvolvimento
+yarn build --filter=student       # Build
+yarn ink --filter=student        # Lint
+yarn check-types --filter=student # Verificar tipos
+```
+
+- **Porta**: 3002
+- **URL**: http://localhost:3002
+- **Tecnologia**: Next.js 16, React 19, @etnos/games
+- **Dependências**: @etnos/ui, @etnos/tools, @etnos/games
+
+---
+
+### **apps/api** - API REST Backend
+
+Servidor NestJS que fornece dados e gerencia a lógica de negócio.
+
+**Módulos Principais**:
+- `auth/` - Autenticação com Firebase
+- `characters/` - Gerenciamento de personagens culturais
+- `games/` - Dados e metadados dos jogos
+- `schools/` - Informações de escolas
+- `media/` - Upload e gerenciamento de mídia
+- `email/` - Serviço de envio de emails
+- `firebase/` - Integração com Firebase
+
+**Endpoints**:
+```
+POST   /auth/login              - Login
+POST   /auth/register           - Registro
+GET    /characters              - Listar personagens
+POST   /characters              - Criar personagem
+GET    /games                   - Listar jogos
+POST   /games                   - Criar jogo
+GET    /schools                 - Listar escolas
+POST   /media/upload            - Upload de arquivo
+```
+
+```bash
+yarn dev --filter=api           # Desenvolvimento com watch
+yarn build --filter=api         # Build
+yarn start --filter=api         # Iniciar produção
+yarn test --filter=api          # Rodar testes
+yarn lint --filter=api          # Lint
+```
+
+- **Porta**: 3333
+- **URL**: http://localhost:3333
+- **Tecnologia**: NestJS, Express, Firebase Admin SDK
+- **Database**: Firebase Firestore
+
+---
+
+### **apps/games** - Biblioteca de Jogos
+
+Componentes React reutilizáveis que implementam os jogos educacionais.
+
+**Jogos Implementados**:
+1. **Jogo da Memória** (`MemoryGame`)
+   - Encontrar pares de cartas
+   - Sistema de pontuação
+   - Dificuldades progressivas
+
+2. **Adivinhe a Palavra** (`GuessGame`)
+   - Adivinhar palavras
+   - Dicas personalizadas
+   - Temas culturais
+
+```bash
+yarn dev --filter=games                # Desenvolvimento
+yarn build --filter=games              # Build completo
+yarn build:components --filter=games   # Build TypeScript
+yarn build:styles --filter=games       # Build Tailwind CSS
+yarn check-types --filter=games        # Verificar tipos
+```
+
+- **Tecnologia**: React 19, TypeScript, Tailwind CSS
+- **Exporta**: Componentes via `@etnos/games`
+- **Consumido por**: `apps/student`
+
+---
+
+### **apps/docs** - Storybook & Documentação
+
+Documentação interativa de componentes usando Storybook.
+
+```bash
+yarn dev --filter=@etnos/docs    # Desenvolvimento
+yarn build --filter=@etnos/docs  # Build estático
+yarn test --filter=@etnos/docs   # Testes das stories
+```
+
+- **Porta**: 6006
+- **URL Local**: http://localhost:6006
+- **URL Produção**: [Chromatic](https://main--691f7645d388cc8aa2a047b6.chromatic.com/?path=/docs/configure-your-project--docs)
+- **Tecnologia**: Storybook 8, Vitest, Playwright
+- **Integração**: Chromatic para testes visuais
+
+---
+
+## 📦 Pacotes Compartilhados
+
+### **packages/ui** - @etnos/ui
+
+Biblioteca centralizada de componentes React reutilizáveis.
+
+**Estrutura**:
+- `@atoms/` - Componentes básicos (Button, Input, etc.)
+- `@molecules/` - Componentes compostos (Card, Form, etc.)
+- `@organisms/` - Componentes complexos (Header, Footer, etc.)
+- `@templates/` - Layouts de página
+
+```bash
+yarn build --filter=@etnos/ui      # Build
+yarn test --filter=@etnos/ui       # Rodar testes
+yarn test --filter=@etnos/ui -- --watch  # Watch mode
+yarn test --filter=@etnos/ui -- test:ui  # UI do Vitest
+```
+
+- **Testes**: Vitest + @testing-library/react
+- **Cobertura**: Relatórios de cobertura
+- **Documentação**: Stories no Storybook
+
+---
+
+### **packages/tools** - @etnos/tools
+
+Hooks React customizados e utilitários compartilhados.
+
+**Estrutura**:
+- `helpers/` - Funções utilitárias puras
+- `hooks/` - React hooks customizados
+- `services/` - Classes de serviço (API, Firebase, etc.)
+- `firestore/` - Cliente Firestore configurado
+- `test/` - Utilitários de teste
+
+```bash
+yarn build --filter=@etnos/tools   # Build
+yarn test --filter=@etnos/tools    # Rodar testes
+yarn test --filter=@etnos/tools -- --watch  # Watch mode
+```
+
+- **Testes**: Vitest
+- **Cobertura**: Relatórios de cobertura
+
+---
+
+### **packages/eslint-config** - @etnos/eslint-config
+
+Configuração compartilhada do ESLint.
+
+Inclui:
+- `base.js` - Regras base JavaScript/TypeScript
+- `react-internal.js` - Regras React
+- `next.js` - Regras Next.js específicas
+
+---
+
+### **packages/typescript-config** - @etnos/typescript-config
+
+Configurações TypeScript compartilhadas.
+
+Inclui:
+- `base.json` - Configuração base
+- `nextjs.json` - Configuração Next.js
+- `react-library.json` - Configuração para bibliotecas React
+
+---
+
+### **packages/tailwind-config** - @etnos/tailwind-config
+
+Tema e configuração centralizada do Tailwind CSS.
+
+Inclui:
+- Paleta de cores
+- Tipografia
+- Componentes customizados
+- Breakpoints
+
+---
+
+## 📝 Scripts RootMondo
+
+Todos os comandos abaixo são executados no contexto do monorepo usando Turborepo.
+
+### Desenvolvimento
+
+```bash
+# Iniciar todas as aplicações simultaneamente
+yarn dev
+
+# Iniciar aplicações específicas
 yarn dev --filter=web
-
-# Admin (http://localhost:3001)
 yarn dev --filter=admin
-
-# Student (http://localhost:3002)
 yarn dev --filter=student
-
-# Docs / Storybook host (ver seção Storybook)
+yarn dev --filter=api
+yarn dev --filter=games
+yarn dev --filter=@etnos/ui
 yarn dev --filter=@etnos/docs
 ```
 
-Build de todas as aplicações:
+### Build
 
 ```bash
+# Build de todas as aplicações
 yarn build
-```
 
-Build de uma aplicação específica:
-
-```bash
+# Build de aplicação específica
 yarn build --filter=web
+yarn build --filter=admin
+yarn build --filter=student
+yarn build --filter=api
+
+# Verificar tipos em tudo
+yarn check-types
 ```
 
----
-
-## Jogos da Plataforma
-
-Os jogos da Etnos são construídos como **componentes React reutilizáveis** no
-workspace **[apps/games](apps/games)** (`@etnos/games`) e consumidos pelo portal
-do estudante em **`apps/student`**.
-
-### Onde estão os jogos no código
-
-- **Biblioteca de jogos**
-  - Diretório: [[apps/games](apps/games)](apps/games)
-  - Arquivos principais:
-    - [apps/games/src/games/MemoryGame/MemoryGame.tsx](apps/games/src/games/MemoryGame/MemoryGame.tsx)
-    - [apps/games/src/games/GuessGame/GuessGame.tsx](apps/games/src/games/GuessGame/GuessGame.tsx)
-
-- **Integração com o portal do estudante**
-  - Seleção de jogos:
-    - [apps/student/app/jogos/page.tsx](apps/student/app/jogos/page.tsx)
-    - [apps/student/components/@organisms/GameSelect/GameSelect.tsx](apps/student/components/@organisms/GameSelect/GameSelect.tsx)
-  - Rotas dos jogos:
-    - [apps/student/app/jogos/jogo-da-memoria/page.tsx](apps/student/app/jogos/jogo-da-memoria/page.tsx)
-    - [apps/student/app/jogos/advinhe/page.tsx](apps/student/app/jogos/advinhe/page.tsx)
-  - Componente wrapper de jogos:
-    - [apps/student/components/@molecules/Games/Games.tsx](apps/student/components/@molecules/Games/Games.tsx)
-    - [apps/student/components/@molecules/CardGame/CardGame.tsx](apps/student/components/@molecules/CardGame/CardGame.tsx)
-
-### Tipos de jogos atualmente implementados
-
-1. **Jogo da Memória ([MemoryGame](apps/games/dist/games/MemoryGame))**
-
-2. **Jogo “Adivinhe a Palavra” ([GuessGame](apps/games/dist/games/GuessGame))**
-
-### Como o estudante acessa os jogos
-
-Fluxo no portal do estudante (`apps/student`):
-
-1. O estudante acessa a **Área do Estudante**.
-2. Seleciona um **personagem/guia cultural** (via `CharacterSelect`).
-3. Navega para a página de **seleção de jogos**:
-   - Rota: `/estudante/jogos`
-   - Arquivo: [apps/student/app/jogos/page.tsx](apps/student/app/jogos/page.tsx)
-   - Componente principal: `GameSelect`
-4. Na tela de seleção, vê os **cards de jogos** (`CardGame`) e, ao escolher um:
-   - é redirecionado para:
-     - `/estudante/jogos/jogo-da-memoria` ou
-     - `/estudante/jogos/advinhe`,
-   - já com o personagem escolhido integrado à experiência do jogo.
-
-### Como rodar os jogos localmente
-
-Os jogos rodam dentro do **portal do estudante**. Para testar como o usuário
-final:
+### Testes
 
 ```bash
-# No root do monorepo
-yarn dev
-```
-
-Depois, acesse:
-
-- Portal do estudante:  
-  `http://localhost:3000` (porta padrão do `apps/student`)
-
-Rotas úteis:
-
-- Seleção de jogos:  
-  `http://localhost:3000/estudante/jogos`
-
-- Jogo da Memória:  
-  `http://localhost:3000/estudante/jogos/jogo-da-memoria`
-
-- Adivinhe a Palavra:  
-  `http://localhost:3000/estudante/jogos/advinhe`
-
-### Desenvolvendo na biblioteca `@etnos/games`
-
-Para trabalhar diretamente na biblioteca de jogos:
-
-```bash
-cd apps/games
-
-# Build de estilos e componentes
-yarn build
-
-# Ou, durante desenvolvimento, com watch de TypeScript
-yarn dev
-```
-
-Scripts definidos em [apps/games/package.json](apps/games/package.json):
-
-- `dev`: `tsc --watch && npm run build:styles`
-- `build:styles`: build do CSS com Tailwind para `dist/index.css`
-- `build:components`: build dos componentes TypeScript para `dist`
-- `build`: roda `build:styles` + `build:components`
-- `check-types`: `tsc --noEmit`
-
-A biblioteca exporta os jogos principais em:
-
-```ts
-// apps/games/src/games/index.ts
-export * from './GuessGame';
-export * from './MemoryGame';
-```
-
-Assim, o portal do estudante importa os componentes de jogo diretamente de
-`@etnos/games`.
-
----
-
-## Testes
-
-### Visão Geral
-
-Os testes do monorepo são orquestrados pelo Turborepo:
-
-```bash
+# Rodar todos os testes
 yarn test
-```
 
-Esse comando roda a task `test` em todos os workspaces que a definem (veja
-[(turbo.json)](turbo.json)).
+# Testes com cobertura
+yarn test -- --coverage
 
-Atualmente os principais pacotes com testes são:
+# Watch mode
+yarn test -- --watch
 
-- **`packages/ui`** – testes de componentes
-- **`packages/tools`** – testes de hooks e serviços
-- **`apps/docs`** – testes integrados com Storybook (via Vitest + Playwright)
-
-### Tecnologias de Teste
-
-- **Vitest**  
-  Framework de testes (unitários e de integração).
-
-- **@testing-library/react / @testing-library/dom**  
-  Utilizados em `@etnos/ui` e `@etnos/tools` para testes baseados em
-  comportamento do usuário.
-
-- **jsdom**  
-  Ambiente DOM para testes de componentes React.
-
-- **Playwright + @vitest/browser-playwright**  
-  Utilizados em `apps/docs` para rodar testes das stories do Storybook em
-  navegador real (Chromium).
-
-### Scripts de Teste por Pacote
-
-#### `packages/ui` (`@etnos/ui`)
-
-```bash
-# Rodar testes uma vez com cobertura
+# Testes de aplicação específica
 yarn test --filter=@etnos/ui
-
-# Modo watch
-yarn test --filter=@etnos/ui -- --watch
-
-# UI do Vitest
-yarn test --filter=@etnos/ui -- test:ui
-```
-
-Scripts definidos no [`packages/ui/package.json`](packages/ui/package.json):
-
-- `test`: `vitest --coverage --watch=false`
-- `test:watch`: `vitest --watch --coverage`
-- `test:ui`: `vitest --ui --coverage --open=false`
-
-#### `packages/tools` (`@etnos/tools`)
-
-```bash
-# Rodar testes de hooks/serviços
 yarn test --filter=@etnos/tools
 ```
 
-Script no [`packages/tools/package.json`](packages/tools/package.json):
+### Qualidade de Código
 
-- `test`: `vitest --watch=false --coverage`
+```bash
+# Lint em tudo
+yarn lint
 
-#### `apps/docs` – Testes de Stories do Storybook
+# Lint de aplicação específica
+yarn lint --filter=web
 
-A configuração de testes de stories fica em
-[`apps/docs/vitest.config.ts`](apps/docs/vitest.config.ts), usando o plugin
-`@storybook/addon-vitest` e Playwright.
+# Verificar tipos TypeScript
+yarn check-types
 
-Exemplo de execução:
+# Formatar código
+yarn format
+```
+
+### Git & Release
+
+```bash
+# Commit com commitizen (validação automática)
+yarn commit
+
+# Validar commit
+yarn commit:check
+
+# Release automática com semântica (CI/CD)
+yarn release
+
+# Preparar git hooks (husky)
+yarn prepare
+```
+
+---
+
+## 🎮 Desenvolvendo Jogos
+
+Os jogos são componentes React em `apps/games` e são consumidos por `apps/student`.
+
+### Estrutura de um Jogo
+
+```typescript
+// apps/games/src/games/MyGame/MyGame.tsx
+import React from 'react';
+
+interface MyGameProps {
+  characterId: string;
+  onComplete?: (score: number) => void;
+}
+
+export const MyGame: React.FC<MyGameProps> = ({ characterId, onComplete }) => {
+  // Implementação do jogo
+  return <div>Meu Jogo</div>;
+};
+```
+
+### Adicionar Novo Jogo
+
+1. Criar arquivo em `apps/games/src/games/MyGame/MyGame.tsx`
+2. Implementar componente React
+3. Exportar em `apps/games/src/games/index.ts`
+4. Adicionar rota em `apps/student/app/jogos/[slug]/page.tsx`
+5. Registrar em admin panel
+
+### Rodando Jogos Localmente
+
+```bash
+# 1. Iniciar o desenvolvimento geral
+yarn dev
+
+# 2. Acessar http://localhost:3002/estudante/jogos
+# 3. Selecionar um jogo
+
+# Para desenvolvimento direto na biblioteca
+cd apps/games
+yarn dev
+```
+
+---
+
+## 🧪 Testes
+
+### Visão Geral
+
+O monorepo usa **Vitest** para testes moderno e rápido.
+
+```bash
+# Rodar todos os testes
+yarn test
+
+# Modo watch
+yarn test -- --watch
+
+# Com cobertura
+yarn test -- --coverage
+```
+
+### Testes por Pacote
+
+#### @etnos/ui - Componentes
+
+```bash
+yarn test --filter=@etnos/ui
+yarn test --filter=@etnos/ui -- --watch
+yarn test --filter=@etnos/ui -- test:ui    # UI visual
+```
+
+#### @etnos/tools - Hooks e Serviços
+
+```bash
+yarn test --filter=@etnos/tools
+yarn test --filter=@etnos/tools -- --watch
+```
+
+#### apps/api - Backend
+
+```bash
+yarn test --filter=api
+yarn test:watch --filter=api
+yarn test:cov --filter=api     # Com cobertura
+yarn test:e2e --filter=api     # E2E tests
+```
+
+#### apps/docs - Storybook Stories
 
 ```bash
 cd apps/docs
 npx vitest
-# ou, via Turbo (se adicionado script "test" no futuro)
-# yarn test --filter=@etnos/docs
 ```
+
+### Melhores Práticas
+
+- Use `@testing-library` para testes focados no comportamento
+- Mantenha testes próximos aos componentes
+- Sempre teste casos de borda (edge cases)
+- Aim para >80% de cobertura
 
 ---
 
-## Storybook
+## 📚 Storybook
 
-O Storybook do projeto roda a partir de **`apps/docs`**, consumindo as stories
-de `packages/ui` e as stories locais em `apps/docs/stories`.
+Documentação interativa de componentes.
 
-### Como rodar o Storybook localmente
-
-No root do monorepo:
+### Rodar Storybook
 
 ```bash
+# Modo desenvolvimento
 yarn dev --filter=@etnos/docs
+
+# Ou entrar na pasta
+cd apps/docs
+yarn dev
 ```
 
-Ou diretamente dentro de `apps/docs`:
+**URL**: http://localhost:6006
+
+### Build para Produção
 
 ```bash
 cd apps/docs
-yarn dev        # alias para: storybook dev -p 6006 --no-open
+yarn build
 ```
 
-Por padrão, o Storybook sobe na porta `6006`:
+### Publicação em Chromatic
 
-- **URL local**: http://localhost:6006
+A publicação é automática via GitHub Actions quando há push para `main`.
 
-### Build do Storybook
+**URL Publicada**: [Chromatic Dashboard](https://main--691f7645d388cc8aa2a047b6.chromatic.com/?path=/docs/configure-your-project--docs)
 
-Para gerar o build estático do Storybook:
+---
+
+## 🚀 Deployment
+
+### Deploying Next.js Apps (Vercel)
+
+As aplicações `web`, `admin` e `student` estão configuradas para deploy em Vercel.
 
 ```bash
-cd apps/docs
-yarn build      # alias para: storybook build
-# ou:
-yarn build-storybook
+# Build local
+yarn build --filter=web
+
+# Vercel automatically deploys on push to main
 ```
 
-Os artefatos estáticos são produzidos em `storybook-static/` (configurado em
-[[turbo.json](cci:7://file:///Users/joaojunior/WORK/faculdade/IFPR/ETNOS/etnos/turbo.json)](turbo.json)
-como output de build).
+### Deploying API (Google Cloud Run)
 
-### Integração com Chromatic
+A API é containerizada com Docker e deployada em Cloud Run.
 
-O projeto utiliza **Chromatic** para publicação e revisão visual das stories do
-Storybook.
+```bash
+# Build da image
+docker build -t etnos-api .
 
-- Storybook publicado:  
-  [Acessar no Chromatic](https://www.chromatic.com/library?appId=691f7645d388cc8aa2a047b6)
+# Run local
+docker run -p 3333:3333 etnos-api
 
----
+# Deploy automático via Google Cloud Build quando há push
+```
 
-## UI/UX
-
-- **Storybook (produção / Chromatic)**  
-  [https://www.chromatic.com/library?appId=691f7645d388cc8aa2a047b6](https://www.chromatic.com/library?appId=691f7645d388cc8aa2a047b6)
-
-- **Protótipo no Figma**  
-  [https://www.figma.com/proto/DC1bYnTWGpp1ppCLhuOm1e/Etnos](https://www.figma.com/proto/DC1bYnTWGpp1ppCLhuOm1e/Etnos?node-id=2-6&p=f&t=D7YYcgs2oQdpQxIR-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=2%3A6)
+**CI/CD Pipeline** (`cloudbuild.yaml`):
+1. Build Docker image
+2. Push para Artifact Registry
+3. Deploy para Cloud Run
 
 ---
 
-## Qualidade e Ferramentas
+## 🔧 Troubleshooting
 
-- **Lint** (ESLint):
+### Portfólio já em uso
 
-  ```bash
-  yarn lint
-  ```
+Se uma porta estiver em uso:
 
-- **Checagem de tipos** (TypeScript):
+```bash
+# Encontrar processo na porta
+lsof -i :3000
 
-  ```bash
-  yarn check-types
-  ```
+# Matar processo
+kill -9 <PID>
+```
 
-Esses comandos são orquestrados pelo Turborepo e executam as tasks
-correspondentes em cada workspace que as declara.
+### Limpar cache do Turborepo
+
+```bash
+# Remover cache
+rm -rf .turbo
+
+# Reconstruir
+yarn build
+```
+
+### Problemas com dependências
+
+```bash
+# Reinstalar tudo
+rm -rf node_modules
+rm yarn.lock
+yarn install
+```
+
+### Erro de tipos TypeScript
+
+```bash
+# Verificar todos os tipos
+yarn check-types
+
+# Reparar tipos em pacote específico
+yarn check-types --filter=@etnos/ui
+```
+
+---
+
+## 📖 Documentação Adicional
+
+- **MkDocs**: [docs-site/](docs-site/) - Documentação do projeto
+- **Figma**: [Protótipo UI/UX](https://www.figma.com/proto/DC1bYnTWGpp1ppCLhuOm1e/Etnos?node-id=2-6&p=f&t=D7YYcgs2oQdpQxIR-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=2%3A6)
+- **Chromatic**: [Storybook em Produção](https://main--691f7645d388cc8aa2a047b6.chromatic.com/?path=/docs/configure-your-project--docs)
+- **GitHub**: [Repositório](https://github.com/joaojuniorbr/etnos)
+
+---
+
+## 📋 Convensões do Projeto
+
+### Commits
+
+Utilizamos **Conventional Commits** para melhor rastreabilidade:
+
+```
+feat: adicionar novo jogo
+fix: corrigir bug na autenticação
+docs: atualizar README
+style: formatar código
+refactor: reorganizar estrutura
+test: adicionar testes
+chore: atualizar dependências
+```
+
+Use `yarn commit` para criar commits validados.
+
+### Versionamento
+
+- **Semântica**: MAJOR.MINOR.PATCH
+- **Automático**: Via `semantic-release`
+- **Release** no `main` triggers automático
+
+---
+
+## 🤝 Contribuições
+
+1. Crie uma branch (`git checkout -b feature/amazing-feature`)
+2. Commit suas mudanças (`yarn commit`)
+3. Push para a branch (`git push origin feature/amazing-feature`)
+4. Abra um Pull Request
+
+---
+
+## 📄 Licença
+
+UNLICENSED - Todos os direitos reservados
+
+---
+
+## ✨ Últimas Mudanças
+
+Para ver o histórico completo de mudanças, consulte [CHANGELOG.md](CHANGELOG.md).
+
+**Versão Atual**: 1.0.1 (28 de Fevereiro de 2026)

@@ -12,7 +12,7 @@ import {
 	RiImageLine,
 	RiSchoolLine,
 } from 'react-icons/ri';
-import { CharacterInterface, UserProfileInterface } from '@etnos/tools';
+import type { CharacterInterface, UserProfileInterface } from '@etnos/types';
 
 interface MobileMenuProps {
 	open?: boolean;

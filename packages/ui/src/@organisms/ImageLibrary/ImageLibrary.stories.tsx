@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ImageLibrary } from './ImageLibrary';
-import { UserProfileInterface } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 
 const mockUser = {
 	email: 'iara@etnos.com',

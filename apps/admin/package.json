@@ -15,7 +15,8 @@
 		"@etnos/tools": "*",
 		"next": "^16.0.7",
 		"react": "^19.1.0",
-		"react-dom": "^19.1.0"
+		"react-dom": "^19.1.0",
+		"@etnos/types": "*"
 	},
 	"devDependencies": {
 		"@next/eslint-plugin-next": "^16.0.7",

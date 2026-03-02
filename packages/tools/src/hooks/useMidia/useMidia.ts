@@ -1,7 +1,8 @@
 'use client';
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { MidiaInterface, midiaService } from '../../services';
+import type { MidiaInterface } from '@etnos/types';
+import { midiaService } from '../../services';
 
 export const useMidia = (userId?: string, limit = 10, folder?: string) => {
 	const infiniteQuery = useInfiniteQuery({

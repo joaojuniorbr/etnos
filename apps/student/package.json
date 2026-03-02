@@ -17,7 +17,8 @@
 		"dayjs": "^1.11.18",
 		"next": "^16.0.7",
 		"react": "^19.1.0",
-		"react-dom": "^19.1.0"
+		"react-dom": "^19.1.0",
+		"@etnos/types": "*"
 	},
 	"devDependencies": {
 		"@etnos/eslint-config": "*",

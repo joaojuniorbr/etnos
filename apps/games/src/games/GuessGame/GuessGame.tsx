@@ -11,12 +11,12 @@ import {
 } from 'react-icons/ri';
 
 import {
-	GamesEnum,
 	getRandomIndex,
 	useCharacter,
 	useGames,
 	useGameScore,
 } from '@etnos/tools';
+import { GamesEnum } from '@etnos/types';
 
 import { GuessGameContent } from './GuessGameContent';
 import { GuessGameContentInterface } from './GuessGameHelper';

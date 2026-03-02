@@ -17,11 +17,8 @@ import { FormCharacter } from '@etnos/components';
 import { useState } from 'react';
 
 import { RiAddLine, RiEditLine } from 'react-icons/ri';
-import {
-	CharacterInterface,
-	charactersService,
-	useCharacter,
-} from '@etnos/tools';
+import { charactersService, useCharacter } from '@etnos/tools';
+import type { CharacterInterface } from '@etnos/types';
 
 export default function PersonagensPage() {
 	const [isLoading, setIsLoading] = useState<boolean>(false);

@@ -1,16 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
+import type { CharacterInterface } from '@etnos/types';
 
 const COLLECTION_NAME = 'character';
-
-export interface CharacterInterface {
-  id: string;
-  name: string;
-  region: string;
-  description: string;
-  slug: string;
-  imageUrl?: string;
-}
 
 @Injectable()
 export class CharactersService {

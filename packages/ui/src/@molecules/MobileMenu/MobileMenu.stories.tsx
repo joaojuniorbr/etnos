@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MobileMenu } from './MobileMenu';
-import { UserProfileInterface } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 
 const meta: Meta<typeof MobileMenu> = {
 	title: 'UI/@molecules/MobileMenu',

@@ -1,12 +1,8 @@
 'use client';
 
 import { Button, DatePicker, Divider, Form, Image, Input } from 'antd';
-import {
-	GameNameEnum,
-	scoreGamesService,
-	ScoreInterface,
-	useAuth,
-} from '@etnos/tools';
+import { scoreGamesService, useAuth } from '@etnos/tools';
+import { GameNameEnum, type ScoreInterface } from '@etnos/types';
 import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 
@@ -21,7 +17,7 @@ export const ProfilePage = () => {
 
 	const getScore = useCallback(async () => {
 		if (user) {
-			const allScore = await scoreGamesService.getScore(user.uid);
+			const allScore = (await scoreGamesService.getScore(user.uid)) as ScoreInterface[];
 
 			setGames(allScore);
 

@@ -1,14 +1,17 @@
 'use client';
 
 import {
-	CharacterInterface,
 	configGamesService,
-	GamesEnum,
-	MemoryGameContentInterface,
 	memoryGameContentService,
 	useCharacter,
 	useGamesConfig,
 } from '@etnos/tools';
+import {
+	type CharacterInterface,
+	type ConfigGamesInterface,
+	GamesEnum,
+	type MemoryGameContentInterface,
+} from '@etnos/types';
 import { RiCloseLine } from 'react-icons/ri';
 import { ImageLibrary, useUser } from '@etnos/ui';
 import { Button, Drawer, Modal, Spin, Table, Typography } from 'antd';
@@ -76,7 +79,7 @@ export const MemoryGameList = () => {
 
 	const imageCoverUrl = (characterSlug: string) => {
 		const config = gamesConfig?.find(
-			(item) => item.characterSlug === characterSlug
+			(item: ConfigGamesInterface) => item.characterSlug === characterSlug
 		);
 		return config?.imageCoverUrl;
 	};

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { CharacterInterface } from '@etnos/tools';
+import type { CharacterInterface } from '@etnos/types';
 
 interface CharacterCardProps extends React.HTMLAttributes<HTMLDivElement> {
 	character: CharacterInterface;

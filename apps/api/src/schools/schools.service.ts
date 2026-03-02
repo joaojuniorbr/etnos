@@ -1,14 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
+import type { SchoolInterface } from '@etnos/types';
 
 const COLLECTION_NAME = 'schools';
-
-export interface SchoolInterface {
-  id: string;
-  name: string;
-  city?: string;
-  state?: string;
-}
 
 @Injectable()
 export class SchoolsService {

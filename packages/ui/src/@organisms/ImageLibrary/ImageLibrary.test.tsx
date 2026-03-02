@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ImageLibrary } from './ImageLibrary';
-import { UserProfileInterface } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 
 const mockDeleteMidia = vi.fn(() => Promise.resolve());
 const mockFetchNextPage = vi.fn();

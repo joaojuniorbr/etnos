@@ -1,11 +1,5 @@
 import { api } from '../../helpers';
-
-export interface SchoolInterface {
-	id: string;
-	name: string;
-	city?: string;
-	state?: string;
-}
+import type { SchoolInterface } from '@etnos/types';
 
 export const schoolService = {
 	getAll(): Promise<SchoolInterface[]> {

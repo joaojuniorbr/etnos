@@ -7,14 +7,13 @@ import {
 	RiTrophyLine,
 } from 'react-icons/ri';
 import {
-	ConfigGamesInterface,
-	GamesEnum,
 	useCharacter,
 	useGames,
 	useGamesConfig,
 	useGameScore,
 	useMemoryGameContent,
 } from '@etnos/tools';
+import { ConfigGamesInterface, GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';

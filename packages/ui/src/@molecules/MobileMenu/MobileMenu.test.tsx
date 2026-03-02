@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { MobileMenu } from './MobileMenu';
-import { UserProfileInterface } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 
 const mockUser = {
 	email: 'mock@example.com',

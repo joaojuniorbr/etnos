@@ -1,13 +1,5 @@
 import { api } from '../../helpers';
-
-export interface CharacterInterface {
-	id: string;
-	name: string;
-	region: string;
-	description: string;
-	slug: string;
-	imageUrl?: string;
-}
+import type { CharacterInterface } from '@etnos/types';
 
 export const charactersService = {
 	save(character: CharacterInterface) {

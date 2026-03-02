@@ -1,6 +1,7 @@
 'use client';
 
-import { MidiaInterface, useMidia, UserProfileInterface } from '@etnos/tools';
+import { useMidia } from '@etnos/tools';
+import type { MidiaInterface, UserProfileInterface } from '@etnos/types';
 import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
 import { Image, Button, Spin, Drawer, Popconfirm, Select } from 'antd';
 import { useState } from 'react';

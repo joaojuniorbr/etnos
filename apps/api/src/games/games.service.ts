@@ -1,33 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
+import type {
+  ConfigGamesInterface,
+  MemoryGameContentInterface,
+  ScoreInterface,
+} from '@etnos/types';
 
 const COLLECTION_CONFIG = 'config-games';
 const COLLECTION_SCORES = 'score-games';
 const COLLECTION_MEMORY_GAME = 'game-memory-game';
-
-export interface ConfigGamesInterface {
-  id?: string;
-  gameSlug: string;
-  characterSlug: string;
-  imageCoverUrl: string;
-}
-
-export interface MemoryGameContentInterface {
-  id: string;
-  url: string;
-  slug: string;
-  idCharacter: string;
-}
-
-export interface ScoreInterface {
-  id?: string;
-  characterSlug: string;
-  score: number;
-  slug: string;
-  timestamp?: unknown;
-  userId: string;
-  createdAt?: unknown;
-}
 
 @Injectable()
 export class GamesService {

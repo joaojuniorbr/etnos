@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { CharactersService, CharacterInterface } from './characters.service';
+import { CharactersService } from './characters.service';
+import type { CharacterInterface } from '@etnos/types';
 import {
   ApiBody,
   ApiOkResponse,

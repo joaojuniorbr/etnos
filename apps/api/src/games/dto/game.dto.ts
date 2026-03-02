@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ConfigGamesInterface } from '../games.service';
+import type { ConfigGamesInterface } from '@etnos/types';
 
 export class GameDto implements ConfigGamesInterface {
   @ApiProperty({ example: '123' })

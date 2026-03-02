@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CharacterInterface } from '../characters.service';
+import type { CharacterInterface } from '@etnos/types';
 
 export class CharacterDto implements CharacterInterface {
   @ApiProperty({ example: '123' })

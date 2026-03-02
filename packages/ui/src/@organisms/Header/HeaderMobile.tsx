@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { MobileMenu } from '../../@molecules';
 import { useUser } from '../../context';
-import { CharacterInterface, useAuth, useCharacter } from '@etnos/tools';
+import { useAuth, useCharacter } from '@etnos/tools';
+import type { CharacterInterface } from '@etnos/types';
 import { Image, Modal } from 'antd';
 
 export const HeaderMobile = () => {

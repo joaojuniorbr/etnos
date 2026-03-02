@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
-import { CharacterInterface, charactersService } from '../../services';
+import type { CharacterInterface } from '@etnos/types';
+import { charactersService } from '../../services';
 
 const CHARACTER_STORAGE_KEY = 'selectedCharacter';
 

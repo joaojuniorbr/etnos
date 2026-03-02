@@ -1,4 +1,4 @@
-import { CharacterInterface } from '@etnos/tools';
+import type { CharacterInterface } from '@etnos/types';
 import { Button } from '@etnos/ui';
 import Image from 'next/image';
 

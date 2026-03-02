@@ -1,14 +1,5 @@
 import { api } from '../../helpers';
-
-export interface MidiaInterface {
-	id?: string;
-	url: string;
-	userId: string;
-	folder?: string;
-	path?: string;
-	timestamp?: any;
-	createdAt?: any;
-}
+import type { MidiaInterface } from '@etnos/types';
 
 export const midiaService = {
 	getPathFromUrl(url: string): string {

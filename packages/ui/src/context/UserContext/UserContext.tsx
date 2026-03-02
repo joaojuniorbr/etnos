@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useMemo } from 'react';
-import { useAuth, UserProfileInterface } from '@etnos/tools';
+import { useAuth } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 interface UserContextType {
 	user: UserProfileInterface | null | undefined;
 	isLoading: boolean;

@@ -5,23 +5,9 @@ import { message } from 'antd';
 import { errorMessage } from '../../helpers/errorMessage';
 import { api } from '../../helpers/api';
 import { useQuery } from '@tanstack/react-query';
+import type { UserProfileInterface } from '@etnos/types';
 
 const KEY_AUTH = 'etnos_auth_token';
-
-export interface UserProfileInterface {
-	uid: string;
-	email?: string | null;
-	id?: string;
-	parentName?: string;
-	childName?: string;
-	childBirthDate?: string;
-	parentPhone?: string;
-	school?: string;
-	updatedAt?: string;
-	role?: string[];
-	photoURL?: string | null;
-	displayName?: string | null;
-}
 
 const userRepo: any = {
 	update: async (uid: string, data: Partial<UserProfileInterface>) =>

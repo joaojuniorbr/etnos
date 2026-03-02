@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import {
   GamesService,
-  MemoryGameContentInterface,
 } from './games.service';
+import type { MemoryGameContentInterface } from '@etnos/types';
 import {
   ApiBearerAuth,
   ApiBody,

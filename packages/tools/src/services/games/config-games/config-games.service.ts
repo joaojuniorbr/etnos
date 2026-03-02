@@ -1,11 +1,5 @@
 import { api } from '../../../helpers';
-
-export interface ConfigGamesInterface {
-	id?: string;
-	gameSlug: string;
-	characterSlug: string;
-	imageCoverUrl: string;
-}
+import type { ConfigGamesInterface } from '@etnos/types';
 
 export const configGamesService = {
 	save(data: ConfigGamesInterface) {

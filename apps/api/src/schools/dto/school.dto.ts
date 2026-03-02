@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SchoolInterface } from '../schools.service';
+import type { SchoolInterface } from '@etnos/types';
 
 export class SchoolDto implements SchoolInterface {
   @ApiProperty({ example: 'school-123' })

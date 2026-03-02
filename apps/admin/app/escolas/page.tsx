@@ -12,7 +12,8 @@ import {
 	Table,
 	Typography,
 } from 'antd';
-import { SchoolInterface, schoolService } from '@etnos/tools';
+import { schoolService } from '@etnos/tools';
+import type { SchoolInterface } from '@etnos/types';
 import { useEffect, useState } from 'react';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';

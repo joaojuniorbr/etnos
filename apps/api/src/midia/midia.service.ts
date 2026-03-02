@@ -2,19 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
 import * as admin from 'firebase-admin';
 import { QueryFilter } from 'src/firebase/firebase.type';
+import type { MidiaInterface } from '@etnos/types';
 
 const COLLECTION_NAME = 'midia';
 const SIGNED_URL_EXPIRES = '03-01-2500';
-
-export interface MidiaInterface {
-  id?: string;
-  url: string;
-  userId: string;
-  folder?: string;
-  path?: string;
-  timestamp?: unknown;
-  createdAt?: unknown;
-}
 
 @Injectable()
 export class MidiaService {

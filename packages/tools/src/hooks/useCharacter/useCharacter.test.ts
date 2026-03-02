@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useCharacter } from './useCharacter';
-import { CharacterInterface, charactersService } from '../../services';
+import type { CharacterInterface } from '@etnos/types';
+import { charactersService } from '../../services';
 import { vi } from 'vitest';
 import { createWrapper } from '../../test';
 

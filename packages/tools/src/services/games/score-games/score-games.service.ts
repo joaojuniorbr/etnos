@@ -1,14 +1,5 @@
 import { api } from '../../../helpers';
-
-export interface ScoreInterface {
-	id?: string;
-	characterSlug: string;
-	score: number;
-	slug: string;
-	timestamp?: any;
-	userId: string;
-	createdAt?: any;
-}
+import type { ScoreInterface } from '@etnos/types';
 
 export const scoreGamesService = {
 	saveScore(

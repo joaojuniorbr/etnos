@@ -23,7 +23,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
-import { MidiaInterface, MidiaService } from './midia.service';
+import { MidiaService } from './midia.service';
+import type { MidiaInterface } from '@etnos/types';
 import { DeleteMidiaDto } from './dto/delete-midia.dto';
 
 @ApiTags('Mídia')

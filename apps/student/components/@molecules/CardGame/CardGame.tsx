@@ -1,4 +1,4 @@
-import { GameInterface } from '@etnos/tools';
+import type { GameInterface } from '@etnos/types';
 import Image from 'next/image';
 import Link from 'next/link';
 

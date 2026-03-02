@@ -1,80 +1,49 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mockRepo } from '../../test';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { apiMock } = vi.hoisted(() => ({
+	apiMock: {
+		get: vi.fn(),
+		post: vi.fn(),
+		patch: vi.fn(),
+	},
+}));
+
+vi.mock('../../helpers', () => ({
+	api: apiMock,
+}));
+
 import { charactersService } from './characters.service';
 
-const mockCharacter = {
-	id: 'id',
-	name: 'Character Test',
-	region: 'Region Test',
-	description: 'Description Test',
-	slug: 'slug-test',
-};
-
-describe('characterService', () => {
+describe('charactersService', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('deve fazer criar um novo personagem', async () => {
-		mockRepo.findOne.mockResolvedValueOnce(null);
-		mockRepo.create.mockResolvedValueOnce({ id: 'generated-id' });
-
-		const result = await charactersService.save(mockCharacter);
-
-		expect(mockRepo.findOne).toHaveBeenCalledOnce();
-		expect(mockRepo.create).toHaveBeenCalledWith(mockCharacter);
-		expect(result).toEqual({ id: 'generated-id' });
-	});
-
-	it('não deve criar o personagem caso tenha um', async () => {
-		mockRepo.findOne.mockResolvedValueOnce(mockCharacter);
-
-		const result = await charactersService.save(mockCharacter);
-
-		expect(mockRepo.findOne).toHaveBeenCalledOnce();
-		expect(mockRepo.create).not.toHaveBeenCalled();
-		expect(result).toBeNull();
-	});
-
-	it('deve atualizar um personagem', async () => {
-		mockRepo.update.mockResolvedValueOnce(mockCharacter);
-
-		const result = await charactersService.update({
-			...mockCharacter,
-			name: 'Character Test Updated',
-		});
-
-		expect(mockRepo.update).toHaveBeenCalledOnce();
-		expect(result).toEqual(mockCharacter);
-	});
-
-	it('não atualizar caso exista o personagem e seja diferente do ID passado', async () => {
-		mockRepo.findOne.mockResolvedValueOnce({ ...mockCharacter, id: 'test-id' });
-
-		const result = await charactersService.update(mockCharacter);
-
-		expect(mockRepo.findOne).toHaveBeenCalledOnce();
-		expect(mockRepo.update).not.toHaveBeenCalled();
-		expect(result).toBeNull();
-	});
-
-	it('deve trazer a lista de personagens', async () => {
-		mockRepo.findMany.mockResolvedValueOnce([mockCharacter]);
+	it('deve listar personagens', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: '1' }] });
 
 		const result = await charactersService.getCharacters();
 
-		expect(mockRepo.findMany).toHaveBeenCalledOnce();
-		expect(result).toEqual([mockCharacter]);
+		expect(apiMock.get).toHaveBeenCalledWith('/characters');
+		expect(result).toEqual([{ id: '1' }]);
 	});
 
-	it('deve encontrar um personagem pelo slug', async () => {
-		mockRepo.findOne.mockResolvedValueOnce(mockCharacter);
+	it('deve criar personagem', async () => {
+		const payload = { id: '1', slug: 'mario' } as any;
+		apiMock.post.mockResolvedValueOnce({ data: payload });
 
-		const result = await charactersService.getCharacterBySlug(
-			mockCharacter.slug
-		);
+		const result = await charactersService.save(payload);
 
-		expect(mockRepo.findOne).toHaveBeenCalledOnce();
-		expect(result).toEqual(mockCharacter);
+		expect(apiMock.post).toHaveBeenCalledWith('/characters', payload);
+		expect(result).toEqual(payload);
+	});
+
+	it('deve atualizar personagem', async () => {
+		const payload = { id: '1', slug: 'mario' } as any;
+		apiMock.patch.mockResolvedValueOnce({ data: payload });
+
+		await charactersService.update(payload);
+
+		expect(apiMock.patch).toHaveBeenCalledWith('/characters/1', payload);
 	});
 });

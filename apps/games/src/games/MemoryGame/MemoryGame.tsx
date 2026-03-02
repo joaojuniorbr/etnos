@@ -7,6 +7,7 @@ import {
 	RiTrophyLine,
 } from 'react-icons/ri';
 import {
+	ConfigGamesInterface,
 	GamesEnum,
 	useCharacter,
 	useGames,
@@ -180,7 +181,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const imageCover = () => {
 		if (gamesConfig && selectedCharacter) {
 			return gamesConfig.find(
-				(game) => game.characterSlug === selectedCharacter.slug
+				(game: ConfigGamesInterface) =>
+					game.characterSlug === selectedCharacter.slug
 			)?.imageCoverUrl;
 		}
 

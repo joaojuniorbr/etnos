@@ -1,7 +1,6 @@
 import {
   Injectable,
   Logger,
-  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -43,8 +42,14 @@ export class FirebaseService implements OnModuleInit {
         Buffer.from(firebaseBase64, 'base64').toString('utf-8'),
       );
 
+      const storageBucket =
+        this.configService.get<string>('FIREBASE_STORAGE_BUCKET') ||
+        serviceAccountJson.storageBucket ||
+        `${serviceAccountJson.project_id}.appspot.com`;
+
       this.app = admin.initializeApp({
         credential: admin.credential.cert(serviceAccountJson),
+        storageBucket,
       });
 
       this.firestore = this.app.firestore();
@@ -140,7 +145,7 @@ export class FirebaseService implements OnModuleInit {
       const snapshot = await query.get();
 
       if (snapshot.empty) {
-        throw new NotFoundException('Item não encontrado');
+        return null;
       }
 
       const doc = snapshot.docs[0];

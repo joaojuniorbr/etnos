@@ -15,59 +15,12 @@ import {
   ApiBody,
   ApiResponse,
   ApiBearerAuth,
-  ApiProperty,
 } from '@nestjs/swagger';
-import { LoginResponseDto, ProfileResponseDto } from './auth.profile.dto';
-
-class LoginDto {
-  @ApiProperty({
-    example: 'usuario@etnos.com',
-    description: 'Email de acesso do usuário.',
-  })
-  email: string;
-
-  @ApiProperty({
-    description: 'Credencial secreta do usuário.',
-  })
-  password: string;
-}
-
-class UpdateProfileDto {
-  @ApiProperty({
-    example: 'Joao Silva',
-    required: false,
-    description: 'Nome do responsável.',
-  })
-  parentName?: string;
-
-  @ApiProperty({
-    example: 'Enzo Silva',
-    required: false,
-    description: 'Nome da criança.',
-  })
-  childName?: string;
-
-  @ApiProperty({
-    example: '2019-01-31',
-    required: false,
-    description: 'Data de nascimento da criança (YYYY-MM-DD).',
-  })
-  childBirthDate?: string;
-
-  @ApiProperty({
-    example: '(41) 99999-1234',
-    required: false,
-    description: 'Telefone do responsável.',
-  })
-  parentPhone?: string;
-
-  @ApiProperty({
-    example: 'Escola Municipal Modelo',
-    required: false,
-    description: 'Escola da criança.',
-  })
-  school?: string;
-}
+import { LoginResponseDto, ProfileResponseDto } from './dto/auth-profile.dto';
+import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RegisterDto } from './dto/register.dto';
+import { RecoveryDto } from './dto/recovery.dto';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -89,11 +42,31 @@ export class AuthController {
     type: LoginResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
-  async login(@Body() body: { email: string; password: string }) {
+  async login(@Body() body: LoginDto) {
     return this.authService.loginWithEmailAndPassword(
       body.email,
       body.password,
     );
+  }
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Cadastro com e-mail e senha',
+    description: 'Cria conta e perfil base do usuário.',
+  })
+  @ApiBody({ type: RegisterDto })
+  async register(@Body() body: RegisterDto) {
+    return this.authService.registerWithEmailAndPassword(body);
+  }
+
+  @Post('recovery')
+  @ApiOperation({
+    summary: 'Recuperação de senha',
+    description: 'Dispara e-mail de recuperação de senha.',
+  })
+  @ApiBody({ type: RecoveryDto })
+  async recovery(@Body() body: RecoveryDto) {
+    return this.authService.sendRecoveryEmail(body.email);
   }
 
   @UseGuards(AuthGuard('firebase-auth'))

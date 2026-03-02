@@ -1,5 +1,4 @@
-import { firestoreAdapter as fs } from '../../../helpers';
-import { FirestoreRepository } from '../../../firestore';
+import { api } from '../../../helpers';
 
 export interface ConfigGamesInterface {
 	id?: string;
@@ -8,41 +7,24 @@ export interface ConfigGamesInterface {
 	imageCoverUrl: string;
 }
 
-const repo = new FirestoreRepository<ConfigGamesInterface>('config-games');
-
-const getConfigId = (gameSlug: string, characterSlug: string) =>
-	`${gameSlug}_${characterSlug}`;
-
 export const configGamesService = {
-	async save(data: ConfigGamesInterface) {
-		const id = getConfigId(data.gameSlug, data.characterSlug);
-
-		await repo.update(id, data);
-
-		return {
-			id,
-			...data,
-		};
+	save(data: ConfigGamesInterface) {
+		return api.post('/games/config', data).then((res) => res.data);
 	},
 
-	async get(gameSlug: string, characterSlug: string) {
-		const id = getConfigId(gameSlug, characterSlug);
-
-		return repo.findOne({
-			where: [fs.where('__name__', '==', id)],
-		});
+	get(gameSlug: string, characterSlug: string) {
+		return api
+			.get(`/games/config/${gameSlug}/${characterSlug}`)
+			.then((res) => res.data);
 	},
 
-	async getByGame(gameSlug: string) {
-		return repo.findMany({
-			where: [fs.where('gameSlug', '==', gameSlug)],
-		});
+	getByGame(gameSlug: string) {
+		return api.get(`/games/config/by-game/${gameSlug}`).then((res) => res.data);
 	},
 
-	async remove(gameSlug: string, characterSlug: string) {
-		const id = getConfigId(gameSlug, characterSlug);
-
-		await repo.delete(id);
-		return true;
+	remove(gameSlug: string, characterSlug: string) {
+		return api
+			.delete(`/games/config/${gameSlug}/${characterSlug}`)
+			.then((res) => res.data);
 	},
 };

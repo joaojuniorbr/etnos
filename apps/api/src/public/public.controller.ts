@@ -3,18 +3,10 @@ import { PublicService } from './public.service';
 import {
   ApiBody,
   ApiOperation,
-  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
-class ContactDto {
-  @ApiProperty({
-    example: '(11) 99999-0000',
-    description: 'Telefone para retorno do contato.',
-  })
-  phone: string;
-}
+import { ContactDto } from './dto/contact.dto';
 
 @ApiTags('Público')
 @Controller('public')

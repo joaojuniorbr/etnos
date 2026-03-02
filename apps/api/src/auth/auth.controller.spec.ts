@@ -20,6 +20,8 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             loginWithEmailAndPassword: jest.fn(),
+            registerWithEmailAndPassword: jest.fn(),
+            sendRecoveryEmail: jest.fn(),
             getProfile: jest.fn(),
             updateProfile: jest.fn(),
           },
@@ -106,6 +108,37 @@ describe('AuthController', () => {
       );
 
       expect(authService.getProfile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('register', () => {
+    it('deve registrar usuário com sucesso', async () => {
+      authService.registerWithEmailAndPassword.mockResolvedValueOnce({
+        idToken: 'token',
+      } as any);
+
+      const body = {
+        email: 'new@email.com',
+        password: '123456',
+      };
+
+      const result = await controller.register(body);
+
+      expect(authService.registerWithEmailAndPassword).toHaveBeenCalledWith(
+        body,
+      );
+      expect(result).toEqual({ idToken: 'token' });
+    });
+  });
+
+  describe('recovery', () => {
+    it('deve enviar recuperação', async () => {
+      authService.sendRecoveryEmail.mockResolvedValueOnce(true);
+
+      const result = await controller.recovery({ email: 'x@email.com' });
+
+      expect(authService.sendRecoveryEmail).toHaveBeenCalledWith('x@email.com');
+      expect(result).toBe(true);
     });
   });
 

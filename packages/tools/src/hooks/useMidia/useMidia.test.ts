@@ -22,8 +22,8 @@ describe('useMidia', () => {
 
 	it('carrega midias e folders quando userId existe', async () => {
 		vi.mocked(midiaService.getMidia).mockResolvedValueOnce({
-			items: [{ id: '1', url: 'img.png' }],
-			nextCursor: null,
+			data: [{ id: '1', url: 'img.png' }],
+			nextCursor: undefined,
 		} as any);
 
 		vi.mocked(midiaService.getFolders).mockResolvedValueOnce([
@@ -42,7 +42,7 @@ describe('useMidia', () => {
 		expect(midiaService.getMidia).toHaveBeenCalledWith(
 			mockId,
 			10,
-			undefined,
+			1,
 			undefined
 		);
 
@@ -50,16 +50,16 @@ describe('useMidia', () => {
 	});
 
 	it('busca próxima página quando fetchNextPage é chamado', async () => {
-		const cursor = { id: 'cursor' };
+		const cursor = 2;
 
 		vi.mocked(midiaService.getMidia)
 			.mockResolvedValueOnce({
-				items: [{ id: '1' }],
+				data: [{ id: '1' }],
 				nextCursor: cursor,
 			} as any)
 			.mockResolvedValueOnce({
-				items: [{ id: '2' }],
-				nextCursor: null,
+				data: [{ id: '2' }],
+				nextCursor: undefined,
 			} as any);
 
 		vi.mocked(midiaService.getFolders).mockResolvedValue([]);

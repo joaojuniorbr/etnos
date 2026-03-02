@@ -32,6 +32,7 @@ describe('AuthService', () => {
           useValue: {
             findById: jest.fn(),
             update: jest.fn(),
+            create: jest.fn(),
           },
         },
         {
@@ -47,6 +48,7 @@ describe('AuthService', () => {
     firebaseService = module.get(FirebaseService);
 
     mockedAdminAuth.mockReturnValue({
+      createUser: jest.fn().mockResolvedValue({ uid: 'new-user-id' }),
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-id' }),
     });
   });
@@ -186,9 +188,113 @@ describe('AuthService', () => {
 
       await expect(
         service.updateProfile('user-missing', { parentName: 'Teste' }),
-      ).rejects.toThrow('Usuario nao encontrado');
+      ).rejects.toThrow('Usuario não encontrado');
 
       expect(firebaseService.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('registerWithEmailAndPassword', () => {
+    it('deve criar usuário e perfil e retornar login', async () => {
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+          expiresIn: '3600',
+          localId: 'new-user-id',
+        },
+      });
+
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'new-user-id',
+        role: ['student'],
+      } as any);
+
+      const result = await service.registerWithEmailAndPassword({
+        email: 'new@email.com',
+        password: '123456',
+        parentName: 'Pai',
+      });
+
+      expect(firebaseService.create).toHaveBeenCalledWith(
+        'users',
+        expect.objectContaining({
+          email: 'new@email.com',
+          parentName: 'Pai',
+        }),
+        'new-user-id',
+      );
+      expect(result.idToken).toBe('id-token');
+    });
+
+    it('deve lançar UnauthorizedException se falhar no register', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        createUser: jest.fn().mockRejectedValue(new Error('fail')),
+      } as any);
+
+      await expect(
+        service.registerWithEmailAndPassword({
+          email: 'new@email.com',
+          password: '123456',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('deve preencher parentName como null quando não informado', async () => {
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+          expiresIn: '3600',
+          localId: 'new-user-id',
+        },
+      });
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'new-user-id',
+      } as any);
+
+      await service.registerWithEmailAndPassword({
+        email: 'new@email.com',
+        password: '123456',
+      });
+
+      expect(firebaseService.create).toHaveBeenCalledWith(
+        'users',
+        expect.objectContaining({
+          parentName: null,
+        }),
+        'new-user-id',
+      );
+    });
+  });
+
+  describe('sendRecoveryEmail', () => {
+    it('deve disparar e-mail de recuperação', async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: {} });
+
+      const result = await service.sendRecoveryEmail('mail@test.com');
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode',
+        {
+          requestType: 'PASSWORD_RESET',
+          email: 'mail@test.com',
+        },
+        expect.objectContaining({
+          params: {
+            key: FAKE_FIREBASE_API_KEY,
+          },
+        }),
+      );
+      expect(result).toBe(true);
+    });
+
+    it('deve lançar UnauthorizedException se recovery falhar', async () => {
+      mockedAxios.post.mockRejectedValueOnce(new Error('fail'));
+
+      await expect(service.sendRecoveryEmail('mail@test.com')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

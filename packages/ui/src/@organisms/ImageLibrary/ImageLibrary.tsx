@@ -15,6 +15,11 @@ interface ImageLibraryProps {
 	onSelect?: (url: string) => void;
 }
 
+interface MidiaFolder {
+	folder: string;
+	count: number;
+}
+
 export const ImageLibrary = ({
 	folder,
 	user,
@@ -72,7 +77,7 @@ export const ImageLibrary = ({
 				</Button>
 
 				<Select
-					options={folders?.map((item) => ({
+					options={folders?.map((item: MidiaFolder) => ({
 						value: item.folder,
 						label: `${item.folder} (${item.count})`,
 					}))}
@@ -83,8 +88,8 @@ export const ImageLibrary = ({
 			</div>
 
 			<section className='ui:grid ui:grid-cols-8 ui:gap-4 md:ui:grid-cols-6 lg:ui:grid-cols-8'>
-				{library?.pages.flatMap((page) =>
-					page.data.map((item) => (
+				{library?.pages.flatMap((page: { data: MidiaInterface[] }) =>
+					page.data.map((item: MidiaInterface) => (
 						<div key={item.id} className='relative'>
 							<Image
 								src={item.url}

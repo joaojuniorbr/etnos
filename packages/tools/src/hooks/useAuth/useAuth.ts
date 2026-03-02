@@ -1,20 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import {
-	signOut,
-	sendPasswordResetEmail,
-	User,
-	createUserWithEmailAndPassword,
-	signInWithPopup,
-} from 'firebase/auth';
 import { message } from 'antd';
-import { authFirebase, errorMessage, googleProvider, api } from '@etnos/tools';
+import { errorMessage } from '../../helpers/errorMessage';
+import { api } from '../../helpers/api';
 import { useQuery } from '@tanstack/react-query';
 
 const KEY_AUTH = 'etnos_auth_token';
 
-export interface UserProfileInterface extends User {
+export interface UserProfileInterface {
+	uid: string;
+	email?: string | null;
 	id?: string;
 	parentName?: string;
 	childName?: string;
@@ -23,6 +19,8 @@ export interface UserProfileInterface extends User {
 	school?: string;
 	updatedAt?: string;
 	role?: string[];
+	photoURL?: string | null;
+	displayName?: string | null;
 }
 
 const userRepo: any = {
@@ -85,25 +83,14 @@ export const useAuth = () => {
 			});
 	};
 
-	const loginWithGoogle = async () => {
-		try {
-			const result = await signInWithPopup(authFirebase, googleProvider);
-
-			const idToken = await result.user.getIdTokenResult();
-
-			saveToken(idToken.token);
-
-			return result.user;
-		} catch (error) {
-			message.error(errorMessage(error));
-			return null;
-		}
+	const loginWithGoogle = async (): Promise<UserProfileInterface | null> => {
+		message.error('Login com Google indisponível no momento.');
+		return null;
 	};
 
 	const onSignOut = async () => {
 		setIsLoading(true);
 		try {
-			await signOut(authFirebase);
 			localStorage.removeItem(KEY_AUTH);
 			message.success('Desconectado com sucesso!');
 		} catch (error) {
@@ -116,7 +103,7 @@ export const useAuth = () => {
 	const onRecoveryPass = async (email: string) => {
 		setIsLoading(true);
 		try {
-			await sendPasswordResetEmail(authFirebase, email);
+			await api.post('/auth/recovery', { email });
 			message.success('E-mail de recuperação enviado!');
 		} catch (error) {
 			message.error(errorMessage(error));
@@ -141,15 +128,21 @@ export const useAuth = () => {
 	const onRegister = async (values: any) => {
 		setIsLoading(true);
 		try {
-			const userCredential = await createUserWithEmailAndPassword(
-				authFirebase,
-				values.parentEmail,
-				values.password
-			);
+			const response = await api.post('/auth/register', {
+				email: values.parentEmail,
+				password: values.password,
+				school: values.school,
+				parentName: values.parentName,
+				parentPhone: values.parentPhone,
+				childName: values.childName,
+				childBirthDate: values.childBirthDate,
+			});
 
-			const newUser = userCredential.user;
+			const { idToken, user } = response.data;
 
-			await userRepo.update(newUser.uid, {
+			saveToken(idToken);
+
+			await userRepo.update(user.uid, {
 				school: values.school,
 				parentName: values.parentName,
 				email: values.parentEmail,
@@ -158,7 +151,7 @@ export const useAuth = () => {
 				childBirthDate: values.childBirthDate,
 			} as any);
 
-			return newUser;
+			return user;
 		} catch (error) {
 			message.error(errorMessage(error));
 			return null;

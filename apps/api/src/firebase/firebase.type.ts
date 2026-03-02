@@ -17,6 +17,7 @@ export interface QueryOptions {
     direction?: OrderByDirection;
   };
   limit?: number;
+  offset?: number;
   startAfter?: DocumentSnapshot;
 }
 

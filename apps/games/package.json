@@ -17,10 +17,12 @@
 		"./styles.css": "./dist/index.css"
 	},
 	"scripts": {
-		"dev": "tsc --watch && npm run build:styles",
+		"dev": "yarn run dev:styles & yarn run dev:components",
+		"dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
+		"dev:components": "tsc --watch",
 		"lint": "eslint .",
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
-		"build": "npm run build:styles && npm run build:components",
+		"build": "yarn run build:styles && yarn run build:components",
 		"build:components": "tsc",
 		"check-types": "tsc --noEmit"
 	},

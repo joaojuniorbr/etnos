@@ -10,8 +10,10 @@ import type { UserProfileInterface } from '@etnos/types';
 const KEY_AUTH = 'etnos_auth_token';
 
 const userRepo: any = {
-	update: async (uid: string, data: Partial<UserProfileInterface>) =>
-		console.log('Updating user', uid, data),
+	update: async (uid: string, data: Partial<UserProfileInterface>) => ({
+		...data,
+		uid,
+	}),
 };
 
 export const useAuth = () => {

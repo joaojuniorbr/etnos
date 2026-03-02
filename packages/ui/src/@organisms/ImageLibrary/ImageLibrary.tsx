@@ -142,7 +142,6 @@ export const ImageLibrary = ({
 				destroyOnHidden
 			>
 				<div className='relative'>
-					teste - {user?.uid}
 					{user?.uid && (
 						<ImageMultipleUpload
 							userId={user.uid}

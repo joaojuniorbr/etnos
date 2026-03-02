@@ -8,7 +8,13 @@ import { charactersService } from '../../services';
 
 const CHARACTER_STORAGE_KEY = 'selectedCharacter';
 
-export const useCharacter = () => {
+type UseCharacterOptions = {
+	fetchList?: boolean;
+};
+
+export const useCharacter = (options?: UseCharacterOptions) => {
+	const fetchList = options?.fetchList ?? true;
+
 	const [selectedCharacter, setSelectedCharacter] =
 		useState<CharacterInterface>();
 
@@ -36,7 +42,8 @@ export const useCharacter = () => {
 		selectedCharacter,
 		selectCharacter,
 		...useQuery({
-			queryKey: ['character'],
+			queryKey: ['character', 'all'],
+			enabled: fetchList,
 			queryFn: charactersService.getCharacters,
 		}),
 	};

@@ -34,7 +34,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [word, setWord] = useState('');
 	const [content, setContent] = useState<GuessGameContentInterface>();
 
-	const { selectedCharacter } = useCharacter();
+	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const [isLoading, setIsLoading] = useState(false);
 
 	const [guesses, setGuesses] = useState<string>('');

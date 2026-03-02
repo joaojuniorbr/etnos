@@ -19,7 +19,9 @@ export const HeaderMobile = () => {
 
 	const { user } = useUser();
 
-	const { selectedCharacter, data, selectCharacter } = useCharacter();
+	const { selectedCharacter, data, selectCharacter } = useCharacter({
+		fetchList: openCharacter,
+	});
 
 	const handleCharacter = (slug: string) => {
 		selectCharacter(slug);

@@ -4,7 +4,7 @@ import { useCharacter, useGames } from '@etnos/tools';
 import { CardGame } from '../../@molecules';
 
 export const GameSelect = () => {
-	const { selectedCharacter } = useCharacter();
+	const { selectedCharacter } = useCharacter({ fetchList: false });
 
 	const { allGames } = useGames();
 

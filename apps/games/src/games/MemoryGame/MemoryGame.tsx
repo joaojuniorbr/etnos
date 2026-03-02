@@ -55,7 +55,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [isFinished, setIsFinished] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const { selectedCharacter } = useCharacter();
+	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
 	const { saveGameScore, playSound } = useGames(user?.uid);
 

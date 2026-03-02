@@ -84,6 +84,10 @@ export class FirebaseService implements OnModuleInit {
       query = query.limit(options.limit);
     }
 
+    if (options?.offset) {
+      query = query.offset(options.offset);
+    }
+
     if (options?.startAfter) {
       query = query.startAfter(options.startAfter);
     }
@@ -166,33 +170,58 @@ export class FirebaseService implements OnModuleInit {
     try {
       const page = Math.max(1, options.page || 1);
       const limit = Math.min(100, Math.max(1, options.limit || 10));
+      const offset = (page - 1) * limit;
 
-      const query = this.buildQuery(collectionName, {
+      const baseQuery = this.buildQuery(collectionName, {
         filters: options.filters,
         orderBy: options.orderBy,
       });
 
-      const snapshot = await query.get();
-      let docs = snapshot.docs;
-
+      // `search` is a fallback client-side filter when no indexed query can be used.
+      // In this mode we need to load all docs to filter reliably.
       if (options.search && options.searchFields?.length) {
+        const snapshot = await baseQuery.get();
         const searchTerm = options.search.toLowerCase();
-        docs = docs.filter((doc) => {
+        const filteredDocs = snapshot.docs.filter((doc) => {
           const data = doc.data();
           return options.searchFields?.some((field) => {
             const value = data[field];
             return value && String(value).toLowerCase().includes(searchTerm);
           });
         });
+
+        const total = filteredDocs.length;
+        const totalPages = Math.ceil(total / limit);
+        const paginatedDocs = filteredDocs.slice(offset, offset + limit);
+        const data = paginatedDocs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as T[];
+
+        return {
+          data,
+          pagination: {
+            total,
+            totalPages,
+            currentPage: page,
+            limit,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+          },
+        };
       }
 
-      const total = docs.length;
+      const countSnapshot = await baseQuery.count().get();
+      const total = countSnapshot.data().count;
       const totalPages = Math.ceil(total / limit);
-      const start = (page - 1) * limit;
-      const end = start + limit;
-
-      const paginatedDocs = docs.slice(start, end);
-      const data = paginatedDocs.map((doc) => ({
+      const pageQuery = this.buildQuery(collectionName, {
+        filters: options.filters,
+        orderBy: options.orderBy,
+        limit,
+        offset,
+      });
+      const pageSnapshot = await pageQuery.get();
+      const data = pageSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as T[];

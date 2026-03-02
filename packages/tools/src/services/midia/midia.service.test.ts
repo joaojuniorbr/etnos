@@ -47,6 +47,24 @@ describe('midiaService', () => {
 		expect(result).toEqual({ url: 'http://image' });
 	});
 
+	it('deve falhar upload quando userId não for informado', async () => {
+		await expect(
+			midiaService.uploadImage(new File(['x'], 'test.png'), 'folder', '')
+		).rejects.toThrow('Usuário não encontrado');
+	});
+
+	it('deve realizar upload de múltiplas imagens', async () => {
+		apiMock.post
+			.mockResolvedValueOnce({ data: { url: 'http://image-1' } })
+			.mockResolvedValueOnce({ data: { url: 'http://image-2' } });
+
+		const files = [new File(['x'], 'a.png'), new File(['y'], 'b.png')];
+		const result = await midiaService.uploadMultipleImages(files, 'folder', 'user-1');
+
+		expect(apiMock.post).toHaveBeenCalledTimes(2);
+		expect(result).toEqual([{ url: 'http://image-1' }, { url: 'http://image-2' }]);
+	});
+
 	it('deve listar mídias com paginação', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: 2 } });
 
@@ -60,6 +78,42 @@ describe('midiaService', () => {
 			},
 		});
 		expect(result).toEqual({ data: [], nextCursor: 2 });
+	});
+
+	it('deve retornar vazio quando não houver userId em getMidia', async () => {
+		const result = await midiaService.getMidia('', 10);
+
+		expect(result).toEqual({
+			data: [],
+			nextCursor: undefined,
+		});
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
+	it('deve usar página 1 como padrão quando cursor não for enviado', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+
+		await midiaService.getMidia('user-1', 20);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia', {
+			params: {
+				limit: 20,
+				page: 1,
+				folder: undefined,
+			},
+		});
+	});
+
+	it('deve salvar mídia', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { id: '1' } });
+
+		const result = await midiaService.saveMidia({ url: 'u', userId: 'user-1' });
+
+		expect(apiMock.post).toHaveBeenCalledWith('/midia', {
+			url: 'u',
+			userId: 'user-1',
+		});
+		expect(result).toEqual({ id: '1' });
 	});
 
 	it('deve remover por id quando disponível', async () => {
@@ -78,5 +132,34 @@ describe('midiaService', () => {
 		expect(apiMock.delete).toHaveBeenCalledWith('/midia/by-url', {
 			params: { url: 'u' },
 		});
+	});
+
+	it('deve remover por url via método dedicado', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		const result = await midiaService.deleteMidiaFromUrl('http://img');
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/by-url', {
+			params: { url: 'http://img' },
+		});
+		expect(result).toBe(true);
+	});
+
+	it('deve retornar lista vazia de pastas quando não houver userId', async () => {
+		const result = await midiaService.getFolders('');
+
+		expect(result).toEqual([]);
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
+	it('deve buscar pastas quando userId existir', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ folder: 'games', count: 1 }],
+		});
+
+		const result = await midiaService.getFolders('user-1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia/folders');
+		expect(result).toEqual([{ folder: 'games', count: 1 }]);
 	});
 });

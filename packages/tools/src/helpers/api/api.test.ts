@@ -85,4 +85,26 @@ describe('createApiClient', () => {
 
 		expect(config).toEqual(originalConfig);
 	});
+
+	it('não deve adicionar Authorization quando token não existir', async () => {
+		const localStorageMock = {
+			getItem: vi.fn().mockReturnValue(null),
+		};
+		vi.stubGlobal('window', {
+			localStorage: localStorageMock,
+		} as unknown as Window);
+
+		createApiClient('http://localhost:3000');
+
+		const interceptor = requestUseMock.mock.calls[0]?.[0];
+		expect(interceptor).toBeTypeOf('function');
+		if (!interceptor) return;
+
+		const originalConfig = { headers: {} } as any;
+		const config = interceptor(originalConfig);
+
+		expect(localStorageMock.getItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
+		expect(config).toEqual(originalConfig);
+		expect(config.headers.Authorization).toBeUndefined();
+	});
 });

@@ -28,6 +28,15 @@ describe('charactersService', () => {
 		expect(result).toEqual([{ id: '1' }]);
 	});
 
+	it('deve buscar personagem por slug', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { id: '1', slug: 'mario' } });
+
+		const result = await charactersService.getCharacterBySlug('mario');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/characters/mario');
+		expect(result).toEqual({ id: '1', slug: 'mario' });
+	});
+
 	it('deve criar personagem', async () => {
 		const payload = { id: '1', slug: 'mario' } as any;
 		apiMock.post.mockResolvedValueOnce({ data: payload });

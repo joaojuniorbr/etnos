@@ -158,6 +158,24 @@ describe('useAuth', () => {
 		expect(result.current.isLoading).toBe(false);
 	});
 
+	it('trata erro ao deslogar', async () => {
+		const error = new Error('remove fail');
+		vi.mocked(localStorage.removeItem).mockImplementationOnce(() => {
+			throw error;
+		});
+		mockErrorMessage.mockReturnValueOnce('Erro ao deslogar');
+
+		const { result } = renderUseAuth();
+
+		await act(async () => {
+			await result.current.onSignOut();
+		});
+
+		expect(mockErrorMessage).toHaveBeenCalledWith(error);
+		expect(message.error).toHaveBeenCalledWith('Erro ao deslogar');
+		expect(result.current.isLoading).toBe(false);
+	});
+
 	it('envia email de recuperação com sucesso', async () => {
 		mockApiPost.mockResolvedValueOnce({ data: true });
 		const { result } = renderUseAuth();

@@ -54,4 +54,13 @@ describe('schoolService', () => {
 
 		expect(apiMock.delete).toHaveBeenCalledWith('/schools/1');
 	});
+
+	it('deve buscar escola por id', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { id: '1', name: 'IFPR' } });
+
+		const result = await schoolService.getOne('1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/1');
+		expect(result).toEqual({ id: '1', name: 'IFPR' });
+	});
 });

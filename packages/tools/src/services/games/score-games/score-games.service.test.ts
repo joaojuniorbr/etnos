@@ -46,11 +46,29 @@ describe('scoreGamesService', () => {
 		expect(result).toEqual([{ score: 100 }]);
 	});
 
+	it('deve retornar lista vazia quando não houver userId em getScore', async () => {
+		const result = await scoreGamesService.getScore('');
+
+		expect(result).toEqual([]);
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
 	it('deve buscar score de jogo/personagem', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: { score: 50 } });
 
 		await scoreGamesService.getFromGameScore('memory-game', 'joao', 'user-1');
 
 		expect(apiMock.get).toHaveBeenCalledWith('/games/score/memory-game/joao');
+	});
+
+	it('deve retornar null quando não houver userId em getFromGameScore', async () => {
+		const result = await scoreGamesService.getFromGameScore(
+			'memory-game',
+			'joao',
+			''
+		);
+
+		expect(result).toBeNull();
+		expect(apiMock.get).not.toHaveBeenCalled();
 	});
 });

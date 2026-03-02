@@ -36,6 +36,15 @@ describe('memoryGameContentService', () => {
 		expect(apiMock.get).toHaveBeenCalledWith('/games/memory/images/joao');
 	});
 
+	it('deve buscar conteúdos por slug', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: '1', slug: 'joao' }] });
+
+		const result = await memoryGameContentService.getContent('joao');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/games/memory/joao');
+		expect(result).toEqual([{ id: '1', slug: 'joao' }]);
+	});
+
 	it('deve remover conteúdo', async () => {
 		apiMock.delete.mockResolvedValueOnce({ data: true });
 

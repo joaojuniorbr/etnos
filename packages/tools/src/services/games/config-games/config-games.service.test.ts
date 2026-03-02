@@ -36,6 +36,15 @@ describe('configGamesService', () => {
 		expect(apiMock.get).toHaveBeenCalledWith('/games/config/by-game/memory-game');
 	});
 
+	it('deve buscar configuração por jogo e personagem', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { gameSlug: 'memory-game' } });
+
+		const result = await configGamesService.get('memory-game', 'joao');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/games/config/memory-game/joao');
+		expect(result).toEqual({ gameSlug: 'memory-game' });
+	});
+
 	it('deve excluir configuração', async () => {
 		apiMock.delete.mockResolvedValueOnce({ data: true });
 

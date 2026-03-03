@@ -7,7 +7,8 @@ on:
       - main
 
 jobs:
-  install:
+  install_chromatic:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,6 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installed-dependencies
+          include-hidden-files: true
           path: |
             node_modules
             apps/**/node_modules
@@ -37,7 +39,7 @@ jobs:
 
   chromatic:
     if: github.event_name == 'push'
-    needs: install
+    needs: install_chromatic
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -66,7 +68,6 @@ jobs:
 
   sonarcloud:
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -79,11 +80,10 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
-        with:
-          name: installed-dependencies
-          path: .
+      - name: Install dependencies
+        env:
+          HUSKY: 0
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Run tests with coverage
         run: yarn test
@@ -95,7 +95,6 @@ jobs:
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: install
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -114,11 +113,10 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
-        with:
-          name: installed-dependencies
-          path: .
+      - name: Install dependencies
+        env:
+          HUSKY: 0
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Release
         env:

@@ -1,33 +1,22 @@
 name: Deploy API to Cloud Run
 
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Branch, tag ou commit SHA para deploy"
-        required: true
-        default: "main"
-      service:
-        description: "Nome do servico no Cloud Run"
-        required: true
-        default: "etnos-api"
-      region:
-        description: "Regiao do Cloud Run"
-        required: true
-        default: "us-central1"
+  push:
 
 permissions:
   contents: read
   id-token: write
 
+env:
+  CLOUD_RUN_SERVICE: etnos-api
+  CLOUD_RUN_REGION: us-central1
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout selected ref
+      - name: Checkout
         uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.inputs.ref }}
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -41,8 +30,8 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy "${{ github.event.inputs.service }}" \
+          gcloud run deploy "${{ env.CLOUD_RUN_SERVICE }}" \
             --source . \
-            --region "${{ github.event.inputs.region }}" \
+            --region "${{ env.CLOUD_RUN_REGION }}" \
             --platform managed \
             --allow-unauthenticated

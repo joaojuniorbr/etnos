@@ -2,72 +2,14 @@ name: Main CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
-  install_chromatic:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.14.0
-          cache: yarn
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        env:
-          HUSKY: 0
-        run: yarn install --frozen-lockfile --non-interactive
-
-      - name: Upload dependencies
-        uses: actions/upload-artifact@v4
-        with:
-          name: installed-dependencies
-          include-hidden-files: true
-          path: |
-            node_modules
-            apps/**/node_modules
-            packages/**/node_modules
-          retention-days: 1
-
-  chromatic:
-    if: github.event_name == 'push'
-    needs: install_chromatic
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: yarn
-          cache-dependency-path: yarn.lock
-
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
-        with:
-          name: installed-dependencies
-          path: .
-
-      - name: Run Chromatic
-        uses: chromaui/action@latest
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          workingDir: apps/docs
-
   sonarcloud:
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

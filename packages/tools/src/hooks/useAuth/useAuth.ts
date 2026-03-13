@@ -25,6 +25,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const authFirebase = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+const getStoredAuthToken = () => {
+	if (typeof window === 'undefined') {
+		return null;
+	}
+
+	return localStorage.getItem(KEY_AUTH);
+};
 
 export const useAuth = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +55,7 @@ export const useAuth = () => {
 			}
 		},
 		retry: 3,
+		enabled: Boolean(getStoredAuthToken()),
 	});
 
 	const cleanDataForFirestore = (data: any) => {

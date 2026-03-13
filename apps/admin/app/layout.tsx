@@ -2,7 +2,7 @@ import '@etnos/ui/styles.css';
 import './globals.css';
 
 import type { Metadata } from 'next';
-import { AuthProtected, Providers } from '../components/@atoms';
+import { AppProviders, AuthProtected } from '@etnos/ui';
 
 export const metadata: Metadata = {
 	title: 'Etnos | Área do Administrador',
@@ -12,8 +12,8 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<Providers>
+		<AppProviders>
 			<AuthProtected>{children}</AuthProtected>
-		</Providers>
+		</AppProviders>
 	);
 }

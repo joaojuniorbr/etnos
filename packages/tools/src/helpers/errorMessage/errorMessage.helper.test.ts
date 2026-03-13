@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosHeaders } from 'axios';
 import { vi } from 'vitest';
 
 import { errorMessage } from './errorMessage.helper';
@@ -25,7 +25,9 @@ describe('Helpers: ErrorMessage', () => {
 				status: 400,
 				statusText: 'Bad Request',
 				headers: {},
-				config: {},
+				config: {
+					headers: new AxiosHeaders(),
+				},
 			},
 		);
 

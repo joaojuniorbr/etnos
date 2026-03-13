@@ -65,6 +65,8 @@ const renderUseAuth = () =>
 	renderHook(() => useAuth(), { wrapper: createWrapper() });
 const randomPassword = () =>
 	`pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
+const authenticateForProfile = () =>
+	localStorage.setItem('etnos_auth_token', 'profile-token');
 
 describe('useAuth', () => {
 	beforeEach(() => {
@@ -75,6 +77,7 @@ describe('useAuth', () => {
 	});
 
 	it('carrega perfil via API ao montar', async () => {
+		authenticateForProfile();
 		mockApiGet.mockResolvedValueOnce({
 			data: { uid: '123', email: 'test@test.com', parentName: 'Joao' },
 		});
@@ -89,6 +92,7 @@ describe('useAuth', () => {
 	});
 
 	it('retorna user null quando falha ao carregar perfil', async () => {
+		authenticateForProfile();
 		const error = new Error('profile failed');
 		mockApiGet.mockRejectedValueOnce(error);
 
@@ -260,6 +264,7 @@ describe('useAuth', () => {
 	});
 
 	it('atualiza perfil e converte undefined para null', async () => {
+		authenticateForProfile();
 		mockApiPost.mockResolvedValueOnce({ data: { ok: true } });
 		mockApiGet.mockResolvedValueOnce({
 			data: { uid: '123', childName: 'Old' },

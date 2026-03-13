@@ -22,7 +22,7 @@ describe('MidiaService', () => {
 
   const mockFile = {
     save: jest.fn(),
-    getSignedUrl: jest.fn().mockResolvedValue(['http://signed-url']),
+    getSignedUrl: jest.fn().mockResolvedValue(['https://signed-url']),
     delete: jest.fn(),
   };
 
@@ -92,10 +92,10 @@ describe('MidiaService', () => {
       expect.objectContaining({
         userId: 'user-1',
         folder: 'uploads',
-        url: 'http://signed-url',
+        url: 'https://signed-url',
       }),
     );
-    expect(result).toEqual({ url: 'http://signed-url' });
+    expect(result).toEqual({ url: 'https://signed-url' });
   });
 
   it('deve usar pasta padrão no uploadImage quando folder vazio', async () => {

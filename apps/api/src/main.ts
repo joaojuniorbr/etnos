@@ -58,4 +58,4 @@ async function bootstrap() {
 
   app.listen(port, '0.0.0.0');
 }
-bootstrap();
+bootstrap(); // NOSONAR -- top-level await is not available in the current CommonJS NestJS bootstrap

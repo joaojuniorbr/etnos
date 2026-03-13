@@ -9,9 +9,9 @@
 	],
 	"exports": {
 		".": {
+			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
-			"require": "./dist/index.js",
-			"types": "./dist/index.d.ts"
+			"require": "./dist/index.js"
 		},
 		"./styles.css": "./dist/index.css",
 		"./assets/*": "./dist/assets/*"
@@ -21,7 +21,7 @@
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
 		"build:components": "tsc",
 		"build:assets": "cpx \"src/assets/**\" dist/assets",
-		"build": "npm run build:styles && npm run build:components && npm run build:assets",
+		"build": "yarn run build:styles && yarn run build:components && yarn run build:assets",
 		"check-types": "tsc --noEmit",
 		"dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
 		"dev:components": "tsc --watch",
@@ -52,6 +52,7 @@
 	},
 	"dependencies": {
 		"antd": "^6.1.0",
-		"react-icons": "^5.5.0"
+		"react-icons": "^5.5.0",
+		"@etnos/types": "*"
 	}
 }

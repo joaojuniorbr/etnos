@@ -4,6 +4,13 @@ import { Analytics } from '@vercel/analytics/next';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 import { App, ConfigProvider } from 'antd';
+import ptBR from 'antd/locale/pt_BR';
+
+import dayjs from 'dayjs';
+
+import 'dayjs/locale/pt-br';
+
+dayjs.locale('pt-br');
 
 import { Footer } from '../../@molecules';
 import { Header } from '../../@organisms';
@@ -44,6 +51,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 			<body>
 				<AntdRegistry>
 					<ConfigProvider
+						locale={ptBR}
 						theme={{
 							token: {
 								colorPrimary: '#371f12',

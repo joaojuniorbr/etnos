@@ -1,7 +1,8 @@
 import { render, renderHook, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserProvider, useUser } from './UserContext'; // ajuste o caminho
-import { useAuth, UserProfileInterface } from '@etnos/tools';
+import { useAuth } from '@etnos/tools';
+import type { UserProfileInterface } from '@etnos/types';
 
 // Mock do hook useAuth
 vi.mock('@etnos/tools', () => ({

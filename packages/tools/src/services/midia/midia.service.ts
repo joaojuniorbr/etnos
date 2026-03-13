@@ -1,28 +1,5 @@
-import {
-	ref,
-	uploadBytes,
-	getDownloadURL,
-	deleteObject,
-} from 'firebase/storage';
-import {
-	storageFirebase,
-	firestoreAdapter as fs,
-	errorMessage,
-} from '../../helpers';
-import { FirestoreRepository } from '../../firestore';
-
-import { QueryDocumentSnapshot } from 'firebase/firestore';
-
-const repo = new FirestoreRepository<MidiaInterface>('midia');
-
-export interface MidiaInterface {
-	id?: string;
-	url: string;
-	userId: string;
-	folder?: string;
-	timestamp?: any;
-	createdAt?: any;
-}
+import { api } from '../../helpers';
+import type { MidiaInterface } from '@etnos/types';
 
 export const midiaService = {
 	getPathFromUrl(url: string): string {
@@ -33,15 +10,19 @@ export const midiaService = {
 	},
 
 	async uploadImage(file: File, folder: string, userId: string) {
-		const path = `${folder}/${Date.now()}-${file.name}`;
-		const fileRef = ref(storageFirebase, path);
+		if (!userId) throw new Error('Usuário não encontrado');
 
-		await uploadBytes(fileRef, file);
-		const url = await getDownloadURL(fileRef);
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('folder', folder);
 
-		await this.saveMidia({ url, userId, folder });
+		const response = await api.post('/midia/upload', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		});
 
-		return { url };
+		return response.data;
 	},
 
 	async uploadMultipleImages(files: File[], folder: string, userId: string) {
@@ -54,82 +35,52 @@ export const midiaService = {
 	async getMidia(
 		userId: string,
 		limitNumber: number,
-		cursor?: QueryDocumentSnapshot,
+		cursor?: number,
 		folder?: string
 	) {
-		const whereConstraints = [fs.where('userId', '==', userId)];
+		if (!userId) {
+			return {
+				data: [],
+				nextCursor: undefined,
+			};
+		}
 
-		if (folder) whereConstraints.push(fs.where('folder', '==', folder));
+		const page = cursor ?? 1;
 
-		const { data, lastDoc } = await repo.findWithPaginate({
-			where: whereConstraints,
-			limit: limitNumber + 1,
-			startAfter: cursor,
+		const response = await api.get('/midia', {
+			params: {
+				limit: limitNumber,
+				page,
+				folder,
+			},
 		});
 
-		const hasNextPage = data.length > limitNumber;
-		const items = hasNextPage ? data.slice(0, limitNumber) : data;
-
-		return {
-			data: items,
-			nextCursor: hasNextPage ? lastDoc : undefined,
-		};
+		return response.data;
 	},
 
-	async saveMidia(props: MidiaInterface) {
-		return repo.create(props);
+	saveMidia(props: MidiaInterface) {
+		return api.post('/midia', props).then((res) => res.data);
 	},
 
 	async deleteMidia(item: MidiaInterface) {
-		try {
-			const path = this.getPathFromUrl(item.url);
-			const fileRef = ref(storageFirebase, path);
-
-			await deleteObject(fileRef);
-			await repo.delete(item.id!);
-
-			return true;
-		} catch (error) {
-			errorMessage(error);
-			return false;
+		if (item.id) {
+			return api.delete(`/midia/${item.id}`).then((res) => res.data);
 		}
+
+		return this.deleteMidiaFromUrl(item.url);
 	},
 
 	async deleteMidiaFromUrl(url: string) {
-		try {
-			const path = this.getPathFromUrl(url);
-			const fileRef = ref(storageFirebase, path);
-			await deleteObject(fileRef);
-
-			const items = await repo.findMany({
-				where: [fs.where('url', '==', url)],
-			});
-
-			for (const item of items) {
-				await repo.delete(item.id!);
-			}
-
-			return true;
-		} catch (error) {
-			errorMessage(error);
-			return false;
-		}
+		return api
+			.delete('/midia/by-url', {
+				params: { url },
+			})
+			.then((res) => res.data);
 	},
 
-	async getFolders(userId: string) {
-		const docs = await repo.findMany({
-			where: [fs.where('userId', '==', userId)],
-		});
+	getFolders(userId: string) {
+		if (!userId) return Promise.resolve([]);
 
-		const map = new Map<string, number>();
-
-		docs.forEach((doc) => {
-			if (!doc.folder) return;
-			map.set(doc.folder, (map.get(doc.folder) ?? 0) + 1);
-		});
-
-		return Array.from(map.entries())
-			.map(([folder, count]) => ({ folder, count }))
-			.sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));
+		return api.get('/midia/folders').then((res) => res.data);
 	},
 };

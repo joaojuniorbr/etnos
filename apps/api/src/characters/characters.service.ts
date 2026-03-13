@@ -1,15 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase';
+import type { CharacterInterface } from '@etnos/types';
 
 const COLLECTION_NAME = 'character';
-
-export interface CharacterInterface {
-  id: string;
-  name: string;
-  region: string;
-  description: string;
-  slug: string;
-}
 
 @Injectable()
 export class CharactersService {
@@ -27,5 +20,53 @@ export class CharactersService {
         value: slug,
       },
     ]);
+  }
+
+  async save(character: CharacterInterface) {
+    const exists = await this.firebaseService.findOne<CharacterInterface>(
+      COLLECTION_NAME,
+      [
+        {
+          field: 'slug',
+          operator: '==',
+          value: character.slug,
+        },
+      ],
+    );
+
+    if (exists) return null;
+
+    const created = await this.firebaseService.create(
+      COLLECTION_NAME,
+      character as unknown as Record<string, unknown>,
+    );
+
+    return {
+      id: created.id,
+      ...character,
+    };
+  }
+
+  async update(character: CharacterInterface) {
+    const existing = await this.firebaseService.findOne<CharacterInterface>(
+      COLLECTION_NAME,
+      [
+        {
+          field: 'slug',
+          operator: '==',
+          value: character.slug,
+        },
+      ],
+    );
+
+    if (existing && existing.id !== character.id) return null;
+
+    await this.firebaseService.update(
+      COLLECTION_NAME,
+      character.id,
+      character as unknown as Record<string, unknown>,
+    );
+
+    return character;
   }
 }

@@ -2,7 +2,8 @@
 
 import { Button, Drawer, Form, Image, Input, Spin } from 'antd';
 import { ImageLibrary } from '@etnos/ui';
-import { CharacterInterface, slugfy, UserProfileInterface } from '@etnos/tools';
+import { slugfy } from '@etnos/tools';
+import type { CharacterInterface, UserProfileInterface } from '@etnos/types';
 import { useEffect, useState } from 'react';
 
 interface FormCharacterProps {

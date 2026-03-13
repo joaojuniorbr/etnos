@@ -1,0 +1,14 @@
+export interface UserProfileInterface {
+	uid: string;
+	email?: string | null;
+	id?: string;
+	parentName?: string;
+	childName?: string;
+	childBirthDate?: string;
+	parentPhone?: string;
+	school?: string;
+	updatedAt?: string;
+	role?: string[];
+	photoURL?: string | null;
+	displayName?: string | null;
+}

@@ -1,18 +1,18 @@
 'use client';
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { MidiaInterface, midiaService } from '../../services';
-import { QueryDocumentSnapshot } from 'firebase/firestore';
+import type { MidiaInterface } from '@etnos/types';
+import { midiaService } from '../../services';
 
 export const useMidia = (userId?: string, limit = 10, folder?: string) => {
 	const infiniteQuery = useInfiniteQuery({
 		queryKey: ['midia', userId, limit, folder],
 		enabled: !!userId,
 
-		initialPageParam: null as QueryDocumentSnapshot | null,
+		initialPageParam: 1,
 
 		queryFn: ({ pageParam }) =>
-			midiaService.getMidia(userId!, limit, pageParam ?? undefined, folder),
+			midiaService.getMidia(userId!, limit, pageParam, folder),
 
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});

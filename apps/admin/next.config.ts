@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-	transpilePackages: ['@etnos/ui', '@etnos/tools'],
+	transpilePackages: ['@etnos/ui', '@etnos/tools', '@etnos/types'],
 	typescript: {
 		ignoreBuildErrors: true,
 	},

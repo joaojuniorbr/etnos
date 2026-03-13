@@ -1,60 +1,34 @@
-import { firestoreAdapter as fs } from '../../../helpers';
-import { FirestoreRepository } from '../../../firestore';
-
-export interface ScoreInterface {
-	id?: string;
-	characterSlug: string;
-	score: number;
-	slug: string;
-	timestamp?: any;
-	userId: string;
-	createdAt?: any;
-}
-
-const repo = new FirestoreRepository<ScoreInterface>('score-games');
+import { api } from '../../../helpers';
 
 export const scoreGamesService = {
-	async saveScore(
+	saveScore(
 		slug: string,
 		characterSlug: string,
 		score: number,
 		userId: string
 	) {
-		const existingScore = await repo.findOne({
-			where: [
-				fs.where('slug', '==', slug),
-				fs.where('characterSlug', '==', characterSlug),
-				fs.where('userId', '==', userId),
-			],
-		});
+		if (!userId) return Promise.resolve(null);
 
-		if (existingScore?.id) {
-			return repo.update(existingScore.id, { score });
-		}
-
-		return repo.create({
-			slug,
-			characterSlug,
-			score,
-			userId,
-		} as ScoreInterface);
+		return api
+			.post('/games/score', {
+				slug,
+				characterSlug,
+				score,
+			})
+			.then((res) => res.data);
 	},
 
-	async getScore(userId: string) {
-		return repo.findMany({
-			where: [fs.where('userId', '==', userId)],
-		});
+	getScore(userId: string) {
+		if (!userId) return Promise.resolve([]);
+
+		return api.get('/games/score').then((res) => res.data);
 	},
 
-	async getFromGameScore(slug: string, characterSlug: string, userId: string) {
-		if (!userId) return null;
+	getFromGameScore(slug: string, characterSlug: string, userId: string) {
+		if (!userId) return Promise.resolve(null);
 
-		return repo.findOne({
-			where: [
-				fs.where('slug', '==', slug),
-				fs.where('characterSlug', '==', characterSlug),
-				fs.where('userId', '==', userId),
-			],
-		});
+		return api
+			.get(`/games/score/${slug}/${characterSlug}`)
+			.then((res) => res.data);
 	},
 };

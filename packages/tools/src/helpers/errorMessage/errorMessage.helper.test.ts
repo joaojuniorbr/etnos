@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { vi } from 'vitest';
 
 import { errorMessage } from './errorMessage.helper';
@@ -11,6 +12,25 @@ describe('Helpers: ErrorMessage', () => {
 		const error = new Error('Erro de teste');
 		const result = errorMessage(error);
 		expect(result).toBe(error.message);
+	});
+
+	it('deve retornar a mensagem da resposta quando for AxiosError', () => {
+		const error = new AxiosError(
+			'Request failed',
+			undefined,
+			undefined,
+			undefined,
+			{
+				data: { message: 'Erro de API' },
+				status: 400,
+				statusText: 'Bad Request',
+				headers: {},
+				config: {},
+			},
+		);
+
+		const result = errorMessage(error);
+		expect(result).toBe('Erro de API');
 	});
 
 	it('deve retornar a mensagem padrão de erro quando for do type: string', () => {

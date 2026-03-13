@@ -32,8 +32,8 @@
 			"persistent": true
 		},
 		"test": {
-			"cache": false,
-			"persistent": false
+			"dependsOn": ["^test"],
+			"outputs": ["coverage/**"]
 		}
 	}
 }

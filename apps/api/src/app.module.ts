@@ -6,6 +6,8 @@ import { GamesModule } from './games/games.module';
 import { CharactersModule } from './characters/characters.module';
 import { PublicModule } from './public/public.module';
 import { EmailModule } from './email/email.module';
+import { SchoolsModule } from './schools/schools.module';
+import { MidiaModule } from './midia/midia.module';
 
 @Module({
   imports: [
@@ -16,8 +18,10 @@ import { EmailModule } from './email/email.module';
     FirebaseModule,
     GamesModule,
     CharactersModule,
+    SchoolsModule,
     PublicModule,
     EmailModule,
+    MidiaModule,
   ],
   controllers: [],
   providers: [],

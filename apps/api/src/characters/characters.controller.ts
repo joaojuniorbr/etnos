@@ -1,28 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { CharactersService, CharacterInterface } from './characters.service';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CharactersService } from './characters.service';
+import type { CharacterInterface } from '@etnos/types';
 import {
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiProperty,
+  ApiResponse,
 } from '@nestjs/swagger';
-
-class Character implements CharacterInterface {
-  @ApiProperty({ example: '123' })
-  id: string;
-
-  @ApiProperty({ example: 'João Silva' })
-  name: string;
-
-  @ApiProperty({ example: 'joao-silva' })
-  slug: string;
-
-  @ApiProperty({ example: 'Asia' })
-  region: string;
-
-  @ApiProperty({ example: 'Descrição do personagem' })
-  description: string;
-}
+import { CharacterDto } from './dto/character.dto';
 
 @Controller('characters')
 export class CharactersController {
@@ -33,8 +19,8 @@ export class CharactersController {
     summary: 'Lista todos os personagens',
     description: 'Retorna uma lista de todos os personagens.',
   })
-  @ApiOkResponse({ type: [Character] })
-  async getCharacters(): Promise<Character[]> {
+  @ApiOkResponse({ type: [CharacterDto] })
+  async getCharacters(): Promise<CharacterDto[]> {
     return this.charactersService.getCharacters();
   }
 
@@ -43,9 +29,39 @@ export class CharactersController {
     summary: 'Busca um personagem por slug',
     description: 'Retorna um personagem específico por slug.',
   })
-  @ApiOkResponse({ type: Character })
+  @ApiOkResponse({ type: CharacterDto })
   @ApiParam({ name: 'slug', required: true, description: 'Slug do personagem' })
-  async getCharacterBySlug(@Param('slug') slug: string): Promise<Character> {
+  async getCharacterBySlug(@Param('slug') slug: string): Promise<CharacterDto> {
     return this.charactersService.getCharacterBySlug(slug);
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: 'Cria um personagem',
+    description: 'Cria um novo personagem quando o slug ainda não existe.',
+  })
+  @ApiBody({ type: CharacterDto })
+  @ApiResponse({ status: 201, description: 'Personagem criado com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Slug já existe. Retorna null sem criar.',
+  })
+  async save(@Body() character: CharacterDto): Promise<CharacterInterface | null> {
+    return this.charactersService.save(character);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Atualiza um personagem',
+    description: 'Atualiza o personagem validando conflito de slug.',
+  })
+  @ApiParam({ name: 'id', required: true, description: 'ID do personagem' })
+  @ApiBody({ type: CharacterDto })
+  @ApiOkResponse({ type: CharacterDto, description: 'Personagem atualizado.' })
+  async update(
+    @Param('id') id: string,
+    @Body() character: CharacterDto,
+  ): Promise<CharacterInterface | null> {
+    return this.charactersService.update({ ...character, id });
   }
 }

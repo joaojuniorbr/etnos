@@ -1,52 +1,24 @@
-import { firestoreAdapter as fs } from '../../helpers';
-import { FirestoreRepository } from '../../firestore';
-
-export interface SchoolInterface {
-	id: string;
-	name: string;
-	city?: string;
-	state?: string;
-}
-
-const repo = new FirestoreRepository<SchoolInterface>('schools');
+import { api } from '../../helpers';
+import type { SchoolInterface } from '@etnos/types';
 
 export const schoolService = {
-	async getAll(): Promise<SchoolInterface[]> {
-		return repo.findMany({
-			orderBy: fs.orderBy('name', 'asc'),
-		});
+	getAll(): Promise<SchoolInterface[]> {
+		return api.get('/schools').then((res) => res.data);
 	},
 
-	async create(school: SchoolInterface) {
-		const exists = await repo.findOne({
-			where: [fs.where('name', '==', school.name)],
-		});
-
-		if (exists) return null;
-
-		return repo.create(school);
+	create(school: SchoolInterface) {
+		return api.post('/schools', school).then((res) => res.data);
 	},
 
-	async update(id: string, school: Partial<SchoolInterface>) {
-		const existing = await repo.findOne({
-			where: [
-				fs.where('name', '==', school.name),
-				fs.where('city', '==', school.city ?? null),
-			],
-		});
-
-		if (existing && existing.id !== id) return null;
-
-		return repo.update(id, school);
+	update(id: string, school: Partial<SchoolInterface>) {
+		return api.patch(`/schools/${id}`, school).then((res) => res.data);
 	},
 
-	async delete(id: string) {
-		return repo.delete(id);
+	delete(id: string) {
+		return api.delete(`/schools/${id}`).then((res) => res.data);
 	},
 
-	async getOne(id: string): Promise<SchoolInterface | null> {
-		return repo.findOne({
-			where: [fs.where('__name__', '==', id)],
-		});
+	getOne(id: string): Promise<SchoolInterface | null> {
+		return api.get(`/schools/${id}`).then((res) => res.data);
 	},
 };

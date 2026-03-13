@@ -1,46 +1,22 @@
-import { firestoreAdapter as fs } from '../../helpers';
-import { FirestoreRepository } from '../../firestore';
-
-export interface CharacterInterface {
-	id: string;
-	name: string;
-	region: string;
-	description: string;
-	slug: string;
-}
-
-const repo = new FirestoreRepository<CharacterInterface>('character');
+import { api } from '../../helpers';
+import type { CharacterInterface } from '@etnos/types';
 
 export const charactersService = {
-	async save(character: CharacterInterface) {
-		const exists = await repo.findOne({
-			where: [fs.where('slug', '==', character.slug)],
-		});
-
-		if (exists) return null;
-
-		return repo.create(character);
+	save(character: CharacterInterface) {
+		return api.post('/characters', character).then((res) => res.data);
 	},
 
-	async update(character: CharacterInterface) {
-		const existing = await repo.findOne({
-			where: [fs.where('slug', '==', character.slug)],
-		});
-
-		if (existing && existing.id !== character.id) return null;
-
-		return repo.update(character.id, character);
+	update(character: CharacterInterface) {
+		return api
+			.patch(`/characters/${character.id}`, character)
+			.then((res) => res.data);
 	},
 
 	getCharacters() {
-		return repo.findMany({
-			orderBy: fs.orderBy('name', 'asc'),
-		});
+		return api.get('/characters').then((res) => res.data);
 	},
 
 	getCharacterBySlug(slug: string) {
-		return repo.findOne({
-			where: [fs.where('slug', '==', slug)],
-		});
+		return api.get(`/characters/${slug}`).then((res) => res.data);
 	},
 };

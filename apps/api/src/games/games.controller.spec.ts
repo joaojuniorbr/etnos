@@ -6,25 +6,28 @@ const mockGamesService = {
   getGames: jest.fn().mockResolvedValue([
     {
       id: '1',
-      gameSlug: 'jogo-1',
+      gameSlug: 'memory-game',
       characterSlug: 'char-1',
       imageCoverUrl: 'url1',
     },
   ]),
-  getGamesBySlug: jest.fn().mockImplementation((slug: string) =>
-    Promise.resolve({
-      id: '1',
-      gameSlug: slug,
-      characterSlug: 'char-1',
-      imageCoverUrl: 'url1',
-    }),
-  ),
-
-  saveScoreGame: jest.fn().mockResolvedValue(undefined),
-
-  getScoreGame: jest.fn().mockResolvedValue({
-    score: 100,
+  getGamesBySlug: jest.fn().mockResolvedValue({
+    id: '1',
+    gameSlug: 'memory-game',
+    characterSlug: 'char-1',
+    imageCoverUrl: 'url1',
   }),
+  getConfigByGame: jest.fn().mockResolvedValue([]),
+  getConfig: jest.fn().mockResolvedValue(null),
+  saveConfig: jest.fn().mockResolvedValue({ id: 'cfg-1' }),
+  removeConfig: jest.fn().mockResolvedValue(true),
+  getMemoryGameContent: jest.fn().mockResolvedValue([]),
+  getMemoryGameImages: jest.fn().mockResolvedValue([]),
+  saveMemoryGameContent: jest.fn().mockResolvedValue({ id: 'mem-1' }),
+  deleteMemoryGameContent: jest.fn().mockResolvedValue(true),
+  saveScoreGame: jest.fn().mockResolvedValue(undefined),
+  getScoreByUser: jest.fn().mockResolvedValue([]),
+  getScoreGame: jest.fn().mockResolvedValue({ score: 100 }),
 };
 
 describe('GamesController', () => {
@@ -44,6 +47,7 @@ describe('GamesController', () => {
 
     controller = module.get<GamesController>(GamesController);
     service = module.get<GamesService>(GamesService);
+    jest.clearAllMocks();
   });
 
   it('deve retornar uma lista de jogos', async () => {
@@ -53,55 +57,113 @@ describe('GamesController', () => {
     expect(service.getGames).toHaveBeenCalled();
   });
 
-  it('deve retornar um jogo específico', async () => {
-    const slug = 'meu-jogo';
-    const result = await controller.getGamesBySlug(slug);
+  it('deve retornar jogo por slug', async () => {
+    const result = await controller.getGamesBySlug('memory-game');
 
-    expect(result.gameSlug).toEqual(slug);
-    expect(service.getGamesBySlug).toHaveBeenCalledWith(slug);
+    expect(service.getGamesBySlug).toHaveBeenCalledWith('memory-game');
+    expect(result.gameSlug).toBe('memory-game');
   });
 
-  it('deve salvar o score do jogo', async () => {
-    const result = await controller.saveScoreGame(
+  it('deve listar configuração por jogo', async () => {
+    await controller.getConfigByGame('memory-game');
+
+    expect(service.getConfigByGame).toHaveBeenCalledWith('memory-game');
+  });
+
+  it('deve buscar configuração por jogo/personagem', async () => {
+    await controller.getConfig('memory-game', 'char-1');
+
+    expect(service.getConfig).toHaveBeenCalledWith('memory-game', 'char-1');
+  });
+
+  it('deve salvar configuração', async () => {
+    const payload = {
+      gameSlug: 'memory-game',
+      characterSlug: 'char-1',
+      imageCoverUrl: 'url1',
+    } as any;
+
+    await controller.saveConfig(payload);
+
+    expect(service.saveConfig).toHaveBeenCalledWith(payload);
+  });
+
+  it('deve remover configuração', async () => {
+    const result = await controller.removeConfig('memory-game', 'char-1');
+
+    expect(service.removeConfig).toHaveBeenCalledWith('memory-game', 'char-1');
+    expect(result).toBe(true);
+  });
+
+  it('deve listar conteúdo de memory game', async () => {
+    await controller.getMemoryGameContent('char-1');
+
+    expect(service.getMemoryGameContent).toHaveBeenCalledWith('char-1');
+  });
+
+  it('deve listar imagens de memory game', async () => {
+    await controller.getMemoryGameImages('char-1');
+
+    expect(service.getMemoryGameImages).toHaveBeenCalledWith('char-1');
+  });
+
+  it('deve salvar conteúdo do memory game', async () => {
+    const payload = {
+      url: 'u',
+      slug: 'char-1',
+      idCharacter: 'id-char-1',
+    };
+
+    await controller.saveMemoryGameContent(payload);
+
+    expect(service.saveMemoryGameContent).toHaveBeenCalledWith(payload);
+  });
+
+  it('deve deletar conteúdo do memory game', async () => {
+    const result = await controller.deleteMemoryGameContent('id-1');
+
+    expect(service.deleteMemoryGameContent).toHaveBeenCalledWith('id-1');
+    expect(result).toBe(true);
+  });
+
+  it('deve salvar score do jogo', async () => {
+    await controller.saveScoreGame(
       {
-        user: {
-          uid: 'user-1',
-        },
+        user: { uid: 'user-1' },
       },
       {
-        slug: 'jogo-1',
+        slug: 'memory-game',
         characterSlug: 'char-1',
         score: 100,
       },
     );
 
     expect(service.saveScoreGame).toHaveBeenCalledWith({
-      slug: 'jogo-1',
+      slug: 'memory-game',
       characterSlug: 'char-1',
       score: 100,
       userId: 'user-1',
     });
-
-    expect(result).toBeUndefined();
   });
 
-  it('deve buscar o score do jogo de acordo com o personagem', async () => {
-    const slug = 'jogo-1';
-    const characterSlug = 'char-1';
-    const userId = 'user-1';
+  it('deve listar score do usuário', async () => {
+    await controller.getScore({ user: { uid: 'user-1' } });
 
+    expect(service.getScoreByUser).toHaveBeenCalledWith('user-1');
+  });
+
+  it('deve retornar score por jogo/personagem', async () => {
     const result = await controller.getFromGameScore(
-      {
-        user: {
-          uid: userId,
-        },
-      },
-      slug,
-      characterSlug,
+      { user: { uid: 'user-1' } },
+      'memory-game',
+      'char-1',
     );
 
-    expect(result).toEqual({
-      score: 100,
+    expect(service.getScoreGame).toHaveBeenCalledWith({
+      slug: 'memory-game',
+      characterSlug: 'char-1',
+      userId: 'user-1',
     });
+    expect(result).toEqual({ score: 100 });
   });
 });

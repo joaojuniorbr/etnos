@@ -7,13 +7,13 @@ import {
 	RiTrophyLine,
 } from 'react-icons/ri';
 import {
-	GamesEnum,
 	useCharacter,
 	useGames,
 	useGamesConfig,
 	useGameScore,
 	useMemoryGameContent,
 } from '@etnos/tools';
+import { ConfigGamesInterface, GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -55,7 +55,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [isFinished, setIsFinished] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const { selectedCharacter } = useCharacter();
+	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
 	const { saveGameScore, playSound } = useGames(user?.uid);
 
@@ -180,7 +180,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const imageCover = () => {
 		if (gamesConfig && selectedCharacter) {
 			return gamesConfig.find(
-				(game) => game.characterSlug === selectedCharacter.slug
+				(game: ConfigGamesInterface) =>
+					game.characterSlug === selectedCharacter.slug
 			)?.imageCoverUrl;
 		}
 

@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { EmailService } from 'src/email';
+import { FirebaseService } from 'src/firebase';
 
 describe('PublicService', () => {
   let service: PublicService;
   let emailService: jest.Mocked<EmailService>;
+  let firebaseService: jest.Mocked<FirebaseService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,11 +19,18 @@ describe('PublicService', () => {
             sendEmail: jest.fn().mockResolvedValue({ ok: true }),
           },
         },
+        {
+          provide: FirebaseService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<PublicService>(PublicService);
     emailService = module.get(EmailService);
+    firebaseService = module.get(FirebaseService);
   });
 
   it('should be defined', () => {
@@ -52,5 +61,21 @@ describe('PublicService', () => {
     expect(() => service.sendContactEmail('119999900001')).toThrow(
       BadRequestException,
     );
+  });
+
+  it('should return schools ordered by name from firebase service', async () => {
+    firebaseService.findAll.mockResolvedValueOnce([
+      { id: 'school-1', name: 'Escola A' },
+    ] as any);
+
+    const result = await service.getSchools();
+
+    expect(firebaseService.findAll).toHaveBeenCalledWith('schools', {
+      orderBy: {
+        field: 'name',
+        direction: 'asc',
+      },
+    });
+    expect(result).toEqual([{ id: 'school-1', name: 'Escola A' }]);
   });
 });

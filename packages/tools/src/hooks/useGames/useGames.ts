@@ -2,23 +2,7 @@
 
 import { scoreGamesService } from '../../services';
 import { message } from 'antd';
-
-export interface GameInterface {
-	name: string;
-	slug: string;
-	description: string;
-	url: string;
-}
-
-export enum GamesEnum {
-	MEMORY_GAME = 'memory-game',
-	GUESS_GAME = 'guess-game',
-}
-
-export enum GameNameEnum {
-	'memory-game' = 'Jogo da Memória',
-	'guess-game' = 'Adivinhe',
-}
+import { GameNameEnum, GamesEnum } from '@etnos/types';
 
 const GamesContent = [
 	{

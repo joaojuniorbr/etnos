@@ -1,76 +1,55 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-	configGamesService,
-	ConfigGamesInterface,
-} from './config-games.service';
-import { mockRepo } from '../../../test';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { apiMock } = vi.hoisted(() => ({
+	apiMock: {
+		get: vi.fn(),
+		post: vi.fn(),
+		delete: vi.fn(),
+	},
+}));
+
+vi.mock('../../../helpers', () => ({
+	api: apiMock,
+}));
+
+import { configGamesService } from './config-games.service';
 
 describe('configGamesService', () => {
-	const mockData: ConfigGamesInterface = {
-		gameSlug: 'mario-bros',
-		characterSlug: 'luigi',
-		imageCoverUrl: 'http://image.com/luigi.png',
-	};
-
-	const expectedId = 'mario-bros_luigi';
-
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('save deve gerar o ID correto e chamar o update do repositório', async () => {
-		mockRepo.update.mockResolvedValueOnce({ id: expectedId });
+	it('deve salvar configuração', async () => {
+		const payload = { gameSlug: 'memory-game', characterSlug: 'joao' } as any;
+		apiMock.post.mockResolvedValueOnce({ data: payload });
 
-		const result = await configGamesService.save(mockData);
+		await configGamesService.save(payload);
 
-		expect(result).toEqual({
-			id: expectedId,
-			...mockData,
-		});
-		expect(mockRepo.update).toHaveBeenCalledWith(expectedId, mockData);
+		expect(apiMock.post).toHaveBeenCalledWith('/games/config', payload);
 	});
 
-	it('get deve buscar um documento pelo ID composto usando __name__', async () => {
-		const mockReturn = { id: expectedId, ...mockData };
-		mockRepo.findOne.mockResolvedValueOnce(mockReturn);
+	it('deve buscar por jogo', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [] });
 
-		const result = await configGamesService.get('mario-bros', 'luigi');
+		await configGamesService.getByGame('memory-game');
 
-		expect(result).toEqual(mockReturn);
+		expect(apiMock.get).toHaveBeenCalledWith('/games/config/by-game/memory-game');
 	});
 
-	it('get deve retornar null quando o repositório não encontrar o documento', async () => {
-		mockRepo.findOne.mockResolvedValueOnce(null);
+	it('deve buscar configuração por jogo e personagem', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { gameSlug: 'memory-game' } });
 
-		const result = await configGamesService.get('inexistente', 'slug');
+		const result = await configGamesService.get('memory-game', 'joao');
 
-		expect(result).toBeNull();
+		expect(apiMock.get).toHaveBeenCalledWith('/games/config/memory-game/joao');
+		expect(result).toEqual({ gameSlug: 'memory-game' });
 	});
 
-	it('getByGame deve filtrar os documentos pelo gameSlug', async () => {
-		const mockList = [{ id: expectedId, ...mockData }];
-		mockRepo.findMany.mockResolvedValueOnce(mockList);
+	it('deve excluir configuração', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
 
-		const result = await configGamesService.getByGame('mario-bros');
+		await configGamesService.remove('memory-game', 'joao');
 
-		expect(result).toEqual(mockList);
-		expect(mockRepo.findMany).toHaveBeenCalledWith({
-			where: [
-				{
-					field: 'gameSlug',
-					op: '==',
-					value: 'mario-bros',
-				},
-			],
-		});
-	});
-
-	it('remove deve deletar o documento usando o ID correto e retornar true', async () => {
-		mockRepo.delete.mockResolvedValueOnce(undefined);
-
-		const result = await configGamesService.remove('mario-bros', 'luigi');
-
-		expect(result).toBe(true);
-		expect(mockRepo.delete).toHaveBeenCalledWith(expectedId);
+		expect(apiMock.delete).toHaveBeenCalledWith('/games/config/memory-game/joao');
 	});
 });

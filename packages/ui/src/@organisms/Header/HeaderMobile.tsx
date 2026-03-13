@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MobileMenu } from '../../@molecules';
 import { useUser } from '../../context';
 import { useAuth, useCharacter } from '@etnos/tools';
+import type { CharacterInterface } from '@etnos/types';
 import { Image, Modal } from 'antd';
 
 export const HeaderMobile = () => {
@@ -18,7 +19,9 @@ export const HeaderMobile = () => {
 
 	const { user } = useUser();
 
-	const { selectedCharacter, data, selectCharacter } = useCharacter();
+	const { selectedCharacter, data, selectCharacter } = useCharacter({
+		fetchList: openCharacter,
+	});
 
 	const handleCharacter = (slug: string) => {
 		selectCharacter(slug);
@@ -48,7 +51,7 @@ export const HeaderMobile = () => {
 				onCancel={toggleCharacter}
 			>
 				<div className='ui:flex ui:flex-col ui:gap-2'>
-					{data?.map((character) => (
+					{data?.map((character: CharacterInterface) => (
 						<button
 							key={character.slug}
 							className={`

@@ -1,177 +1,165 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { midiaService, MidiaInterface } from './midia.service';
-import { mockRepo } from '../../test';
-import * as storage from 'firebase/storage';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('firebase/storage', () => ({
-	getStorage: vi.fn(() => ({})),
-	ref: vi.fn(),
-	uploadBytes: vi.fn().mockResolvedValue({}),
-	getDownloadURL: vi.fn().mockResolvedValue('http://mockurl.com/image.png'),
-	deleteObject: vi.fn().mockResolvedValue({}),
+const { apiMock } = vi.hoisted(() => ({
+	apiMock: {
+		get: vi.fn(),
+		post: vi.fn(),
+		delete: vi.fn(),
+	},
 }));
 
-const mockUserId = 'user-123';
-const mockUrl =
-	'https://firebasestorage.googleapis.com/v0/b/bucket/o/folder%2Fimage.png?alt=media';
+vi.mock('../../helpers', () => ({
+	api: apiMock,
+}));
 
-const mockMidia: MidiaInterface = {
-	id: 'midia-1',
-	url: mockUrl,
-	userId: mockUserId,
-	folder: 'uploads',
-};
+import { midiaService } from './midia.service';
 
 describe('midiaService', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('deve extrair corretamente o path de uma URL do Firebase Storage', () => {
-		const path = midiaService.getPathFromUrl(mockUrl);
-		expect(path).toBe('folder/image.png');
+	it('deve extrair path de URL do storage', () => {
+		const url =
+			'https://firebasestorage.googleapis.com/v0/b/bucket/o/folder%2Fimage.png?alt=media';
+
+		expect(midiaService.getPathFromUrl(url)).toBe('folder/image.png');
 	});
 
-	it('uploadImage deve fazer upload para o storage e salvar metadados no firestore', async () => {
-		const file = new File([''], 'test.png');
-		mockRepo.create.mockResolvedValueOnce({ id: 'new-id' });
+	it('deve enviar upload por multipart', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { url: 'http://image' } });
 
-		const result = await midiaService.uploadImage(file, 'uploads', mockUserId);
-
-		expect(storage.uploadBytes).toHaveBeenCalled();
-		expect(storage.getDownloadURL).toHaveBeenCalled();
-		expect(mockRepo.create).toHaveBeenCalledWith(
-			expect.objectContaining({
-				userId: mockUserId,
-				folder: 'uploads',
-				url: 'http://mockurl.com/image.png',
-			})
-		);
-		expect(result.url).toBe('http://mockurl.com/image.png');
-	});
-
-	it('uploadMultipleImages deve chamar uploadImage para cada arquivo', async () => {
-		const files = [new File([''], '1.png'), new File([''], '2.png')];
-		const spy = vi
-			.spyOn(midiaService, 'uploadImage')
-			.mockResolvedValue({ url: 'url' });
-
-		const result = await midiaService.uploadMultipleImages(
-			files,
+		const result = await midiaService.uploadImage(
+			new File(['x'], 'test.png'),
 			'folder',
-			'user'
+			'user-1'
 		);
 
-		expect(spy).toHaveBeenCalledTimes(2);
-		expect(result).toHaveLength(2);
-	});
-
-	it('deve retornar hasNextPage true e o cursor quando o repo retorna mais que o limite solicitado', async () => {
-		const limitReq = 2;
-		const mockData = [
-			{ id: '1', url: 'u1' },
-			{ id: '2', url: 'u2' },
-			{ id: '3', url: 'u3' },
-		];
-		const mockLastDoc = { id: 'snap-3' };
-
-		mockRepo.findWithPaginate.mockResolvedValueOnce({
-			data: mockData,
-			lastDoc: mockLastDoc,
-		});
-
-		const result = await midiaService.getMidia(mockUserId, limitReq);
-
-		expect(result.data).toHaveLength(2);
-		expect(result.nextCursor).toEqual(mockLastDoc); // Cursor é o lastDoc
-		expect(mockRepo.findWithPaginate).toHaveBeenCalledWith(
+		expect(apiMock.post).toHaveBeenCalledWith(
+			'/midia/upload',
+			expect.any(FormData),
 			expect.objectContaining({
-				limit: 3, // limitNumber + 1
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
 			})
 		);
+		expect(result).toEqual({ url: 'http://image' });
 	});
 
-	it('deve retornar hasNextPage false e cursor undefined quando o repo retorna exatamente o limite ou menos', async () => {
-		const limitReq = 5;
-		const mockData = [{ id: '1', url: 'u1' }];
+	it('deve falhar upload quando userId não for informado', async () => {
+		await expect(
+			midiaService.uploadImage(new File(['x'], 'test.png'), 'folder', '')
+		).rejects.toThrow('Usuário não encontrado');
+	});
 
-		mockRepo.findWithPaginate.mockResolvedValueOnce({
-			data: mockData,
-			lastDoc: { id: 'snap-1' },
+	it('deve realizar upload de múltiplas imagens', async () => {
+		apiMock.post
+			.mockResolvedValueOnce({ data: { url: 'http://image-1' } })
+			.mockResolvedValueOnce({ data: { url: 'http://image-2' } });
+
+		const files = [new File(['x'], 'a.png'), new File(['y'], 'b.png')];
+		const result = await midiaService.uploadMultipleImages(files, 'folder', 'user-1');
+
+		expect(apiMock.post).toHaveBeenCalledTimes(2);
+		expect(result).toEqual([{ url: 'http://image-1' }, { url: 'http://image-2' }]);
+	});
+
+	it('deve listar mídias com paginação', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: 2 } });
+
+		const result = await midiaService.getMidia('user-1', 10, 1, 'folder');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia', {
+			params: {
+				limit: 10,
+				page: 1,
+				folder: 'folder',
+			},
 		});
-
-		const result = await midiaService.getMidia(mockUserId, limitReq);
-
-		expect(result.data).toHaveLength(1);
-		expect(result.nextCursor).toBeUndefined();
+		expect(result).toEqual({ data: [], nextCursor: 2 });
 	});
 
-	it('deve aplicar filtro de pasta se fornecido', async () => {
-		mockRepo.findWithPaginate.mockResolvedValueOnce({
+	it('deve retornar vazio quando não houver userId em getMidia', async () => {
+		const result = await midiaService.getMidia('', 10);
+
+		expect(result).toEqual({
 			data: [],
-			lastDoc: null,
+			nextCursor: undefined,
+		});
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
+	it('deve usar página 1 como padrão quando cursor não for enviado', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+
+		await midiaService.getMidia('user-1', 20);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia', {
+			params: {
+				limit: 20,
+				page: 1,
+				folder: undefined,
+			},
+		});
+	});
+
+	it('deve salvar mídia', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { id: '1' } });
+
+		const result = await midiaService.saveMidia({ url: 'u', userId: 'user-1' });
+
+		expect(apiMock.post).toHaveBeenCalledWith('/midia', {
+			url: 'u',
+			userId: 'user-1',
+		});
+		expect(result).toEqual({ id: '1' });
+	});
+
+	it('deve remover por id quando disponível', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		await midiaService.deleteMidia({ id: '1', url: 'u', userId: 'user-1' });
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/1');
+	});
+
+	it('deve remover por url quando não houver id', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		await midiaService.deleteMidia({ url: 'u', userId: 'user-1' });
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/by-url', {
+			params: { url: 'u' },
+		});
+	});
+
+	it('deve remover por url via método dedicado', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		const result = await midiaService.deleteMidiaFromUrl('http://img');
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/by-url', {
+			params: { url: 'http://img' },
+		});
+		expect(result).toBe(true);
+	});
+
+	it('deve retornar lista vazia de pastas quando não houver userId', async () => {
+		const result = await midiaService.getFolders('');
+
+		expect(result).toEqual([]);
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
+	it('deve buscar pastas quando userId existir', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ folder: 'games', count: 1 }],
 		});
 
-		await midiaService.getMidia(mockUserId, 10, undefined, 'minha-pasta');
+		const result = await midiaService.getFolders('user-1');
 
-		expect(mockRepo.findWithPaginate).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.arrayContaining([
-					{ field: 'folder', op: '==', value: 'minha-pasta' },
-				]),
-			})
-		);
-	});
-
-	it('deleteMidia deve apagar do storage e do banco de dados', async () => {
-		mockRepo.delete.mockResolvedValueOnce(undefined);
-
-		const result = await midiaService.deleteMidia(mockMidia);
-
-		expect(storage.deleteObject).toHaveBeenCalled();
-		expect(mockRepo.delete).toHaveBeenCalledWith(mockMidia.id);
-		expect(result).toBe(true);
-	});
-
-	it('deleteMidia deve retornar false e logar erro em caso de falha', async () => {
-		vi.mocked(storage.deleteObject).mockRejectedValueOnce(new Error('fail'));
-
-		const result = await midiaService.deleteMidia(mockMidia);
-
-		expect(result).toBe(false);
-	});
-
-	it('deleteMidiaFromUrl deve encontrar todos os registros da URL e deletá-los', async () => {
-		mockRepo.findMany.mockResolvedValueOnce([{ id: '1' }, { id: '2' }]);
-
-		const result = await midiaService.deleteMidiaFromUrl(mockUrl);
-
-		expect(storage.deleteObject).toHaveBeenCalled();
-		expect(mockRepo.delete).toHaveBeenCalledTimes(2);
-		expect(result).toBe(true);
-	});
-
-	it('deleteMidiaFromUrl deve retornar false em caso de erro', async () => {
-		vi.spyOn(console, 'error').mockImplementation(() => {});
-		mockRepo.findMany.mockRejectedValueOnce(new Error('fail'));
-
-		const result = await midiaService.deleteMidiaFromUrl(mockUrl);
-		expect(result).toBe(false);
-	});
-
-	it('deve agrupar, contar e ordenar pastas corretamente', async () => {
-		mockRepo.findMany.mockResolvedValueOnce([
-			{ folder: 'Fotos' },
-			{ folder: 'Avatar' },
-			{ folder: 'Fotos' },
-			{ folder: undefined }, // Deve ser ignorado
-		]);
-
-		const result = await midiaService.getFolders(mockUserId);
-
-		expect(result).toEqual([
-			{ folder: 'Avatar', count: 1 },
-			{ folder: 'Fotos', count: 2 },
-		]);
+		expect(apiMock.get).toHaveBeenCalledWith('/midia/folders');
+		expect(result).toEqual([{ folder: 'games', count: 1 }]);
 	});
 });

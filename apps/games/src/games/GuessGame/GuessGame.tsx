@@ -11,12 +11,12 @@ import {
 } from 'react-icons/ri';
 
 import {
-	GamesEnum,
 	getRandomIndex,
 	useCharacter,
 	useGames,
 	useGameScore,
 } from '@etnos/tools';
+import { GamesEnum } from '@etnos/types';
 
 import { GuessGameContent } from './GuessGameContent';
 import { GuessGameContentInterface } from './GuessGameHelper';
@@ -34,7 +34,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const [word, setWord] = useState('');
 	const [content, setContent] = useState<GuessGameContentInterface>();
 
-	const { selectedCharacter } = useCharacter();
+	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const [isLoading, setIsLoading] = useState(false);
 
 	const [guesses, setGuesses] = useState<string>('');

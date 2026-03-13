@@ -25,12 +25,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const authFirebase = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-const getStoredAuthToken = () => {
-	if (typeof window === 'undefined') {
+export const getStoredAuthToken = () => {
+	if (globalThis.window === undefined) {
 		return null;
 	}
 
-	return localStorage.getItem(KEY_AUTH);
+	return globalThis.window.localStorage.getItem(KEY_AUTH);
 };
 
 export const useAuth = () => {

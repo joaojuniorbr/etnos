@@ -9,6 +9,26 @@ interface AuthProtectedProps {
 	redirectTo?: string;
 }
 
+export const redirectIfUnauthenticated = ({
+	browserWindow,
+	isProfileLoading,
+	redirectTo,
+	user,
+}: {
+	browserWindow: Window | undefined;
+	isProfileLoading: boolean;
+	redirectTo: string;
+	user: unknown;
+}) => {
+	if (browserWindow === undefined) {
+		return;
+	}
+
+	if (!isProfileLoading && !user) {
+		browserWindow.location.href = redirectTo;
+	}
+};
+
 export const AuthProtected = ({
 	children,
 	redirectTo = '/login',
@@ -16,13 +36,12 @@ export const AuthProtected = ({
 	const { user, isProfileLoading } = useAuth();
 
 	useEffect(() => {
-		if (typeof globalThis.window === 'undefined') {
-			return;
-		}
-
-		if (!isProfileLoading && !user) {
-			globalThis.window.location.href = redirectTo;
-		}
+		redirectIfUnauthenticated({
+			browserWindow: globalThis.window,
+			isProfileLoading,
+			redirectTo,
+			user,
+		});
 	}, [isProfileLoading, redirectTo, user]);
 
 	if (!isProfileLoading && !user) {

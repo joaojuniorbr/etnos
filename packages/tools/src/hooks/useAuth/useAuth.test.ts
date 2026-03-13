@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWrapper } from '../../test/common';
-import { useAuth } from './useAuth';
+import { getStoredAuthToken, useAuth } from './useAuth';
 import { message } from 'antd';
 
 const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
@@ -89,6 +89,22 @@ describe('useAuth', () => {
 		expect(mockApiGet).toHaveBeenCalledWith('/auth/profile');
 		expect(result.current.user?.parentName).toBe('Joao');
 		expect(result.current.isLoggedIn).toBe(true);
+	});
+
+	it('retorna null quando window não está disponível', () => {
+		const originalWindow = globalThis.window;
+
+		Object.defineProperty(globalThis, 'window', {
+			configurable: true,
+			value: undefined,
+		});
+
+		expect(getStoredAuthToken()).toBeNull();
+
+		Object.defineProperty(globalThis, 'window', {
+			configurable: true,
+			value: originalWindow,
+		});
 	});
 
 	it('retorna user null quando falha ao carregar perfil', async () => {

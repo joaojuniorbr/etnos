@@ -1,3 +1,60 @@
+# [1.2.0](https://github.com/joaojuniorbr/etnos/compare/v1.1.1...v1.2.0) (2026-03-13)
+
+### cadastro
+
+#### 🔨 Refatoração
+
+* refactor na jornada de cadastro ([315462d](https://github.com/joaojuniorbr/etnos/commit/315462dce12118625ddd4c9f280fb543dcdfa0b5))
+
+### code review
+
+#### 🔨 Refatoração
+
+* ajustes do codereview com ajustes do sonnar ([ae61c20](https://github.com/joaojuniorbr/etnos/commit/ae61c2083b8a92ba5f9835972d2a39fd48195aca))
+
+### geral
+
+#### 🔨 Refatoração
+
+* criacao de package/types e atualizacao dos services de firebase no backend ([1fbf518](https://github.com/joaojuniorbr/etnos/commit/1fbf5180d9295651ca47e9e25457ea7bf628beed))
+* serviços que estavam no frontend agora estao na api ([95ade7b](https://github.com/joaojuniorbr/etnos/commit/95ade7bf447335277721c5344b1ebcd8b1aae884))
+
+#### ⚙️ Manutenção
+
+* limpeza em arquivos node_modules ([36f451d](https://github.com/joaojuniorbr/etnos/commit/36f451d859ec3e0395403d3414b025fae16575ab))
+
+#### ✅ Testes
+
+* ajuste nos testes das tools ([246a338](https://github.com/joaojuniorbr/etnos/commit/246a3385bef009dc111b8016340eabf1d75a0341))
+
+### login
+
+#### 🔀 Merges
+
+* [CU-86afpzrv0] Cadastro ([042f61f](https://github.com/joaojuniorbr/etnos/commit/042f61f432c47d54e12b9ef690c6be76ac1c9043))
+
+### pipeline
+
+#### 🧪 CI/CD
+
+* ajustes finais nas actions ([3256b58](https://github.com/joaojuniorbr/etnos/commit/3256b58e7648f0c781b3ff8fb9f85ae1c69d571b))
+* ajuste no deploy do chormatic e do gcp ([2dab543](https://github.com/joaojuniorbr/etnos/commit/2dab543ce447084d93e22f677ebef4533686f7b1))
+* deploy GCP ([6bd6e1d](https://github.com/joaojuniorbr/etnos/commit/6bd6e1d9f5275fde6ae13cffdf9087d060d40ff4))
+* ajustes as actions do github actions ([19e4b0b](https://github.com/joaojuniorbr/etnos/commit/19e4b0bf23704c50dce456f8cc63f681458b8bed))
+
+### sonnar
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajustes nos testes ([9f5b967](https://github.com/joaojuniorbr/etnos/commit/9f5b96791d7d7b6bde7aec66849907fcf450f76c))
+* ajustes do sonnar ([ee54824](https://github.com/joaojuniorbr/etnos/commit/ee54824c77160391d3b6772bf6fd3e648ddcb12d))
+
+### types
+
+#### ✨ Features (Novidades)
+
+* inclusão de um novo package, o types, com interfaces, types e enums ([563450b](https://github.com/joaojuniorbr/etnos/commit/563450b99b3a01564c5b1914bd2760cd1ab3da16))
+
 ## [1.1.1](https://github.com/joaojuniorbr/etnos/compare/v1.1.0...v1.1.1) (2026-03-01)
 
 ### release

@@ -5,10 +5,11 @@ import { MidiaService } from './midia.service';
 describe('MidiaController', () => {
   let controller: MidiaController;
   let service: MidiaService;
+  const secureUrl = 'https://url';
 
   const mockMidiaService = {
-    uploadImage: jest.fn().mockResolvedValue({ url: 'http://url' }),
-    uploadMultipleImages: jest.fn().mockResolvedValue([{ url: 'http://url' }]),
+    uploadImage: jest.fn().mockResolvedValue({ url: secureUrl }),
+    uploadMultipleImages: jest.fn().mockResolvedValue([{ url: secureUrl }]),
     getMidia: jest.fn().mockResolvedValue({ data: [], nextCursor: undefined }),
     getFolders: jest.fn().mockResolvedValue([]),
     saveMidia: jest.fn().mockResolvedValue({ id: 'midia-1' }),
@@ -40,7 +41,7 @@ describe('MidiaController', () => {
     const result = await controller.uploadImage(req, file, 'folder');
 
     expect(service.uploadImage).toHaveBeenCalledWith(file, 'folder', 'user-1');
-    expect(result).toEqual({ url: 'http://url' });
+    expect(result).toEqual({ url: secureUrl });
   });
 
   it('deve fazer upload de imagem com pasta padrão', async () => {
@@ -63,7 +64,7 @@ describe('MidiaController', () => {
       'folder',
       'user-1',
     );
-    expect(result).toEqual([{ url: 'http://url' }]);
+    expect(result).toEqual([{ url: secureUrl }]);
   });
 
   it('deve fazer upload múltiplo com pasta padrão e lista vazia', async () => {
@@ -112,10 +113,10 @@ describe('MidiaController', () => {
   });
 
   it('deve remover mídia por url', async () => {
-    const result = await controller.deleteByUrl(req, 'http://url');
+    const result = await controller.deleteByUrl(req, secureUrl);
 
     expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith(
-      'http://url',
+      secureUrl,
       'user-1',
     );
     expect(result).toBe(true);
@@ -124,7 +125,7 @@ describe('MidiaController', () => {
   it('deve remover por body quando houver id', async () => {
     const result = await controller.deleteByBody(req, {
       id: 'm1',
-      url: 'http://url',
+      url: secureUrl,
       userId: 'u',
     });
 
@@ -134,11 +135,11 @@ describe('MidiaController', () => {
 
   it('deve remover por body quando houver url', async () => {
     const result = await controller.deleteByBody(req, {
-      url: 'http://url',
+      url: secureUrl,
     });
 
     expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith(
-      'http://url',
+      secureUrl,
       'user-1',
     );
     expect(result).toBe(true);

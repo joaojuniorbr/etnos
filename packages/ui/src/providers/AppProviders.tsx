@@ -1,13 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { UserProvider, MainLayout } from '@etnos/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { UserProvider } from '../context';
+import { MainLayout } from '../@templates';
 
-export function Providers({
+interface AppProvidersProps {
+	children: React.ReactNode;
+	showDevtools?: boolean;
+}
+
+export const AppProviders = ({
 	children,
-}: Readonly<{ children: React.ReactNode }>) {
+	showDevtools = false,
+}: AppProvidersProps) => {
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
@@ -17,7 +24,7 @@ export function Providers({
 						refetchOnWindowFocus: false,
 					},
 				},
-			})
+			}),
 	);
 
 	return (
@@ -25,7 +32,7 @@ export function Providers({
 			<UserProvider>
 				<MainLayout>{children}</MainLayout>
 			</UserProvider>
-			<ReactQueryDevtools />
+			{showDevtools ? <ReactQueryDevtools /> : null}
 		</QueryClientProvider>
 	);
-}
+};

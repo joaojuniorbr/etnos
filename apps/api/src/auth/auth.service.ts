@@ -62,6 +62,45 @@ export class AuthService {
     }
   }
 
+  async loginWithGoogle(idToken: string) {
+    try {
+      const decoded = await admin.auth().verifyIdToken(idToken, true);
+      const userRecord = await admin.auth().getUser(decoded.uid);
+      const existingProfile = await this.firebaseService.findById(
+        'users',
+        userRecord.uid,
+      );
+
+      if (!existingProfile) {
+        await this.firebaseService.create(
+          'users',
+          {
+            email: userRecord.email ?? null,
+            parentName: userRecord.displayName ?? null,
+            childName: null,
+            childBirthDate: null,
+            parentPhone: null,
+            school: null,
+            roles: ['student'],
+          },
+          userRecord.uid,
+        );
+      }
+
+      const user = await this.getProfile(userRecord.uid);
+
+      return {
+        idToken,
+        refreshToken: '',
+        expiresIn: '',
+        localId: userRecord.uid,
+        user,
+      };
+    } catch {
+      throw new UnauthorizedException('Não foi possível autenticar com Google');
+    }
+  }
+
   async registerWithEmailAndPassword(data: {
     email: string;
     password: string;

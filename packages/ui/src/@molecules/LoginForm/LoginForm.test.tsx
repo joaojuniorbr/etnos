@@ -241,14 +241,9 @@ describe('LoginForm', () => {
 		});
 	});
 
-	it('mantém loading do Google apenas durante tentativa e desliga no erro', async () => {
-		let resolveGoogle: (value: unknown) => void = () => {};
-		const loginWithGoogle = vi.fn(
-			() =>
-				new Promise((resolve) => {
-					resolveGoogle = resolve;
-				})
-		);
+	it('não navega nem reseta formulário quando login com Google retorna null', async () => {
+		const onLoginSuccess = vi.fn();
+		const loginWithGoogle = vi.fn().mockResolvedValue(null);
 
 		useAuthMock.mockReturnValue({
 			onSignInWithEmailAndPassword: vi.fn(),
@@ -256,47 +251,16 @@ describe('LoginForm', () => {
 			loginWithGoogle,
 		});
 
-		render(<LoginForm onLoginSuccess={vi.fn()} />);
-
-		const googleButton = screen.getByRole('button', {
-			name: /entrar com conta google/i,
-		});
-		fireEvent.click(googleButton);
-
-		await waitFor(() => {
-			expect(screen.getByTestId('spin')).toHaveAttribute(
-				'data-spinning',
-				'true'
-			);
-		});
-
-		resolveGoogle?.(null);
-
-		await waitFor(() => {
-			expect(screen.getByTestId('spin')).toHaveAttribute(
-				'data-spinning',
-				'false'
-			);
-		});
-	});
-
-	it('mostra erro quando login com Google lança exceção', async () => {
-		const loginWithGoogle = vi.fn().mockRejectedValue(new Error('google down'));
-
-		useAuthMock.mockReturnValue({
-			onSignInWithEmailAndPassword: vi.fn(),
-			isLoading: false,
-			loginWithGoogle,
-		});
-
-		render(<LoginForm onLoginSuccess={vi.fn()} />);
+		render(<LoginForm onLoginSuccess={onLoginSuccess} />);
 
 		fireEvent.click(
 			screen.getByRole('button', { name: /entrar com conta google/i })
 		);
 
 		await waitFor(() => {
-			expect(message.error).toHaveBeenCalledWith('Erro ao entrar com Google');
+			expect(loginWithGoogle).toHaveBeenCalledTimes(1);
+			expect(onLoginSuccess).not.toHaveBeenCalled();
+			expect(resetFieldsMock).not.toHaveBeenCalled();
 			expect(screen.getByTestId('spin')).toHaveAttribute(
 				'data-spinning',
 				'false'

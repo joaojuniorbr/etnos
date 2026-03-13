@@ -21,6 +21,7 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RecoveryDto } from './dto/recovery.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -57,6 +58,22 @@ export class AuthController {
   @ApiBody({ type: RegisterDto })
   async register(@Body() body: RegisterDto) {
     return this.authService.registerWithEmailAndPassword(body);
+  }
+
+  @Post('google')
+  @ApiOperation({
+    summary: 'Login com Google',
+    description:
+      'Valida um Firebase ID token do login com Google e garante o perfil do usuário.',
+  })
+  @ApiBody({ type: GoogleLoginDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Login com Google realizado com sucesso.',
+    type: LoginResponseDto,
+  })
+  async googleLogin(@Body() body: GoogleLoginDto) {
+    return this.authService.loginWithGoogle(body.idToken);
   }
 
   @Post('recovery')

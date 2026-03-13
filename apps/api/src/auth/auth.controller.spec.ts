@@ -20,6 +20,7 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             loginWithEmailAndPassword: jest.fn(),
+            loginWithGoogle: jest.fn(),
             registerWithEmailAndPassword: jest.fn(),
             sendRecoveryEmail: jest.fn(),
             getProfile: jest.fn(),
@@ -128,6 +129,27 @@ describe('AuthController', () => {
         body,
       );
       expect(result).toEqual({ idToken: 'token' });
+    });
+  });
+
+  describe('googleLogin', () => {
+    it('deve autenticar com Google com sucesso', async () => {
+      authService.loginWithGoogle.mockResolvedValueOnce({
+        idToken: 'google-id-token',
+        user: { uid: 'google-user-1' },
+      } as any);
+
+      const result = await controller.googleLogin({
+        idToken: 'google-id-token',
+      });
+
+      expect(authService.loginWithGoogle).toHaveBeenCalledWith(
+        'google-id-token',
+      );
+      expect(result).toEqual({
+        idToken: 'google-id-token',
+        user: { uid: 'google-user-1' },
+      });
     });
   });
 

@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWrapper } from '../../test/common';
-import { useAuth } from './useAuth';
+import { getStoredAuthToken, useAuth } from './useAuth';
 import { message } from 'antd';
 
 const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
@@ -12,6 +12,10 @@ const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
 		if (error instanceof Error) return error.message;
 		return 'Erro inesperado';
 	}),
+}));
+const { mockSignInWithPopup, mockGoogleUserGetIdToken } = vi.hoisted(() => ({
+	mockSignInWithPopup: vi.fn(),
+	mockGoogleUserGetIdToken: vi.fn(),
 }));
 
 const storageState: Record<string, string> = {};
@@ -40,6 +44,16 @@ vi.mock('../../helpers/errorMessage', () => ({
 	errorMessage: mockErrorMessage,
 }));
 
+vi.mock('firebase/app', () => ({
+	initializeApp: vi.fn(() => ({ name: 'test-app' })),
+}));
+
+vi.mock('firebase/auth', () => ({
+	getAuth: vi.fn(() => ({ name: 'test-auth' })),
+	GoogleAuthProvider: vi.fn(),
+	signInWithPopup: mockSignInWithPopup,
+}));
+
 vi.mock('antd', () => ({
 	message: {
 		success: vi.fn(),
@@ -51,15 +65,19 @@ const renderUseAuth = () =>
 	renderHook(() => useAuth(), { wrapper: createWrapper() });
 const randomPassword = () =>
 	`pw-${Math.random().toString(36).slice(2, 12)}-Aa1!`;
+const authenticateForProfile = () =>
+	localStorage.setItem('etnos_auth_token', 'profile-token');
 
 describe('useAuth', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		localStorage.clear();
 		mockApiGet.mockResolvedValue({ data: null });
+		mockGoogleUserGetIdToken.mockResolvedValue('firebase-google-id-token');
 	});
 
 	it('carrega perfil via API ao montar', async () => {
+		authenticateForProfile();
 		mockApiGet.mockResolvedValueOnce({
 			data: { uid: '123', email: 'test@test.com', parentName: 'Joao' },
 		});
@@ -73,7 +91,24 @@ describe('useAuth', () => {
 		expect(result.current.isLoggedIn).toBe(true);
 	});
 
+	it('retorna null quando window não está disponível', () => {
+		const originalWindow = globalThis.window;
+
+		Object.defineProperty(globalThis, 'window', {
+			configurable: true,
+			value: undefined,
+		});
+
+		expect(getStoredAuthToken()).toBeNull();
+
+		Object.defineProperty(globalThis, 'window', {
+			configurable: true,
+			value: originalWindow,
+		});
+	});
+
 	it('retorna user null quando falha ao carregar perfil', async () => {
+		authenticateForProfile();
 		const error = new Error('profile failed');
 		mockApiGet.mockRejectedValueOnce(error);
 
@@ -130,7 +165,44 @@ describe('useAuth', () => {
 		expect(result.current.isLoading).toBe(false);
 	});
 
+	it('faz login com Google usando Firebase ID token e salva token da API', async () => {
+		mockSignInWithPopup.mockResolvedValueOnce({
+			user: {
+				getIdToken: mockGoogleUserGetIdToken,
+			},
+		});
+		mockApiPost.mockResolvedValueOnce({
+			data: {
+				idToken: 'api-google-id-token',
+				user: { uid: 'google-user-id', email: 'google@test.com' },
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.loginWithGoogle();
+		});
+
+		expect(mockSignInWithPopup).toHaveBeenCalledTimes(1);
+		expect(mockGoogleUserGetIdToken).toHaveBeenCalledWith(true);
+		expect(mockApiPost).toHaveBeenCalledWith('/auth/google', {
+			idToken: 'firebase-google-id-token',
+		});
+		expect(localStorage.getItem('etnos_auth_token')).toBe(
+			'api-google-id-token'
+		);
+		expect(user).toEqual({
+			uid: 'google-user-id',
+			email: 'google@test.com',
+		});
+		expect(result.current.isLoading).toBe(false);
+	});
+
 	it('retorna null no login com Google e informa indisponibilidade', async () => {
+		mockSignInWithPopup.mockRejectedValueOnce(new Error('popup fail'));
+
 		const { result } = renderUseAuth();
 
 		let user: unknown;
@@ -208,6 +280,7 @@ describe('useAuth', () => {
 	});
 
 	it('atualiza perfil e converte undefined para null', async () => {
+		authenticateForProfile();
 		mockApiPost.mockResolvedValueOnce({ data: { ok: true } });
 		mockApiGet.mockResolvedValueOnce({
 			data: { uid: '123', childName: 'Old' },

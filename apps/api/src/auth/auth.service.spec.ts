@@ -50,6 +50,11 @@ describe('AuthService', () => {
     mockedAdminAuth.mockReturnValue({
       createUser: jest.fn().mockResolvedValue({ uid: 'new-user-id' }),
       getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
+      getUser: jest.fn().mockResolvedValue({
+        uid: 'google-user-id',
+        email: 'google@test.com',
+        displayName: 'Google User',
+      }),
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-id' }),
     });
   });
@@ -346,6 +351,98 @@ describe('AuthService', () => {
           parentName: null,
         }),
         'new-user-id',
+      );
+    });
+  });
+
+  describe('loginWithGoogle', () => {
+    it('deve validar token Google e criar perfil quando não existir', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'google-user-id',
+          email: 'google@test.com',
+          displayName: 'Google User',
+        }),
+      } as any);
+
+      firebaseService.findById
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 'google-user-id',
+          email: 'google@test.com',
+          roles: ['student'],
+        } as any);
+
+      const result = await service.loginWithGoogle('google-id-token');
+
+      expect(firebaseService.create).toHaveBeenCalledWith(
+        'users',
+        {
+          email: 'google@test.com',
+          parentName: 'Google User',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+        },
+        'google-user-id',
+      );
+      expect(result).toEqual({
+        idToken: 'google-id-token',
+        refreshToken: '',
+        expiresIn: '',
+        localId: 'google-user-id',
+        user: {
+          id: 'google-user-id',
+          email: 'google@test.com',
+          roles: ['student'],
+          uid: 'google-user-id',
+        },
+      });
+    });
+
+    it('deve reutilizar perfil existente no login com Google', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'google-user-id',
+          email: 'google@test.com',
+          displayName: 'Google User',
+        }),
+      } as any);
+
+      firebaseService.findById
+        .mockResolvedValueOnce({
+          id: 'google-user-id',
+          email: 'google@test.com',
+          roles: ['student'],
+        } as any)
+        .mockResolvedValueOnce({
+          id: 'google-user-id',
+          email: 'google@test.com',
+          roles: ['student'],
+        } as any);
+
+      const result = await service.loginWithGoogle('google-id-token');
+
+      expect(firebaseService.create).not.toHaveBeenCalled();
+      expect(result.user).toEqual({
+        id: 'google-user-id',
+        email: 'google@test.com',
+        roles: ['student'],
+        uid: 'google-user-id',
+      });
+    });
+
+    it('deve lançar UnauthorizedException quando login com Google falhar', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        verifyIdToken: jest.fn().mockRejectedValue(new Error('invalid token')),
+      } as any);
+
+      await expect(service.loginWithGoogle('invalid-token')).rejects.toThrow(
+        'Não foi possível autenticar com Google',
       );
     });
   });

@@ -1,3 +1,29 @@
+## [1.2.1](https://github.com/joaojuniorbr/etnos/compare/v1.2.0...v1.2.1) (2026-03-13)
+
+### geral
+
+#### 🔨 Refatoração
+
+* centralização da proteção das rotas ([98b25f6](https://github.com/joaojuniorbr/etnos/commit/98b25f6ac55695527dfc1877ebb5e60b951c6c73))
+
+### login
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajuste na autenticacao com o google ([c0dfedc](https://github.com/joaojuniorbr/etnos/commit/c0dfedc7952fdebc03fe6193ab1792b884666e47))
+
+### rotas
+
+#### 🔀 Merges
+
+* [Cu-86afpzrzp] Proteção das Rotas Autenticadas ([6fd1fc1](https://github.com/joaojuniorbr/etnos/commit/6fd1fc18982f0343b684ce1458cd0cd0cdeac945))
+
+### sonnar
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajustes do code review ([c76b104](https://github.com/joaojuniorbr/etnos/commit/c76b1040217ac10517e000944a5a292e8238394e))
+
 # [1.2.0](https://github.com/joaojuniorbr/etnos/compare/v1.1.1...v1.2.0) (2026-03-13)
 
 ### cadastro

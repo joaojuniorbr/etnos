@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { EmailService } from 'src/email';
+import { FirebaseService } from 'src/firebase';
 
 describe('PublicService', () => {
   let service: PublicService;
@@ -15,6 +16,12 @@ describe('PublicService', () => {
           provide: EmailService,
           useValue: {
             sendEmail: jest.fn().mockResolvedValue({ ok: true }),
+          },
+        },
+        {
+          provide: FirebaseService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
           },
         },
       ],

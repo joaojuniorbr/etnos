@@ -79,8 +79,9 @@ export class SchoolsService {
   }
 
   async getOne(id: string): Promise<SchoolInterface | null> {
-    return this.firebaseService.findById(COLLECTION_NAME, id) as unknown as Promise<
-      SchoolInterface | null
-    >;
+    return this.firebaseService.findById(
+      COLLECTION_NAME,
+      id,
+    ) as unknown as Promise<SchoolInterface | null>;
   }
 }

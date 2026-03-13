@@ -72,11 +72,30 @@ export class AuthService {
     school?: string;
   }) {
     try {
-      const userRecord = await admin.auth().createUser({
-        email: data.email,
-        password: data.password,
-        displayName: data.parentName,
-      });
+      let userRecord: admin.auth.UserRecord;
+
+      try {
+        userRecord = await admin.auth().createUser({
+          email: data.email,
+          password: data.password,
+          displayName: data.parentName,
+        });
+      } catch (error) {
+        if (error?.errorInfo?.code !== 'auth/email-already-exists') {
+          throw error;
+        }
+
+        userRecord = await admin.auth().getUserByEmail(data.email);
+      }
+
+      const existingProfile = await this.firebaseService.findById(
+        'users',
+        userRecord.uid,
+      );
+
+      if (existingProfile) {
+        throw new UnauthorizedException('Email já cadastrado');
+      }
 
       await this.firebaseService.create(
         'users',
@@ -93,7 +112,13 @@ export class AuthService {
       );
 
       return this.loginWithEmailAndPassword(data.email, data.password);
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      if (error?.errorInfo?.code == 'auth/email-already-exists') {
+        throw new UnauthorizedException('Email já cadastrado');
+      }
       throw new UnauthorizedException('Não foi possível concluir o cadastro');
     }
   }

@@ -1,9 +1,14 @@
+import { SchoolInterface } from '@etnos/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EmailService } from 'src/email';
+import { FirebaseService } from 'src/firebase';
 
 @Injectable()
 export class PublicService {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly firebaseService: FirebaseService,
+  ) {}
 
   sendContactEmail(phone: unknown) {
     if (typeof phone !== 'string') {
@@ -26,6 +31,15 @@ export class PublicService {
       to: process.env.CONTACT_RECEIVER_EMAIL,
       subject,
       html,
+    });
+  }
+
+  getSchools() {
+    return this.firebaseService.findAll<SchoolInterface>('schools', {
+      orderBy: {
+        field: 'name',
+        direction: 'asc',
+      },
     });
   }
 }

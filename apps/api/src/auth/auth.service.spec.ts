@@ -49,6 +49,7 @@ describe('AuthService', () => {
 
     mockedAdminAuth.mockReturnValue({
       createUser: jest.fn().mockResolvedValue({ uid: 'new-user-id' }),
+      getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-id' }),
     });
   });
@@ -205,7 +206,9 @@ describe('AuthService', () => {
         },
       });
 
-      firebaseService.findById.mockResolvedValueOnce({
+      firebaseService.findById
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
         id: 'new-user-id',
         role: ['student'],
       } as any);
@@ -225,6 +228,69 @@ describe('AuthService', () => {
         'new-user-id',
       );
       expect(result.idToken).toBe('id-token');
+    });
+
+    it('deve criar perfil quando usuário já existe no firebase auth', async () => {
+      const authMock = {
+        createUser: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+        getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
+      } as any;
+      mockedAdminAuth.mockReturnValueOnce(authMock);
+      mockedAdminAuth.mockReturnValue(authMock);
+
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+          expiresIn: '3600',
+          localId: 'existing-user-id',
+        },
+      });
+
+      firebaseService.findById
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 'existing-user-id',
+          role: ['student'],
+        } as any);
+
+      const result = await service.registerWithEmailAndPassword({
+        email: 'existing@email.com',
+        password: '123456',
+      });
+
+      expect(firebaseService.create).toHaveBeenCalledWith(
+        'users',
+        expect.objectContaining({
+          email: 'existing@email.com',
+          parentName: null,
+        }),
+        'existing-user-id',
+      );
+      expect(result.idToken).toBe('id-token');
+    });
+
+    it('deve lançar UnauthorizedException quando já existe perfil', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        createUser: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+        getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
+      } as any);
+
+      firebaseService.findById.mockResolvedValueOnce({
+        id: 'existing-user-id',
+      } as any);
+
+      await expect(
+        service.registerWithEmailAndPassword({
+          email: 'existing@email.com',
+          password: '123456',
+        }),
+      ).rejects.toThrow('Email já cadastrado');
     });
 
     it('deve lançar UnauthorizedException se falhar no register', async () => {
@@ -249,9 +315,11 @@ describe('AuthService', () => {
           localId: 'new-user-id',
         },
       });
-      firebaseService.findById.mockResolvedValueOnce({
-        id: 'new-user-id',
-      } as any);
+      firebaseService.findById
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 'new-user-id',
+        } as any);
 
       await service.registerWithEmailAndPassword({
         email: 'new@email.com',

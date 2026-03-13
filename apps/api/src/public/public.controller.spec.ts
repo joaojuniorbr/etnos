@@ -14,6 +14,9 @@ describe('PublicController', () => {
           provide: PublicService,
           useValue: {
             sendContactEmail: jest.fn().mockResolvedValue({ ok: true }),
+            getSchools: jest.fn().mockResolvedValue([
+              { id: 'school-1', name: 'Escola Teste' },
+            ]),
           },
         },
       ],
@@ -33,5 +36,12 @@ describe('PublicController', () => {
     await controller.sendContactEmail({ phone } as any);
 
     expect(publicService.sendContactEmail).toHaveBeenCalledWith(phone);
+  });
+
+  it('should delegate getSchools to public service', async () => {
+    const result = await controller.getSchools();
+
+    expect(publicService.getSchools).toHaveBeenCalledTimes(1);
+    expect(result).toEqual([{ id: 'school-1', name: 'Escola Teste' }]);
   });
 });

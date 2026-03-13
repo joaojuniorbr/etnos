@@ -119,7 +119,7 @@ describe('AuthController', () => {
 
       const body = {
         email: 'new@email.com',
-        password: '123456',
+        password: TEST_PASSWORD,
       };
 
       const result = await controller.register(body);

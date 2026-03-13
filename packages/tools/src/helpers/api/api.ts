@@ -7,11 +7,11 @@ import axios, {
 export const AUTH_TOKEN_STORAGE_KEY = 'etnos_auth_token';
 
 const addAuthToken = (config: InternalAxiosRequestConfig) => {
-	if (typeof window === 'undefined') {
+	if (typeof globalThis.window === 'undefined') {
 		return config;
 	}
 
-	const token = window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+	const token = globalThis.window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
 
 	if (!token) return config;
 

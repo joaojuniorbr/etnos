@@ -55,11 +55,7 @@ export class MidiaService {
     return { url };
   }
 
-  async uploadMultipleImages(
-    files: any[],
-    folder: string,
-    userId: string,
-  ) {
+  async uploadMultipleImages(files: any[], folder: string, userId: string) {
     const uploadPromises = files.map((file) =>
       this.uploadImage(file, folder, userId),
     );
@@ -157,7 +153,7 @@ export class MidiaService {
 
       await this.firebaseService.batchDelete(
         COLLECTION_NAME,
-        items.map((item) => item.id!),
+        items.map((item) => item.id),
       );
 
       return true;
@@ -172,7 +168,9 @@ export class MidiaService {
       id,
     )) as unknown as MidiaInterface | null;
 
-    if (!item || item.userId !== userId) return false;
+    if (!(item?.userId === userId)) {
+      return false;
+    }
 
     return this.deleteMidia(item);
   }

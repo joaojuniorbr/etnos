@@ -215,7 +215,7 @@ describe('AuthService', () => {
 
       const result = await service.registerWithEmailAndPassword({
         email: 'new@email.com',
-        password: '123456',
+        password: TEST_PASSWORD,
         parentName: 'Pai',
       });
 
@@ -259,7 +259,7 @@ describe('AuthService', () => {
 
       const result = await service.registerWithEmailAndPassword({
         email: 'existing@email.com',
-        password: '123456',
+        password: TEST_PASSWORD,
       });
 
       expect(firebaseService.create).toHaveBeenCalledWith(
@@ -288,7 +288,7 @@ describe('AuthService', () => {
       await expect(
         service.registerWithEmailAndPassword({
           email: 'existing@email.com',
-          password: '123456',
+          password: TEST_PASSWORD,
         }),
       ).rejects.toThrow('Email já cadastrado');
     });
@@ -301,9 +301,23 @@ describe('AuthService', () => {
       await expect(
         service.registerWithEmailAndPassword({
           email: 'new@email.com',
-          password: '123456',
+          password: TEST_PASSWORD,
         }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('deve lançar Email já cadastrado quando outra etapa retornar auth/email-already-exists', async () => {
+      firebaseService.findById.mockResolvedValueOnce(null);
+      firebaseService.create.mockRejectedValueOnce({
+        errorInfo: { code: 'auth/email-already-exists' },
+      });
+
+      await expect(
+        service.registerWithEmailAndPassword({
+          email: 'new@email.com',
+          password: TEST_PASSWORD,
+        }),
+      ).rejects.toThrow('Email já cadastrado');
     });
 
     it('deve preencher parentName como null quando não informado', async () => {
@@ -323,7 +337,7 @@ describe('AuthService', () => {
 
       await service.registerWithEmailAndPassword({
         email: 'new@email.com',
-        password: '123456',
+        password: TEST_PASSWORD,
       });
 
       expect(firebaseService.create).toHaveBeenCalledWith(

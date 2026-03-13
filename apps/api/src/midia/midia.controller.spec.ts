@@ -46,7 +46,7 @@ describe('MidiaController', () => {
   it('deve fazer upload de imagem com pasta padrão', async () => {
     const file = { originalname: 'x.png' };
 
-    await controller.uploadImage(req, file, undefined);
+    await controller.uploadImage(req, file);
 
     expect(service.uploadImage).toHaveBeenCalledWith(file, 'uploads', 'user-1');
   });
@@ -67,7 +67,7 @@ describe('MidiaController', () => {
   });
 
   it('deve fazer upload múltiplo com pasta padrão e lista vazia', async () => {
-    await controller.uploadMultiple(req, {}, undefined);
+    await controller.uploadMultiple(req, {});
 
     expect(service.uploadMultipleImages).toHaveBeenCalledWith(
       [],
@@ -84,7 +84,7 @@ describe('MidiaController', () => {
   });
 
   it('deve listar mídias usando limit/page padrão', async () => {
-    await controller.getMidia(req, undefined, undefined, undefined);
+    await controller.getMidia(req, undefined, undefined);
 
     expect(service.getMidia).toHaveBeenCalledWith('user-1', 10, 1, undefined);
   });
@@ -98,7 +98,10 @@ describe('MidiaController', () => {
   it('deve salvar registro de mídia forçando userId autenticado', async () => {
     await controller.saveMidia(req, { url: 'u', userId: 'x' } as any);
 
-    expect(service.saveMidia).toHaveBeenCalledWith({ url: 'u', userId: 'user-1' });
+    expect(service.saveMidia).toHaveBeenCalledWith({
+      url: 'u',
+      userId: 'user-1',
+    });
   });
 
   it('deve remover mídia por id', async () => {
@@ -111,7 +114,10 @@ describe('MidiaController', () => {
   it('deve remover mídia por url', async () => {
     const result = await controller.deleteByUrl(req, 'http://url');
 
-    expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith('http://url', 'user-1');
+    expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith(
+      'http://url',
+      'user-1',
+    );
     expect(result).toBe(true);
   });
 
@@ -131,7 +137,10 @@ describe('MidiaController', () => {
       url: 'http://url',
     });
 
-    expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith('http://url', 'user-1');
+    expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith(
+      'http://url',
+      'user-1',
+    );
     expect(result).toBe(true);
   });
 

@@ -31,7 +31,12 @@ describe('scoreGamesService', () => {
 	});
 
 	it('deve retornar null quando userId não existir em saveScore', async () => {
-		const result = await scoreGamesService.saveScore('memory-game', 'joao', 10, '');
+		const result = await scoreGamesService.saveScore(
+			'memory-game',
+			'joao',
+			10,
+			''
+		);
 
 		expect(result).toBeNull();
 		expect(apiMock.post).not.toHaveBeenCalled();

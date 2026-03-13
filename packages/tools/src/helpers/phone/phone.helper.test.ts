@@ -13,6 +13,11 @@ describe('Helpers: Phone', () => {
 		expect(formatPhoneBR('41999991234')).toBe('(41) 99999-1234');
 	});
 
+	it('deve manter o formato parcial de celular antes do hífen final', () => {
+		expect(formatPhoneBR('4199999')).toBe('(41) 9999-9');
+		expect(formatPhoneBR('41999999')).toBe('(41) 9999-99');
+	});
+
 	it('deve manter a formatação parcial enquanto o usuário digita', () => {
 		expect(formatPhoneBR('4')).toBe('(4');
 		expect(formatPhoneBR('419')).toBe('(41) 9');

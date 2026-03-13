@@ -7,14 +7,24 @@ import { api } from '../../helpers/api';
 import { useQuery } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+
 const KEY_AUTH = 'etnos_auth_token';
 
-const userRepo: any = {
-	update: async (uid: string, data: Partial<UserProfileInterface>) => ({
-		...data,
-		uid,
-	}),
+const firebaseConfig = {
+	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+	authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+	projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+	storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+	messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+	appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+const app = initializeApp(firebaseConfig);
+const authFirebase = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 export const useAuth = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -72,8 +82,24 @@ export const useAuth = () => {
 	};
 
 	const loginWithGoogle = async (): Promise<UserProfileInterface | null> => {
-		message.error('Login com Google indisponível no momento.');
-		return null;
+		setIsLoading(true);
+		try {
+			const result = await signInWithPopup(authFirebase, googleProvider);
+			const firebaseIdToken = await result.user.getIdToken(true);
+			const response = await api.post('/auth/google', {
+				idToken: firebaseIdToken,
+			});
+			const { idToken, user } = response.data;
+
+			saveToken(idToken);
+
+			return user;
+		} catch {
+			message.error('Login com Google indisponível no momento.');
+			return null;
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const onSignOut = async () => {
@@ -129,15 +155,6 @@ export const useAuth = () => {
 			const { idToken, user } = response.data;
 
 			saveToken(idToken);
-
-			await userRepo.update(user.uid, {
-				school: values.school,
-				parentName: values.parentName,
-				email: values.parentEmail,
-				phone: values.parentPhone,
-				childName: values.childName,
-				childBirthDate: values.childBirthDate,
-			} as any);
 
 			return user;
 		} catch (error) {

@@ -1,6 +1,5 @@
 import { useAuth } from '@etnos/tools';
 import { Divider, Form, Input, message, Spin } from 'antd';
-import { useState } from 'react';
 import { Button } from '../../@atoms';
 
 interface LoginFormProps {
@@ -9,8 +8,6 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 	const [form] = Form.useForm();
-
-	const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
 
 	const { onSignInWithEmailAndPassword, isLoading, loginWithGoogle } =
 		useAuth();
@@ -30,25 +27,19 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 	};
 
 	const onLoginWithGoogle = async () => {
-		setIsLoadingGoogle(true);
-		try {
-			const user = await loginWithGoogle();
+		loginWithGoogle().then((user) => {
 			if (user?.email) {
 				onLoginSuccess();
 				form.resetFields();
 			}
-		} catch {
-			message.error('Erro ao entrar com Google');
-		} finally {
-			setIsLoadingGoogle(false);
-		}
+		});
 	};
 
 	const styleButton =
 		'ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition';
 
 	return (
-		<Spin spinning={isLoading || isLoadingGoogle}>
+		<Spin spinning={isLoading}>
 			<div className='ui:flex ui:flex-col ui:justify-center ui:gap-6'>
 				<h1 className='ui:text-xl ui:uppercase ui:font-bold ui:text-center ui:text-primary'>
 					Acesse sua conta

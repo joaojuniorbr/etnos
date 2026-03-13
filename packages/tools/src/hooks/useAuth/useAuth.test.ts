@@ -13,6 +13,10 @@ const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
 		return 'Erro inesperado';
 	}),
 }));
+const { mockSignInWithPopup, mockGoogleUserGetIdToken } = vi.hoisted(() => ({
+	mockSignInWithPopup: vi.fn(),
+	mockGoogleUserGetIdToken: vi.fn(),
+}));
 
 const storageState: Record<string, string> = {};
 
@@ -40,6 +44,16 @@ vi.mock('../../helpers/errorMessage', () => ({
 	errorMessage: mockErrorMessage,
 }));
 
+vi.mock('firebase/app', () => ({
+	initializeApp: vi.fn(() => ({ name: 'test-app' })),
+}));
+
+vi.mock('firebase/auth', () => ({
+	getAuth: vi.fn(() => ({ name: 'test-auth' })),
+	GoogleAuthProvider: vi.fn(),
+	signInWithPopup: mockSignInWithPopup,
+}));
+
 vi.mock('antd', () => ({
 	message: {
 		success: vi.fn(),
@@ -57,6 +71,7 @@ describe('useAuth', () => {
 		vi.clearAllMocks();
 		localStorage.clear();
 		mockApiGet.mockResolvedValue({ data: null });
+		mockGoogleUserGetIdToken.mockResolvedValue('firebase-google-id-token');
 	});
 
 	it('carrega perfil via API ao montar', async () => {
@@ -130,7 +145,44 @@ describe('useAuth', () => {
 		expect(result.current.isLoading).toBe(false);
 	});
 
+	it('faz login com Google usando Firebase ID token e salva token da API', async () => {
+		mockSignInWithPopup.mockResolvedValueOnce({
+			user: {
+				getIdToken: mockGoogleUserGetIdToken,
+			},
+		});
+		mockApiPost.mockResolvedValueOnce({
+			data: {
+				idToken: 'api-google-id-token',
+				user: { uid: 'google-user-id', email: 'google@test.com' },
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		let user: unknown;
+		await act(async () => {
+			user = await result.current.loginWithGoogle();
+		});
+
+		expect(mockSignInWithPopup).toHaveBeenCalledTimes(1);
+		expect(mockGoogleUserGetIdToken).toHaveBeenCalledWith(true);
+		expect(mockApiPost).toHaveBeenCalledWith('/auth/google', {
+			idToken: 'firebase-google-id-token',
+		});
+		expect(localStorage.getItem('etnos_auth_token')).toBe(
+			'api-google-id-token'
+		);
+		expect(user).toEqual({
+			uid: 'google-user-id',
+			email: 'google@test.com',
+		});
+		expect(result.current.isLoading).toBe(false);
+	});
+
 	it('retorna null no login com Google e informa indisponibilidade', async () => {
+		mockSignInWithPopup.mockRejectedValueOnce(new Error('popup fail'));
+
 		const { result } = renderUseAuth();
 
 		let user: unknown;

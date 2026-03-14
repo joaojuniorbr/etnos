@@ -8,12 +8,14 @@ import { PublicModule } from './public/public.module';
 import { EmailModule } from './email/email.module';
 import { SchoolsModule } from './schools/schools.module';
 import { MidiaModule } from './midia/midia.module';
+import { PrismaModule } from './prisma';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PrismaModule,
     AuthModule,
     FirebaseModule,
     GamesModule,

@@ -1,13 +1,13 @@
 import { SchoolInterface } from '@etnos/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EmailService } from 'src/email';
-import { FirebaseService } from 'src/firebase';
+import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class PublicService {
   constructor(
     private readonly emailService: EmailService,
-    private readonly firebaseService: FirebaseService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   sendContactEmail(phone: unknown) {
@@ -35,10 +35,9 @@ export class PublicService {
   }
 
   getSchools() {
-    return this.firebaseService.findAll<SchoolInterface>('schools', {
+    return this.prismaService.school.findMany({
       orderBy: {
-        field: 'name',
-        direction: 'asc',
+        name: 'asc',
       },
     });
   }

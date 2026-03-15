@@ -1,45 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase';
 import type { CharacterInterface } from '@etnos/types';
-
-const COLLECTION_NAME = 'character';
+import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class CharactersService {
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getCharacters() {
-    return this.firebaseService.findAll<CharacterInterface>(COLLECTION_NAME);
+    return this.prismaService.character.findMany();
   }
 
   async getCharacterBySlug(slug: string) {
-    return this.firebaseService.findOne<CharacterInterface>(COLLECTION_NAME, [
-      {
-        field: 'slug',
-        operator: '==',
-        value: slug,
-      },
-    ]);
+    return this.prismaService.character.findUnique({
+      where: { slug },
+    });
   }
 
   async save(character: CharacterInterface) {
-    const exists = await this.firebaseService.findOne<CharacterInterface>(
-      COLLECTION_NAME,
-      [
-        {
-          field: 'slug',
-          operator: '==',
-          value: character.slug,
-        },
-      ],
-    );
+    const exists = await this.prismaService.character.findUnique({
+      where: { slug: character.slug },
+    });
 
     if (exists) return null;
 
-    const created = await this.firebaseService.create(
-      COLLECTION_NAME,
-      character as unknown as Record<string, unknown>,
-    );
+    const created = await this.prismaService.character.create({
+      data: {
+        name: character.name,
+        slug: character.slug,
+        region: character.region,
+        description: character.description,
+        imageUrl: character.imageUrl,
+      },
+    });
 
     return {
       id: created.id,
@@ -48,24 +40,22 @@ export class CharactersService {
   }
 
   async update(character: CharacterInterface) {
-    const existing = await this.firebaseService.findOne<CharacterInterface>(
-      COLLECTION_NAME,
-      [
-        {
-          field: 'slug',
-          operator: '==',
-          value: character.slug,
-        },
-      ],
-    );
+    const existing = await this.prismaService.character.findUnique({
+      where: { slug: character.slug },
+    });
 
     if (existing && existing.id !== character.id) return null;
 
-    await this.firebaseService.update(
-      COLLECTION_NAME,
-      character.id,
-      character as unknown as Record<string, unknown>,
-    );
+    await this.prismaService.character.update({
+      where: { id: character.id },
+      data: {
+        name: character.name,
+        slug: character.slug,
+        region: character.region,
+        description: character.description,
+        imageUrl: character.imageUrl,
+      },
+    });
 
     return character;
   }

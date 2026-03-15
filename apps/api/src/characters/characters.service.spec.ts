@@ -1,10 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CharactersService } from './characters.service';
-import { FirebaseService } from 'src/firebase';
+import { PrismaService } from 'src/prisma';
 
 describe('CharactersService', () => {
   let service: CharactersService;
-  let firebaseService: FirebaseService;
+  let prismaService: {
+    character: {
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
+    };
+  };
 
   const mockCharacter = {
     id: '123',
@@ -14,11 +21,13 @@ describe('CharactersService', () => {
     description: 'Descrição do personagem',
   };
 
-  const mockFirebaseService = {
-    findAll: jest.fn().mockResolvedValue([mockCharacter]),
-    findOne: jest.fn().mockResolvedValue(mockCharacter),
-    create: jest.fn().mockResolvedValue({ id: '123' }),
-    update: jest.fn().mockResolvedValue(undefined),
+  const mockPrismaService = {
+    character: {
+      findMany: jest.fn().mockResolvedValue([mockCharacter]),
+      findUnique: jest.fn().mockResolvedValue(mockCharacter),
+      create: jest.fn().mockResolvedValue({ id: '123' }),
+      update: jest.fn().mockResolvedValue(undefined),
+    },
   };
 
   beforeEach(async () => {
@@ -26,44 +35,48 @@ describe('CharactersService', () => {
       providers: [
         CharactersService,
         {
-          provide: FirebaseService,
-          useValue: mockFirebaseService,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
 
     service = module.get<CharactersService>(CharactersService);
-    firebaseService = module.get<FirebaseService>(FirebaseService);
+    prismaService = module.get(PrismaService);
     jest.clearAllMocks();
   });
 
-  it('deve chamar findAll com a coleção "character"', async () => {
+  it('deve listar personagens', async () => {
     const result = await service.getCharacters();
 
-    expect(firebaseService.findAll).toHaveBeenCalledWith('character');
+    expect(prismaService.character.findMany).toHaveBeenCalledWith();
     expect(result).toEqual([mockCharacter]);
   });
 
-  it('deve chamar findOne com o filtro de slug correto', async () => {
+  it('deve buscar por slug', async () => {
     const slug = 'joao-silva';
     const result = await service.getCharacterBySlug(slug);
 
-    expect(firebaseService.findOne).toHaveBeenCalledWith('character', [
-      {
-        field: 'slug',
-        operator: '==',
-        value: slug,
-      },
-    ]);
+    expect(prismaService.character.findUnique).toHaveBeenCalledWith({
+      where: { slug },
+    });
     expect(result).toEqual(mockCharacter);
   });
 
   it('deve criar personagem quando slug não existe', async () => {
-    mockFirebaseService.findOne.mockResolvedValueOnce(null);
+    mockPrismaService.character.findUnique.mockResolvedValueOnce(null);
 
     const result = await service.save(mockCharacter);
 
-    expect(firebaseService.create).toHaveBeenCalledWith('character', mockCharacter);
+    expect(prismaService.character.create).toHaveBeenCalledWith({
+      data: {
+        name: mockCharacter.name,
+        slug: mockCharacter.slug,
+        region: mockCharacter.region,
+        description: mockCharacter.description,
+        imageUrl: undefined,
+      },
+    });
     expect(result).toEqual(mockCharacter);
   });
 
@@ -71,26 +84,38 @@ describe('CharactersService', () => {
     const result = await service.save(mockCharacter);
 
     expect(result).toBeNull();
-    expect(firebaseService.create).not.toHaveBeenCalled();
+    expect(prismaService.character.create).not.toHaveBeenCalled();
   });
 
   it('deve atualizar personagem sem conflito', async () => {
-    mockFirebaseService.findOne.mockResolvedValueOnce({ ...mockCharacter, id: '123' });
+    mockPrismaService.character.findUnique.mockResolvedValueOnce({
+      ...mockCharacter,
+      id: '123',
+    });
 
     const result = await service.update({
       ...mockCharacter,
       name: 'Atualizado',
     });
 
-    expect(firebaseService.update).toHaveBeenCalledWith('character', '123', {
-      ...mockCharacter,
-      name: 'Atualizado',
+    expect(prismaService.character.update).toHaveBeenCalledWith({
+      where: { id: '123' },
+      data: {
+        name: 'Atualizado',
+        slug: mockCharacter.slug,
+        region: mockCharacter.region,
+        description: mockCharacter.description,
+        imageUrl: undefined,
+      },
     });
     expect(result?.name).toBe('Atualizado');
   });
 
   it('deve retornar null ao atualizar quando slug conflitar com outro id', async () => {
-    mockFirebaseService.findOne.mockResolvedValueOnce({ ...mockCharacter, id: '999' });
+    mockPrismaService.character.findUnique.mockResolvedValueOnce({
+      ...mockCharacter,
+      id: '999',
+    });
 
     const result = await service.update({
       ...mockCharacter,
@@ -98,6 +123,6 @@ describe('CharactersService', () => {
     });
 
     expect(result).toBeNull();
-    expect(firebaseService.update).not.toHaveBeenCalled();
+    expect(prismaService.character.update).not.toHaveBeenCalled();
   });
 });

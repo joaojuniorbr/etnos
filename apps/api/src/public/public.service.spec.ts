@@ -2,12 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { EmailService } from 'src/email';
-import { FirebaseService } from 'src/firebase';
+import { PrismaService } from 'src/prisma';
 
 describe('PublicService', () => {
   let service: PublicService;
   let emailService: jest.Mocked<EmailService>;
-  let firebaseService: jest.Mocked<FirebaseService>;
+  let prismaService: {
+    school: {
+      findMany: jest.Mock;
+    };
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,9 +24,11 @@ describe('PublicService', () => {
           },
         },
         {
-          provide: FirebaseService,
+          provide: PrismaService,
           useValue: {
-            findAll: jest.fn().mockResolvedValue([]),
+            school: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
       ],
@@ -30,7 +36,7 @@ describe('PublicService', () => {
 
     service = module.get<PublicService>(PublicService);
     emailService = module.get(EmailService);
-    firebaseService = module.get(FirebaseService);
+    prismaService = module.get(PrismaService);
   });
 
   it('should be defined', () => {
@@ -64,16 +70,15 @@ describe('PublicService', () => {
   });
 
   it('should return schools ordered by name from firebase service', async () => {
-    firebaseService.findAll.mockResolvedValueOnce([
+    prismaService.school.findMany.mockResolvedValueOnce([
       { id: 'school-1', name: 'Escola A' },
     ] as any);
 
     const result = await service.getSchools();
 
-    expect(firebaseService.findAll).toHaveBeenCalledWith('schools', {
+    expect(prismaService.school.findMany).toHaveBeenCalledWith({
       orderBy: {
-        field: 'name',
-        direction: 'asc',
+        name: 'asc',
       },
     });
     expect(result).toEqual([{ id: 'school-1', name: 'Escola A' }]);

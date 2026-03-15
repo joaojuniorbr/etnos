@@ -44,6 +44,7 @@ export default function Page() {
 							src='/estudante/persona-group.jpg'
 							alt='Etnos'
 							className='w-full h-auto'
+							preview={false}
 						/>
 					</figure>
 

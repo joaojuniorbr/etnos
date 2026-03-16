@@ -8,6 +8,21 @@ import { AuthService } from './auth.service';
 const TEST_EMAIL = 'test@email.com';
 const TEST_PASSWORD = Buffer.from('dGVzdC1wYXNz', 'base64').toString('utf8');
 
+const mockProfile = {
+  id: 'user-1',
+  uid: 'user-1',
+  email: 'user-1@email.com',
+  parentName: 'Joao',
+  childName: 'Pedro',
+  childBirthDate: '2018-01-01',
+  parentPhone: '(41) 99999-9999',
+  school: 'Escola Teste',
+  roles: ['student'],
+  role: ['student'],
+  createdAt: new Date('2026-03-15T00:00:00.000Z'),
+  updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+};
+
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
@@ -51,6 +66,7 @@ describe('AuthController', () => {
         expiresIn: '3600',
         localId: 'uid',
         user: {
+          ...mockProfile,
           uid: 'uid',
           id: 'uid',
         },
@@ -72,6 +88,7 @@ describe('AuthController', () => {
         expiresIn: '3600',
         localId: 'uid',
         user: {
+          ...mockProfile,
           uid: 'uid',
           id: 'uid',
         },
@@ -81,10 +98,7 @@ describe('AuthController', () => {
 
   describe('profile', () => {
     it('deve retornar o perfil do usuário autenticado', async () => {
-      authService.getProfile.mockResolvedValueOnce({
-        uid: 'user-1',
-        id: 'user-1',
-      });
+      authService.getProfile.mockResolvedValueOnce(mockProfile);
 
       const req = {
         user: {
@@ -95,10 +109,7 @@ describe('AuthController', () => {
       const result = await controller.profile(req);
 
       expect(authService.getProfile).toHaveBeenCalledWith('user-1');
-      expect(result).toEqual({
-        uid: 'user-1',
-        id: 'user-1',
-      });
+      expect(result).toEqual(mockProfile);
     });
 
     it('deve lançar UnauthorizedException se req.user não existir', async () => {
@@ -166,11 +177,7 @@ describe('AuthController', () => {
 
   describe('updateProfile', () => {
     it('deve atualizar o perfil quando usuário autenticado existir', async () => {
-      authService.updateProfile.mockResolvedValueOnce({
-        uid: 'user-1',
-        id: 'user-1',
-        parentName: 'Joao',
-      } as any);
+      authService.updateProfile.mockResolvedValueOnce(mockProfile as any);
 
       const req = {
         user: {
@@ -184,11 +191,7 @@ describe('AuthController', () => {
       const result = await controller.updateProfile(req, body);
 
       expect(authService.updateProfile).toHaveBeenCalledWith('user-1', body);
-      expect(result).toEqual({
-        uid: 'user-1',
-        id: 'user-1',
-        parentName: 'Joao',
-      });
+      expect(result).toEqual(mockProfile);
     });
 
     it('deve lançar UnauthorizedException no updateProfile se req.user não existir', async () => {

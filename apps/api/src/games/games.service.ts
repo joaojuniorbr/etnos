@@ -1,41 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase';
 import type {
   ConfigGamesInterface,
   MemoryGameContentInterface,
   ScoreInterface,
 } from '@etnos/types';
-
-const COLLECTION_CONFIG = 'config-games';
-const COLLECTION_SCORES = 'score-games';
-const COLLECTION_MEMORY_GAME = 'game-memory-game';
+import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class GamesService {
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getGames() {
-    return this.firebaseService.findAll<ConfigGamesInterface>(COLLECTION_CONFIG);
+    return this.prismaService.gameConfig.findMany();
   }
 
   async getGamesBySlug(gameSlug: string) {
-    return this.firebaseService.findOne<ConfigGamesInterface>(COLLECTION_CONFIG, [
-      {
-        field: 'gameSlug',
-        operator: '==',
-        value: gameSlug,
-      },
-    ]);
+    return this.prismaService.gameConfig.findFirst({
+      where: { gameSlug },
+    });
   }
 
   async saveConfig(data: ConfigGamesInterface) {
     const id = `${data.gameSlug}_${data.characterSlug}`;
 
-    await this.firebaseService.create(
-      COLLECTION_CONFIG,
-      data as unknown as Record<string, unknown>,
-      id,
-    );
+    await this.prismaService.gameConfig.upsert({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug: data.gameSlug,
+          characterSlug: data.characterSlug,
+        },
+      },
+      create: {
+        id,
+        gameSlug: data.gameSlug,
+        characterSlug: data.characterSlug,
+        imageCoverUrl: data.imageCoverUrl,
+      },
+      update: {
+        imageCoverUrl: data.imageCoverUrl,
+      },
+    });
 
     return {
       id,
@@ -44,56 +48,61 @@ export class GamesService {
   }
 
   async getConfig(gameSlug: string, characterSlug: string) {
-    const id = `${gameSlug}_${characterSlug}`;
-
-    return this.firebaseService.findById(COLLECTION_CONFIG, id) as unknown as Promise<
-      ConfigGamesInterface | null
-    >;
+    return this.prismaService.gameConfig.findUnique({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug,
+          characterSlug,
+        },
+      },
+    });
   }
 
   async getConfigByGame(gameSlug: string) {
-    return this.firebaseService.findAll<ConfigGamesInterface>(COLLECTION_CONFIG, {
-      filters: [
-        {
-          field: 'gameSlug',
-          operator: '==',
-          value: gameSlug,
-        },
-      ],
+    return this.prismaService.gameConfig.findMany({
+      where: { gameSlug },
     });
   }
 
   async removeConfig(gameSlug: string, characterSlug: string) {
-    const id = `${gameSlug}_${characterSlug}`;
-    await this.firebaseService.delete(COLLECTION_CONFIG, id);
+    await this.prismaService.gameConfig.delete({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug,
+          characterSlug,
+        },
+      },
+    });
     return true;
   }
 
   async saveMemoryGameContent(props: Partial<MemoryGameContentInterface>) {
-    return this.firebaseService.create(
-      COLLECTION_MEMORY_GAME,
-      props as unknown as Record<string, unknown>,
-    );
+    return this.prismaService.memoryGameContent.create({
+      data: {
+        id: props.id,
+        slug: props.slug,
+        url: props.url,
+        characterId: props.idCharacter,
+      },
+    });
   }
 
   async getMemoryGameContent(slug: string) {
-    return this.firebaseService.findAll<MemoryGameContentInterface>(
-      COLLECTION_MEMORY_GAME,
-      {
-        filters: [
-          {
-            field: 'slug',
-            operator: '==',
-            value: slug,
-          },
-        ],
-      },
-    );
+    const docs = await this.prismaService.memoryGameContent.findMany({
+      where: { slug },
+    });
+
+    return docs.map((doc) => ({
+      ...doc,
+      idCharacter: doc.characterId,
+    }));
   }
 
   async deleteMemoryGameContent(id: string) {
     try {
-      await this.firebaseService.delete(COLLECTION_MEMORY_GAME, id);
+      await this.prismaService.memoryGameContent.delete({
+        where: { id },
+      });
       return true;
     } catch {
       return false;
@@ -116,65 +125,36 @@ export class GamesService {
     score: number;
     userId: string;
   }) {
-    const existingScore = await this.firebaseService.findOne<ScoreInterface>(
-      COLLECTION_SCORES,
-      [
-        {
-          field: 'slug',
-          operator: '==',
-          value: data.slug,
+    return this.prismaService.gameScore.upsert({
+      where: {
+        slug_characterSlug_userId: {
+          slug: data.slug,
+          characterSlug: data.characterSlug,
+          userId: data.userId,
         },
-        {
-          field: 'characterSlug',
-          operator: '==',
-          value: data.characterSlug,
-        },
-        {
-          field: 'userId',
-          operator: '==',
-          value: data.userId,
-        },
-      ],
-    );
-
-    if (existingScore?.id) {
-      return this.firebaseService.update(COLLECTION_SCORES, existingScore.id, {
+      },
+      create: data,
+      update: {
         score: data.score,
-      });
-    }
-
-    return this.firebaseService.create(COLLECTION_SCORES, data);
+      },
+    });
   }
 
   getScoreGame(data: { slug: string; characterSlug: string; userId: string }) {
-    return this.firebaseService.findOne<ScoreInterface>(COLLECTION_SCORES, [
-      {
-        field: 'slug',
-        operator: '==',
-        value: data.slug,
+    return this.prismaService.gameScore.findUnique({
+      where: {
+        slug_characterSlug_userId: {
+          slug: data.slug,
+          characterSlug: data.characterSlug,
+          userId: data.userId,
+        },
       },
-      {
-        field: 'characterSlug',
-        operator: '==',
-        value: data.characterSlug,
-      },
-      {
-        field: 'userId',
-        operator: '==',
-        value: data.userId,
-      },
-    ]);
+    }) as Promise<ScoreInterface | null>;
   }
 
   getScoreByUser(userId: string) {
-    return this.firebaseService.findAll<ScoreInterface>(COLLECTION_SCORES, {
-      filters: [
-        {
-          field: 'userId',
-          operator: '==',
-          value: userId,
-        },
-      ],
-    });
+    return this.prismaService.gameScore.findMany({
+      where: { userId },
+    }) as Promise<ScoreInterface[]>;
   }
 }

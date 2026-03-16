@@ -20,8 +20,6 @@ model User {
   roles          String[]    @default(["student"])
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
-  media          Midia[]
-  scores         GameScore[]
 
   @@map("users")
 }
@@ -81,10 +79,9 @@ model GameScore {
   slug          String   @db.VarChar(255)
   characterSlug String   @map("character_slug") @db.VarChar(255)
   score         Int
-  userId        String   @map("user_id")
+  userId        String   @map("user_id") @db.VarChar(255)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([slug, characterSlug, userId], map: "game_scores_slug_character_slug_user_id_key")
   @@index([userId], map: "game_scores_user_id_idx")
@@ -96,10 +93,9 @@ model Midia {
   url       String
   folder    String?  @db.VarChar(255)
   path      String?  @db.VarChar(500)
-  userId    String   @map("user_id")
+  userId    String   @map("user_id") @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([userId], map: "midia_user_id_idx")
   @@index([folder], map: "midia_folder_idx")

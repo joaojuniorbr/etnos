@@ -1,3 +1,35 @@
+## [1.2.2](https://github.com/joaojuniorbr/etnos/compare/v1.2.1...v1.2.2) (2026-03-17)
+
+### database
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajustes sonnar issues ([b4ac477](https://github.com/joaojuniorbr/etnos/commit/b4ac477eb07b386314b1f072ff1df9126bf6cb0b))
+
+#### 🔨 Refatoração
+
+* migrar usuários para Postgres e adaptar AuthService mantendo Firebase Auth ([47bfd9a](https://github.com/joaojuniorbr/etnos/commit/47bfd9a24b0ce24582d7eabd7074a2f42fe85b0f))
+* migrar módulos de jogos e mídia para Prisma mantendo compatibilidade ([d7c783b](https://github.com/joaojuniorbr/etnos/commit/d7c783bc9fc7208e88a2567363d54489448cc8b9))
+* migrar módulos de menor risco para persistência relacional com Prisma ([6a4ffd5](https://github.com/joaojuniorbr/etnos/commit/6a4ffd549b0adb74cacc2e26b68ff92361ccea28))
+* estruturar a base de persistência com Prisma e Supabase Postgres ([7ab0692](https://github.com/joaojuniorbr/etnos/commit/7ab0692bb95f1a225157cfc21f323d7b57dbf4fe))
+
+#### 📝 Documentação
+
+* documentacao da base de dados ([1869baa](https://github.com/joaojuniorbr/etnos/commit/1869baa20e0ecc880ccf551e491893648844131c))
+
+#### 🧪 CI/CD
+
+* ajuste no ci para rodar o prisma generate antes de testes ou build na pipeline ([7864dfa](https://github.com/joaojuniorbr/etnos/commit/7864dfa0c374b9dabcd0e2a66d2f9c93f5eb60d9))
+
+#### 🔀 Merges
+
+* [86ag62a6b] Migrar a persistência principal do backend de Firestore para Supabase Postgres com Prisma ([bae5fac](https://github.com/joaojuniorbr/etnos/commit/bae5facd2b2a04094f80193df0243620193b7444))
+* [86ag67vvr] Migrar dados legados do Firestore e remover Firestore da camada principal do backend ([82cd978](https://github.com/joaojuniorbr/etnos/commit/82cd978d65f95d410af27c283e0bebdf26e0bcf4))
+* [86ag62ep2] Migrar usuários para Postgres e adaptar AuthService mantendo Firebase Auth ([0a81de6](https://github.com/joaojuniorbr/etnos/commit/0a81de6be04a0f4792261d1d943be41635b75ac1))
+* [Cu-86ag62ep1] Migrar módulos de jogos e mídia para Prisma mantendo compatibilidade com Firebase Storage ([4ebbf63](https://github.com/joaojuniorbr/etnos/commit/4ebbf6335f28431b9e762347bda0b22fd55fd8cd))
+* [Cu-86ag62eng] Migrar módulos de menor risco para persistência relacional com Prisma ([69f9604](https://github.com/joaojuniorbr/etnos/commit/69f960418e7a99014e24a2cae69c0b2639e4ee94))
+* [CU-86ag62eng] Estruturar a base de persistência com Prisma e Supabase Postgres ([71d4a05](https://github.com/joaojuniorbr/etnos/commit/71d4a05dfd2fb2b41cc83c0944980fc081d260c2))
+
 ## [1.2.1](https://github.com/joaojuniorbr/etnos/compare/v1.2.0...v1.2.1) (2026-03-13)
 
 ### geral

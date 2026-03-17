@@ -27,6 +27,9 @@ jobs:
           HUSKY: 0
         run: yarn install --frozen-lockfile --non-interactive
 
+      - name: Generate Prisma client
+        run: yarn workspace api prisma:generate
+
       - name: Run tests with coverage
         run: yarn test
 

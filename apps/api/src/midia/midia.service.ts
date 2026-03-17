@@ -1,15 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase';
 import * as admin from 'firebase-admin';
-import { QueryFilter } from 'src/firebase/firebase.type';
 import type { MidiaInterface } from '@etnos/types';
-
-const COLLECTION_NAME = 'midia';
+import { PrismaService } from 'src/prisma';
 const SIGNED_URL_EXPIRES = '03-01-2500';
 
 @Injectable()
 export class MidiaService {
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   getPathFromUrl(url: string): string {
     const decodedUrl = decodeURIComponent(url);
@@ -69,44 +66,39 @@ export class MidiaService {
     page = 1,
     folder?: string,
   ) {
-    const filters: QueryFilter[] = [
-      {
-        field: 'userId',
-        operator: '==',
-        value: userId,
-      },
-    ];
-
-    if (folder) {
-      filters.push({
-        field: 'folder',
-        operator: '==',
-        value: folder,
-      });
-    }
-
-    const result = await this.firebaseService.findPaginated<MidiaInterface>(
-      COLLECTION_NAME,
-      {
-        filters,
-        page,
-        limit: limitNumber,
-      },
-    );
+    const where = {
+      userId,
+      ...(folder ? { folder } : {}),
+    };
+    const skip = (Math.max(page, 1) - 1) * limitNumber;
+    const [data, total] = await Promise.all([
+      this.prismaService.midia.findMany({
+        where,
+        skip,
+        take: limitNumber,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prismaService.midia.count({ where }),
+    ]);
 
     return {
-      data: result.data,
-      nextCursor: result.pagination.hasNextPage
-        ? result.pagination.currentPage + 1
-        : undefined,
+      data,
+      nextCursor: skip + data.length < total ? page + 1 : undefined,
     };
   }
 
   async saveMidia(props: MidiaInterface) {
-    return this.firebaseService.create(
-      COLLECTION_NAME,
-      props as unknown as Record<string, unknown>,
-    );
+    return this.prismaService.midia.create({
+      data: {
+        id: props.id,
+        url: props.url,
+        userId: props.userId,
+        folder: props.folder,
+        path: props.path,
+      },
+    });
   }
 
   async deleteMidia(item: MidiaInterface) {
@@ -117,7 +109,9 @@ export class MidiaService {
       await fileRef.delete();
 
       if (item.id) {
-        await this.firebaseService.delete(COLLECTION_NAME, item.id);
+        await this.prismaService.midia.delete({
+          where: { id: item.id },
+        });
       }
 
       return true;
@@ -128,33 +122,25 @@ export class MidiaService {
 
   async deleteMidiaFromUrl(url: string, userId: string) {
     try {
-      const items = await this.firebaseService.findAll<MidiaInterface>(
-        COLLECTION_NAME,
-        {
-          filters: [
-            {
-              field: 'url',
-              operator: '==',
-              value: url,
-            },
-            {
-              field: 'userId',
-              operator: '==',
-              value: userId,
-            },
-          ],
+      const items = await this.prismaService.midia.findMany({
+        where: {
+          url,
+          userId,
         },
-      );
+      });
 
       if (!items.length) return true;
 
       const path = items[0].path || this.getPathFromUrl(url);
       await this.bucket.file(path).delete();
 
-      await this.firebaseService.batchDelete(
-        COLLECTION_NAME,
-        items.map((item) => item.id),
-      );
+      await this.prismaService.midia.deleteMany({
+        where: {
+          id: {
+            in: items.map((item) => item.id),
+          },
+        },
+      });
 
       return true;
     } catch {
@@ -163,10 +149,9 @@ export class MidiaService {
   }
 
   async deleteMidiaById(id: string, userId: string) {
-    const item = (await this.firebaseService.findById(
-      COLLECTION_NAME,
-      id,
-    )) as unknown as MidiaInterface | null;
+    const item = await this.prismaService.midia.findUnique({
+      where: { id },
+    });
 
     if (!(item?.userId === userId)) {
       return false;
@@ -176,18 +161,10 @@ export class MidiaService {
   }
 
   async getFolders(userId: string) {
-    const docs = await this.firebaseService.findAll<MidiaInterface>(
-      COLLECTION_NAME,
-      {
-        filters: [
-          {
-            field: 'userId',
-            operator: '==',
-            value: userId,
-          },
-        ],
-      },
-    );
+    const docs = await this.prismaService.midia.findMany({
+      where: { userId },
+      select: { folder: true },
+    });
 
     const folders = new Map<string, number>();
 

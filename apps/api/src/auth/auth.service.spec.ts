@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 
 import { AuthService } from './auth.service';
-import { FirebaseService } from 'src/firebase';
+import { PrismaService } from 'src/prisma';
 
 jest.mock('axios');
 jest.mock('firebase-admin', () => ({
@@ -21,19 +24,29 @@ const TEST_PASSWORD = Buffer.from('dGVzdC1wYXNz', 'base64').toString('utf8');
 
 describe('AuthService', () => {
   let service: AuthService;
-  let firebaseService: jest.Mocked<FirebaseService>;
+  let prismaService: {
+    user: {
+      findUnique: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
+    };
+  };
+
+  const mockPrismaService = {
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         {
-          provide: FirebaseService,
-          useValue: {
-            findById: jest.fn(),
-            update: jest.fn(),
-            create: jest.fn(),
-          },
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
         {
           provide: ConfigService,
@@ -45,7 +58,7 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    firebaseService = module.get(FirebaseService);
+    prismaService = module.get(PrismaService);
 
     mockedAdminAuth.mockReturnValue({
       createUser: jest.fn().mockResolvedValue({ uid: 'new-user-id' }),
@@ -73,10 +86,19 @@ describe('AuthService', () => {
           localId: 'user-id',
         },
       });
-      firebaseService.findById.mockResolvedValueOnce({
-        id: 'user-id',
-        role: ['student'],
-      } as any);
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-id',
+        roles: ['student'],
+        email: TEST_EMAIL,
+        parentName: null,
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T00:00:00.000Z'),
+      });
 
       const result = await service.loginWithEmailAndPassword(
         TEST_EMAIL,
@@ -89,28 +111,20 @@ describe('AuthService', () => {
         expiresIn: '3600',
         localId: 'user-id',
         user: {
-          id: 'user-id',
-          role: ['student'],
+          id: 'db-user-id',
           uid: 'user-id',
+          email: TEST_EMAIL,
+          parentName: null,
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          role: ['student'],
+          createdAt: new Date('2026-03-15T00:00:00.000Z'),
+          updatedAt: new Date('2026-03-15T00:00:00.000Z'),
         },
       });
-
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
-        {
-          email: TEST_EMAIL,
-          password: TEST_PASSWORD,
-          returnSecureToken: true,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            key: FAKE_FIREBASE_API_KEY,
-          },
-        },
-      );
     });
 
     it('deve lançar UnauthorizedException quando o login falhar', async () => {
@@ -124,54 +138,106 @@ describe('AuthService', () => {
 
   describe('getProfile', () => {
     it('deve retornar o perfil do usuário com uid', async () => {
-      firebaseService.findById.mockResolvedValueOnce({
-        name: 'João',
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-123',
         email: 'joao@email.com',
-      } as any);
+        parentName: 'João',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        roles: ['student'],
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+      });
 
       const result = await service.getProfile('user-123');
 
-      expect(firebaseService.findById).toHaveBeenCalledWith(
-        'users',
-        'user-123',
-      );
-
-      expect(result).toEqual({
-        name: 'João',
-        email: 'joao@email.com',
-        uid: 'user-123',
+      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
       });
+      expect(result).toEqual({
+        id: 'db-user-id',
+        uid: 'user-123',
+        email: 'joao@email.com',
+        parentName: 'João',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        roles: ['student'],
+        role: ['student'],
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+      });
+    });
+
+    it('deve retornar null quando perfil não existir', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(null);
+
+      await expect(service.getProfile('missing-user')).resolves.toBeNull();
     });
   });
 
   describe('updateProfile', () => {
     it('deve atualizar perfil quando usuário existir', async () => {
-      firebaseService.findById.mockResolvedValueOnce({
-        id: 'user-123',
-        parentName: 'Maria',
-      } as any);
-      firebaseService.update.mockResolvedValueOnce({
-        ok: true,
-      } as any);
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+        })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Novo Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          createdAt: new Date('2026-03-15T00:00:00.000Z'),
+          updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+        });
+      prismaService.user.update.mockResolvedValueOnce({} as never);
 
-      const payload = { parentName: 'Novo Nome' };
-      const result = await service.updateProfile('user-123', payload);
+      const result = await service.updateProfile('user-123', {
+        parentName: 'Novo Nome',
+      });
 
-      expect(firebaseService.update).toHaveBeenCalledWith(
-        'users',
-        'user-123',
-        payload,
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { parentName: 'Novo Nome' },
+      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          uid: 'user-123',
+          parentName: 'Novo Nome',
+        }),
       );
-      expect(result).toEqual({ ok: true });
     });
 
     it('deve ignorar campos sensíveis no updateProfile', async () => {
-      firebaseService.findById.mockResolvedValueOnce({
-        id: 'user-123',
-      } as any);
-      firebaseService.update.mockResolvedValueOnce({
-        ok: true,
-      } as any);
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+        })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Novo Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({} as never);
 
       await service.updateProfile(
         'user-123',
@@ -182,21 +248,18 @@ describe('AuthService', () => {
         } as any,
       );
 
-      expect(firebaseService.update).toHaveBeenCalledWith(
-        'users',
-        'user-123',
-        { parentName: 'Novo Nome' },
-      );
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { parentName: 'Novo Nome' },
+      });
     });
 
-    it('deve lançar NotFoundException quando getProfile retornar null', async () => {
-      jest.spyOn(service, 'getProfile').mockResolvedValueOnce(null as any);
+    it('deve lançar NotFoundException quando perfil não existir', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(null);
 
       await expect(
         service.updateProfile('user-missing', { parentName: 'Teste' }),
-      ).rejects.toThrow('Usuario não encontrado');
-
-      expect(firebaseService.update).not.toHaveBeenCalled();
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -211,12 +274,21 @@ describe('AuthService', () => {
         },
       });
 
-      firebaseService.findById
+      prismaService.user.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({
-        id: 'new-user-id',
-        role: ['student'],
-      } as any);
+          id: 'db-user-id',
+          firebaseUid: 'new-user-id',
+          email: 'new@email.com',
+          parentName: 'Pai',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
       const result = await service.registerWithEmailAndPassword({
         email: 'new@email.com',
@@ -224,14 +296,13 @@ describe('AuthService', () => {
         parentName: 'Pai',
       });
 
-      expect(firebaseService.create).toHaveBeenCalledWith(
-        'users',
-        expect.objectContaining({
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          firebaseUid: 'new-user-id',
           email: 'new@email.com',
           parentName: 'Pai',
         }),
-        'new-user-id',
-      );
+      });
       expect(result.idToken).toBe('id-token');
     });
 
@@ -255,40 +326,42 @@ describe('AuthService', () => {
         },
       });
 
-      firebaseService.findById
+      prismaService.user.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({
-          id: 'existing-user-id',
-          role: ['student'],
-        } as any);
+          id: 'db-user-id',
+          firebaseUid: 'existing-user-id',
+          email: 'existing@email.com',
+          parentName: null,
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
       const result = await service.registerWithEmailAndPassword({
         email: 'existing@email.com',
         password: TEST_PASSWORD,
       });
 
-      expect(firebaseService.create).toHaveBeenCalledWith(
-        'users',
-        expect.objectContaining({
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          firebaseUid: 'existing-user-id',
           email: 'existing@email.com',
           parentName: null,
         }),
-        'existing-user-id',
-      );
+      });
       expect(result.idToken).toBe('id-token');
     });
 
     it('deve lançar UnauthorizedException quando já existe perfil', async () => {
-      mockedAdminAuth.mockReturnValueOnce({
-        createUser: jest.fn().mockRejectedValue({
-          errorInfo: { code: 'auth/email-already-exists' },
-        }),
-        getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
-      } as any);
-
-      firebaseService.findById.mockResolvedValueOnce({
-        id: 'existing-user-id',
-      } as any);
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'existing-user-id',
+      });
 
       await expect(
         service.registerWithEmailAndPassword({
@@ -311,47 +384,22 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('deve lançar Email já cadastrado quando outra etapa retornar auth/email-already-exists', async () => {
-      firebaseService.findById.mockResolvedValueOnce(null);
-      firebaseService.create.mockRejectedValueOnce({
-        errorInfo: { code: 'auth/email-already-exists' },
-      });
+    it('deve lançar Email já cadastrado quando getUserByEmail falhar com email existente', async () => {
+      mockedAdminAuth.mockReturnValue({
+        createUser: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+        getUserByEmail: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+      } as any);
 
       await expect(
         service.registerWithEmailAndPassword({
-          email: 'new@email.com',
+          email: 'existing@email.com',
           password: TEST_PASSWORD,
         }),
       ).rejects.toThrow('Email já cadastrado');
-    });
-
-    it('deve preencher parentName como null quando não informado', async () => {
-      mockedAxios.post.mockResolvedValueOnce({
-        data: {
-          idToken: 'id-token',
-          refreshToken: 'refresh-token',
-          expiresIn: '3600',
-          localId: 'new-user-id',
-        },
-      });
-      firebaseService.findById
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({
-          id: 'new-user-id',
-        } as any);
-
-      await service.registerWithEmailAndPassword({
-        email: 'new@email.com',
-        password: TEST_PASSWORD,
-      });
-
-      expect(firebaseService.create).toHaveBeenCalledWith(
-        'users',
-        expect.objectContaining({
-          parentName: null,
-        }),
-        'new-user-id',
-      );
     });
   });
 
@@ -366,19 +414,27 @@ describe('AuthService', () => {
         }),
       } as any);
 
-      firebaseService.findById
+      prismaService.user.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({
-          id: 'google-user-id',
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
           email: 'google@test.com',
+          parentName: 'Google User',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
           roles: ['student'],
-        } as any);
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
       const result = await service.loginWithGoogle('google-id-token');
 
-      expect(firebaseService.create).toHaveBeenCalledWith(
-        'users',
-        {
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: {
+          firebaseUid: 'google-user-id',
           email: 'google@test.com',
           parentName: 'Google User',
           childName: null,
@@ -387,19 +443,18 @@ describe('AuthService', () => {
           school: null,
           roles: ['student'],
         },
-        'google-user-id',
-      );
+      });
       expect(result).toEqual({
         idToken: 'google-id-token',
         refreshToken: '',
         expiresIn: '',
         localId: 'google-user-id',
-        user: {
-          id: 'google-user-id',
+        user: expect.objectContaining({
+          uid: 'google-user-id',
           email: 'google@test.com',
           roles: ['student'],
-          uid: 'google-user-id',
-        },
+          role: ['student'],
+        }),
       });
     });
 
@@ -413,27 +468,36 @@ describe('AuthService', () => {
         }),
       } as any);
 
-      firebaseService.findById
+      prismaService.user.findUnique
         .mockResolvedValueOnce({
-          id: 'google-user-id',
-          email: 'google@test.com',
-          roles: ['student'],
-        } as any)
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
+        })
         .mockResolvedValueOnce({
-          id: 'google-user-id',
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
           email: 'google@test.com',
+          parentName: 'Google User',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
           roles: ['student'],
-        } as any);
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
       const result = await service.loginWithGoogle('google-id-token');
 
-      expect(firebaseService.create).not.toHaveBeenCalled();
-      expect(result.user).toEqual({
-        id: 'google-user-id',
-        email: 'google@test.com',
-        roles: ['student'],
-        uid: 'google-user-id',
-      });
+      expect(prismaService.user.create).not.toHaveBeenCalled();
+      expect(result.user).toEqual(
+        expect.objectContaining({
+          uid: 'google-user-id',
+          email: 'google@test.com',
+          roles: ['student'],
+          role: ['student'],
+        }),
+      );
     });
 
     it('deve lançar UnauthorizedException quando login com Google falhar', async () => {

@@ -1,40 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase';
 import type { SchoolInterface } from '@etnos/types';
-
-const COLLECTION_NAME = 'schools';
+import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class SchoolsService {
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getAll(): Promise<SchoolInterface[]> {
-    return this.firebaseService.findAll<SchoolInterface>(COLLECTION_NAME, {
+    return this.prismaService.school.findMany({
       orderBy: {
-        field: 'name',
-        direction: 'asc',
+        name: 'asc',
       },
     });
   }
 
   async create(school: SchoolInterface) {
-    const exists = await this.firebaseService.findOne<SchoolInterface>(
-      COLLECTION_NAME,
-      [
-        {
-          field: 'name',
-          operator: '==',
-          value: school.name,
-        },
-      ],
-    );
+    const exists = await this.prismaService.school.findUnique({
+      where: { name: school.name },
+    });
 
     if (exists) return null;
 
-    const created = await this.firebaseService.create(
-      COLLECTION_NAME,
-      school as unknown as Record<string, unknown>,
-    );
+    const created = await this.prismaService.school.create({
+      data: {
+        name: school.name,
+        city: school.city,
+        state: school.state,
+      },
+    });
 
     return {
       id: created.id,
@@ -43,29 +36,26 @@ export class SchoolsService {
   }
 
   async update(id: string, school: Partial<SchoolInterface>) {
-    const existing = await this.firebaseService.findOne<SchoolInterface>(
-      COLLECTION_NAME,
-      [
-        {
-          field: 'name',
-          operator: '==',
-          value: school.name,
-        },
-        {
-          field: 'city',
-          operator: '==',
-          value: school.city ?? null,
-        },
-      ],
-    );
+    const existing =
+      school.name === undefined
+        ? null
+        : await this.prismaService.school.findFirst({
+            where: {
+              name: school.name,
+              city: school.city ?? null,
+            },
+          });
 
     if (existing && existing.id !== id) return null;
 
-    await this.firebaseService.update(
-      COLLECTION_NAME,
-      id,
-      school as unknown as Record<string, unknown>,
-    );
+    await this.prismaService.school.update({
+      where: { id },
+      data: {
+        name: school.name,
+        city: school.city,
+        state: school.state,
+      },
+    });
 
     return {
       id,
@@ -74,14 +64,16 @@ export class SchoolsService {
   }
 
   async delete(id: string) {
-    await this.firebaseService.delete(COLLECTION_NAME, id);
+    await this.prismaService.school.delete({
+      where: { id },
+    });
+
     return true;
   }
 
   async getOne(id: string): Promise<SchoolInterface | null> {
-    return this.firebaseService.findById(
-      COLLECTION_NAME,
-      id,
-    ) as unknown as Promise<SchoolInterface | null>;
+    return this.prismaService.school.findUnique({
+      where: { id },
+    });
   }
 }

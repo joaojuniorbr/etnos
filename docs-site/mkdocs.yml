@@ -17,6 +17,9 @@ plugins:
 
 nav:
   - Home: index.md
+  - Banco de Dados:
+      - Arquitetura de Banco de Dados: database-architecture.md
+      - Modelagem de Dados: data-model.md
   - Entregas:
       - Entrega 01: 2025-p1.md
       - Entrega 02: 2025-p2.md

@@ -1,10 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GamesService } from './games.service';
-import { FirebaseService } from 'src/firebase';
+import { PrismaService } from 'src/prisma';
 
 describe('GamesService', () => {
   let service: GamesService;
-  let firebaseService: FirebaseService;
+  let prismaService: {
+    gameConfig: {
+      findMany: jest.Mock;
+      findFirst: jest.Mock;
+      findUnique: jest.Mock;
+      upsert: jest.Mock;
+      delete: jest.Mock;
+    };
+    memoryGameContent: {
+      create: jest.Mock;
+      findMany: jest.Mock;
+      delete: jest.Mock;
+    };
+    gameScore: {
+      upsert: jest.Mock;
+      findUnique: jest.Mock;
+      findMany: jest.Mock;
+    };
+  };
 
   const mockGame = {
     id: '1',
@@ -13,13 +31,24 @@ describe('GamesService', () => {
     imageCoverUrl: 'url-aqui',
   };
 
-  const mockFirebaseService = {
-    findAll: jest.fn().mockResolvedValue([mockGame]),
-    findOne: jest.fn().mockResolvedValue(mockGame),
-    findById: jest.fn().mockResolvedValue(mockGame),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+  const mockPrismaService = {
+    gameConfig: {
+      findMany: jest.fn().mockResolvedValue([mockGame]),
+      findFirst: jest.fn().mockResolvedValue(mockGame),
+      findUnique: jest.fn().mockResolvedValue(mockGame),
+      upsert: jest.fn(),
+      delete: jest.fn(),
+    },
+    memoryGameContent: {
+      create: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      delete: jest.fn(),
+    },
+    gameScore: {
+      upsert: jest.fn(),
+      findUnique: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
   };
 
   beforeEach(async () => {
@@ -27,30 +56,30 @@ describe('GamesService', () => {
       providers: [
         GamesService,
         {
-          provide: FirebaseService,
-          useValue: mockFirebaseService,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
 
     service = module.get<GamesService>(GamesService);
-    firebaseService = module.get<FirebaseService>(FirebaseService);
+    prismaService = module.get(PrismaService);
     jest.clearAllMocks();
   });
 
   it('deve listar jogos', async () => {
     const result = await service.getGames();
 
-    expect(firebaseService.findAll).toHaveBeenCalledWith('config-games');
+    expect(prismaService.gameConfig.findMany).toHaveBeenCalledWith();
     expect(result).toEqual([mockGame]);
   });
 
   it('deve buscar jogo por slug', async () => {
     const result = await service.getGamesBySlug('memory-game');
 
-    expect(firebaseService.findOne).toHaveBeenCalledWith('config-games', [
-      { field: 'gameSlug', operator: '==', value: 'memory-game' },
-    ]);
+    expect(prismaService.gameConfig.findFirst).toHaveBeenCalledWith({
+      where: { gameSlug: 'memory-game' },
+    });
     expect(result).toEqual(mockGame);
   });
 
@@ -61,62 +90,92 @@ describe('GamesService', () => {
       imageCoverUrl: 'url',
     });
 
-    expect(firebaseService.create).toHaveBeenCalledWith(
-      'config-games',
-      {
+    expect(prismaService.gameConfig.upsert).toHaveBeenCalledWith({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug: 'memory-game',
+          characterSlug: 'maria',
+        },
+      },
+      create: {
+        id: 'memory-game_maria',
         gameSlug: 'memory-game',
         characterSlug: 'maria',
         imageCoverUrl: 'url',
       },
-      'memory-game_maria',
-    );
+      update: {
+        imageCoverUrl: 'url',
+      },
+    });
   });
 
   it('deve buscar configuração específica', async () => {
     await service.getConfig('memory-game', 'maria');
 
-    expect(firebaseService.findById).toHaveBeenCalledWith(
-      'config-games',
-      'memory-game_maria',
-    );
+    expect(prismaService.gameConfig.findUnique).toHaveBeenCalledWith({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug: 'memory-game',
+          characterSlug: 'maria',
+        },
+      },
+    });
   });
 
   it('deve buscar configuração por jogo', async () => {
     await service.getConfigByGame('memory-game');
 
-    expect(firebaseService.findAll).toHaveBeenCalledWith('config-games', {
-      filters: [{ field: 'gameSlug', operator: '==', value: 'memory-game' }],
+    expect(prismaService.gameConfig.findMany).toHaveBeenCalledWith({
+      where: { gameSlug: 'memory-game' },
     });
   });
 
   it('deve remover configuração', async () => {
     const result = await service.removeConfig('memory-game', 'maria');
 
-    expect(firebaseService.delete).toHaveBeenCalledWith(
-      'config-games',
-      'memory-game_maria',
-    );
+    expect(prismaService.gameConfig.delete).toHaveBeenCalledWith({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug: 'memory-game',
+          characterSlug: 'maria',
+        },
+      },
+    });
     expect(result).toBe(true);
   });
 
   it('deve salvar conteúdo do memory game', async () => {
-    const payload = { slug: 'maria', url: 'u' };
+    const payload = { slug: 'maria', url: 'u', idCharacter: 'c1' };
 
     await service.saveMemoryGameContent(payload);
 
-    expect(firebaseService.create).toHaveBeenCalledWith('game-memory-game', payload);
-  });
-
-  it('deve buscar conteúdo do memory game', async () => {
-    await service.getMemoryGameContent('maria');
-
-    expect(firebaseService.findAll).toHaveBeenCalledWith('game-memory-game', {
-      filters: [{ field: 'slug', operator: '==', value: 'maria' }],
+    expect(prismaService.memoryGameContent.create).toHaveBeenCalledWith({
+      data: {
+        id: undefined,
+        slug: 'maria',
+        url: 'u',
+        characterId: 'c1',
+      },
     });
   });
 
+  it('deve buscar conteúdo do memory game', async () => {
+    prismaService.memoryGameContent.findMany.mockResolvedValueOnce([
+      { id: '1', slug: 'maria', url: 'u', characterId: 'c1' },
+    ]);
+
+    const result = await service.getMemoryGameContent('maria');
+
+    expect(prismaService.memoryGameContent.findMany).toHaveBeenCalledWith({
+      where: { slug: 'maria' },
+    });
+    expect(result).toEqual([
+      { id: '1', slug: 'maria', url: 'u', characterId: 'c1', idCharacter: 'c1' },
+    ]);
+  });
+
   it('deve deletar conteúdo do memory game com sucesso', async () => {
-    mockFirebaseService.delete.mockResolvedValueOnce(undefined);
+    prismaService.memoryGameContent.delete.mockResolvedValueOnce(undefined);
 
     const result = await service.deleteMemoryGameContent('id-1');
 
@@ -124,7 +183,7 @@ describe('GamesService', () => {
   });
 
   it('deve retornar false ao falhar no delete do memory game', async () => {
-    mockFirebaseService.delete.mockRejectedValueOnce(new Error('fail'));
+    prismaService.memoryGameContent.delete.mockRejectedValueOnce(new Error('fail'));
 
     const result = await service.deleteMemoryGameContent('id-1');
 
@@ -135,7 +194,7 @@ describe('GamesService', () => {
     jest.spyOn(service, 'getMemoryGameContent').mockResolvedValueOnce([
       { id: '1', slug: 'maria', url: 'u1', idCharacter: 'c1' },
       { id: '2', slug: 'maria', url: 'u2', idCharacter: 'c1' },
-    ]);
+    ] as any);
 
     const result = await service.getMemoryGameImages('maria');
 
@@ -152,14 +211,18 @@ describe('GamesService', () => {
       userId: 'user-123',
     });
 
-    expect(firebaseService.findOne).toHaveBeenCalledWith('score-games', [
-      { field: 'slug', operator: '==', value: 'memory-game' },
-      { field: 'characterSlug', operator: '==', value: 'joao-silva' },
-      { field: 'userId', operator: '==', value: 'user-123' },
-    ]);
+    expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
+      where: {
+        slug_characterSlug_userId: {
+          slug: 'memory-game',
+          characterSlug: 'joao-silva',
+          userId: 'user-123',
+        },
+      },
+    });
   });
 
-  it('deve salvar score novo e atualizar score existente', async () => {
+  it('deve salvar score com upsert', async () => {
     const scoreData = {
       slug: 'memory-game',
       characterSlug: 'joao-silva',
@@ -167,31 +230,26 @@ describe('GamesService', () => {
       userId: 'user-123',
     };
 
-    mockFirebaseService.findOne.mockResolvedValueOnce(null);
-
     await service.saveScoreGame(scoreData);
 
-    expect(firebaseService.create).toHaveBeenCalledWith('score-games', scoreData);
-
-    mockFirebaseService.findOne.mockResolvedValueOnce({
-      id: 'existing-score-id',
-      ...scoreData,
+    expect(prismaService.gameScore.upsert).toHaveBeenCalledWith({
+      where: {
+        slug_characterSlug_userId: {
+          slug: 'memory-game',
+          characterSlug: 'joao-silva',
+          userId: 'user-123',
+        },
+      },
+      create: scoreData,
+      update: { score: 150 },
     });
-
-    await service.saveScoreGame({ ...scoreData, score: 200 });
-
-    expect(firebaseService.update).toHaveBeenCalledWith(
-      'score-games',
-      'existing-score-id',
-      { score: 200 },
-    );
   });
 
   it('deve listar score por usuário', async () => {
     await service.getScoreByUser('user-1');
 
-    expect(firebaseService.findAll).toHaveBeenCalledWith('score-games', {
-      filters: [{ field: 'userId', operator: '==', value: 'user-1' }],
+    expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
     });
   });
 });

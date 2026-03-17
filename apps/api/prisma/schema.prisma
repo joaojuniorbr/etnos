@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String      @id @default(cuid())
+  firebaseUid    String      @unique @map("firebase_uid")
+  email          String?     @db.VarChar(255)
+  parentName     String?     @map("parent_name") @db.VarChar(255)
+  childName      String?     @map("child_name") @db.VarChar(255)
+  childBirthDate String?     @map("child_birth_date") @db.VarChar(50)
+  parentPhone    String?     @map("parent_phone") @db.VarChar(50)
+  school         String?     @db.VarChar(255)
+  roles          String[]    @default(["student"])
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String   @unique @db.VarChar(255)
+  city      String?  @db.VarChar(255)
+  state     String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("schools")
+}
+
+model Character {
+  id          String       @id @default(cuid())
+  name        String       @db.VarChar(255)
+  region      String       @db.VarChar(255)
+  description String
+  slug        String       @unique @db.VarChar(255)
+  imageUrl    String?      @map("image_url")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  gameConfigs GameConfig[]
+
+  @@map("characters")
+}
+
+model GameConfig {
+  id            String    @id @default(cuid())
+  gameSlug      String    @map("game_slug") @db.VarChar(255)
+  characterSlug String    @map("character_slug") @db.VarChar(255)
+  imageCoverUrl String    @map("image_cover_url")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  character     Character @relation(fields: [characterSlug], references: [slug], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([gameSlug, characterSlug], map: "game_configs_game_slug_character_slug_key")
+  @@map("game_configs")
+}
+
+model MemoryGameContent {
+  id          String   @id @default(cuid())
+  url         String
+  slug        String   @db.VarChar(255)
+  characterId String   @map("character_id") @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([slug], map: "memory_game_contents_slug_idx")
+  @@map("memory_game_contents")
+}
+
+model GameScore {
+  id            String   @id @default(cuid())
+  slug          String   @db.VarChar(255)
+  characterSlug String   @map("character_slug") @db.VarChar(255)
+  score         Int
+  userId        String   @map("user_id") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([slug, characterSlug, userId], map: "game_scores_slug_character_slug_user_id_key")
+  @@index([userId], map: "game_scores_user_id_idx")
+  @@map("game_scores")
+}
+
+model Midia {
+  id        String   @id @default(cuid())
+  url       String
+  folder    String?  @db.VarChar(255)
+  path      String?  @db.VarChar(500)
+  userId    String   @map("user_id") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId], map: "midia_user_id_idx")
+  @@index([folder], map: "midia_folder_idx")
+  @@map("midia")
+}

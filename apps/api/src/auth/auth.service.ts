@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { FirebaseService } from 'src/firebase';
 import * as admin from 'firebase-admin';
+import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
     this.configService.get<string>('FIREBASE_API_KEY');
 
   constructor(
-    private readonly firebaseService: FirebaseService,
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -25,6 +25,33 @@ export class AuthService {
     'parentPhone',
     'school',
   ]);
+
+  private async findProfileByFirebaseUid(firebaseUid: string) {
+    return this.prismaService.user.findUnique({
+      where: { firebaseUid },
+    });
+  }
+
+  private mapProfile(profile: Awaited<ReturnType<AuthService['findProfileByFirebaseUid']>>) {
+    if (!profile) {
+      return null;
+    }
+
+    return {
+      id: profile.id,
+      uid: profile.firebaseUid,
+      email: profile.email,
+      parentName: profile.parentName,
+      childName: profile.childName,
+      childBirthDate: profile.childBirthDate,
+      parentPhone: profile.parentPhone,
+      school: profile.school,
+      roles: profile.roles,
+      role: profile.roles,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+    };
+  }
 
   async loginWithEmailAndPassword(email: string, password: string) {
     try {
@@ -66,15 +93,12 @@ export class AuthService {
     try {
       const decoded = await admin.auth().verifyIdToken(idToken, true);
       const userRecord = await admin.auth().getUser(decoded.uid);
-      const existingProfile = await this.firebaseService.findById(
-        'users',
-        userRecord.uid,
-      );
+      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
 
       if (!existingProfile) {
-        await this.firebaseService.create(
-          'users',
-          {
+        await this.prismaService.user.create({
+          data: {
+            firebaseUid: userRecord.uid,
             email: userRecord.email ?? null,
             parentName: userRecord.displayName ?? null,
             childName: null,
@@ -83,8 +107,7 @@ export class AuthService {
             school: null,
             roles: ['student'],
           },
-          userRecord.uid,
-        );
+        });
       }
 
       const user = await this.getProfile(userRecord.uid);
@@ -127,18 +150,15 @@ export class AuthService {
         userRecord = await admin.auth().getUserByEmail(data.email);
       }
 
-      const existingProfile = await this.firebaseService.findById(
-        'users',
-        userRecord.uid,
-      );
+      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
 
       if (existingProfile) {
         throw new UnauthorizedException('Email já cadastrado');
       }
 
-      await this.firebaseService.create(
-        'users',
-        {
+      await this.prismaService.user.create({
+        data: {
+          firebaseUid: userRecord.uid,
           email: data.email,
           parentName: data.parentName ?? null,
           childName: data.childName ?? null,
@@ -147,8 +167,7 @@ export class AuthService {
           school: data.school ?? null,
           roles: ['student'],
         },
-        userRecord.uid,
-      );
+      });
 
       return this.loginWithEmailAndPassword(data.email, data.password);
     } catch (error) {
@@ -187,12 +206,8 @@ export class AuthService {
   }
 
   async getProfile(id: string) {
-    const data = await this.firebaseService.findById('users', id);
-
-    return {
-      ...data,
-      uid: id,
-    };
+    const data = await this.findProfileByFirebaseUid(id);
+    return this.mapProfile(data);
   }
 
   async updateProfile(
@@ -205,7 +220,7 @@ export class AuthService {
       school: unknown;
     }>,
   ) {
-    const user = await this.getProfile(id);
+    const user = await this.findProfileByFirebaseUid(id);
 
     if (!user) {
       throw new NotFoundException('Usuario não encontrado');
@@ -217,6 +232,11 @@ export class AuthService {
       ),
     );
 
-    return this.firebaseService.update('users', user.uid, safeData);
+    await this.prismaService.user.update({
+      where: { firebaseUid: id },
+      data: safeData,
+    });
+
+    return this.getProfile(id);
   }
 }

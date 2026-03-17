@@ -1,6 +1,37 @@
 # API (apps/api)
 
-API NestJS responsável pelo acesso a dados (Firestore e Storage) e regras de negócio dos serviços que antes viviam no front (`packages/tools/src/services`).
+API NestJS responsável pelo acesso a dados e regras de negócio dos serviços que antes viviam no front (`packages/tools/src/services`).
+
+## Stack de dados
+
+- `Firebase Auth` para autenticação e validação de token
+- `Firebase Storage` para upload e remoção de arquivos
+- `PostgreSQL` como banco principal da aplicação
+- `Prisma` como ORM e camada de acesso a dados
+
+Hoje o Firestore não é mais a fonte principal de persistência da aplicação. Os dados de domínio ficam no Postgres, enquanto o Firebase permanece como infraestrutura de autenticação e storage.
+
+## Banco de dados
+
+O schema da aplicação está em [`prisma/schema.prisma`](./prisma/schema.prisma).
+
+Variáveis principais:
+
+- `DATABASE_URL`: conexão usada pela aplicação
+- `DIRECT_URL`: conexão direta usada pelo Prisma em migrations
+
+Comandos úteis:
+
+```bash
+yarn prisma:generate
+yarn prisma:migrate:dev --name <nome-da-migration>
+yarn prisma:migrate:deploy
+```
+
+Documentação complementar:
+
+- [`docs/database-architecture.md`](./docs/database-architecture.md)
+- [`docs/data-model.md`](./docs/data-model.md)
 
 ## Serviços migrados do front para API
 
@@ -10,6 +41,17 @@ API NestJS responsável pelo acesso a dados (Firestore e Storage) e regras de ne
 - `games/memory-game`
 - `games/score-games`
 - `midia`
+
+## Arquitetura atual
+
+Fluxo principal:
+
+`frontend/app nativo -> API NestJS -> Prisma -> PostgreSQL`
+
+Fluxos complementares:
+
+- autenticação: `frontend -> Firebase Auth -> API`
+- arquivos: `API -> Firebase Storage`
 
 ## Endpoints principais
 
@@ -79,3 +121,9 @@ Arquivos de teste relevantes desta migração:
 - `src/schools/schools.controller.spec.ts`
 - `src/midia/midia.service.spec.ts`
 - `src/midia/midia.controller.spec.ts`
+
+## Observações
+
+- a API mantém compatibilidade com o fluxo atual de autenticação do frontend
+- o perfil do usuário agora é persistido no Postgres e vinculado ao `firebaseUid`
+- a modelagem relacional fica centralizada no Prisma, o que facilita manutenção e documentação

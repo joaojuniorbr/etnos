@@ -56,3 +56,19 @@ Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
 
 - **Adivinhe a palavra:** Adivinhar as palavras dos personagens.
 - **Jogos da Memória:** Associação de conceitos, imagens ou fatos culturais.
+
+## Arquitetura Técnica
+
+Além da documentação acadêmica e das entregas do projeto, o site agora também
+reúne a documentação técnica da plataforma, especialmente a parte de banco de
+dados e persistência da API.
+
+### Documentação disponível
+
+- **[Arquitetura de Banco de Dados](database-architecture.md):** explica como
+  `Firebase Auth`, `Firebase Storage`, `PostgreSQL` e `Prisma` trabalham juntos.
+- **[Modelagem de Dados](data-model.md):** detalha as tabelas atuais, índices,
+  regras de unicidade e relações principais.
+
+Esse material foi organizado para facilitar manutenção, onboarding técnico e
+evolução futura da plataforma.

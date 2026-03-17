@@ -1,18 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import {
-  QueryOptions,
-  PaginationOptions,
-  PaginatedResponse,
-  FilterSummary,
-  QueryFilter,
-} from './firebase.type';
-
-interface FirestoreDocument {
-  id: string;
-  [key: string]: unknown;
-}
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {

@@ -383,6 +383,24 @@ describe('AuthService', () => {
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it('deve lançar Email já cadastrado quando getUserByEmail falhar com email existente', async () => {
+      mockedAdminAuth.mockReturnValue({
+        createUser: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+        getUserByEmail: jest.fn().mockRejectedValue({
+          errorInfo: { code: 'auth/email-already-exists' },
+        }),
+      } as any);
+
+      await expect(
+        service.registerWithEmailAndPassword({
+          email: 'existing@email.com',
+          password: TEST_PASSWORD,
+        }),
+      ).rejects.toThrow('Email já cadastrado');
+    });
   });
 
   describe('loginWithGoogle', () => {

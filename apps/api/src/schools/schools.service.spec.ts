@@ -121,6 +121,21 @@ describe('SchoolsService', () => {
     expect(prismaService.school.update).not.toHaveBeenCalled();
   });
 
+  it('deve atualizar escola sem consultar duplicidade quando name nao for enviado', async () => {
+    const result = await service.update('1', { city: 'Pinhais' });
+
+    expect(prismaService.school.findFirst).not.toHaveBeenCalled();
+    expect(prismaService.school.update).toHaveBeenCalledWith({
+      where: { id: '1' },
+      data: {
+        name: undefined,
+        city: 'Pinhais',
+        state: undefined,
+      },
+    });
+    expect(result).toEqual({ id: '1', city: 'Pinhais' });
+  });
+
   it('deve remover escola', async () => {
     const result = await service.delete('1');
 

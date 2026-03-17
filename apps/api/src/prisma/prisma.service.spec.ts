@@ -1,3 +1,15 @@
+jest.mock('@prisma/client', () => ({
+  PrismaClient: class {
+    async $connect() {
+      return undefined;
+    }
+
+    async $disconnect() {
+      return undefined;
+    }
+  },
+}));
+
 import { PrismaService } from './prisma.service';
 
 describe('PrismaService', () => {

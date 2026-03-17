@@ -14,13 +14,16 @@ COPY --from=pruner /app/out/yarn.lock ./yarn.lock
 RUN HUSKY=0 CI=true yarn install --frozen-lockfile
 
 FROM node:22-alpine AS builder
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 
+RUN yarn workspace api prisma:generate
 RUN npx turbo build --filter=api
 
 FROM node:22-alpine AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NODE_ENV=production
 

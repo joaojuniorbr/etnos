@@ -30,6 +30,17 @@ vi.mock('../../@atoms', () => ({
 	},
 }));
 
+vi.mock('../../@molecules', () => ({
+	ResetPasswordForm: ({ onSubmit }: { onSubmit: () => void }) => (
+		<div>
+			<button type='button' onClick={onSubmit}>
+				Fechar reset
+			</button>
+			<div data-testid='reset-password-form'>Reset Password Form</div>
+		</div>
+	),
+}));
+
 vi.mock('antd', async () => {
 	const React = await import('react');
 
@@ -96,6 +107,14 @@ vi.mock('antd', async () => {
 		),
 		Form,
 		Input,
+		Modal: ({
+			open,
+			children,
+		}: {
+			open?: boolean;
+			children: React.ReactNode;
+		}) =>
+			open ? <div data-testid='modal'>{children}</div> : null,
 		Spin: ({
 			spinning,
 			children,
@@ -267,6 +286,23 @@ describe('LoginForm', () => {
 				'data-spinning',
 				'false'
 			);
+		});
+	});
+
+	it('abre o modal de recuperação de senha', async () => {
+		useAuthMock.mockReturnValue({
+			onSignInWithEmailAndPassword: vi.fn(),
+			isLoading: false,
+			loginWithGoogle: vi.fn(),
+		});
+
+		render(<LoginForm onLoginSuccess={vi.fn()} />);
+
+		fireEvent.click(screen.getByRole('button', { name: /esqueci minha senha/i }));
+
+		await waitFor(() => {
+			expect(screen.getByTestId('modal')).toBeInTheDocument();
+			expect(screen.getByTestId('reset-password-form')).toBeInTheDocument();
 		});
 	});
 });

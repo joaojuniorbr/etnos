@@ -1,12 +1,18 @@
+'use client';
+
 import { useAuth } from '@etnos/tools';
-import { Divider, Form, Input, message, Spin } from 'antd';
+import { Divider, Form, Input, message, Modal, Spin } from 'antd';
 import { Button } from '../../@atoms';
+import { ResetPasswordForm } from '../../@molecules';
+import { useState } from 'react';
 
 interface LoginFormProps {
 	onLoginSuccess: () => void;
 }
 
 export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
 	const [form] = Form.useForm();
 
 	const { onSignInWithEmailAndPassword, isLoading, loginWithGoogle } =
@@ -38,6 +44,10 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 	const styleButton =
 		'ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition';
 
+	const toggleModal = () => {
+		setIsModalOpen(!isModalOpen);
+	};
+
 	return (
 		<Spin spinning={isLoading}>
 			<div className='ui:flex ui:flex-col ui:justify-center ui:gap-6'>
@@ -54,7 +64,17 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 						<Input.Password placeholder='Digite sua senha' />
 					</Form.Item>
 
-					<div className='ui:pt-4'>
+					<div className='ui:pt-2 ui:text-right'>
+						<button
+							className='ui:text-xs ui:uppercase ui:font-bold ui:underline ui:cursor-pointer'
+							onClick={toggleModal}
+							type='button'
+						>
+							Esqueci minha senha
+						</button>
+					</div>
+
+					<div className='ui:pt-8'>
 						<Button block type='secondary' htmlType='submit'>
 							ENTRAR
 						</Button>
@@ -78,6 +98,15 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 					<span>ENTRAR COM GOOGLE</span>
 				</button>
 			</div>
+
+			<Modal
+				open={isModalOpen}
+				footer={null}
+				onCancel={toggleModal}
+				destroyOnHidden
+			>
+				<ResetPasswordForm onSubmit={toggleModal} />
+			</Modal>
 		</Spin>
 	);
 };

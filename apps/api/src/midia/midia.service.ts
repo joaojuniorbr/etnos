@@ -153,7 +153,7 @@ export class MidiaService {
       where: { id },
     });
 
-    if (!(item?.userId === userId)) {
+    if (item?.userId !== userId) {
       return false;
     }
 

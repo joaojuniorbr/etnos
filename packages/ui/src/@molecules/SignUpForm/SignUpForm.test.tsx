@@ -18,9 +18,11 @@ vi.mock('../../@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,
+		block: _block,
 		...props
 	}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
 		htmlType?: 'button' | 'submit' | 'reset';
+		block?: boolean;
 	}) => {
 		return (
 			<button type={htmlType ?? 'button'} {...props}>

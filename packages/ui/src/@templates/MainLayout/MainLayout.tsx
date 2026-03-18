@@ -63,7 +63,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 							<div className='ui:flex ui:flex-col ui:w-full ui:min-h-screen'>
 								<Header />
 
-								<main className='ui:flex-1'>{children}</main>
+								<main className='ui:flex ui:flex-1 ui:flex-col'>{children}</main>
 
 								<Footer />
 							</div>

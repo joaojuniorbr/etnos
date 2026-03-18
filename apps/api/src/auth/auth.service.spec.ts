@@ -458,6 +458,55 @@ describe('AuthService', () => {
       });
     });
 
+    it('deve criar perfil com email e nome nulos quando Google não retornar esses campos', async () => {
+      mockedAdminAuth.mockReturnValue({
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'google-user-id',
+          email: undefined,
+          displayName: undefined,
+        }),
+      } as any);
+
+      prismaService.user.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
+          email: null,
+          parentName: null,
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      const result = await service.loginWithGoogle('google-id-token');
+
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: {
+          firebaseUid: 'google-user-id',
+          email: null,
+          parentName: null,
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          roles: ['student'],
+        },
+      });
+      expect(result.user).toEqual(
+        expect.objectContaining({
+          uid: 'google-user-id',
+          email: null,
+          parentName: null,
+        }),
+      );
+    });
+
     it('deve reutilizar perfil existente no login com Google', async () => {
       mockedAdminAuth.mockReturnValueOnce({
         verifyIdToken: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),

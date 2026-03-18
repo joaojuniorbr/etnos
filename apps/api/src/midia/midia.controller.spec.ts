@@ -85,7 +85,7 @@ describe('MidiaController', () => {
   });
 
   it('deve listar mídias usando limit/page padrão', async () => {
-    await controller.getMidia(req, undefined, undefined);
+    await controller.getMidia(req, undefined);
 
     expect(service.getMidia).toHaveBeenCalledWith('user-1', 10, 1, undefined);
   });

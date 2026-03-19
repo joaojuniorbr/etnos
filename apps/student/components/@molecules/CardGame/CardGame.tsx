@@ -5,9 +5,15 @@ import Link from 'next/link';
 interface CardGameProps extends React.HTMLAttributes<HTMLDivElement> {
 	game: GameInterface;
 	character: string;
+	isAboveTheFold?: boolean;
 }
 
-export const CardGame = ({ game, character, ...props }: CardGameProps) => (
+export const CardGame = ({
+	game,
+	character,
+	isAboveTheFold = false,
+	...props
+}: CardGameProps) => (
 	<Link href={game.url}>
 		<div
 			className='shadow rounded overflow-hidden bg-white md:max-w-3xs w-full'
@@ -18,6 +24,8 @@ export const CardGame = ({ game, character, ...props }: CardGameProps) => (
 				alt={game.name}
 				width={300}
 				height={300}
+				priority={isAboveTheFold}
+				loading={isAboveTheFold ? 'eager' : 'lazy'}
 				className='aspect-[1/1] object-cover w-full '
 			/>
 			<dl className='p-4 text-center text-primary'>

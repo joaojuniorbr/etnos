@@ -14,7 +14,7 @@ export const GameSelect = () => {
 
 	return (
 		<div className='flex flex-col md:flex-row justify-center gap-4'>
-			{allGames.map((game) => (
+			{allGames.map((game, index) => (
 				<CardGame
 					key={game.slug}
 					game={{
@@ -22,6 +22,7 @@ export const GameSelect = () => {
 						url: game.url + `?personagem=${selectedCharacter.slug}`,
 					}}
 					character={selectedCharacter.slug}
+					isAboveTheFold={index === 0}
 				/>
 			))}
 		</div>

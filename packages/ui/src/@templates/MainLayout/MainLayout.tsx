@@ -60,10 +60,12 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 						}}
 					>
 						<App>
-							<div className='ui:flex ui:flex-col ui:w-full ui:min-h-screen'>
+							<div className='ui:flex ui:flex-col ui:w-full ui:min-h-screen ui:bg-slate-50'>
 								<Header />
 
-								<main className='ui:flex ui:flex-1 ui:flex-col'>{children}</main>
+								<main className='ui:flex ui:flex-1 ui:flex-col'>
+									{children}
+								</main>
 
 								<Footer />
 							</div>

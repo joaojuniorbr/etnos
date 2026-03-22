@@ -8,24 +8,56 @@ on:
     branches:
       - main
 
+concurrency:
+  group: main-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  sonarcloud:
+  ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      HUSKY: 0
+      TURBO_TELEMETRY_DISABLED: 1
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.14.0
           cache: yarn
           cache-dependency-path: yarn.lock
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock', 'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-22.14.0-modules-
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{ hashFiles('yarn.lock', 'turbo.json', 'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-
+            ${{ runner.os }}-node-22.14.0-turbo-
+
       - name: Install dependencies
-        env:
-          HUSKY: 0
-        run: yarn install --frozen-lockfile --non-interactive
+        run: yarn install --frozen-lockfile --non-interactive --prefer-offline
 
       - name: Generate Prisma client
         run: yarn workspace api prisma:generate
@@ -33,38 +65,21 @@ jobs:
       - name: Run tests with coverage
         run: yarn test
 
+      - name: Run Chromatic
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        uses: chromaui/action@latest
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: apps/docs
+
       - name: SonarCloud Scan
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.14.0
-          cache: yarn
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        env:
-          HUSKY: 0
-        run: yarn install --frozen-lockfile --non-interactive
-
       - name: Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HUSKY: 0
         run: yarn release

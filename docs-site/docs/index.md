@@ -1,3 +1,5 @@
+![Etnos](./files/github-cover.jpg)
+
 # ETNOS: gamificando a diversidade
 
 ## Sobre o projeto
@@ -32,13 +34,13 @@ meio de pontuacao e recordes.
 
 ### Personagens atuais
 
-| Regiao | Personagem | Foco cultural |
-| :-- | :-- | :-- |
-| Amazonia | Iara Curumim | floresta, lendas e biodiversidade |
-| Minas Gerais | Tonico do Fogao | culinaria, memoria afetiva e interior |
-| Rio de Janeiro | Dandara do Morro | ritmos, resistencia e cultura urbana |
-| Nordeste | Zeca do Sertao | festas, oralidade e simbolos populares |
-| Sul | Anita dos Pampas | tradicoes gauchas e identidade regional |
+| Regiao         | Personagem       | Foco cultural                           |
+| :------------- | :--------------- | :-------------------------------------- |
+| Amazonia       | Iara Curumim     | floresta, lendas e biodiversidade       |
+| Minas Gerais   | Tonico do Fogao  | culinaria, memoria afetiva e interior   |
+| Rio de Janeiro | Dandara do Morro | ritmos, resistencia e cultura urbana    |
+| Nordeste       | Zeca do Sertao   | festas, oralidade e simbolos populares  |
+| Sul            | Anita dos Pampas | tradicoes gauchas e identidade regional |
 
 ### Jogos atuais
 
@@ -55,8 +57,8 @@ jogos da plataforma.
 
 - **Monorepo e Apps**: explica como `web`, `student`, `admin`, `api` e os
   pacotes compartilhados se conectam.
-- **Autenticacao e Sessao**: detalha login, cadastro, refresh de token,
-  protecao de rotas e perfil autenticado.
+- **Autenticacao e Sessao**: detalha login, cadastro, refresh de token, protecao
+  de rotas e perfil autenticado.
 - **Midia e Storage**: descreve upload, storage, catalogacao de assets e
   integracao com o admin.
 - **Arquitetura dos Jogos**: panorama da integracao entre `student`, `admin`,
@@ -67,12 +69,12 @@ jogos da plataforma.
 
 ## Por onde comecar
 
-- Se voce quer entender a experiencia do usuario, comece pela pagina de
-  monorepo e depois siga para arquitetura dos jogos.
-- Se voce quer entender login e areas protegidas, leia a pagina de
-  autenticacao e sessao.
-- Se voce quer entender upload e biblioteca de imagens, leia a pagina de midia
-  e storage.
+- Se voce quer entender a experiencia do usuario, comece pela pagina de monorepo
+  e depois siga para arquitetura dos jogos.
+- Se voce quer entender login e areas protegidas, leia a pagina de autenticacao
+  e sessao.
+- Se voce quer entender upload e biblioteca de imagens, leia a pagina de midia e
+  storage.
 - Se voce quer entender persistencia e integracoes, siga para a documentacao de
   banco de dados.
 - Se voce esta entrando no projeto para contribuir, use o `README.md` da raiz

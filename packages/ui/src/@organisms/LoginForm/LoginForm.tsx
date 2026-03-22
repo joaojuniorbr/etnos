@@ -45,7 +45,7 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 		'ui:border ui:border-gray-200 ui:rounded-full ui:py-3 ui:px-6 ui:inline-flex ui:items-center ui:gap-2 ui:justify-center ui:font-bold ui:text-black ui:mx-auto ui:text-xs ui:cursor-pointer ui:hover:bg-gray-100 ui:transition';
 
 	const toggleModal = () => {
-		setIsModalOpen(!isModalOpen);
+		setIsModalOpen((prev) => !prev);
 	};
 
 	return (

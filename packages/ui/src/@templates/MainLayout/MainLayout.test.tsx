@@ -21,5 +21,9 @@ describe('MainLayout', () => {
 		expect(html).toContain('data-testid="header"');
 		expect(html).toContain('data-testid="footer"');
 		expect(html).toContain('data-testid="child-content"');
+		expect(html).toContain(
+			'class="ui:flex ui:flex-col ui:w-full ui:min-h-screen ui:bg-slate-50"'
+		);
+		expect(html).toContain('class="ui:flex ui:flex-1 ui:flex-col"');
 	});
 });

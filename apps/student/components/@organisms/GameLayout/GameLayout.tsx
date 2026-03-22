@@ -32,7 +32,7 @@ export const GameLayout = async ({
 		<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
 			<Breadcrumb items={breadcrumbItems} />
 
-			<div className='p-4 bg-white border border-slate-200 shadow rounded mt-6'>
+			<div className='md:p-4 md:bg-white md:border md:border-slate-200 md:shadow md:rounded mt-6 mb-10'>
 				<Games type={gameType} characterSlug={character} />
 			</div>
 		</div>

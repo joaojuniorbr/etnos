@@ -1,74 +1,79 @@
-# ETNOS: Gamificando a diversidade
+# ETNOS: gamificando a diversidade
 
-## 💡 Sobre o Projeto
+## Sobre o projeto
 
-Este repositório contém o projeto de Trabalho de Conclusão de Curso (TCC) em
-**Gestão de Tecnologia** focado no desenvolvimento de uma plataforma de jogos
-educativos para a rede pública de ensino. O produto principal, o jogo **Etnos**,
-é uma ferramenta pedagógica digital que visa promover o **respeito às
-diferenças** e valorizar a **diversidade étnico-racial** na formação da
-sociedade brasileira.
+O **Etnos** e uma plataforma educacional pensada para estudantes do ensino
+fundamental, usando jogos interativos para apresentar a diversidade cultural
+brasileira de forma ludica, visual e acessivel.
 
-Em um país de dimensões continentais e rica pluralidade cultural como o Brasil,
-é fundamental que as crianças desenvolvam consciência, empatia e um senso
-crítico sobre sua própria identidade e a importância das diversas culturas que
-nos compõem.
+O projeto esta organizado como um monorepo com aplicacoes web, painel
+administrativo, portal do estudante, API e pacotes compartilhados. Isso permite
+evoluir a experiencia dos jogos com reuso de componentes, contratos e servicos.
 
-## 🎯 Objetivo Principal do Jogo
+## Objetivo pedagogico
 
-O **Etnos** busca oferecer uma experiência lúdica e interativa para:
+O produto foi desenhado para:
 
-- **Promover o respeito** às diferentes identidades étnico-raciais.
-- **Destacar as contribuições** dos povos afro-brasileiros, indígenas e de
-  outras culturas na construção da sociedade brasileira.
-- Estimular **reflexões sobre identidade, respeito, convivência, empatia e
-  justiça social** nos estudantes.
+- promover respeito as diferencas etnico-raciais;
+- valorizar saberes, simbolos, historias e tradicoes do Brasil;
+- transformar o aprendizado em uma jornada mais envolvente e participativa.
 
-## 🧑‍🤝‍🧑 Público-Alvo e Local de Aplicação
+## Publico-alvo
 
-O jogo foi desenvolvido para ser aplicado com:
+- estudantes do 5o ano do ensino fundamental;
+- faixa etaria principal entre 10 e 12 anos;
+- uso em contexto escolar, com apoio de professoras e professores.
 
-- **Público:** Estudantes do **5º ano do Ensino Fundamental** (faixa etária de
-  10-11 anos).
-- **Local de Implementação:** Turmas do 5º ano da **Escola Municipal João
-  Leopoldo Jacomel**, em Pinhais, Paraná.
+## Experiencia de jogo
 
-## 🕹️ Mecânicas e Fases do Jogo
+Cada personagem representa um recorte cultural e regional do Brasil. A jornada
+do estudante combina selecao de personagem, escolha do desafio e progressao por
+meio de pontuacao e recordes.
 
-A premissa central é que o jogador acompanhe um personagem em uma **jornada por
-diferentes etnias e regiões do Brasil**.
+### Personagens atuais
 
-Em cada etapa, o estudante explora tradições, histórias e saberes por meio de
-**desafios simples e interativos**, projetados para serem realizados de forma
-**coletiva** e incentivar a cooperação e o combate a preconceitos.
+| Regiao | Personagem | Foco cultural |
+| :-- | :-- | :-- |
+| Amazonia | Iara Curumim | floresta, lendas e biodiversidade |
+| Minas Gerais | Tonico do Fogao | culinaria, memoria afetiva e interior |
+| Rio de Janeiro | Dandara do Morro | ritmos, resistencia e cultura urbana |
+| Nordeste | Zeca do Sertao | festas, oralidade e simbolos populares |
+| Sul | Anita dos Pampas | tradicoes gauchas e identidade regional |
 
-### Fases e Personagens Principais:
+### Jogos atuais
 
-| Região             | Tema                    | Personagem       | Foco Cultural                                   |
-| :----------------- | :---------------------- | :--------------- | :---------------------------------------------- |
-| **Amazônia**       | Saberes da Floresta     | Iara Curumim     | Indígena, Lendas, Botânica                      |
-| **Minas Gerais**   | Tradições e Sabores     | Tonico do Fogão  | Culinária Afetiva, Artesanato, Histórias        |
-| **Rio de Janeiro** | Ritmos e Resistência    | Dandara do Morro | Cultura Afro-Brasileira, Samba, Jongo, Carnaval |
-| **Nordeste**       | Sol, Festa e Fé         | Zeca do Sertão   | Literatura de Cordel, Forró, Festas Juninas     |
-| **Sul do Brasil**  | Tradições e Territórios | Anita dos Pampas | Cultura Gaúcha, Chimarrão, Folclore             |
+- **Adivinhe**: o estudante descobre uma palavra com apoio de dicas.
+- **Jogo da Memoria**: o estudante encontra pares visuais relacionados ao
+  personagem selecionado.
 
-### Tipos de Desafios (Mecânicas de Jogo):
+## Documentacao tecnica
 
-- **Adivinhe a palavra:** Adivinhar as palavras dos personagens.
-- **Jogos da Memória:** Associação de conceitos, imagens ou fatos culturais.
+O site de documentacao agora cobre tanto a camada de dados quanto a camada de
+jogos da plataforma.
 
-## Arquitetura Técnica
+### Guias disponiveis
 
-Além da documentação acadêmica e das entregas do projeto, o site agora também
-reúne a documentação técnica da plataforma, especialmente a parte de banco de
-dados e persistência da API.
+- **Monorepo e Apps**: explica como `web`, `student`, `admin`, `api` e os
+  pacotes compartilhados se conectam.
+- **Autenticacao e Sessao**: detalha login, cadastro, refresh de token,
+  protecao de rotas e perfil autenticado.
+- **Midia e Storage**: descreve upload, storage, catalogacao de assets e
+  integracao com o admin.
+- **Arquitetura dos Jogos**: panorama da integracao entre `student`, `admin`,
+  `apps/games`, `packages/tools`, `packages/types` e `api`, com foco especial no
+  jogo da memoria.
+- **Arquitetura de Banco de Dados**: organizacao de persistencia da plataforma.
+- **Modelagem de Dados**: estruturas, relacoes e regras principais.
 
-### Documentação disponível
+## Por onde comecar
 
-- **[Arquitetura de Banco de Dados](database-architecture.md):** explica como
-  `Firebase Auth`, `Firebase Storage`, `PostgreSQL` e `Prisma` trabalham juntos.
-- **[Modelagem de Dados](data-model.md):** detalha as tabelas atuais, índices,
-  regras de unicidade e relações principais.
-
-Esse material foi organizado para facilitar manutenção, onboarding técnico e
-evolução futura da plataforma.
+- Se voce quer entender a experiencia do usuario, comece pela pagina de
+  monorepo e depois siga para arquitetura dos jogos.
+- Se voce quer entender login e areas protegidas, leia a pagina de
+  autenticacao e sessao.
+- Se voce quer entender upload e biblioteca de imagens, leia a pagina de midia
+  e storage.
+- Se voce quer entender persistencia e integracoes, siga para a documentacao de
+  banco de dados.
+- Se voce esta entrando no projeto para contribuir, use o `README.md` da raiz
+  como guia de setup local.

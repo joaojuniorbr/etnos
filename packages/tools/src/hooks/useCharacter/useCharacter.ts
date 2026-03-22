@@ -47,9 +47,7 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 
 	useEffect(() => {
 		const syncSelectedCharacter = (slug?: string | null) => {
-			if (slug) {
-				setCharacter(slug);
-			}
+			setCharacter(slug ?? '');
 		};
 
 		syncSelectedCharacter(localStorage.getItem(CHARACTER_STORAGE_KEY));

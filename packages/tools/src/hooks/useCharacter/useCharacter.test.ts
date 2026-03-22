@@ -171,6 +171,46 @@ describe('useCharacter', () => {
 		});
 	});
 
+	it('sincroniza a limpeza da seleção entre múltiplas instâncias do hook', async () => {
+		const mockCharacter = {
+			name: 'Link',
+			slug: 'link',
+		};
+
+		localStorage.setItem('selectedCharacter', 'link');
+
+		vi.mocked(charactersService.getCharacterBySlug).mockImplementation(
+			async (slug: string) => {
+				if (slug === 'link') {
+					return mockCharacter as CharacterInterface;
+				}
+
+				return null as unknown as CharacterInterface;
+			}
+		);
+
+		const firstHook = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+		const secondHook = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(firstHook.result.current.selectedCharacter).toEqual(mockCharacter);
+			expect(secondHook.result.current.selectedCharacter).toEqual(mockCharacter);
+		});
+
+		act(() => {
+			firstHook.result.current.selectCharacter('');
+		});
+
+		await waitFor(() => {
+			expect(firstHook.result.current.selectedCharacter).toBeUndefined();
+			expect(secondHook.result.current.selectedCharacter).toBeUndefined();
+		});
+	});
+
 	it('limpa o personagem selecionado quando recebe slug vazio', async () => {
 		const mockCharacter = {
 			name: 'Link',

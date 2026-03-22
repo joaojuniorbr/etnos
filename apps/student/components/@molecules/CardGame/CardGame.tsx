@@ -22,8 +22,8 @@ export const CardGame = ({
 			<Image
 				src={`/games/${game.slug}/cover/${character}.jpg`}
 				alt={game.name}
-				width={300}
-				height={300}
+				width={256}
+				height={256}
 				priority={isAboveTheFold}
 				loading={isAboveTheFold ? 'eager' : 'lazy'}
 				className='aspect-[1/1] object-cover w-full '

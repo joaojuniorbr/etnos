@@ -16,7 +16,10 @@ describe('NotFound', () => {
 	it('renderiza a imagem da página 404', () => {
 		const { container } = render(<NotFound />);
 
-		expect(screen.getByAltText('404')).toHaveAttribute('src', '/images/404.png');
+		expect(screen.getByAltText('Página não encontrada')).toHaveAttribute(
+			'src',
+			'/images/404.png'
+		);
 		expect(container.firstChild).toHaveClass(
 			'ui:flex',
 			'ui:flex-1',

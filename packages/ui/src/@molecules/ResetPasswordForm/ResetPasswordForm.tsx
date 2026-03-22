@@ -34,8 +34,8 @@ export const ResetPasswordForm = ({ onSubmit }: ResetPasswordFormProps) => {
 		<div className='ui:py-2'>
 			<h2 className='ui:text-xl ui:font-black ui:uppercase'>Recuperar senha</h2>
 			<p className='ui:text-base ui:mb-8 ui:mt-3'>
-				Insira o email para recuperar a sua senha. Se vocês não receber o email,
-				verifique sua caixa de spam.
+				Insira o e-mail para recuperar a sua senha. Se você não receber o
+				e-mail, verifique sua caixa de spam.
 			</p>
 
 			<Form

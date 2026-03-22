@@ -170,7 +170,7 @@ describe('useAuth', () => {
 
 		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
 
-		window.dispatchEvent(new Event('visibilitychange'));
+		document.dispatchEvent(new Event('visibilitychange'));
 		expect(updateAuthActivityMock).not.toHaveBeenCalled();
 
 		Object.defineProperty(document, 'visibilityState', {
@@ -299,6 +299,39 @@ describe('useAuth', () => {
 		);
 	});
 
+	it('faz login com Google mesmo sem expirationTime e não salva expiresAt', async () => {
+		mockGoogleUserGetIdTokenResult.mockResolvedValueOnce({
+			expirationTime: null,
+		});
+		mockSignInWithPopup.mockResolvedValueOnce({
+			user: {
+				getIdToken: mockGoogleUserGetIdToken,
+				getIdTokenResult: mockGoogleUserGetIdTokenResult,
+				refreshToken: 'google-refresh-token',
+			},
+		});
+		mockApiPost.mockResolvedValueOnce({
+			data: {
+				idToken: 'api-google-id-token',
+				user: { uid: 'google-user-id', email: 'google@test.com' },
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		await act(async () => {
+			await result.current.loginWithGoogle();
+		});
+
+		expect(localStorage.getItem('etnos_auth_token')).toBe(
+			'api-google-id-token'
+		);
+		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
+			'google-refresh-token'
+		);
+		expect(localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)).toBeNull();
+	});
+
 	it('desloga com sucesso removendo token local', async () => {
 		localStorage.setItem('etnos_auth_token', 'abc');
 		localStorage.setItem(AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh');
@@ -313,6 +346,8 @@ describe('useAuth', () => {
 		expect(localStorage.getItem('etnos_auth_token')).toBeNull();
 		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBeNull();
 		expect(localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)).toBeNull();
+		expect(result.current.user).toBeNull();
+		expect(result.current.isLoggedIn).toBe(false);
 		expect(message.success).toHaveBeenCalledWith('Desconectado com sucesso!');
 		expect(result.current.isLoading).toBe(false);
 	});

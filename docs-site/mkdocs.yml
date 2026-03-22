@@ -17,6 +17,12 @@ plugins:
 
 nav:
   - Home: index.md
+  - Arquitetura:
+      - Monorepo e Apps: monorepo-architecture.md
+      - Autenticacao e Sessao: auth-architecture.md
+      - Midia e Storage: media-architecture.md
+  - Jogos:
+      - Arquitetura dos Jogos: games-architecture.md
   - Banco de Dados:
       - Arquitetura de Banco de Dados: database-architecture.md
       - Modelagem de Dados: data-model.md

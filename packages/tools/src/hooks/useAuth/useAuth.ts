@@ -10,7 +10,7 @@ import {
 	saveStoredAuthSession,
 	updateAuthActivity,
 } from '../../helpers/authSession';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 
 import { initializeApp } from 'firebase/app';
@@ -39,13 +39,15 @@ export const getStoredAuthToken = () => {
 
 export const useAuth = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const queryClient = useQueryClient();
+	const userQueryKey = ['profile'] as const;
 
 	const {
 		data: user,
 		isLoading: isProfileLoading,
 		refetch: refetchProfile,
 	} = useQuery({
-		queryKey: ['profile'],
+		queryKey: userQueryKey,
 		queryFn: async () => {
 			try {
 				const profile = (await api
@@ -83,16 +85,28 @@ export const useAuth = () => {
 			updateAuthActivity();
 		};
 
-		events.forEach((eventName) =>
+		events.forEach((eventName) => {
+			if (eventName === 'visibilitychange') {
+				document.addEventListener(eventName, handleActivity, {
+					passive: true,
+				});
+				return;
+			}
+
 			globalThis.window.addEventListener(eventName, handleActivity, {
 				passive: true,
-			})
-		);
+			});
+		});
 
 		return () => {
-			events.forEach((eventName) =>
-				globalThis.window.removeEventListener(eventName, handleActivity)
-			);
+			events.forEach((eventName) => {
+				if (eventName === 'visibilitychange') {
+					document.removeEventListener(eventName, handleActivity);
+					return;
+				}
+
+				globalThis.window.removeEventListener(eventName, handleActivity);
+			});
 		};
 	}, [user]);
 
@@ -157,6 +171,7 @@ export const useAuth = () => {
 		setIsLoading(true);
 		try {
 			clearStoredAuthSession();
+			queryClient.setQueryData(userQueryKey, null);
 			message.success('Desconectado com sucesso!');
 		} catch (error) {
 			message.error(errorMessage(error));

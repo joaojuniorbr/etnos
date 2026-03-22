@@ -28,8 +28,9 @@ export class FirebaseService implements OnModuleInit {
 
       const storageBucket =
         this.configService.get<string>('FIREBASE_STORAGE_BUCKET') ||
+        this.configService.get<string>('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET') ||
         serviceAccountJson.storageBucket ||
-        `${serviceAccountJson.project_id}.appspot.com`;
+        `${serviceAccountJson.project_id}.firebasestorage.app`;
 
       this.app = admin.initializeApp({
         credential: admin.credential.cert(serviceAccountJson),
@@ -37,7 +38,9 @@ export class FirebaseService implements OnModuleInit {
       });
 
       this.firestore = this.app.firestore();
-      this.logger.log('Firebase inicializado com sucesso');
+      this.logger.log(
+        `Firebase inicializado com sucesso (bucket: ${storageBucket})`,
+      );
     } catch (error) {
       this.logger.error('Erro ao inicializar Firebase', error);
       throw error;

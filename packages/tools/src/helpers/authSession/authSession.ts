@@ -24,6 +24,7 @@ export const AUTH_INACTIVITY_LIMIT_MS = daysToMilliseconds(
 );
 
 const TOKEN_REFRESH_BUFFER_MS = TOKEN_REFRESH_BUFFER_IN_SECONDS * 1000;
+const TOKEN_REFRESH_TIMEOUT_MS = 5 * 1000;
 
 type StoredSession = {
 	token: string | null;
@@ -83,6 +84,8 @@ export const updateAuthActivity = (time = Date.now()) => {
 export const clearStoredAuthSession = () => {
 	if (!isBrowser()) return;
 
+	// Async writers must verify the originating session is still current
+	// before persisting refreshed credentials after calling out to the network.
 	globalThis.window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
 	globalThis.window.localStorage.removeItem(AUTH_REFRESH_TOKEN_STORAGE_KEY);
 	globalThis.window.localStorage.removeItem(AUTH_EXPIRES_AT_STORAGE_KEY);
@@ -139,21 +142,43 @@ export const refreshStoredAuthToken = async (
 		return null;
 	}
 
-	const response = await axios.post(
-		'https://securetoken.googleapis.com/v1/token',
-		new URLSearchParams({
-			grant_type: 'refresh_token',
-			refresh_token: refreshToken,
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			params: {
-				key: apiKey,
-			},
+	const abortController = new AbortController();
+	const timeoutId = globalThis.setTimeout(() => {
+		abortController.abort(new Error('Auth token refresh timeout'));
+	}, TOKEN_REFRESH_TIMEOUT_MS);
+
+	let response;
+
+	try {
+		response = await axios.post(
+			'https://securetoken.googleapis.com/v1/token',
+			new URLSearchParams({
+				grant_type: 'refresh_token',
+				refresh_token: refreshToken,
+			}),
+			{
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				params: {
+					key: apiKey,
+				},
+				signal: abortController.signal,
+				timeout: TOKEN_REFRESH_TIMEOUT_MS,
+			}
+		);
+	} catch (error) {
+		if (abortController.signal.aborted) {
+			const currentSession = getStoredSession();
+			return currentSession.expiresAt && currentSession.expiresAt > Date.now()
+				? currentSession.token
+				: null;
 		}
-	);
+
+		throw error;
+	} finally {
+		globalThis.clearTimeout(timeoutId);
+	}
 
 	const refreshedToken = response.data.id_token as string | undefined;
 	const refreshedRefreshToken = response.data.refresh_token as string | undefined;
@@ -161,6 +186,11 @@ export const refreshStoredAuthToken = async (
 
 	if (!refreshedToken) {
 		clearStoredAuthSession();
+		return null;
+	}
+
+	const currentRefreshToken = getStoredSession().refreshToken;
+	if (!currentRefreshToken || currentRefreshToken !== refreshToken) {
 		return null;
 	}
 
@@ -178,6 +208,15 @@ export const resolveValidStoredAuthToken = async () => {
 	const now = Date.now();
 
 	if (!session.token) return null;
+
+	if (
+		session.expiresAt == null &&
+		session.refreshToken == null &&
+		session.lastActivityAt == null
+	) {
+		clearStoredAuthSession();
+		return null;
+	}
 
 	if (hasSessionExceededInactivityLimit(session.lastActivityAt, now)) {
 		clearStoredAuthSession();

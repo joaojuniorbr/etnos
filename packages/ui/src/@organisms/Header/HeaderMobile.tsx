@@ -63,7 +63,10 @@ export const HeaderMobile = () => {
 						>
 							<div className='ui:w-26'>
 								<Image
-									src={`/images/character/md/${character.slug}.png`}
+									src={
+										character.imageUrl ||
+										`/images/character/md/${character.slug}.png`
+									}
 									alt={character.name}
 									preview={false}
 								/>

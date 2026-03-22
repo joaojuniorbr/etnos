@@ -30,8 +30,11 @@ yarn prisma:migrate:deploy
 
 Documentação complementar:
 
-- [`docs/database-architecture.md`](./docs/database-architecture.md)
-- [`docs/data-model.md`](./docs/data-model.md)
+- [`../../docs-site/docs/database-architecture.md`](../../docs-site/docs/database-architecture.md)
+- [`../../docs-site/docs/data-model.md`](../../docs-site/docs/data-model.md)
+- [`../../docs-site/docs/auth-architecture.md`](../../docs-site/docs/auth-architecture.md)
+- [`../../docs-site/docs/media-architecture.md`](../../docs-site/docs/media-architecture.md)
+- [`../../docs-site/docs/games-architecture.md`](../../docs-site/docs/games-architecture.md)
 
 ## Serviços migrados do front para API
 

@@ -190,6 +190,45 @@ describe('authSession', () => {
 		expect(storage.get(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe('refresh-novo');
 	});
 
+	it('não persiste refresh quando a sessão mudou durante a requisição', async () => {
+		const storage = new Map<string, string>([
+			[AUTH_TOKEN_STORAGE_KEY, 'token-antigo'],
+			[AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh-antigo'],
+			[AUTH_EXPIRES_AT_STORAGE_KEY, String(Date.now() + 5 * 60 * 1000)],
+		]);
+
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) => storage.get(key) ?? null),
+				setItem: vi.fn((key: string, value: string) => {
+					storage.set(key, value);
+				}),
+				removeItem: vi.fn((key: string) => {
+					storage.delete(key);
+				}),
+			},
+		} as unknown as Window);
+
+		axiosPostMock.mockImplementationOnce(async () => {
+			storage.set(AUTH_TOKEN_STORAGE_KEY, 'token-novo-login');
+			storage.set(AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh-novo-login');
+
+			return {
+				data: {
+					id_token: 'token-refresh-antigo',
+					refresh_token: 'refresh-refresh-antigo',
+					expires_in: '7200',
+				},
+			};
+		});
+
+		await expect(refreshStoredAuthToken('firebase-key')).resolves.toBeNull();
+		expect(storage.get(AUTH_TOKEN_STORAGE_KEY)).toBe('token-novo-login');
+		expect(storage.get(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
+			'refresh-novo-login'
+		);
+	});
+
 	it('limpa sessão quando a resposta de refresh não retorna novo token', async () => {
 		const removeItem = vi.fn();
 		vi.stubGlobal('window', {
@@ -249,6 +288,25 @@ describe('authSession', () => {
 		expect(axiosPostMock).not.toHaveBeenCalled();
 	});
 
+	it('descarta sessão legada com apenas token armazenado', async () => {
+		const removeItem = vi.fn();
+
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) =>
+					key === AUTH_TOKEN_STORAGE_KEY ? 'token-legado' : null
+				),
+				removeItem,
+			},
+		} as unknown as Window);
+
+		await expect(resolveValidStoredAuthToken()).resolves.toBeNull();
+		expect(removeItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
+		expect(removeItem).toHaveBeenCalledWith(AUTH_REFRESH_TOKEN_STORAGE_KEY);
+		expect(removeItem).toHaveBeenCalledWith(AUTH_EXPIRES_AT_STORAGE_KEY);
+		expect(removeItem).toHaveBeenCalledWith(AUTH_LAST_ACTIVITY_STORAGE_KEY);
+	});
+
 	it('renova o token quando a expiração está próxima', async () => {
 		const storage = new Map<string, string>();
 		const now = Date.now();
@@ -280,6 +338,64 @@ describe('authSession', () => {
 		});
 
 		await expect(resolveValidStoredAuthToken()).resolves.toBe('token-renovado');
+	});
+
+	it('retorna o token atual se o refresh expirar mas a sessão ainda estiver válida', async () => {
+		const storage = new Map<string, string>();
+		const now = Date.now();
+		vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'firebase-key');
+		vi.useFakeTimers();
+
+		storage.set(AUTH_TOKEN_STORAGE_KEY, 'token-antigo');
+		storage.set(AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh-antigo');
+		storage.set(AUTH_EXPIRES_AT_STORAGE_KEY, String(now + 30 * 1000));
+		storage.set(AUTH_LAST_ACTIVITY_STORAGE_KEY, String(now));
+
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) => storage.get(key) ?? null),
+				setItem: vi.fn((key: string, value: string) => {
+					storage.set(key, value);
+				}),
+				removeItem: vi.fn((key: string) => {
+					storage.delete(key);
+				}),
+			},
+		} as unknown as Window);
+
+		axiosPostMock.mockImplementationOnce(
+			(_url: string, _body: URLSearchParams, config?: { signal?: AbortSignal }) =>
+				new Promise((_, reject) => {
+					config?.signal?.addEventListener('abort', () => {
+						reject(new Error('refresh aborted'));
+					});
+				})
+		);
+
+		const tokenPromise = resolveValidStoredAuthToken();
+		await vi.advanceTimersByTimeAsync(5_000);
+
+		await expect(tokenPromise).resolves.toBe('token-antigo');
+	});
+
+	it('propaga erro quando o refresh falha sem timeout', async () => {
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) => {
+					if (key === AUTH_REFRESH_TOKEN_STORAGE_KEY) return 'refresh-antigo';
+					return null;
+				}),
+				setItem: vi.fn(),
+				removeItem: vi.fn(),
+			},
+		} as unknown as Window);
+
+		const refreshError = new Error('refresh failed');
+		axiosPostMock.mockRejectedValueOnce(refreshError);
+
+		await expect(refreshStoredAuthToken('firebase-key')).rejects.toThrow(
+			'refresh failed'
+		);
 	});
 
 	it('encerra a sessão quando a inatividade passa do limite', async () => {

@@ -1,0 +1,121 @@
+import { describe, expect, it, vi } from 'vitest';
+import { act, render } from '@testing-library/react';
+import { MemoryGame } from './MemoryGame';
+
+const useCharacterMock = vi.fn();
+const useUserMock = vi.fn();
+const useGamesMock = vi.fn();
+const useGameScoreMock = vi.fn();
+const useMemoryGameContentMock = vi.fn();
+const useGamesConfigMock = vi.fn();
+const memoryGameExperienceMock = vi.fn();
+
+vi.mock('@etnos/tools', () => ({
+	useCharacter: (...args: unknown[]) => useCharacterMock(...args),
+	useGames: (...args: unknown[]) => useGamesMock(...args),
+	useGamesConfig: (...args: unknown[]) => useGamesConfigMock(...args),
+	useGameScore: (...args: unknown[]) => useGameScoreMock(...args),
+	useMemoryGameContent: (...args: unknown[]) =>
+		useMemoryGameContentMock(...args),
+}));
+
+vi.mock('@etnos/ui', () => ({
+	useUser: () => useUserMock(),
+}));
+
+vi.mock('./MemoryGameExperience', () => ({
+	MemoryGameExperience: (props: unknown) => {
+		memoryGameExperienceMock(props);
+		return <div data-testid='memory-game-experience' />;
+	},
+}));
+
+describe('MemoryGame', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		useCharacterMock.mockReturnValue({
+			selectedCharacter: { slug: 'anita', name: 'Anita' },
+		});
+		useUserMock.mockReturnValue({
+			user: { uid: 'user-1' },
+		});
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: { score: 300 },
+			refetch: vi.fn(),
+			isLoading: false,
+		});
+		useMemoryGameContentMock.mockReturnValue({
+			data: [{ name: 'chimarrao', image: '/a.jpg' }],
+		});
+		useGamesConfigMock.mockReturnValue({
+			data: [{ characterSlug: 'anita', imageCoverUrl: '/cover-config.jpg' }],
+		});
+	});
+
+	it('monta a experiência com conteúdo, score e cover vindo da configuração', () => {
+		render(<MemoryGame />);
+
+		expect(memoryGameExperienceMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				bestScore: 300,
+				content: [{ name: 'chimarrao', image: '/a.jpg' }],
+				coverImage: '/cover-config.jpg',
+				selectedCharacter: { slug: 'anita', name: 'Anita' },
+			})
+		);
+	});
+
+	it('salva score e faz refetch quando há usuário e personagem', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const refetch = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: { score: 300 },
+			refetch,
+			isLoading: false,
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onSaveScore: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onSaveScore(120);
+		});
+
+		expect(saveGameScore).toHaveBeenCalledWith('memory-game', 'anita', 120);
+		expect(refetch).toHaveBeenCalled();
+	});
+
+	it('usa cover fallback e não salva score sem usuário ou personagem', async () => {
+		useCharacterMock.mockReturnValue({ selectedCharacter: undefined });
+		useUserMock.mockReturnValue({ user: null });
+		useGamesConfigMock.mockReturnValue({ data: undefined });
+
+		render(<MemoryGame characterSlug='zeca' />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			coverImage: string;
+			onSaveScore: (score: number) => Promise<void>;
+		};
+
+		expect(props.coverImage).toBe('/games/memory-game/cover/undefined.jpg');
+
+		await act(async () => {
+			await props.onSaveScore(90);
+		});
+
+		expect(
+			useGamesMock.mock.results[0]?.value.saveGameScore
+		).not.toHaveBeenCalled();
+	});
+});

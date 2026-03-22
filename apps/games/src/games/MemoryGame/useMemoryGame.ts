@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { MemoryGameCard, MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
-import { createMemoryGameDeck, resolveMemoryGameTurn } from './memory-game.utils';
+import type {
+	MemoryGameCard,
+	MemoryGameCardContent,
+	MemoryGameLevelConfig,
+	MemoryGameSound,
+} from './memory-game.types';
+import {
+	createMemoryGameDeck,
+	getMemoryGameLevelConfig,
+	resolveMemoryGameTurn,
+} from './memory-game.utils';
 
 type UseMemoryGameProps = {
 	content: MemoryGameCardContent[];
+	levelConfig?: MemoryGameLevelConfig;
 	matchDelayMs?: number;
 	onPlaySound?: (sound: MemoryGameSound) => void;
 };
@@ -12,6 +22,7 @@ const DEFAULT_MATCH_DELAY_MS = 1000;
 
 export const useMemoryGame = ({
 	content,
+	levelConfig = getMemoryGameLevelConfig(1),
 	matchDelayMs = DEFAULT_MATCH_DELAY_MS,
 	onPlaySound,
 }: UseMemoryGameProps) => {
@@ -92,7 +103,8 @@ export const useMemoryGame = ({
 					nextCards,
 					nextFlippedCards as [number, number],
 					score,
-					consecutiveMatches
+					consecutiveMatches,
+					levelConfig
 				);
 
 				setCards(result.cards);
@@ -120,6 +132,7 @@ export const useMemoryGame = ({
 			flippedCards,
 			isChecking,
 			isFinished,
+			levelConfig,
 			matchDelayMs,
 			onPlaySound,
 			score,

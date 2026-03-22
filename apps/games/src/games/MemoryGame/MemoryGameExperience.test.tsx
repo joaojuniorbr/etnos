@@ -81,12 +81,18 @@ describe('MemoryGameExperience', () => {
 
 		render(
 			<MemoryGameExperience
-				content={[{ name: 'chimarrao', image: '/a.jpg' }]}
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
 				bestScore={180}
 				coverImage='/cover.jpg'
 				selectedCharacter={{ name: 'Anita' } as any}
 			/>
 		);
+
+		fireEvent.click(screen.getByText('Nível 1'));
 
 		expect(screen.getByText('Pontuação')).toBeTruthy();
 		expect(screen.getAllByAltText('Anita')[0]?.getAttribute('src')).toBe(
@@ -120,7 +126,17 @@ describe('MemoryGameExperience', () => {
 			totalPairs: 1,
 		});
 
-		render(<MemoryGameExperience content={[{ name: 'chimarrao', image: '/a.jpg' }]} />);
+		render(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+			/>
+		);
+
+		fireEvent.click(screen.getByText('Nível 1'));
 
 		expect(screen.getByAltText('Carta virada').getAttribute('src')).toBeNull();
 	});
@@ -141,16 +157,52 @@ describe('MemoryGameExperience', () => {
 
 		render(
 			<MemoryGameExperience
-				content={[]}
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
 				onSaveScore={onSaveScore}
 				selectedCharacter={{ name: 'Anita' } as any}
 			/>
 		);
 
+		fireEvent.click(screen.getByText('Nível 1'));
 		fireEvent.click(screen.getByText('restart'));
 		fireEvent.click(screen.getByText('save'));
 
 		expect(initializeGame).toHaveBeenCalledTimes(1);
 		expect(onSaveScore).toHaveBeenCalledWith(120);
+	});
+
+	it('exibe botoes de nivel antes de iniciar o jogo', () => {
+		useMemoryGameMock.mockReturnValue({
+			cards: [],
+			handleCardClick: vi.fn(),
+			initializeGame: vi.fn(),
+			isFinished: false,
+			matchedPairs: 0,
+			moves: 0,
+			score: 0,
+			totalPairs: 0,
+		});
+
+		render(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+					{ name: 'bolo', image: '/d.jpg' },
+					{ name: 'erva', image: '/e.jpg' },
+					{ name: 'tambor', image: '/f.jpg' },
+				]}
+			/>
+		);
+
+		expect(screen.getByText('Escolha o nível para começar')).toBeTruthy();
+		expect(screen.getByText('Nível 1')).toBeTruthy();
+		expect(screen.getByText('Nível 2')).toBeTruthy();
+		expect(screen.queryByText('Nível 3')).toBeNull();
 	});
 });

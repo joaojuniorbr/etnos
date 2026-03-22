@@ -1,11 +1,13 @@
 import type {
 	MemoryGameCard,
 	MemoryGameCardContent,
+	MemoryGameLevel,
+	MemoryGameLevelConfig,
 } from './memory-game.types';
 
-const POINT_BONUS = 50;
-const POINT_PENALTY = 50;
-const POINT_ADDITION = 100;
+const MEMORY_GAME_LEVEL_PAIR_STEP = 3;
+const MEMORY_GAME_LEVEL_BONUS_STEP = 50;
+const MEMORY_GAME_LEVEL_SCORE_STEP = 100;
 
 export const shuffleArray = <T>(array: T[]): T[] => {
 	const shuffled = [...array];
@@ -41,11 +43,38 @@ export const createMemoryGameDeck = (
 		])
 	);
 
+export const getMemoryGameLevelConfig = (
+	level: MemoryGameLevel
+): MemoryGameLevelConfig => ({
+	level,
+	label: `Nível ${level}`,
+	pairs: level * MEMORY_GAME_LEVEL_PAIR_STEP,
+	pointBonus: level * MEMORY_GAME_LEVEL_BONUS_STEP,
+	pointPenalty: level * MEMORY_GAME_LEVEL_BONUS_STEP,
+	pointAddition: level * MEMORY_GAME_LEVEL_SCORE_STEP,
+});
+
+export const getAvailableMemoryGameLevels = (contentCount: number) =>
+	Array.from(
+		{ length: Math.floor(contentCount / MEMORY_GAME_LEVEL_PAIR_STEP) },
+		(_, index) => getMemoryGameLevelConfig((index + 1) as MemoryGameLevel)
+	);
+
+export const getMemoryGameLevelContent = (
+	content: MemoryGameCardContent[],
+	level: MemoryGameLevel,
+	shuffle: <T>(items: T[]) => T[] = shuffleArray
+) => shuffle(content).slice(0, getMemoryGameLevelConfig(level).pairs);
+
 export const resolveMemoryGameTurn = (
 	cards: MemoryGameCard[],
 	flippedCardIds: [number, number],
 	score: number,
-	consecutiveMatches: number
+	consecutiveMatches: number,
+	levelConfig: Pick<
+		MemoryGameLevelConfig,
+		'pointAddition' | 'pointBonus' | 'pointPenalty'
+	>
 ) => {
 	const [firstId, secondId] = flippedCardIds;
 	const firstCard = cards.find((card) => card.id === firstId);
@@ -58,7 +87,8 @@ export const resolveMemoryGameTurn = (
 				: card
 		);
 		const nextConsecutiveMatches = consecutiveMatches + 1;
-		const pointsEarned = POINT_ADDITION + consecutiveMatches * POINT_BONUS;
+		const pointsEarned =
+			levelConfig.pointAddition + consecutiveMatches * levelConfig.pointBonus;
 
 		return {
 			cards: matchedCards,
@@ -75,7 +105,7 @@ export const resolveMemoryGameTurn = (
 				? { ...card, isFlipped: false }
 				: card
 		),
-		score: score - POINT_PENALTY,
+		score: score - levelConfig.pointPenalty,
 		isFinished: false,
 		isMatch: false,
 		consecutiveMatches: 0,

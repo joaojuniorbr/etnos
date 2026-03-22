@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import {
 	RiArrowLeftRightFill,
 	RiCheckDoubleLine,
@@ -9,9 +10,19 @@ import {
 import { Spin } from 'antd';
 import Image from 'next/image';
 import { FinishGame, ScoreHighlight } from '../../components';
+import { MemoryGameLevelSelector } from './MemoryGameLevelSelector';
 import { useMemoryGame } from './useMemoryGame';
-import { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
+import {
+	MemoryGameCardContent,
+	MemoryGameLevel,
+	MemoryGameSound,
+} from './memory-game.types';
 import { CharacterInterface } from '@etnos/types';
+import {
+	getAvailableMemoryGameLevels,
+	getMemoryGameLevelConfig,
+	getMemoryGameLevelContent,
+} from './memory-game.utils';
 
 type MemoryGameExperienceProps = {
 	content: MemoryGameCardContent[];
@@ -34,6 +45,37 @@ export const MemoryGameExperience = ({
 	onSaveScore,
 	selectedCharacter,
 }: MemoryGameExperienceProps) => {
+	const availableLevels = useMemo(
+		() => getAvailableMemoryGameLevels(content.length),
+		[content.length]
+	);
+	const [selectedLevel, setSelectedLevel] = useState<MemoryGameLevel | null>(
+		null
+	);
+	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
+
+	useEffect(() => {
+		if (!availableLevels.length) {
+			setSelectedLevel(null);
+			setLevelContent([]);
+			return;
+		}
+
+		setSelectedLevel((currentLevel) => {
+			if (!currentLevel) {
+				return null;
+			}
+
+			return availableLevels.some((level) => level.level === currentLevel)
+				? currentLevel
+				: null;
+		});
+	}, [availableLevels]);
+
+	const currentLevelConfig = selectedLevel
+		? getMemoryGameLevelConfig(selectedLevel)
+		: undefined;
+
 	const {
 		cards,
 		handleCardClick,
@@ -44,12 +86,22 @@ export const MemoryGameExperience = ({
 		score,
 		totalPairs,
 	} = useMemoryGame({
-		content,
+		content: levelContent,
+		levelConfig: currentLevelConfig,
 		matchDelayMs,
 		onPlaySound,
 	});
 
+	const handleSelectLevel = (level: MemoryGameLevel) => {
+		setSelectedLevel(level);
+		setLevelContent(getMemoryGameLevelContent(content, level));
+	};
+
 	const handleRestart = () => {
+		if (selectedLevel) {
+			setLevelContent(getMemoryGameLevelContent(content, selectedLevel));
+		}
+
 		initializeGame();
 	};
 
@@ -89,7 +141,14 @@ export const MemoryGameExperience = ({
 					</div>
 				</div>
 
-				{isFinished ? (
+				{!selectedLevel ? (
+					<MemoryGameLevelSelector
+						availableLevels={availableLevels}
+						content={content}
+						onSelectLevel={handleSelectLevel}
+						selectedCharacter={selectedCharacter}
+					/>
+				) : isFinished ? (
 					<FinishGame
 						selectedCharacter={selectedCharacter}
 						isLoading={isLoading}

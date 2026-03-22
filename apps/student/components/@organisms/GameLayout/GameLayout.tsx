@@ -2,9 +2,7 @@ import { Breadcrumb, BreadcrumbProps } from 'antd';
 import { Games, GameType } from '../../@molecules';
 
 export type GamePageParams = {
-	searchParams:
-		| { [key: string]: string | undefined }
-		| Promise<{ [key: string]: string | undefined }>;
+	searchParams?: Promise<{ [key: string]: string | undefined }>;
 };
 
 type GameLayoutProps = {
@@ -18,7 +16,7 @@ export const GameLayout = async ({
 	breadcrumbTitle,
 	params,
 }: GameLayoutProps) => {
-	const resolvedParams = params instanceof Promise ? await params : params;
+	const resolvedParams = params ? await params : undefined;
 	const character = resolvedParams?.personagem;
 
 	const breadcrumbItems: BreadcrumbProps['items'] = [

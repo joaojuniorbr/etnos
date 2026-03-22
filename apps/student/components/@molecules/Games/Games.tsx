@@ -1,6 +1,26 @@
 'use client';
 
-import { MemoryGame, GuessGame } from '@etnos/games';
+import dynamic from 'next/dynamic';
+
+const GuessGame = dynamic(
+	() => import('@etnos/games/guess-game').then((module) => module.GuessGame),
+	{
+		ssr: false,
+		loading: () => (
+			<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
+		),
+	}
+);
+
+const MemoryGame = dynamic(
+	() => import('@etnos/games/memory-game').then((module) => module.MemoryGame),
+	{
+		ssr: false,
+		loading: () => (
+			<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
+		),
+	}
+);
 
 export type GameType = 'memory-game' | 'guess-game';
 

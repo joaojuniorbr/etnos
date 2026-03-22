@@ -14,6 +14,16 @@
 			"require": "./dist/index.js",
 			"types": "./dist/index.d.ts"
 		},
+		"./guess-game": {
+			"import": "./dist/games/GuessGame/index.js",
+			"require": "./dist/games/GuessGame/index.js",
+			"types": "./dist/games/GuessGame/index.d.ts"
+		},
+		"./memory-game": {
+			"import": "./dist/games/MemoryGame/index.js",
+			"require": "./dist/games/MemoryGame/index.js",
+			"types": "./dist/games/MemoryGame/index.d.ts"
+		},
 		"./styles.css": "./dist/index.css"
 	},
 	"scripts": {

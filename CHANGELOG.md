@@ -1,3 +1,53 @@
+# [1.3.0](https://github.com/joaojuniorbr/etnos/compare/v1.2.2...v1.3.0) (2026-03-22)
+
+### controle de sessão
+
+#### 🔨 Refatoração
+
+* [86afpzyfr] Otimização de Assets e Controle de Sessão ([25d1f76](https://github.com/joaojuniorbr/etnos/commit/25d1f7649ad1ddb38acb1dd0db93d760a645a1ee))
+
+### jogos
+
+#### 🔨 Refatoração
+
+* [86afpzy8n] Desenvolver Jogo da Memória - Temática Diversidade ([5bfe34a](https://github.com/joaojuniorbr/etnos/commit/5bfe34a2dd25bbec09caf0df944637de1c65795a))
+
+### página
+
+#### ✨ Features (Novidades)
+
+* adiciona a interface da página não encontrada ([c86ddf3](https://github.com/joaojuniorbr/etnos/commit/c86ddf31607a43455e0bd591bf2ed22b798d8d4c))
+
+#### 🔀 Merges
+
+* [CU-86ag5za59] adiciona a interface da página não encontrada ([d8477d3](https://github.com/joaojuniorbr/etnos/commit/d8477d3aac2148727eff3b06ad558902b92978ad))
+
+### personagem
+
+#### 🔨 Refatoração
+
+* implementar Seleção de Personagem ([aa7f0cf](https://github.com/joaojuniorbr/etnos/commit/aa7f0cf233d27f62d1a2d44a712ff44cc92a22a4))
+
+#### 🔀 Merges
+
+* [CU-86afpzyag] implementar Seleção de Personagem ([53fb609](https://github.com/joaojuniorbr/etnos/commit/53fb6091aacbcd30ee8ce98b97c6cf873f759c64))
+
+### recuperacao de senha
+
+#### ✨ Features (Novidades)
+
+* [86afpzydt] Fluxo de Recuperação de Senha ([0f0189a](https://github.com/joaojuniorbr/etnos/commit/0f0189a7ae7ae1f620677fe5a1d1bbeb473e492e))
+
+#### 🔀 Merges
+
+* [86afpzydt] Fluxo de Recuperação de Senha ([4d695d2](https://github.com/joaojuniorbr/etnos/commit/4d695d28ff4e95e4ad8994f9458dd06a1d863ba4))
+
+### sprint
+
+#### 🔀 Merges
+
+* Sprint 2 ([92c06b0](https://github.com/joaojuniorbr/etnos/commit/92c06b00cf93fbb5b64b7816793ffe261ba51c55))
+
 ## [1.2.2](https://github.com/joaojuniorbr/etnos/compare/v1.2.1...v1.2.2) (2026-03-17)
 
 ### database

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth';
 import { FirebaseModule } from './firebase';
@@ -9,9 +10,11 @@ import { EmailModule } from './email/email.module';
 import { SchoolsModule } from './schools/schools.module';
 import { MidiaModule } from './midia/midia.module';
 import { PrismaModule } from './prisma';
+import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -26,6 +29,11 @@ import { PrismaModule } from './prisma';
     MidiaModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+  ],
 })
 export class AppModule {}

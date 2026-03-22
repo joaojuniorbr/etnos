@@ -1,13 +1,38 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import './instrument';
+
+const getReleaseVersion = () => {
+  try {
+    const packageJsonPath = resolve(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'package.json',
+    );
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+      version?: string;
+    };
+
+    return packageJson.version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+};
+
+const releaseVersion = getReleaseVersion();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
     .setTitle('Etnos')
-    .setVersion('0.0.1')
+    .setVersion(releaseVersion)
     .addBearerAuth()
     .build();
 

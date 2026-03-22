@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { logger } from '@sentry/nestjs';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import { PrismaService } from 'src/prisma';
@@ -32,7 +33,9 @@ export class AuthService {
     });
   }
 
-  private mapProfile(profile: Awaited<ReturnType<AuthService['findProfileByFirebaseUid']>>) {
+  private mapProfile(
+    profile: Awaited<ReturnType<AuthService['findProfileByFirebaseUid']>>,
+  ) {
     if (!profile) {
       return null;
     }
@@ -93,7 +96,9 @@ export class AuthService {
     try {
       const decoded = await admin.auth().verifyIdToken(idToken, true);
       const userRecord = await admin.auth().getUser(decoded.uid);
-      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
+      const existingProfile = await this.findProfileByFirebaseUid(
+        userRecord.uid,
+      );
 
       if (!existingProfile) {
         await this.prismaService.user.create({
@@ -150,7 +155,9 @@ export class AuthService {
         userRecord = await admin.auth().getUserByEmail(data.email);
       }
 
-      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
+      const existingProfile = await this.findProfileByFirebaseUid(
+        userRecord.uid,
+      );
 
       if (existingProfile) {
         throw new UnauthorizedException('Email já cadastrado');
@@ -199,6 +206,8 @@ export class AuthService {
         },
       );
 
+      logger.info('sendRecoveryEmail', { email });
+
       return true;
     } catch {
       throw new UnauthorizedException('Não foi possível enviar o e-mail');
@@ -207,6 +216,7 @@ export class AuthService {
 
   async getProfile(id: string) {
     const data = await this.findProfileByFirebaseUid(id);
+    logger.info('getProfile', { id, data });
     return this.mapProfile(data);
   }
 

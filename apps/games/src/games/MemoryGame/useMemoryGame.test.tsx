@@ -93,6 +93,57 @@ describe('useMemoryGame', () => {
 		expect(onPlaySound).toHaveBeenCalledWith('finish');
 	});
 
+	it('aumenta a pontuacao com bonus de acertos consecutivos', async () => {
+		render(
+			<Harness
+				content={[
+					{ name: 'chimarrao', image: '/chimarrao.jpg' },
+					{ name: 'churrasco', image: '/churrasco.jpg' },
+				]}
+				matchDelayMs={1}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('cards-count').textContent).toBe('4');
+		});
+
+		const cards = screen
+			.getAllByRole('button')
+			.filter((button) => button !== screen.getByText('restart'));
+		const firstPairFirstCard = cards[0]!;
+		const firstPairSecondCard = cards.find(
+			(button, index) =>
+				index !== 0 &&
+				button.getAttribute('data-name') ===
+					firstPairFirstCard.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(firstPairFirstCard);
+		fireEvent.click(firstPairSecondCard);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('score').textContent).toBe('100');
+		});
+
+		const remainingCards = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button !== screen.getByText('restart') &&
+					button.getAttribute('data-name') !==
+						firstPairFirstCard.getAttribute('data-name')
+			);
+
+		fireEvent.click(remainingCards[0]!);
+		fireEvent.click(remainingCards[1]!);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('score').textContent).toBe('250');
+			expect(screen.getByTestId('isFinished').textContent).toBe('true');
+		});
+	});
+
 	it('nao toca finish quando o acerto ainda nao encerra a partida', async () => {
 		const onPlaySound = vi.fn();
 
@@ -133,7 +184,7 @@ describe('useMemoryGame', () => {
 		expect(onPlaySound).not.toHaveBeenCalledWith('finish');
 	});
 
-	it('ignora clique inválido e desfaz par incorreto com erro', async () => {
+	it('ignora clique inválido, desfaz par incorreto com erro e permite score negativo', async () => {
 		const onPlaySound = vi.fn();
 
 		render(
@@ -156,7 +207,8 @@ describe('useMemoryGame', () => {
 			.filter((button) => button !== screen.getByText('restart'));
 		const firstCard = cards[0]!;
 		const mismatchCard = cards.find(
-			(button) => button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
+			(button) =>
+				button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
 		)!;
 
 		fireEvent.click(firstCard);
@@ -164,12 +216,89 @@ describe('useMemoryGame', () => {
 
 		await waitFor(() => {
 			expect(screen.getByTestId('moves').textContent).toBe('1');
-			expect(screen.getByTestId('score').textContent).toBe('0');
+			expect(screen.getByTestId('score').textContent).toBe('-50');
 			expect(firstCard.getAttribute('data-flipped')).toBe('false');
 			expect(mismatchCard.getAttribute('data-flipped')).toBe('false');
 		});
 
 		expect(onPlaySound).toHaveBeenCalledWith('error');
+	});
+
+	it('reseta o bonus depois de um erro', async () => {
+		render(
+			<Harness
+				content={[
+					{ name: 'chimarrao', image: '/chimarrao.jpg' },
+					{ name: 'churrasco', image: '/churrasco.jpg' },
+					{ name: 'cafe', image: '/cafe.jpg' },
+				]}
+				matchDelayMs={1}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('cards-count').textContent).toBe('6');
+		});
+
+		const gameCards = () =>
+			screen
+				.getAllByRole('button')
+				.filter((button) => button !== screen.getByText('restart'));
+
+		const firstCards = gameCards();
+		const firstMatchFirst = firstCards[0]!;
+		const firstMatchSecond = firstCards.find(
+			(button, index) =>
+				index !== 0 &&
+				button.getAttribute('data-name') ===
+					firstMatchFirst.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(firstMatchFirst);
+		fireEvent.click(firstMatchSecond);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('score').textContent).toBe('100');
+		});
+
+		const cardsAfterFirstMatch = gameCards().filter(
+			(button) =>
+				button.getAttribute('data-name') !==
+				firstMatchFirst.getAttribute('data-name')
+		);
+		const mismatchFirst = cardsAfterFirstMatch[0]!;
+		const mismatchSecond = cardsAfterFirstMatch.find(
+			(button) =>
+				button.getAttribute('data-name') !==
+				mismatchFirst.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(mismatchFirst);
+		fireEvent.click(mismatchSecond);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('score').textContent).toBe('50');
+		});
+
+		const cardsAfterMismatch = gameCards().filter(
+			(button) =>
+				button.getAttribute('data-name') !==
+				firstMatchFirst.getAttribute('data-name')
+		);
+		const secondMatchFirst = cardsAfterMismatch[0]!;
+		const secondMatchSecond = cardsAfterMismatch.find(
+			(button, index) =>
+				index !== 0 &&
+				button.getAttribute('data-name') ===
+					secondMatchFirst.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(secondMatchFirst);
+		fireEvent.click(secondMatchSecond);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('score').textContent).toBe('150');
+		});
 	});
 
 	it('reinicia o jogo limpando estado acumulado', async () => {
@@ -242,7 +371,8 @@ describe('useMemoryGame', () => {
 			.filter((button) => button !== screen.getByText('restart'));
 		const firstCard = cards[0]!;
 		const mismatchCard = cards.find(
-			(button) => button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
+			(button) =>
+				button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
 		)!;
 
 		fireEvent.click(firstCard);

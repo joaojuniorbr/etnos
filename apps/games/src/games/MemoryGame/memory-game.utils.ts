@@ -1,6 +1,13 @@
-import type { MemoryGameCard, MemoryGameCardContent } from './memory-game.types';
+import type {
+	MemoryGameCard,
+	MemoryGameCardContent,
+} from './memory-game.types';
 
-export const shuffleArray = <T,>(array: T[]): T[] => {
+const POINT_BONUS = 50;
+const POINT_PENALTY = 50;
+const POINT_ADDITION = 100;
+
+export const shuffleArray = <T>(array: T[]): T[] => {
 	const shuffled = [...array];
 
 	if (shuffled.length <= 1) {
@@ -25,7 +32,7 @@ export const shuffleArray = <T,>(array: T[]): T[] => {
 
 export const createMemoryGameDeck = (
 	content: MemoryGameCardContent[],
-	shuffle: <T,>(items: T[]) => T[] = shuffleArray
+	shuffle: <T>(items: T[]) => T[] = shuffleArray
 ): MemoryGameCard[] =>
 	shuffle(
 		content.flatMap((card, index) => [
@@ -37,7 +44,8 @@ export const createMemoryGameDeck = (
 export const resolveMemoryGameTurn = (
 	cards: MemoryGameCard[],
 	flippedCardIds: [number, number],
-	score: number
+	score: number,
+	consecutiveMatches: number
 ) => {
 	const [firstId, secondId] = flippedCardIds;
 	const firstCard = cards.find((card) => card.id === firstId);
@@ -49,12 +57,15 @@ export const resolveMemoryGameTurn = (
 				? { ...card, isMatched: true }
 				: card
 		);
+		const nextConsecutiveMatches = consecutiveMatches + 1;
+		const pointsEarned = POINT_ADDITION + consecutiveMatches * POINT_BONUS;
 
 		return {
 			cards: matchedCards,
-			score: score + 100,
+			score: score + pointsEarned,
 			isFinished: matchedCards.every((card) => card.isMatched),
 			isMatch: true,
+			consecutiveMatches: nextConsecutiveMatches,
 		};
 	}
 
@@ -64,8 +75,9 @@ export const resolveMemoryGameTurn = (
 				? { ...card, isFlipped: false }
 				: card
 		),
-		score: Math.max(0, score - 10),
+		score: score - POINT_PENALTY,
 		isFinished: false,
 		isMatch: false,
+		consecutiveMatches: 0,
 	};
 };

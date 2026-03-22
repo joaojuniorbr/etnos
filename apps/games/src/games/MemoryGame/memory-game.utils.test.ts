@@ -63,11 +63,12 @@ describe('memory-game utils', () => {
 			},
 		];
 
-		const result = resolveMemoryGameTurn(cards, [1, 2], 0);
+		const result = resolveMemoryGameTurn(cards, [1, 2], 0, 0);
 
 		expect(result.isMatch).toBe(true);
 		expect(result.score).toBe(100);
 		expect(result.isFinished).toBe(true);
+		expect(result.consecutiveMatches).toBe(1);
 		expect(result.cards.every((card) => card.isMatched)).toBe(true);
 	});
 
@@ -96,12 +97,36 @@ describe('memory-game utils', () => {
 			},
 		];
 
-		const result = resolveMemoryGameTurn(cards, [1, 2], 0);
+		const result = resolveMemoryGameTurn(cards, [1, 2], 0, 0);
 
 		expect(result.cards.find((card) => card.id === 3)?.isMatched).toBe(false);
 	});
 
-	it('desvira um par incorreto e impede score negativo', () => {
+	it('aplica bonus de combo em acertos consecutivos', () => {
+		const cards: MemoryGameCard[] = [
+			{
+				id: 1,
+				name: 'chimarrao',
+				image: '/a.jpg',
+				isFlipped: true,
+				isMatched: false,
+			},
+			{
+				id: 2,
+				name: 'chimarrao',
+				image: '/a.jpg',
+				isFlipped: true,
+				isMatched: false,
+			},
+		];
+
+		const result = resolveMemoryGameTurn(cards, [1, 2], 100, 1);
+
+		expect(result.score).toBe(250);
+		expect(result.consecutiveMatches).toBe(2);
+	});
+
+	it('desvira um par incorreto, desconta pontos e reseta o combo', () => {
 		const cards: MemoryGameCard[] = [
 			{
 				id: 1,
@@ -119,11 +144,12 @@ describe('memory-game utils', () => {
 			},
 		];
 
-		const result = resolveMemoryGameTurn(cards, [1, 2], 0);
+		const result = resolveMemoryGameTurn(cards, [1, 2], 0, 3);
 
 		expect(result.isMatch).toBe(false);
-		expect(result.score).toBe(0);
+		expect(result.score).toBe(-50);
 		expect(result.isFinished).toBe(false);
+		expect(result.consecutiveMatches).toBe(0);
 		expect(
 			result.cards.every((card) => !card.isFlipped && !card.isMatched)
 		).toBe(true);

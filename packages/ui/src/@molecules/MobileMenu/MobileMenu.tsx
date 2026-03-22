@@ -78,7 +78,10 @@ export const MobileMenu = ({
 								<div className='ui:flex ui:gap-4 ui:items-center ui:mb-4'>
 									<div className='ui:w-20'>
 										<Image
-											src={`/images/character/md/${selectedCharacter.slug}.png`}
+											src={
+												selectedCharacter.imageUrl ||
+												`/images/character/md/${selectedCharacter.slug}.png`
+											}
 											alt={selectedCharacter.name}
 											preview={false}
 										/>

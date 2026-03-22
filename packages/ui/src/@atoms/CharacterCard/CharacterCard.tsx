@@ -18,10 +18,10 @@ export const CharacterCard = ({
 		{...props}
 	>
 		<Image
-			src={`/images/character/md/${character.slug}.png`}
+			src={character.imageUrl || `/images/character/md/${character.slug}.png`}
 			alt={character.name}
-			width={80}
-			height={80}
+			width={150}
+			height={150}
 			className='ui:w-28 ui:h-28 md:ui:w-24 md:ui:h-24'
 		/>
 		<dl className='ui:flex ui:flex-col ui:text-left ui:w-full ui:pr-4'>

@@ -1,6 +1,10 @@
-# Etnos - Plataforma Educacional de Jogos Culturais
+![Etnos](./docs-site/docs/files/github-cover.jpg)
 
-> Uma plataforma educacional feita para crianças de **10 a 12 anos**, que usa **jogos interativos** para ensinar sobre a incrível diversidade cultural brasileira 🇧🇷✨
+# Etnos
+
+Plataforma educacional com jogos culturais para estudantes do ensino
+fundamental, organizada como monorepo com apps web, API, biblioteca de jogos e
+pacotes compartilhados.
 
 [![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](./CHANGELOG.md)
 ![Node](https://img.shields.io/badge/Node-%3E%3D20-green)
@@ -10,111 +14,55 @@
 
 ---
 
-## 📖 Sobre o Projeto
+## Visao geral
 
-O **Etnos** é um monorepo moderno, escalável e organizado com muito carinho 💙
-Construído com **Turborepo + TypeScript + Next.js + NestJS**, ele reúne várias aplicações e pacotes compartilhados em um único repositório.
+O repositorio reune as camadas que sustentam a experiencia do Etnos:
 
-A missão? 🎯
-Transformar aprendizado cultural em uma experiência divertida, gamificada e envolvente!
+- `apps/web`: site institucional.
+- `apps/student`: portal do estudante, onde os jogos sao acessados.
+- `apps/admin`: painel administrativo para gestao de conteudo.
+- `apps/api`: API REST com NestJS.
+- `apps/games`: biblioteca React de jogos reutilizaveis.
+- `apps/docs`: Storybook de componentes.
+- `docs-site`: documentacao em MkDocs.
 
----
+## Jogos atuais
 
-## 🧩 O que faz parte do Etnos?
+- `guess-game`: jogo de adivinhacao com dicas e pontuacao.
+- `memory-game`: jogo da memoria configuravel por personagem, com capa, conteudo
+  dinamico e persistencia de recorde.
 
-### 🖥️ Aplicações
+O jogo da memoria hoje envolve quatro camadas do monorepo:
 
-* 🌐 **Site Institucional (`web`)** — Apresentação pública da plataforma
-* 🛠️ **Painel Administrativo (`admin`)** — Gerenciamento de usuários, jogos e conteúdos
-* 🎒 **Portal do Estudante (`student`)** — Área onde as crianças jogam e aprendem
-* 🔐 **API REST (`api`)** — Backend com NestJS + Firebase
-* 🎮 **Biblioteca de Jogos (`games`)** — Jogos educacionais em React
-* 📚 **Storybook (`docs`)** — Documentação interativa de componentes
+- `apps/student` renderiza a experiencia do aluno;
+- `apps/games` concentra a logica e a UI do jogo;
+- `apps/admin` cadastra capa e imagens das cartas;
+- `apps/api` persiste configuracoes, conteudo e score.
 
----
+## Stack principal
 
-## 🚀 Stack Tecnológica
+- Frontend: Next.js, React 19, TypeScript, Tailwind CSS, Ant Design.
+- Backend: NestJS, Firebase Auth, Prisma.
+- Monorepo: Turborepo, Yarn Workspaces.
+- Testes: Vitest, Testing Library, Jest, Playwright.
 
-### 🎨 Frontend
+## Requisitos
 
-* Next.js 16
-* React 19
-* TypeScript 5.9.2
-* Tailwind CSS
-* Ant Design
-* Firebase SDK
-* React Query (@tanstack/react-query)
-* Swiper
+- Node.js >= 18
+- Yarn >= 1.22.19
 
-### ⚙️ Backend
-
-* NestJS
-* Express
-* Passport.js (JWT Firebase)
-* Firebase Admin SDK
-* Firestore
-
-### 🧠 Monorepo & Build
-
-* Turborepo 2.7
-* Yarn Workspaces
-* TypeScript compartilhado
-
-### 🧪 Testes
-
-* Vitest
-* Testing Library
-* Playwright
-* Jest (backend)
-* jsdom
-
-### 🔎 Qualidade & DevOps
-
-* ESLint
-* Prettier
-* Husky
-* CommitLint
-* Docker
-* Google Cloud Build
-* Google Cloud Run
-* Vercel
-* SonarQube
-* Semantic Release
-* Chromatic
-
----
-
-## 📦 Requisitos
-
-Antes de começar, você vai precisar de:
-
-* Node.js >= 18
-* Yarn >= 1.22.19
-* Git
-* Docker (opcional)
-
----
-
-## 🛠️ Primeiros Passos
-
-### 1️⃣ Clonar o repositório
+## Primeiros passos
 
 ```bash
 git clone https://github.com/joaojuniorbr/etnos.git
 cd etnos
-```
-
-### 2️⃣ Instalar as dependências
-
-```bash
 yarn install
 ```
 
-### 3️⃣ Configurar variáveis de ambiente
+Configure os arquivos de ambiente das aplicacoes Next.js com `.env.local` e da
+API com `.env`.
 
-Crie os arquivos `.env.local` em cada app (`web`, `admin`, `student`) e `.env` na `api`.
-
-Exemplo:
+Exemplo para frontend:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3333
@@ -122,7 +70,7 @@ NEXT_PUBLIC_FIREBASE_API_KEY=your_key
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
 ```
 
-Na API:
+Exemplo para API:
 
 ```env
 NODE_ENV=development
@@ -132,208 +80,82 @@ FIREBASE_PRIVATE_KEY=your_private_key
 FIREBASE_CLIENT_EMAIL=your_email
 ```
 
----
+## Desenvolvimento
 
-### 4️⃣ Rodar o projeto
+Para subir o monorepo:
 
 ```bash
 yarn dev
 ```
 
-Isso sobe tudo ao mesmo tempo 🚀
+Entradas locais principais:
 
-Acesse:
+- `http://localhost:3000`: web
+- `http://localhost:3001`: admin
+- `http://localhost:3002`: student
+- `http://localhost:3333`: api
+- `http://localhost:6006`: Storybook
 
-* 🌐 Web → [http://localhost:3000](http://localhost:3000)
-* 🛠️ Admin → [http://localhost:3001](http://localhost:3001)
-* 🎒 Student → [http://localhost:3002](http://localhost:3002)
-* 🔐 API → [http://localhost:3333](http://localhost:3333)
-* 📚 Storybook → [http://localhost:6006](http://localhost:6006)
+## Estrutura
 
----
-
-## 🗂️ Estrutura do Projeto
-
-```
+```text
 etnos/
-├── apps/
-│   ├── web/
-│   ├── admin/
-│   ├── student/
-│   ├── api/
-│   ├── games/
-│   └── docs/
-│
-├── packages/
-│   ├── ui/
-│   ├── tools/
-│   ├── eslint-config/
-│   ├── typescript-config/
-│   └── tailwind-config/
-│
-├── docs-site/
-├── turbo.json
-├── package.json
-└── README.md
+  apps/
+    admin/
+    api/
+    docs/
+    games/
+    student/
+    web/
+  docs-site/
+  packages/
+    eslint-config/
+    tools/
+    types/
+    ui/
 ```
 
-Organização é tudo por aqui 😌✨
+## Fluxo de jogos
 
----
+O catalogo de jogos e definido em `packages/tools`, o `student` escolhe o jogo
+pela rota, e a renderizacao fica a cargo da biblioteca `@etnos/games`.
 
-## 🎮 Desenvolvendo Jogos
+No caso do `memory-game`, o fluxo completo funciona assim:
 
-Os jogos vivem em `apps/games` e são consumidos pelo `student`.
+1. o estudante acessa a rota do jogo com o personagem selecionado;
+2. `apps/games` busca configuracao visual, cartas e recorde;
+3. `packages/tools` consulta a API;
+4. `apps/api` devolve configuracoes e salva o score;
+5. `apps/admin` permite editar capa e imagens do baralho.
 
-Exemplo básico:
-
-```tsx
-interface MyGameProps {
-  characterId: string;
-  onComplete?: (score: number) => void;
-}
-
-export const MyGame = ({ characterId, onComplete }: MyGameProps) => {
-  return <div>Meu Jogo 🎉</div>;
-};
-```
-
-### ➕ Para adicionar um novo jogo:
-
-1. Criar a pasta em `apps/games/src/games`
-2. Exportar no `index.ts`
-3. Criar rota no `student`
-4. Registrar no painel admin
-
-Simples, direto e organizado ✅
-
----
-
-## 🧪 Testes
-
-Rodar todos:
+## Scripts uteis
 
 ```bash
-yarn test
-```
-
-Modo watch:
-
-```bash
-yarn test -- --watch
-```
-
-Com cobertura:
-
-```bash
-yarn test -- --coverage
-```
-
-Meta recomendada: **+80% de cobertura** 📊✨
-
----
-
-## 📚 Storybook
-
-Rodar local:
-
-```bash
-yarn dev --filter=@etnos/docs
-```
-
-Acesse em:
-
-```
-http://localhost:6006
-```
-
-Publicação automática via Chromatic 🚀
-
----
-
-## 🚀 Deploy
-
-### 🌐 Apps Next.js
-
-Deploy automático via **Vercel** ao fazer push na `main`.
-
-### 🔐 API
-
-Containerizada com Docker e publicada no **Google Cloud Run** via Cloud Build.
-
----
-
-## 🔧 Problemas Comuns
-
-### Porta já está em uso
-
-```bash
-lsof -i :3000
-kill -9 <PID>
-```
-
-### Limpar cache do Turborepo
-
-```bash
-rm -rf .turbo
+yarn dev
 yarn build
+yarn lint
+yarn test
+yarn check-types
 ```
 
-### Reinstalar dependências
+## Documentacao
 
-```bash
-rm -rf node_modules
-rm yarn.lock
-yarn install
+- Documentacao tecnica geral: `docs-site/`
+- Storybook de componentes: `apps/docs/`
+- Arquitetura dos jogos: `docs-site/docs/games-architecture.md`
+
+## Contribuicao
+
+O projeto segue Conventional Commits.
+
+Exemplos:
+
+```text
+feat: adiciona novo jogo
+fix: corrige score do memory-game
+docs: atualiza arquitetura dos jogos
 ```
 
----
+## Licenca
 
-## 🧾 Convenções do Projeto
-
-### 📝 Commits
-
-Seguimos **Conventional Commits**:
-
-```
-feat: novo jogo
-fix: corrigir autenticação
-docs: atualizar README
-refactor: melhorar estrutura
-```
-
-Use:
-
-```bash
-yarn commit
-```
-
----
-
-## 🔢 Versionamento
-
-* Padrão: `MAJOR.MINOR.PATCH`
-* Release automática com `semantic-release`
-* Publicação ao fazer merge na `main`
-
----
-
-## 🤝 Contribuindo
-
-1. Crie uma branch
-2. Faça seus commits (`yarn commit`)
-3. Push para o repositório
-4. Abra um Pull Request 🚀
-
----
-
-## 📄 Licença
-
-UNLICENSED
-Todos os direitos reservados.
-
----
-
-## ✨ Versão Atual
-Veja todas as mudanças em:
-📄 `CHANGELOG.md`
+`UNLICENSED`

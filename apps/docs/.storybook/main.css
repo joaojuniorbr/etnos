@@ -8,4 +8,5 @@
 }
 
 @source "../stories/**/*.{js,jsx,ts,tsx,mdx}";
+@source "../../../apps/games/src/**/*.{js,jsx,ts,tsx}";
 @source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";

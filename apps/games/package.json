@@ -21,6 +21,8 @@
 		"dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
 		"dev:components": "tsc --watch",
 		"lint": "eslint .",
+		"test": "vitest --coverage --watch=false",
+		"test:dev": "vitest --coverage",
 		"build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
 		"build": "yarn run build:styles && yarn run build:components",
 		"build:components": "tsc",
@@ -39,6 +41,7 @@
 		"@types/node": "^24.10.1",
 		"@types/react": "^19.2.5",
 		"@types/react-dom": "^19.2.3",
+		"@vitest/coverage-v8": "^4.0.16",
 		"@vitejs/plugin-react": "^5.1.1",
 		"autoprefixer": "^10.4.22",
 		"eslint": "^9.39.1",
@@ -49,6 +52,7 @@
 		"tailwindcss": "^4.1.17",
 		"typescript": "~5.9.3",
 		"typescript-eslint": "^8.46.4",
-		"vite": "^7.2.4"
+		"vite": "^7.2.4",
+		"vitest": "^4.0.16"
 	}
 }

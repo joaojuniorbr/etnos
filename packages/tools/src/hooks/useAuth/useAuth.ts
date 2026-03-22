@@ -1,16 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { errorMessage } from '../../helpers/errorMessage';
 import { api } from '../../helpers/api';
-import { useQuery } from '@tanstack/react-query';
+import {
+	AUTH_TOKEN_STORAGE_KEY,
+	clearStoredAuthSession,
+	saveStoredAuthSession,
+	updateAuthActivity,
+} from '../../helpers/authSession';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-
-const KEY_AUTH = 'etnos_auth_token';
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -30,18 +34,20 @@ export const getStoredAuthToken = () => {
 		return null;
 	}
 
-	return globalThis.window.localStorage.getItem(KEY_AUTH);
+	return globalThis.window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
 };
 
 export const useAuth = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const queryClient = useQueryClient();
+	const userQueryKey = ['profile'] as const;
 
 	const {
 		data: user,
 		isLoading: isProfileLoading,
 		refetch: refetchProfile,
 	} = useQuery({
-		queryKey: ['profile'],
+		queryKey: userQueryKey,
 		queryFn: async () => {
 			try {
 				const profile = (await api
@@ -65,7 +71,44 @@ export const useAuth = () => {
 		}, {});
 	};
 
-	const saveToken = (token: string) => localStorage.setItem(KEY_AUTH, token);
+	useEffect(() => {
+		if (globalThis.window === undefined || !getStoredAuthToken()) {
+			return;
+		}
+
+		const events = ['pointerdown', 'keydown', 'scroll', 'visibilitychange'];
+		const handleActivity = () => {
+			if (document.visibilityState === 'hidden') {
+				return;
+			}
+
+			updateAuthActivity();
+		};
+
+		events.forEach((eventName) => {
+			if (eventName === 'visibilitychange') {
+				document.addEventListener(eventName, handleActivity, {
+					passive: true,
+				});
+				return;
+			}
+
+			globalThis.window.addEventListener(eventName, handleActivity, {
+				passive: true,
+			});
+		});
+
+		return () => {
+			events.forEach((eventName) => {
+				if (eventName === 'visibilitychange') {
+					document.removeEventListener(eventName, handleActivity);
+					return;
+				}
+
+				globalThis.window.removeEventListener(eventName, handleActivity);
+			});
+		};
+	}, [user]);
 
 	const onSignInWithEmailAndPassword = async (
 		email: string,
@@ -75,9 +118,9 @@ export const useAuth = () => {
 		return api
 			.post('/auth/login', { email, password })
 			.then((res) => {
-				const { idToken } = res.data;
+				const { idToken, refreshToken, expiresIn } = res.data;
 
-				saveToken(idToken);
+				saveStoredAuthSession({ idToken, refreshToken, expiresIn });
 
 				setIsLoading(false);
 
@@ -94,12 +137,26 @@ export const useAuth = () => {
 		try {
 			const result = await signInWithPopup(authFirebase, googleProvider);
 			const firebaseIdToken = await result.user.getIdToken(true);
+			const tokenResult = await result.user.getIdTokenResult();
 			const response = await api.post('/auth/google', {
 				idToken: firebaseIdToken,
 			});
 			const { idToken, user } = response.data;
+			const expirationTime = tokenResult.expirationTime
+				? new Date(tokenResult.expirationTime).getTime()
+				: null;
+			const expiresIn = expirationTime
+				? Math.max(
+						Math.floor((expirationTime - Date.now()) / 1000),
+						0
+				  )
+				: undefined;
 
-			saveToken(idToken);
+			saveStoredAuthSession({
+				idToken,
+				refreshToken: result.user.refreshToken,
+				expiresIn,
+			});
 
 			return user;
 		} catch {
@@ -113,7 +170,8 @@ export const useAuth = () => {
 	const onSignOut = async () => {
 		setIsLoading(true);
 		try {
-			localStorage.removeItem(KEY_AUTH);
+			clearStoredAuthSession();
+			queryClient.setQueryData(userQueryKey, null);
 			message.success('Desconectado com sucesso!');
 		} catch (error) {
 			message.error(errorMessage(error));
@@ -162,7 +220,11 @@ export const useAuth = () => {
 
 			const { idToken, user } = response.data;
 
-			saveToken(idToken);
+			saveStoredAuthSession({
+				idToken,
+				refreshToken: response.data.refreshToken,
+				expiresIn: response.data.expiresIn,
+			});
 
 			return user;
 		} catch (error) {

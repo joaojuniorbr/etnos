@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWrapper } from '../../test/common';
 import { getStoredAuthToken, useAuth } from './useAuth';
 import { message } from 'antd';
+import {
+	AUTH_EXPIRES_AT_STORAGE_KEY,
+	AUTH_REFRESH_TOKEN_STORAGE_KEY,
+} from '../../helpers/authSession';
 
 const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
 	mockApiGet: vi.fn(),
@@ -13,9 +17,17 @@ const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
 		return 'Erro inesperado';
 	}),
 }));
-const { mockSignInWithPopup, mockGoogleUserGetIdToken } = vi.hoisted(() => ({
+const {
+	mockSignInWithPopup,
+	mockGoogleUserGetIdToken,
+	mockGoogleUserGetIdTokenResult,
+} = vi.hoisted(() => ({
 	mockSignInWithPopup: vi.fn(),
 	mockGoogleUserGetIdToken: vi.fn(),
+	mockGoogleUserGetIdTokenResult: vi.fn(),
+}));
+const { updateAuthActivityMock } = vi.hoisted(() => ({
+	updateAuthActivityMock: vi.fn(),
 }));
 
 const storageState: Record<string, string> = {};
@@ -33,12 +45,27 @@ vi.stubGlobal('localStorage', {
 	}),
 });
 
-vi.mock('../../helpers/api', () => ({
-	api: {
-		get: mockApiGet,
-		post: mockApiPost,
-	},
-}));
+vi.mock('../../helpers/api', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('../../helpers/api')>();
+
+	return {
+		...actual,
+		api: {
+			get: mockApiGet,
+			post: mockApiPost,
+		},
+	};
+});
+
+vi.mock('../../helpers/authSession', async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import('../../helpers/authSession')>();
+
+	return {
+		...actual,
+		updateAuthActivity: updateAuthActivityMock,
+	};
+});
 
 vi.mock('../../helpers/errorMessage', () => ({
 	errorMessage: mockErrorMessage,
@@ -74,6 +101,9 @@ describe('useAuth', () => {
 		localStorage.clear();
 		mockApiGet.mockResolvedValue({ data: null });
 		mockGoogleUserGetIdToken.mockResolvedValue('firebase-google-id-token');
+		mockGoogleUserGetIdTokenResult.mockResolvedValue({
+			expirationTime: new Date(Date.now() + 3600 * 1000).toISOString(),
+		});
 	});
 
 	it('carrega perfil via API ao montar', async () => {
@@ -120,11 +150,54 @@ describe('useAuth', () => {
 		expect(mockErrorMessage).toHaveBeenCalledWith(error);
 	});
 
+	it('atualiza atividade apenas quando a aba estiver visível', async () => {
+		authenticateForProfile();
+		mockApiGet.mockResolvedValueOnce({
+			data: { uid: '123', email: 'test@test.com', parentName: 'Joao' },
+		});
+
+		const originalVisibilityState = Object.getOwnPropertyDescriptor(
+			document,
+			'visibilityState'
+		);
+
+		Object.defineProperty(document, 'visibilityState', {
+			configurable: true,
+			value: 'hidden',
+		});
+
+		const { result, unmount } = renderUseAuth();
+
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
+
+		document.dispatchEvent(new Event('visibilitychange'));
+		expect(updateAuthActivityMock).not.toHaveBeenCalled();
+
+		Object.defineProperty(document, 'visibilityState', {
+			configurable: true,
+			value: 'visible',
+		});
+
+		window.dispatchEvent(new Event('scroll'));
+		expect(updateAuthActivityMock).toHaveBeenCalledTimes(1);
+
+		unmount();
+
+		if (originalVisibilityState) {
+			Object.defineProperty(document, 'visibilityState', originalVisibilityState);
+		}
+	});
+
 	it('faz login com email/senha e salva token', async () => {
 		const password = randomPassword();
 		const apiUser = { uid: '123', email: 'test@test.com' };
 		mockApiPost.mockResolvedValueOnce({
-			data: { idToken: 'token-123', user: apiUser },
+			data: {
+				idToken: 'token-123',
+				refreshToken: 'refresh-123',
+				expiresIn: '3600',
+				user: apiUser,
+			},
 		});
 
 		const { result } = renderUseAuth();
@@ -142,6 +215,10 @@ describe('useAuth', () => {
 			password,
 		});
 		expect(localStorage.getItem('etnos_auth_token')).toBe('token-123');
+		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
+			'refresh-123'
+		);
+		expect(localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)).not.toBeNull();
 		expect(user).toEqual(apiUser);
 		expect(result.current.isLoading).toBe(false);
 	});
@@ -169,6 +246,8 @@ describe('useAuth', () => {
 		mockSignInWithPopup.mockResolvedValueOnce({
 			user: {
 				getIdToken: mockGoogleUserGetIdToken,
+				getIdTokenResult: mockGoogleUserGetIdTokenResult,
+				refreshToken: 'google-refresh-token',
 			},
 		});
 		mockApiPost.mockResolvedValueOnce({
@@ -187,11 +266,15 @@ describe('useAuth', () => {
 
 		expect(mockSignInWithPopup).toHaveBeenCalledTimes(1);
 		expect(mockGoogleUserGetIdToken).toHaveBeenCalledWith(true);
+		expect(mockGoogleUserGetIdTokenResult).toHaveBeenCalledTimes(1);
 		expect(mockApiPost).toHaveBeenCalledWith('/auth/google', {
 			idToken: 'firebase-google-id-token',
 		});
 		expect(localStorage.getItem('etnos_auth_token')).toBe(
 			'api-google-id-token'
+		);
+		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
+			'google-refresh-token'
 		);
 		expect(user).toEqual({
 			uid: 'google-user-id',
@@ -216,8 +299,43 @@ describe('useAuth', () => {
 		);
 	});
 
+	it('faz login com Google mesmo sem expirationTime e não salva expiresAt', async () => {
+		mockGoogleUserGetIdTokenResult.mockResolvedValueOnce({
+			expirationTime: null,
+		});
+		mockSignInWithPopup.mockResolvedValueOnce({
+			user: {
+				getIdToken: mockGoogleUserGetIdToken,
+				getIdTokenResult: mockGoogleUserGetIdTokenResult,
+				refreshToken: 'google-refresh-token',
+			},
+		});
+		mockApiPost.mockResolvedValueOnce({
+			data: {
+				idToken: 'api-google-id-token',
+				user: { uid: 'google-user-id', email: 'google@test.com' },
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		await act(async () => {
+			await result.current.loginWithGoogle();
+		});
+
+		expect(localStorage.getItem('etnos_auth_token')).toBe(
+			'api-google-id-token'
+		);
+		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
+			'google-refresh-token'
+		);
+		expect(localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)).toBeNull();
+	});
+
 	it('desloga com sucesso removendo token local', async () => {
 		localStorage.setItem('etnos_auth_token', 'abc');
+		localStorage.setItem(AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh');
+		localStorage.setItem(AUTH_EXPIRES_AT_STORAGE_KEY, '123');
 
 		const { result } = renderUseAuth();
 
@@ -226,6 +344,10 @@ describe('useAuth', () => {
 		});
 
 		expect(localStorage.getItem('etnos_auth_token')).toBeNull();
+		expect(localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBeNull();
+		expect(localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)).toBeNull();
+		expect(result.current.user).toBeNull();
+		expect(result.current.isLoggedIn).toBe(false);
 		expect(message.success).toHaveBeenCalledWith('Desconectado com sucesso!');
 		expect(result.current.isLoading).toBe(false);
 	});

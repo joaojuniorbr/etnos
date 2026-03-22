@@ -48,5 +48,13 @@ export const AuthProtected = ({
 		return null;
 	}
 
-	return <Spin spinning={isProfileLoading}>{children}</Spin>;
+	if (isProfileLoading) {
+		return (
+			<div className='ui:flex ui:justify-center ui:items-center ui:h-screen ui:w-full ui:fixed ui:left-0 ui:top-0 ui:bg-white/75 ui:z-50'>
+				<Spin size='large' spinning />
+			</div>
+		);
+	}
+
+	return <>{children}</>;
 };

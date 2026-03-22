@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { createApiClient, AUTH_TOKEN_STORAGE_KEY } from './api.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createApiClient } from './api.js';
 
 const { requestUseMock, createMock } = vi.hoisted(() => {
 	const requestUse = vi.fn();
@@ -17,6 +17,13 @@ const { requestUseMock, createMock } = vi.hoisted(() => {
 	};
 });
 
+const { resolveValidStoredAuthTokenMock, updateAuthActivityMock } = vi.hoisted(
+	() => ({
+		resolveValidStoredAuthTokenMock: vi.fn(),
+		updateAuthActivityMock: vi.fn(),
+	})
+);
+
 vi.mock('axios', () => ({
 	AxiosHeaders: {
 		from: (headers?: Record<string, string>) => ({
@@ -33,6 +40,11 @@ vi.mock('axios', () => ({
 	},
 }));
 
+vi.mock('../authSession', () => ({
+	resolveValidStoredAuthToken: resolveValidStoredAuthTokenMock,
+	updateAuthActivity: updateAuthActivityMock,
+}));
+
 describe('createApiClient', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -42,7 +54,7 @@ describe('createApiClient', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('deve criar cliente axios com baseURL informada', async () => {
+	it('deve criar cliente axios com baseURL informada', () => {
 		createApiClient('http://localhost:3000');
 
 		expect(createMock).toHaveBeenCalledWith({
@@ -51,12 +63,10 @@ describe('createApiClient', () => {
 		expect(requestUseMock).toHaveBeenCalledTimes(createMock.mock.calls.length);
 	});
 
-	it('deve adicionar Authorization quando houver token no localStorage', async () => {
-		const localStorageMock = {
-			getItem: vi.fn().mockReturnValue('token-123'),
-		};
+	it('deve adicionar Authorization quando a sessão devolver token válido', async () => {
+		resolveValidStoredAuthTokenMock.mockResolvedValueOnce('token-123');
 		vi.stubGlobal('window', {
-			localStorage: localStorageMock,
+			localStorage: {},
 		} as unknown as Window);
 
 		createApiClient('http://localhost:3000');
@@ -65,10 +75,30 @@ describe('createApiClient', () => {
 		expect(interceptor).toBeTypeOf('function');
 		if (!interceptor) return;
 
-		const config = interceptor({ headers: {} } as any);
+		const config = await interceptor({ headers: {} } as any);
 
-		expect(localStorageMock.getItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
+		expect(resolveValidStoredAuthTokenMock).toHaveBeenCalledTimes(1);
 		expect(config.headers.Authorization).toBe('Bearer token-123');
+		expect(updateAuthActivityMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('não deve adicionar Authorization quando não houver token válido', async () => {
+		resolveValidStoredAuthTokenMock.mockResolvedValueOnce(null);
+		vi.stubGlobal('window', {
+			localStorage: {},
+		} as unknown as Window);
+
+		createApiClient('http://localhost:3000');
+
+		const interceptor = requestUseMock.mock.calls[0]?.[0];
+		expect(interceptor).toBeTypeOf('function');
+		if (!interceptor) return;
+
+		const originalConfig = { headers: {} } as any;
+		const config = await interceptor(originalConfig);
+
+		expect(config).toEqual(originalConfig);
+		expect(updateAuthActivityMock).not.toHaveBeenCalled();
 	});
 
 	it('não deve quebrar em ambiente sem window', async () => {
@@ -81,30 +111,9 @@ describe('createApiClient', () => {
 		if (!interceptor) return;
 
 		const originalConfig = { headers: {} } as any;
-		const config = interceptor(originalConfig);
+		const config = await interceptor(originalConfig);
 
 		expect(config).toEqual(originalConfig);
-	});
-
-	it('não deve adicionar Authorization quando token não existir', async () => {
-		const localStorageMock = {
-			getItem: vi.fn().mockReturnValue(null),
-		};
-		vi.stubGlobal('window', {
-			localStorage: localStorageMock,
-		} as unknown as Window);
-
-		createApiClient('http://localhost:3000');
-
-		const interceptor = requestUseMock.mock.calls[0]?.[0];
-		expect(interceptor).toBeTypeOf('function');
-		if (!interceptor) return;
-
-		const originalConfig = { headers: {} } as any;
-		const config = interceptor(originalConfig);
-
-		expect(localStorageMock.getItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
-		expect(config).toEqual(originalConfig);
-		expect(config.headers.Authorization).toBeUndefined();
+		expect(resolveValidStoredAuthTokenMock).not.toHaveBeenCalled();
 	});
 });

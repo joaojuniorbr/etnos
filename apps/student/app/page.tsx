@@ -17,8 +17,8 @@ export default function Page() {
 				]}
 			/>
 
-			<div className='py-8 px-4 bg-slate-50 border border-slate-200 shadow rounded mt-6'>
-				<div className='mx-auto max-w-md text-center'>
+			<div className='py-8 px-4 bg-white border border-slate-200 shadow rounded mt-6'>
+				<div className='mx-auto max-w-lg text-center'>
 					<h1 className='text-3xl font-black text-primary'>
 						BEM-VINDO AO ETNOS!
 					</h1>

@@ -1,2 +1,4 @@
 @import 'tailwindcss';
 @import '@etnos/tailwind-config';
+
+@source "./**/*.{js,jsx,ts,tsx}";

@@ -1,4 +1,5 @@
 import './main.css';
+import '../../../apps/games/src/styles.css';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConfigProvider } from 'antd';

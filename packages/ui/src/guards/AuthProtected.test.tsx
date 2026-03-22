@@ -47,10 +47,7 @@ describe('AuthProtected', () => {
 		);
 
 		expect(screen.getByText('Conteudo protegido')).toBeInTheDocument();
-		expect(screen.getByTestId('spin')).toHaveAttribute(
-			'data-spinning',
-			'false',
-		);
+		expect(screen.queryByTestId('spin')).not.toBeInTheDocument();
 	});
 
 	it('mantém loading enquanto perfil está carregando', () => {
@@ -69,7 +66,7 @@ describe('AuthProtected', () => {
 			'data-spinning',
 			'true',
 		);
-		expect(screen.getByText('Conteudo protegido')).toBeInTheDocument();
+		expect(screen.queryByText('Conteudo protegido')).not.toBeInTheDocument();
 	});
 
 	it('redireciona para login quando usuário não está autenticado', async () => {

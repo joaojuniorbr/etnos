@@ -20,14 +20,12 @@ export const Journey = () => (
 				</Button>
 			</Link>
 
-			<div className='bg-white max-w-240 mx-auto shadow-xl mt-10 p-2 rounded md:rounded-2xl md:p-6 lg:p-8'>
-				<figure className='m-0 bg-[#fbfbfb] rounded px-2 md:rounded-2xl md:p-6 lg:p-10'>
-					<Image
-						preview={false}
-						src='/estudante/persona-group.jpg'
-						className='w-full'
-					/>
-				</figure>
+			<div className='bg-white max-w-240 mx-auto shadow-xl mt-10 p-6 rounded md:rounded-2xl md:p-10 lg:p-12'>
+				<Image
+					preview={false}
+					src='/estudante/persona-group.jpg'
+					className='w-full'
+				/>
 			</div>
 		</div>
 	</section>

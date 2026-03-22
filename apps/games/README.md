@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+# @etnos/games
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Biblioteca de jogos educacionais do Etnos.
 
-Currently, two official plugins are available:
+Este pacote centraliza os jogos reutilizados pelo portal do estudante e expoe
+componentes React prontos para integracao com `@etnos/tools`, `@etnos/types` e
+`@etnos/ui`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Jogos disponiveis
 
-## React Compiler
+- `MemoryGame`: jogo da memoria com cartas por personagem, capa configuravel,
+  pontuacao e persistencia de recorde.
+- `GuessGame`: jogo de adivinhacao com dicas, tentativas, sons e salvamento de
+  pontuacao.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Estrutura
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  components/
+    FinishGame/
+    ScoreHighlight/
+  games/
+    GuessGame/
+    MemoryGame/
+  index.ts
+  styles.css
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Como funciona
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Os componentes dos jogos vivem em `src/games`.
+- Componentes compartilhados de interface ficam em `src/components`.
+- A integracao com dados acontece via hooks de `@etnos/tools`.
+- Os contratos e enums compartilhados vem de `@etnos/types`.
+- Os estilos distribuidos pelo pacote sao gerados a partir de `src/styles.css`.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Uso
+
+```tsx
+'use client';
+
+import { MemoryGame } from '@etnos/games';
+import '@etnos/games/styles.css';
+
+export const Example = () => <MemoryGame characterSlug='anita' />;
 ```
+
+## Scripts
+
+- `yarn dev`: observa componentes TypeScript e folha de estilos.
+- `yarn build`: gera `dist/index.js`, `dist/index.d.ts` e `dist/index.css`.
+- `yarn test`: executa a suite com Vitest e cobertura.
+- `yarn lint`: roda ESLint no pacote.
+- `yarn check-types`: valida tipagem sem emitir arquivos.
+
+## Integracao no monorepo
+
+- `apps/student` consome os jogos renderizando `MemoryGame` e `GuessGame`.
+- `apps/admin` gerencia configuracoes e conteudo do jogo da memoria.
+- `apps/api` persiste configuracao, conteudo e pontuacao.
+
+Para a visao arquitetural completa, consulte `docs-site/docs/games-architecture.md`.

@@ -1,4 +1,3 @@
-import { SchoolInterface } from '@etnos/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EmailService } from 'src/email';
 import { PrismaService } from 'src/prisma';

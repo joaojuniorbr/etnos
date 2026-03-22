@@ -92,9 +92,37 @@ describe('MemoryGameExperience', () => {
 		expect(screen.getAllByAltText('Anita')[0]?.getAttribute('src')).toBe(
 			'/cover.jpg'
 		);
+		expect(screen.getAllByAltText('chimarrao')[0]?.getAttribute('src')).toBe(
+			'/a.jpg'
+		);
 
 		fireEvent.click(screen.getAllByRole('button')[0]!);
 		expect(handleCardClick).toHaveBeenCalledWith(1);
+	});
+
+	it('usa fallback de capa e alt quando coverImage ou personagem nao forem informados', () => {
+		useMemoryGameMock.mockReturnValue({
+			cards: [
+				{
+					id: 1,
+					name: 'chimarrao',
+					image: '/a.jpg',
+					isFlipped: false,
+					isMatched: true,
+				},
+			],
+			handleCardClick: vi.fn(),
+			initializeGame: vi.fn(),
+			isFinished: false,
+			matchedPairs: 1,
+			moves: 1,
+			score: 50,
+			totalPairs: 1,
+		});
+
+		render(<MemoryGameExperience content={[{ name: 'chimarrao', image: '/a.jpg' }]} />);
+
+		expect(screen.getByAltText('Carta virada').getAttribute('src')).toBeNull();
 	});
 
 	it('renderiza estado final e aciona restart/save', async () => {

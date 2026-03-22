@@ -64,7 +64,7 @@ export const useAuth = () => {
 		enabled: Boolean(getStoredAuthToken()),
 	});
 
-	const cleanDataForFirestore = (data: any) => {
+	const normalizeProfilePayload = (data: any) => {
 		return Object.keys(data).reduce((acc: any, key) => {
 			acc[key] = data[key] === undefined ? null : data[key];
 			return acc;
@@ -194,7 +194,7 @@ export const useAuth = () => {
 
 	const updateUserProfile = async (profile: Partial<UserProfileInterface>) => {
 		try {
-			const dataToSave = cleanDataForFirestore(profile);
+			const dataToSave = normalizeProfilePayload(profile);
 
 			await api.post('/auth/profile', dataToSave);
 

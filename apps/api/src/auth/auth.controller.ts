@@ -16,6 +16,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { RequestUserOwnershipGuard } from 'src/common';
 import { LoginResponseDto, ProfileResponseDto } from './dto/auth-profile.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -86,7 +87,7 @@ export class AuthController {
     return this.authService.sendRecoveryEmail(body.email);
   }
 
-  @UseGuards(AuthGuard('firebase-auth'))
+  @UseGuards(AuthGuard('firebase-auth'), RequestUserOwnershipGuard)
   @Get('profile')
   @ApiOperation({
     summary: 'Perfil do usuário autenticado',
@@ -107,7 +108,7 @@ export class AuthController {
     return this.authService.getProfile(req.user.uid);
   }
 
-  @UseGuards(AuthGuard('firebase-auth'))
+  @UseGuards(AuthGuard('firebase-auth'), RequestUserOwnershipGuard)
   @Post('profile')
   @ApiOperation({
     summary: 'Atualizar perfil do usuário autenticado',

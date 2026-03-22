@@ -69,6 +69,28 @@ describe('MemoryGame', () => {
 		);
 	});
 
+	it('prioriza o characterSlug recebido por props nas consultas', () => {
+		render(<MemoryGame characterSlug='zeca' />);
+
+		expect(useGameScoreMock).toHaveBeenCalledWith(
+			'user-1',
+			'memory-game',
+			'zeca'
+		);
+		expect(useMemoryGameContentMock).toHaveBeenCalledWith('zeca');
+	});
+
+	it('usa slug vazio quando nao houver prop nem personagem selecionado', () => {
+		useCharacterMock.mockReturnValue({
+			selectedCharacter: undefined,
+		});
+
+		render(<MemoryGame />);
+
+		expect(useGameScoreMock).toHaveBeenCalledWith('user-1', 'memory-game', '');
+		expect(useMemoryGameContentMock).toHaveBeenCalledWith('');
+	});
+
 	it('salva score e faz refetch quando há usuário e personagem', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
 		const refetch = vi.fn();
@@ -100,15 +122,29 @@ describe('MemoryGame', () => {
 		useCharacterMock.mockReturnValue({ selectedCharacter: undefined });
 		useUserMock.mockReturnValue({ user: null });
 		useGamesConfigMock.mockReturnValue({ data: undefined });
+		useGameScoreMock.mockReturnValue({
+			data: undefined,
+			refetch: vi.fn(),
+			isLoading: true,
+		});
+		useMemoryGameContentMock.mockReturnValue({
+			data: undefined,
+		});
 
 		render(<MemoryGame characterSlug='zeca' />);
 
 		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
 			coverImage: string;
+			bestScore: number;
+			content: unknown[];
+			isLoading: boolean;
 			onSaveScore: (score: number) => Promise<void>;
 		};
 
 		expect(props.coverImage).toBe('/games/memory-game/cover/undefined.jpg');
+		expect(props.bestScore).toBe(0);
+		expect(props.content).toEqual([]);
+		expect(props.isLoading).toBe(true);
 
 		await act(async () => {
 			await props.onSaveScore(90);

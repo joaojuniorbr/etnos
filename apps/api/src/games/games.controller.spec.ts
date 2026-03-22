@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GamesController } from './games.controller';
 import { GamesService } from './games.service';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common';
 
 const mockGamesService = {
   getGames: jest.fn().mockResolvedValue([
@@ -43,7 +45,14 @@ describe('GamesController', () => {
           useValue: mockGamesService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard('firebase-auth'))
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RequestUserOwnershipGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(AdminRoleGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<GamesController>(GamesController);
     service = module.get<GamesService>(GamesService);

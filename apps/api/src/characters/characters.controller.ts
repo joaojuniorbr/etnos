@@ -1,7 +1,16 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import type { CharacterInterface } from '@etnos/types';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOkResponse,
   ApiOperation,
@@ -9,6 +18,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { CharacterDto } from './dto/character.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 
 @Controller('characters')
 export class CharactersController {
@@ -36,6 +47,8 @@ export class CharactersController {
   }
 
   @Post()
+  @UseGuards(AuthGuard('firebase-auth'), AdminRoleGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Cria um personagem',
     description: 'Cria um novo personagem quando o slug ainda não existe.',
@@ -51,6 +64,8 @@ export class CharactersController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard('firebase-auth'), AdminRoleGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Atualiza um personagem',
     description: 'Atualiza o personagem validando conflito de slug.',

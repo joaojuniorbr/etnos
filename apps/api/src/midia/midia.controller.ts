@@ -22,13 +22,22 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { MidiaService } from './midia.service';
 import type { MidiaInterface } from '@etnos/types';
 import { DeleteMidiaDto } from './dto/delete-midia.dto';
+import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
+import { RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Mídia')
-@UseGuards(AuthGuard('firebase-auth'))
+@UseGuards(
+  AuthGuard('firebase-auth'),
+  RequestUserOwnershipGuard,
+  AdminRoleGuard,
+)
 @ApiBearerAuth()
 @Controller('midia')
 export class MidiaController {
@@ -53,7 +62,11 @@ export class MidiaController {
     @UploadedFile() file: any,
     @Body('folder') folder?: string,
   ) {
-    return this.midiaService.uploadImage(file, folder ?? 'uploads', req.user.uid);
+    return this.midiaService.uploadImage(
+      file,
+      folder ?? 'uploads',
+      req.user.uid,
+    );
   }
 
   @Post('upload/multiple')
@@ -131,7 +144,10 @@ export class MidiaController {
 
   @Delete()
   @ApiOperation({ summary: 'Remove mídia enviada no body' })
-  async deleteByBody(@Req() req, @Body() body: MidiaInterface | DeleteMidiaDto) {
+  async deleteByBody(
+    @Req() req,
+    @Body() body: MidiaInterface | DeleteMidiaDto,
+  ) {
     if ('id' in body && body.id) {
       return this.midiaService.deleteMidiaById(body.id, req.user.uid);
     }

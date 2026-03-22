@@ -71,6 +71,36 @@ describe('memory-game utils', () => {
 		expect(result.cards.every((card) => card.isMatched)).toBe(true);
 	});
 
+	it('marca apenas o par correspondente quando ainda existem outras cartas', () => {
+		const cards: MemoryGameCard[] = [
+			{
+				id: 1,
+				name: 'chimarrao',
+				image: '/a.jpg',
+				isFlipped: true,
+				isMatched: false,
+			},
+			{
+				id: 2,
+				name: 'chimarrao',
+				image: '/a.jpg',
+				isFlipped: true,
+				isMatched: false,
+			},
+			{
+				id: 3,
+				name: 'churrasco',
+				image: '/b.jpg',
+				isFlipped: false,
+				isMatched: false,
+			},
+		];
+
+		const result = resolveMemoryGameTurn(cards, [1, 2], 0);
+
+		expect(result.cards.find((card) => card.id === 3)?.isMatched).toBe(false);
+	});
+
 	it('desvira um par incorreto e impede score negativo', () => {
 		const cards: MemoryGameCard[] = [
 			{

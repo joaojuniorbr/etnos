@@ -16,7 +16,6 @@ import { CharacterInterface } from '@etnos/types';
 type MemoryGameExperienceProps = {
 	content: MemoryGameCardContent[];
 	bestScore?: number;
-	characterSlug?: string;
 	coverImage?: string;
 	isLoading?: boolean;
 	matchDelayMs?: number;

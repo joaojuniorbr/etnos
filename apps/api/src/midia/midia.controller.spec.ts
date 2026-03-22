@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MidiaController } from './midia.controller';
 import { MidiaService } from './midia.service';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common/guards';
 
 describe('MidiaController', () => {
   let controller: MidiaController;
@@ -28,7 +30,14 @@ describe('MidiaController', () => {
           useValue: mockMidiaService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard('firebase-auth'))
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(RequestUserOwnershipGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(AdminRoleGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<MidiaController>(MidiaController);
     service = module.get<MidiaService>(MidiaService);
@@ -85,7 +94,7 @@ describe('MidiaController', () => {
   });
 
   it('deve listar mídias usando limit/page padrão', async () => {
-    await controller.getMidia(req, undefined);
+    await controller.getMidia(req);
 
     expect(service.getMidia).toHaveBeenCalledWith('user-1', 10, 1, undefined);
   });

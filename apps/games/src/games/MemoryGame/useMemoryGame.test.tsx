@@ -49,6 +49,10 @@ const Harness = ({ content, matchDelayMs, onPlaySound }: HarnessProps) => {
 };
 
 describe('useMemoryGame', () => {
+	beforeEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('inicializa vazio quando não há conteúdo', () => {
 		render(<Harness content={[]} />);
 
@@ -87,6 +91,46 @@ describe('useMemoryGame', () => {
 		expect(onPlaySound).toHaveBeenCalledWith('flip');
 		expect(onPlaySound).toHaveBeenCalledWith('success');
 		expect(onPlaySound).toHaveBeenCalledWith('finish');
+	});
+
+	it('nao toca finish quando o acerto ainda nao encerra a partida', async () => {
+		const onPlaySound = vi.fn();
+
+		render(
+			<Harness
+				content={[
+					{ name: 'chimarrao', image: '/chimarrao.jpg' },
+					{ name: 'churrasco', image: '/churrasco.jpg' },
+				]}
+				matchDelayMs={1}
+				onPlaySound={onPlaySound}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('cards-count').textContent).toBe('4');
+		});
+
+		const cards = screen
+			.getAllByRole('button')
+			.filter((button) => button !== screen.getByText('restart'));
+		const firstCard = cards[0]!;
+		const matchingCard = cards.find(
+			(button, index) =>
+				index !== 0 &&
+				button.getAttribute('data-name') === firstCard.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(firstCard);
+		fireEvent.click(matchingCard);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('matchedPairs').textContent).toBe('1');
+			expect(screen.getByTestId('isFinished').textContent).toBe('false');
+		});
+
+		expect(onPlaySound).toHaveBeenCalledWith('success');
+		expect(onPlaySound).not.toHaveBeenCalledWith('finish');
 	});
 
 	it('ignora clique inválido e desfaz par incorreto com erro', async () => {
@@ -145,5 +189,68 @@ describe('useMemoryGame', () => {
 		expect(screen.getByTestId('score').textContent).toBe('0');
 		expect(screen.getByTestId('moves').textContent).toBe('0');
 		expect(screen.getByTestId('isFinished').textContent).toBe('false');
+	});
+
+	it('ignora clique quando o jogo ja terminou ou a carta ja esta indisponivel', async () => {
+		render(
+			<Harness
+				content={[{ name: 'chimarrao', image: '/chimarrao.jpg' }]}
+				matchDelayMs={1}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('cards-count').textContent).toBe('2');
+		});
+
+		const firstCard = screen.getByTestId('card-0');
+		const secondCard = screen.getByTestId('card-1');
+
+		fireEvent.click(firstCard);
+		fireEvent.click(firstCard);
+		expect(screen.getByTestId('moves').textContent).toBe('0');
+
+		fireEvent.click(secondCard);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('isFinished').textContent).toBe('true');
+		});
+
+		fireEvent.click(firstCard);
+		expect(screen.getByTestId('moves').textContent).toBe('1');
+	});
+
+	it('limpa timeout pendente ao reinicializar o jogo', async () => {
+		const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+		render(
+			<Harness
+				content={[
+					{ name: 'chimarrao', image: '/chimarrao.jpg' },
+					{ name: 'churrasco', image: '/churrasco.jpg' },
+				]}
+				matchDelayMs={100}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId('cards-count').textContent).toBe('4');
+		});
+
+		const cards = screen
+			.getAllByRole('button')
+			.filter((button) => button !== screen.getByText('restart'));
+		const firstCard = cards[0]!;
+		const mismatchCard = cards.find(
+			(button) => button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
+		)!;
+
+		fireEvent.click(firstCard);
+		fireEvent.click(mismatchCard);
+		fireEvent.click(screen.getByText('restart'));
+
+		await waitFor(() => {
+			expect(clearTimeoutSpy).toHaveBeenCalled();
+		});
 	});
 });

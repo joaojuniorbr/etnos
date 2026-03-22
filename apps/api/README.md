@@ -35,6 +35,21 @@ Documentação complementar:
 - [`../../docs-site/docs/auth-architecture.md`](../../docs-site/docs/auth-architecture.md)
 - [`../../docs-site/docs/media-architecture.md`](../../docs-site/docs/media-architecture.md)
 - [`../../docs-site/docs/games-architecture.md`](../../docs-site/docs/games-architecture.md)
+- [`../../docs-site/docs/swagger.md`](../../docs-site/docs/swagger.md)
+
+## Swagger
+
+A API expõe a documentação interativa em:
+
+- `/docs`
+
+Em ambiente local, com a API rodando na porta padrão:
+
+- `http://localhost:8080/docs`
+
+Os endpoints da aplicação continuam com o prefixo global `api`, então a UI do
+Swagger documenta rotas como `/api/auth/login`, `/api/games/score` e
+`/api/midia/upload`.
 
 ## Serviços migrados do front para API
 

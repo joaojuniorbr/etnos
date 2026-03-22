@@ -18,14 +18,15 @@ plugins:
 nav:
   - Home: index.md
   - Arquitetura:
-      - Monorepo e Apps: monorepo-architecture.md
-      - Autenticacao e Sessao: auth-architecture.md
-      - Midia e Storage: media-architecture.md
+      - Monorepo: monorepo-architecture.md
+      - Autenticação: auth-architecture.md
+      - Mídia: media-architecture.md
+      - Swagger: swagger.md
   - Jogos:
-      - Arquitetura dos Jogos: games-architecture.md
+      - Jogos: games-architecture.md
   - Banco de Dados:
-      - Arquitetura de Banco de Dados: database-architecture.md
-      - Modelagem de Dados: data-model.md
+      - Banco de Dados: database-architecture.md
+      - Modelagem: data-model.md
   - Entregas:
       - Entrega 01: 2025-p1.md
       - Entrega 02: 2025-p2.md

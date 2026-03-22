@@ -32,8 +32,20 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Etnos')
+    .setDescription(
+      'Documentação da API do Etnos com autenticação, conteúdo, jogos, mídia e endpoints públicos.',
+    )
     .setVersion(releaseVersion)
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description:
+          'Use o idToken retornado pelos endpoints de autenticação para testar rotas protegidas.',
+      },
+      'bearer',
+    )
     .build();
 
   app.enableCors();
@@ -66,7 +78,7 @@ async function bootstrap() {
         return response;
       },
       requestInterceptor: (request: any) => {
-        if (typeof globalThis.window) {
+        if (typeof globalThis.window === 'undefined') {
           return request;
         }
         const token = globalThis.window.localStorage.getItem('swagger_token');

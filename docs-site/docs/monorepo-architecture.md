@@ -1,13 +1,13 @@
-# Monorepo e apps
+# Monorepo
 
-## Visao geral
+## Visão geral
 
-O Etnos esta organizado como um monorepo com apps de produto, biblioteca de
-componentes, biblioteca de jogos, contratos compartilhados e utilitarios de
-integracao. A estrutura atual prioriza reuso de codigo e separacao clara de
-responsabilidades.
+O Etnos está organizado como um monorepo com apps de produto, biblioteca de
+componentes, biblioteca de jogos, contratos compartilhados e utilitários de
+integração. A ideia aqui é simples: cada app tem um papel claro, e os pacotes
+compartilhados evitam repetição de código.
 
-## Mapa de alto nivel
+## Mapa geral
 
 ```mermaid
 flowchart LR
@@ -27,11 +27,11 @@ flowchart LR
 
 ![Mapa de alto nivel](./files/monorepo-flow.png)
 
-## Apps do repositorio
+## Apps
 
 ### `apps/web`
 
-Site institucional e porta de entrada publica da plataforma.
+Site institucional e porta de entrada pública da plataforma.
 
 Responsabilidades:
 
@@ -49,28 +49,28 @@ Responsabilidades:
 - selecao de personagem;
 - acesso aos jogos;
 - perfil do estudante;
-- renderizacao da experiencia de aprendizado.
+- renderização da experiência de aprendizado.
 
 ### `apps/admin`
 
-Painel autenticado de operacao.
+Painel autenticado de operação.
 
 Responsabilidades:
 
 - gestao de escolas;
 - gestao de personagens;
-- gestao de midia;
-- configuracao e conteudo de jogos.
+- gestão de mídia;
+- configuração e conteúdo de jogos.
 
 ### `apps/api`
 
-Backend NestJS e fonte principal de verdade do dominio.
+Backend NestJS e fonte principal de verdade do domínio.
 
 Responsabilidades:
 
 - autenticar requests com token do Firebase;
 - persistir dados de negocio no Postgres via Prisma;
-- intermediar upload e remocao de arquivos no Firebase Storage;
+- intermediar upload e remoção de arquivos no Firebase Storage;
 - expor endpoints publicos e autenticados.
 
 ### `apps/games`
@@ -79,15 +79,15 @@ Biblioteca React de jogos.
 
 Responsabilidades:
 
-- encapsular interface e logica dos jogos;
+- encapsular interface e lógica dos jogos;
 - expor componentes reutilizaveis para `student`;
-- manter estados, pontuacao e experiencia visual de cada jogo.
+- manter estados, pontuação e experiência visual de cada jogo.
 
 ### `apps/docs`
 
 Storybook do design system e dos componentes compartilhados.
 
-## Pacotes compartilhados
+## Pacotes
 
 ### `packages/ui`
 
@@ -95,21 +95,21 @@ Design system, providers, layout principal e guards.
 
 Pontos importantes:
 
-- `AppProviders` cria o `QueryClient` e provedor de usuario;
-- `MainLayout` injeta header, footer, analytics e configuracao global do Ant
+- `AppProviders` cria o `QueryClient` e provedor de usuário;
+- `MainLayout` injeta header, footer, analytics e configuração global do Ant
   Design;
 - `AuthProtected` protege rotas autenticadas.
 
 ### `packages/tools`
 
-Camada de integracao e logica de consumo.
+Camada de integração e lógica de consumo.
 
 Responsabilidades:
 
 - hooks baseados em React Query;
 - services HTTP;
-- helpers de sessao, token, erros e utilitarios;
-- listagem de jogos e reproducao de sons.
+- helpers de sessão, token, erros e utilitários;
+- listagem de jogos e reprodução de sons.
 
 ### `packages/types`
 
@@ -117,23 +117,23 @@ Contratos compartilhados entre apps, API e bibliotecas.
 
 Responsabilidades:
 
-- interfaces de usuario, escola, personagem e midia;
+- interfaces de usuário, escola, personagem e mídia;
 - enums e contratos dos jogos;
 - tipagem comum do dominio.
 
-## Composicao dos layouts
+## Layouts
 
 Os apps web reutilizam o mesmo layout base e os mesmos providers, com pequenas
-diferencas de protecao:
+diferenças de proteção:
 
-- `web` usa `AppProviders` sem bloqueio de autenticacao;
+- `web` usa `AppProviders` sem bloqueio de autenticação;
 - `student` usa `AppProviders` com `AuthProtected`;
 - `admin` usa `AppProviders` com `AuthProtected`.
 
-Isso reduz duplicacao e mantem cabecalho, rodape, locale, tema e cache de
+Isso reduz duplicação e mantém cabeçalho, rodapé, locale, tema e cache de
 queries alinhados entre as interfaces.
 
-## Fluxo tipico entre camadas
+## Fluxo entre camadas
 
 ```mermaid
 sequenceDiagram
@@ -153,9 +153,9 @@ sequenceDiagram
     TOOLS-->>UI: atualiza estado da interface
 ```
 
-![Fluxo tipico entre camadas](./files/monorepo-sequence.png)
+![Fluxo entre camadas](./files/monorepo-sequence.png)
 
-## Build e orquestracao
+## Build
 
 O monorepo usa `Turborepo` com tarefas compartilhadas para:
 
@@ -165,14 +165,5 @@ O monorepo usa `Turborepo` com tarefas compartilhadas para:
 - `test`
 - `check-types`
 
-O cache considera saidas como `dist`, `.next`, `storybook-static` e `coverage`,
+O cache considera saídas como `dist`, `.next`, `storybook-static` e `coverage`,
 enquanto `dev` permanece sem cache e em modo persistente.
-
-## O que vale documentar junto com esta pagina
-
-Esta pagina funciona como ponto de partida. Para aprofundar:
-
-- veja `auth-architecture.md` para login e sessao;
-- veja `media-architecture.md` para upload e storage;
-- veja `games-architecture.md` para a feature de jogos;
-- veja `database-architecture.md` para persistencia e relacoes.

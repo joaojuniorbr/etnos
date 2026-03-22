@@ -19,6 +19,7 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiQuery,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -29,6 +30,7 @@ import {
 import { MidiaService } from './midia.service';
 import type { MidiaInterface } from '@etnos/types';
 import { DeleteMidiaDto } from './dto/delete-midia.dto';
+import { MidiaDto } from './dto/midia.dto';
 import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 import { RequestUserOwnershipGuard } from 'src/common';
 
@@ -116,12 +118,15 @@ export class MidiaController {
 
   @Get('folders')
   @ApiOperation({ summary: 'Lista pastas de mídia com contagem' })
+  @ApiResponse({ status: 200, description: 'Pastas retornadas com sucesso.' })
   async getFolders(@Req() req) {
     return this.midiaService.getFolders(req.user.uid);
   }
 
   @Post()
   @ApiOperation({ summary: 'Cria registro de mídia' })
+  @ApiBody({ type: MidiaDto })
+  @ApiResponse({ status: 201, description: 'Registro de mídia criado com sucesso.' })
   async saveMidia(@Req() req, @Body() body: MidiaInterface) {
     return this.midiaService.saveMidia({
       ...body,
@@ -131,6 +136,11 @@ export class MidiaController {
 
   @Delete('by-url')
   @ApiOperation({ summary: 'Remove mídia por URL' })
+  @ApiQuery({
+    name: 'url',
+    required: true,
+    description: 'URL da mídia que será removida',
+  })
   @ApiResponse({ status: 200, description: 'Mídia removida com sucesso.' })
   async deleteByUrl(@Req() req, @Query('url') url: string) {
     return this.midiaService.deleteMidiaFromUrl(url, req.user.uid);
@@ -138,12 +148,14 @@ export class MidiaController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove mídia por id' })
+  @ApiParam({ name: 'id', required: true, description: 'ID da mídia' })
   async deleteById(@Req() req, @Param('id') id: string) {
     return this.midiaService.deleteMidiaById(id, req.user.uid);
   }
 
   @Delete()
   @ApiOperation({ summary: 'Remove mídia enviada no body' })
+  @ApiBody({ type: DeleteMidiaDto })
   async deleteByBody(
     @Req() req,
     @Body() body: MidiaInterface | DeleteMidiaDto,

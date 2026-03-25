@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CharactersService } from './characters.service';
@@ -15,6 +16,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -32,9 +34,25 @@ export class CharactersController {
     summary: 'Lista todos os personagens',
     description: 'Retorna uma lista de todos os personagens.',
   })
+  @ApiQuery({
+    name: 'slug',
+    required: false,
+    description: 'Filtra a lista por slug do personagem.',
+  })
   @ApiOkResponse({ type: [CharacterDto] })
-  async getCharacters(): Promise<CharacterDto[]> {
-    return this.charactersService.getCharacters();
+  async getCharacters(@Query('slug') slug?: string): Promise<CharacterDto[]> {
+    return this.charactersService.getCharacters(slug);
+  }
+
+  @Get(':slug/avatars')
+  @ApiOperation({
+    summary: 'Lista os avatares de um personagem',
+    description:
+      'Retorna as imagens de avatar relacionadas ao personagem informado.',
+  })
+  @ApiParam({ name: 'slug', required: true, description: 'Slug do personagem' })
+  async getCharacterAvatars(@Param('slug') slug: string) {
+    return this.charactersService.getCharacterAvatars(slug);
   }
 
   @Get(':slug')
@@ -61,7 +79,9 @@ export class CharactersController {
     status: 200,
     description: 'Slug já existe. Retorna null sem criar.',
   })
-  async save(@Body() character: CharacterDto): Promise<CharacterInterface | null> {
+  async save(
+    @Body() character: CharacterDto,
+  ): Promise<CharacterInterface | null> {
     return this.charactersService.save(character);
   }
 

@@ -26,6 +26,8 @@ export class AuthService {
     'childBirthDate',
     'parentPhone',
     'school',
+    'photoURL',
+    'avatarCharacterSlug',
   ]);
 
   private async findProfileByFirebaseUid(firebaseUid: string) {
@@ -50,6 +52,8 @@ export class AuthService {
       childBirthDate: profile.childBirthDate,
       parentPhone: profile.parentPhone,
       school: profile.school,
+      photoURL: profile.photoURL,
+      avatarCharacterSlug: profile.avatarCharacterSlug,
       roles: profile.roles,
       role: profile.roles,
       createdAt: profile.createdAt,
@@ -121,6 +125,8 @@ export class AuthService {
             childBirthDate: null,
             parentPhone: null,
             school: null,
+            photoURL: userRecord.photoURL ?? null,
+            avatarCharacterSlug: null,
             roles: ['student'],
           },
         });
@@ -183,6 +189,8 @@ export class AuthService {
           childBirthDate: data.childBirthDate ?? null,
           parentPhone: data.parentPhone ?? null,
           school: data.school ?? null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
         },
       });
@@ -287,6 +295,8 @@ export class AuthService {
       childBirthDate: unknown;
       parentPhone: unknown;
       school: unknown;
+      photoURL: unknown;
+      avatarCharacterSlug: unknown;
     }>,
   ) {
     const user = await this.findProfileByFirebaseUid(id);

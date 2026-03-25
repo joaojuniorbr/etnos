@@ -98,6 +98,8 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
         updatedAt: new Date('2026-03-15T00:00:00.000Z'),
       });
@@ -121,6 +123,8 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
           role: ['student'],
           createdAt: new Date('2026-03-15T00:00:00.000Z'),
@@ -149,6 +153,8 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
         roles: ['student'],
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
         updatedAt: new Date('2026-03-15T01:00:00.000Z'),
@@ -168,6 +174,8 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
         roles: ['student'],
         role: ['student'],
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
@@ -278,6 +286,8 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
           createdAt: new Date('2026-03-15T00:00:00.000Z'),
           updatedAt: new Date('2026-03-15T01:00:00.000Z'),
@@ -315,6 +325,8 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -330,6 +342,43 @@ describe('AuthService', () => {
       expect(prismaService.user.update).toHaveBeenCalledWith({
         where: { firebaseUid: 'user-123' },
         data: { parentName: 'Novo Nome' },
+      });
+    });
+
+    it('deve permitir atualizar avatar do perfil', async () => {
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+        })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          photoURL: 'https://avatar.test/image.png',
+          avatarCharacterSlug: 'anita',
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({} as never);
+
+      await service.updateProfile('user-123', {
+        photoURL: 'https://avatar.test/image.png',
+        avatarCharacterSlug: 'anita',
+      } as any);
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: {
+          photoURL: 'https://avatar.test/image.png',
+          avatarCharacterSlug: 'anita',
+        },
       });
     });
 
@@ -522,6 +571,8 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
         },
       });
@@ -576,6 +627,8 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
         },
       });

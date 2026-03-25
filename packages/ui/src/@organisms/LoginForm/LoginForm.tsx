@@ -75,7 +75,12 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 					</div>
 
 					<div className='ui:pt-8'>
-						<Button block type='secondary' htmlType='submit'>
+						<Button
+							block
+							type='secondary'
+							htmlType='submit'
+							onClick={() => form.submit?.()}
+						>
 							ENTRAR
 						</Button>
 					</div>
@@ -87,6 +92,7 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 					onClick={onLoginWithGoogle}
 					className={styleButton}
 					aria-label='Entrar com Conta Google'
+					type='button'
 				>
 					<span className='ui:w-4'>
 						<img

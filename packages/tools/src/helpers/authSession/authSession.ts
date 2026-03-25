@@ -83,9 +83,6 @@ export const updateAuthActivity = (time = Date.now()) => {
 
 export const clearStoredAuthSession = () => {
 	if (!isBrowser()) return;
-
-	// Async writers must verify the originating session is still current
-	// before persisting refreshed credentials after calling out to the network.
 	globalThis.window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
 	globalThis.window.localStorage.removeItem(AUTH_REFRESH_TOKEN_STORAGE_KEY);
 	globalThis.window.localStorage.removeItem(AUTH_EXPIRES_AT_STORAGE_KEY);
@@ -181,7 +178,9 @@ export const refreshStoredAuthToken = async (
 	}
 
 	const refreshedToken = response.data.id_token as string | undefined;
-	const refreshedRefreshToken = response.data.refresh_token as string | undefined;
+	const refreshedRefreshToken = response.data.refresh_token as
+		| string
+		| undefined;
 	const expiresIn = response.data.expires_in as string | undefined;
 
 	if (!refreshedToken) {
@@ -223,10 +222,7 @@ export const resolveValidStoredAuthToken = async () => {
 		return null;
 	}
 
-	if (
-		session.expiresAt &&
-		session.expiresAt - now <= TOKEN_REFRESH_BUFFER_MS
-	) {
+	if (session.expiresAt && session.expiresAt - now <= TOKEN_REFRESH_BUFFER_MS) {
 		refreshPromise ??= refreshStoredAuthToken().finally(() => {
 			refreshPromise = null;
 		});

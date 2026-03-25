@@ -35,4 +35,18 @@ export class UpdateProfileDto {
     description: 'Escola da criança.',
   })
   school?: string;
+
+  @ApiProperty({
+    example: 'https://storage.googleapis.com/example/avatar.png',
+    required: false,
+    description: 'URL do avatar selecionado pelo usuário.',
+  })
+  photoURL?: string;
+
+  @ApiProperty({
+    example: 'anita',
+    required: false,
+    description: 'Slug do personagem usado para filtrar os avatares.',
+  })
+  avatarCharacterSlug?: string;
 }

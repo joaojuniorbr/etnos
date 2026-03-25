@@ -17,6 +17,8 @@ const mockProfile = {
   childBirthDate: '2018-01-01',
   parentPhone: '(41) 99999-9999',
   school: 'Escola Teste',
+  photoURL: 'https://avatar.test/image.png',
+  avatarCharacterSlug: 'anita',
   roles: ['student'],
   role: ['student'],
   createdAt: new Date('2026-03-15T00:00:00.000Z'),

@@ -11,6 +11,9 @@ describe('CharactersService', () => {
       create: jest.Mock;
       update: jest.Mock;
     };
+    midia: {
+      findMany: jest.Mock;
+    };
   };
 
   const mockCharacter = {
@@ -19,6 +22,7 @@ describe('CharactersService', () => {
     slug: 'joao-silva',
     region: 'Asia',
     description: 'Descrição do personagem',
+    avatarUrls: ['https://avatar.test/1.png'],
   };
 
   const mockPrismaService = {
@@ -27,6 +31,15 @@ describe('CharactersService', () => {
       findUnique: jest.fn().mockResolvedValue(mockCharacter),
       create: jest.fn().mockResolvedValue({ id: '123' }),
       update: jest.fn().mockResolvedValue(undefined),
+    },
+    midia: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'midia-1',
+          url: 'https://avatar.test/1.png',
+          folder: 'avatar/joao-silva',
+        },
+      ]),
     },
   };
 
@@ -49,8 +62,18 @@ describe('CharactersService', () => {
   it('deve listar personagens', async () => {
     const result = await service.getCharacters();
 
-    expect(prismaService.character.findMany).toHaveBeenCalledWith();
+    expect(prismaService.character.findMany).toHaveBeenCalledWith({
+      where: undefined,
+    });
     expect(result).toEqual([mockCharacter]);
+  });
+
+  it('deve listar personagens filtrando por slug', async () => {
+    await service.getCharacters('joao-silva');
+
+    expect(prismaService.character.findMany).toHaveBeenCalledWith({
+      where: { slug: 'joao-silva' },
+    });
   });
 
   it('deve buscar por slug', async () => {
@@ -61,6 +84,37 @@ describe('CharactersService', () => {
       where: { slug },
     });
     expect(result).toEqual(mockCharacter);
+  });
+
+  it('deve retornar null ao buscar personagem por slug inexistente', async () => {
+    prismaService.character.findUnique.mockResolvedValueOnce(null);
+
+    const result = await service.getCharacterBySlug('slug-inexistente');
+
+    expect(prismaService.character.findUnique).toHaveBeenCalledWith({
+      where: { slug: 'slug-inexistente' },
+    });
+    expect(result).toBeNull();
+  });
+
+  it('deve listar avatares do personagem pela pasta', async () => {
+    const result = await service.getCharacterAvatars('joao-silva');
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: {
+        folder: 'avatar/joao-silva',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    expect(result).toEqual([
+      {
+        id: 'midia-1',
+        url: 'https://avatar.test/1.png',
+        folder: 'avatar/joao-silva',
+      },
+    ]);
   });
 
   it('deve criar personagem quando slug não existe', async () => {

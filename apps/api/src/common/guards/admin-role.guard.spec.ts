@@ -53,4 +53,12 @@ describe('AdminRoleGuard', () => {
       ForbiddenException,
     );
   });
+
+  it('bloqueia quando o usuario autenticado nao existe no banco', async () => {
+    prismaService.user.findUnique.mockResolvedValueOnce(null);
+
+    await expect(
+      guard.canActivate(createContext({ user: { uid: 'missing-1' } })),
+    ).rejects.toThrow(ForbiddenException);
+  });
 });

@@ -57,7 +57,7 @@ export const getMemoryGameLevelConfig = (
 export const getAvailableMemoryGameLevels = (contentCount: number) =>
 	Array.from(
 		{ length: Math.floor(contentCount / MEMORY_GAME_LEVEL_PAIR_STEP) },
-		(_, index) => getMemoryGameLevelConfig((index + 1) as MemoryGameLevel)
+		(_, index) => getMemoryGameLevelConfig(index + 1)
 	);
 
 export const getMemoryGameLevelContent = (

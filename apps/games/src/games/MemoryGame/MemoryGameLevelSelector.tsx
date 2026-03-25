@@ -26,18 +26,23 @@ export const MemoryGameLevelSelector = ({
 		return null;
 	}
 
+	const heroImageSrc =
+		selectedCharacter?.imageUrl ||
+		(selectedCharacter?.slug
+			? `/images/character/md/${selectedCharacter.slug}.png`
+			: null);
+
 	return (
 		<div className='w-full text-center'>
-			<Image
-				src={
-					selectedCharacter?.imageUrl ||
-					`/images/character/md/${selectedCharacter?.slug}.png`
-				}
-				alt='Etnos'
-				width={256}
-				height={256}
-				className='mx-auto'
-			/>
+			{heroImageSrc ? (
+				<Image
+					src={heroImageSrc}
+					alt='Etnos'
+					width={256}
+					height={256}
+					className='mx-auto'
+				/>
+			) : null}
 			<h2 className='text-2xl font-black text-slate-900'>
 				Escolha o nível para começar
 			</h2>

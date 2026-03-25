@@ -66,4 +66,17 @@ describe('RequestUserOwnershipGuard', () => {
       ),
     ).toThrow(ForbiddenException);
   });
+
+  it('bloqueia quando nao existe usuario autenticado no request', () => {
+    expect(() =>
+      guard.canActivate(
+        createContext({
+          user: undefined,
+          params: {},
+          query: {},
+          body: {},
+        }),
+      ),
+    ).toThrow(ForbiddenException);
+  });
 });

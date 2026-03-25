@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { readFileSync } from 'node:fs';
@@ -8,13 +9,7 @@ import './instrument';
 
 const getReleaseVersion = () => {
   try {
-    const packageJsonPath = resolve(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'package.json',
-    );
+    const packageJsonPath = resolve(process.cwd(), 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       version?: string;
     };
@@ -29,6 +24,12 @@ const releaseVersion = getReleaseVersion();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Etnos')

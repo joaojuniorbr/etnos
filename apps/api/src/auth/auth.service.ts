@@ -225,7 +225,7 @@ export class AuthService {
         },
       );
 
-      logger.info('sendRecoveryEmail', { email });
+      logger.info('sendRecoveryEmail', { status: 'sent' });
 
       return true;
     } catch {
@@ -283,7 +283,7 @@ export class AuthService {
 
   async getProfile(id: string) {
     const data = await this.findProfileByFirebaseUid(id);
-    logger.info('getProfile', { id, data });
+    logger.info('getProfile', { id, exists: !!data });
     return this.mapProfile(data);
   }
 

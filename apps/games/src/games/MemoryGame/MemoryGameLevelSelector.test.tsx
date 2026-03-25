@@ -72,4 +72,25 @@ describe("MemoryGameLevelSelector", () => {
 
     expect(onSelectLevel).toHaveBeenCalledWith(2);
   });
+
+  it("não renderiza imagem hero quando não houver personagem selecionado", () => {
+    render(
+      <MemoryGameLevelSelector
+        availableLevels={[
+          {
+            level: 1,
+            label: "Nível 1",
+            pairs: 3,
+            pointBonus: 100,
+            pointPenalty: 50,
+            pointAddition: 50,
+          },
+        ]}
+        content={[{ name: "chimarrao", image: "/a.jpg" }]}
+        onSelectLevel={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByAltText("Etnos")).toBeNull();
+  });
 });

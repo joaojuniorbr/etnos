@@ -12,6 +12,17 @@ vi.mock('../../services', async () => ({
 	},
 }));
 
+const createDeferred = <T>() => {
+	let resolve!: (value: T) => void;
+	let reject!: (reason?: unknown) => void;
+	const promise = new Promise<T>((res, rej) => {
+		resolve = res;
+		reject = rej;
+	});
+
+	return { promise, resolve, reject };
+};
+
 describe('useCharacter', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -277,6 +288,127 @@ describe('useCharacter', () => {
 
 		await waitFor(() => {
 			expect(result.current.selectedCharacter).toEqual(mockCharacter);
+		});
+	});
+
+	it('não busca a lista quando fetchList for false', async () => {
+		renderHook(() => useCharacter({ fetchList: false }), {
+			wrapper: createWrapper(),
+		});
+
+		expect(charactersService.getCharacters).not.toHaveBeenCalled();
+	});
+
+	it('ignora a resposta de uma busca antiga quando uma mais nova termina depois', async () => {
+		const slowRequest = createDeferred<CharacterInterface | null>();
+		const fastRequest = createDeferred<CharacterInterface | null>();
+
+		vi.mocked(charactersService.getCharacterBySlug).mockImplementation(
+			(slug: string) => {
+				if (slug === 'anita') {
+					return slowRequest.promise as Promise<CharacterInterface>;
+				}
+
+				return fastRequest.promise as Promise<CharacterInterface>;
+			}
+		);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		act(() => {
+			result.current.selectCharacter('anita');
+			result.current.selectCharacter('iara');
+		});
+
+		fastRequest.resolve({ slug: 'iara', name: 'Iara' } as CharacterInterface);
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual({
+				slug: 'iara',
+				name: 'Iara',
+			});
+		});
+
+		slowRequest.resolve({ slug: 'anita', name: 'Anita' } as CharacterInterface);
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual({
+				slug: 'iara',
+				name: 'Iara',
+			});
+		});
+	});
+
+	it('ignora erro de uma busca antiga quando já existe uma seleção mais nova', async () => {
+		const slowRequest = createDeferred<CharacterInterface | null>();
+		const fastRequest = createDeferred<CharacterInterface | null>();
+
+		vi.mocked(charactersService.getCharacterBySlug).mockImplementation(
+			(slug: string) => {
+				if (slug === 'anita') {
+					return slowRequest.promise as Promise<CharacterInterface>;
+				}
+
+				return fastRequest.promise as Promise<CharacterInterface>;
+			}
+		);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		act(() => {
+			result.current.selectCharacter('anita');
+			result.current.selectCharacter('iara');
+		});
+
+		fastRequest.resolve({ slug: 'iara', name: 'Iara' } as CharacterInterface);
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual({
+				slug: 'iara',
+				name: 'Iara',
+			});
+		});
+
+		slowRequest.reject(new Error('stale request failed'));
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual({
+				slug: 'iara',
+				name: 'Iara',
+			});
+		});
+	});
+
+	it('limpa a seleção quando a requisição atual falha', async () => {
+		vi.mocked(charactersService.getCharacterBySlug)
+			.mockResolvedValueOnce({ slug: 'anita', name: 'Anita' } as CharacterInterface)
+			.mockRejectedValueOnce(new Error('current request failed'));
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		act(() => {
+			result.current.selectCharacter('anita');
+		});
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toEqual({
+				slug: 'anita',
+				name: 'Anita',
+			});
+		});
+
+		act(() => {
+			result.current.selectCharacter('iara');
+		});
+
+		await waitFor(() => {
+			expect(result.current.selectedCharacter).toBeUndefined();
 		});
 	});
 });

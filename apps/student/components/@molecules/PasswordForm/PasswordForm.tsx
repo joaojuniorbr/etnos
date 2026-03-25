@@ -9,6 +9,7 @@ export const PasswordForm = () => {
 
 	const [passwordForm] = Form.useForm();
 	const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+	const [isRecoveryLoading, setIsRecoveryLoading] = useState(false);
 
 	const onFinishPassword = async (values: {
 		currentPassword: string;
@@ -29,11 +30,17 @@ export const PasswordForm = () => {
 	};
 
 	const onForgotPassword = async () => {
-		if (!user?.email) {
+		if (!user?.email || isRecoveryLoading) {
 			return;
 		}
 
-		await onRecoveryPass(user.email);
+		setIsRecoveryLoading(true);
+
+		try {
+			await onRecoveryPass(user.email);
+		} finally {
+			setIsRecoveryLoading(false);
+		}
 	};
 
 	return (
@@ -101,6 +108,7 @@ export const PasswordForm = () => {
 					htmlType='button'
 					onClick={onForgotPassword}
 					disabled={!user?.email}
+					loading={isRecoveryLoading}
 				>
 					Esqueci Minha Senha
 				</Button>

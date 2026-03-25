@@ -78,7 +78,7 @@ a sessão ainda esteja dentro da janela de atividade permitida.
 ### Login com Google
 
 1. o frontend usa `signInWithPopup` do Firebase;
-2. o token do Firebase e enviado para `POST /auth/google`;
+2. o token do Firebase é enviado para `POST /auth/google`;
 3. a API valida o token;
 4. se ainda não existir perfil, a API cria um perfil base;
 5. o frontend salva a sessão e passa a consultar `/auth/profile`.

@@ -135,7 +135,6 @@ describe('MidiaController', () => {
     const result = await controller.deleteByBody(req, {
       id: 'm1',
       url: secureUrl,
-      userId: 'u',
     });
 
     expect(service.deleteMidiaById).toHaveBeenCalledWith('m1', 'user-1');

@@ -28,18 +28,12 @@ import {
   FileInterceptor,
 } from '@nestjs/platform-express';
 import { MidiaService } from './midia.service';
-import type { MidiaInterface } from '@etnos/types';
 import { DeleteMidiaDto } from './dto/delete-midia.dto';
 import { MidiaDto } from './dto/midia.dto';
-import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 import { RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Mídia')
-@UseGuards(
-  AuthGuard('firebase-auth'),
-  RequestUserOwnershipGuard,
-  AdminRoleGuard,
-)
+@UseGuards(AuthGuard('firebase-auth'), RequestUserOwnershipGuard)
 @ApiBearerAuth()
 @Controller('midia')
 export class MidiaController {
@@ -127,7 +121,7 @@ export class MidiaController {
   @ApiOperation({ summary: 'Cria registro de mídia' })
   @ApiBody({ type: MidiaDto })
   @ApiResponse({ status: 201, description: 'Registro de mídia criado com sucesso.' })
-  async saveMidia(@Req() req, @Body() body: MidiaInterface) {
+  async saveMidia(@Req() req, @Body() body: MidiaDto) {
     return this.midiaService.saveMidia({
       ...body,
       userId: req.user.uid,
@@ -158,13 +152,13 @@ export class MidiaController {
   @ApiBody({ type: DeleteMidiaDto })
   async deleteByBody(
     @Req() req,
-    @Body() body: MidiaInterface | DeleteMidiaDto,
+    @Body() body: DeleteMidiaDto,
   ) {
-    if ('id' in body && body.id) {
+    if (typeof body.id === 'string' && body.id) {
       return this.midiaService.deleteMidiaById(body.id, req.user.uid);
     }
 
-    if (body.url) {
+    if (typeof body.url === 'string' && body.url) {
       return this.midiaService.deleteMidiaFromUrl(body.url, req.user.uid);
     }
 

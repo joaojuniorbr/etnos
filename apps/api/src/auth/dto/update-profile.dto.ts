@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -6,6 +7,8 @@ export class UpdateProfileDto {
     required: false,
     description: 'Nome do responsável.',
   })
+  @IsOptional()
+  @IsString()
   parentName?: string;
 
   @ApiProperty({
@@ -13,6 +16,8 @@ export class UpdateProfileDto {
     required: false,
     description: 'Nome da criança.',
   })
+  @IsOptional()
+  @IsString()
   childName?: string;
 
   @ApiProperty({
@@ -20,6 +25,8 @@ export class UpdateProfileDto {
     required: false,
     description: 'Data de nascimento da criança (YYYY-MM-DD).',
   })
+  @IsOptional()
+  @IsString()
   childBirthDate?: string;
 
   @ApiProperty({
@@ -27,6 +34,8 @@ export class UpdateProfileDto {
     required: false,
     description: 'Telefone do responsável.',
   })
+  @IsOptional()
+  @IsString()
   parentPhone?: string;
 
   @ApiProperty({
@@ -34,19 +43,27 @@ export class UpdateProfileDto {
     required: false,
     description: 'Escola da criança.',
   })
+  @IsOptional()
+  @IsString()
   school?: string;
 
   @ApiProperty({
     example: 'https://storage.googleapis.com/example/avatar.png',
     required: false,
+    nullable: true,
     description: 'URL do avatar selecionado pelo usuário.',
   })
-  photoURL?: string;
+  @IsOptional()
+  @IsString()
+  photoURL?: string | null;
 
   @ApiProperty({
     example: 'anita',
     required: false,
+    nullable: true,
     description: 'Slug do personagem usado para filtrar os avatares.',
   })
-  avatarCharacterSlug?: string;
+  @IsOptional()
+  @IsString()
+  avatarCharacterSlug?: string | null;
 }

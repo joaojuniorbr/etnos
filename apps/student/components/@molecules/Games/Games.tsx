@@ -2,13 +2,15 @@
 
 import dynamic from 'next/dynamic';
 
+const GameLoading = () => (
+	<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
+);
+
 const GuessGame = dynamic(
 	() => import('@etnos/games/guess-game').then((module) => module.GuessGame),
 	{
 		ssr: false,
-		loading: () => (
-			<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
-		),
+		loading: () => <GameLoading />,
 	}
 );
 
@@ -16,9 +18,7 @@ const MemoryGame = dynamic(
 	() => import('@etnos/games/memory-game').then((module) => module.MemoryGame),
 	{
 		ssr: false,
-		loading: () => (
-			<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
-		),
+		loading: () => <GameLoading />,
 	}
 );
 

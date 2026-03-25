@@ -15,14 +15,43 @@ export class CharactersService {
       where: slug ? { slug } : undefined,
     });
 
-    return Promise.all(
-      characters.map(async (character) => ({
-        ...character,
-        avatarUrls: (await this.getCharacterAvatars(character.slug)).map(
-          (item) => item.url,
-        ),
-      })),
+    const avatarFolders = characters.map((character) =>
+      this.getAvatarFolder(character.slug),
     );
+    const avatarRows = avatarFolders.length
+      ? await this.prismaService.midia.findMany({
+          where: {
+            folder: {
+              in: avatarFolders,
+            },
+          },
+          select: {
+            folder: true,
+            url: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        })
+      : [];
+
+    const avatarsByFolder = avatarRows.reduce<Record<string, string[]>>(
+      (acc, avatar) => {
+        if (!avatar.folder) {
+          return acc;
+        }
+
+        acc[avatar.folder] ??= [];
+        acc[avatar.folder].push(avatar.url);
+        return acc;
+      },
+      {},
+    );
+
+    return characters.map((character) => ({
+      ...character,
+      avatarUrls: avatarsByFolder[this.getAvatarFolder(character.slug)] ?? [],
+    }));
   }
 
   async getCharacterBySlug(slug: string) {

@@ -15,7 +15,8 @@ describe('instrument', () => {
     const integration = { name: 'profiling' };
     const nodeProfilingIntegration = jest.fn(() => integration);
 
-    process.env.SENTRY_DNS = 'https://dsn.example';
+    process.env.SENTRY_DSN = 'https://dsn.example';
+    process.env.NODE_ENV = 'test';
 
     jest.doMock('@sentry/nestjs', () => ({
       init,

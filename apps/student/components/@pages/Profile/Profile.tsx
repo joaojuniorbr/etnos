@@ -106,7 +106,7 @@ export const ProfilePage = () => {
 
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
 	const profileName = user?.childName || (user?.email as string);
-	const selectedSchool = (schools as SchoolInterface[] | undefined)?.find(
+	const selectedSchool = schools?.find(
 		(school) => school.id === user.school
 	);
 	const schoolLabel = selectedSchool?.name || user.school;
@@ -189,12 +189,10 @@ export const ProfilePage = () => {
 										placeholder='Selecione sua escola'
 										loading={isLoadingSchools || isSchoolSaving}
 										disabled={isLoadingSchools || isSchoolSaving}
-										options={(schools as SchoolInterface[] | undefined)?.map(
-											(school) => ({
-												value: school.id,
-												label: school.name,
-											})
-										)}
+										options={schools?.map((school) => ({
+											value: school.id,
+											label: school.name,
+										}))}
 										onChange={onSelectSchool}
 									/>
 								)}

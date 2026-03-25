@@ -72,6 +72,14 @@ export const MemoryGameExperience = ({
 		});
 	}, [availableLevels]);
 
+	useEffect(() => {
+		if (!selectedLevel) {
+			return;
+		}
+
+		setLevelContent(getMemoryGameLevelContent(content, selectedLevel));
+	}, [content, selectedLevel]);
+
 	const currentLevelConfig = selectedLevel
 		? getMemoryGameLevelConfig(selectedLevel)
 		: undefined;

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth';
 import { FirebaseModule } from './firebase';
@@ -14,7 +14,6 @@ import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
-    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

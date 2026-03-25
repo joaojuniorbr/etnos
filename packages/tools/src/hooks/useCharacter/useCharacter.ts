@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import type { CharacterInterface } from "@etnos/types";
@@ -18,26 +18,36 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 
   const [selectedCharacter, setSelectedCharacter] =
     useState<CharacterInterface>();
+  const requestSequenceRef = useRef(0);
 
   const setCharacter = (slug: string) => {
+    const requestId = ++requestSequenceRef.current;
+
     if (!slug) {
       setSelectedCharacter(undefined);
       return;
     }
 
-    charactersService.getCharacterBySlug(slug).then((res) => {
-      if (res) {
-        setSelectedCharacter(res);
-        return;
-      }
+    void charactersService
+      .getCharacterBySlug(slug)
+      .then((res) => {
+        if (requestId !== requestSequenceRef.current) {
+          return;
+        }
 
-      setSelectedCharacter(undefined);
-    });
+        setSelectedCharacter(res ?? undefined);
+      })
+      .catch(() => {
+        if (requestId !== requestSequenceRef.current) {
+          return;
+        }
+
+        setSelectedCharacter(undefined);
+      });
   };
 
   const selectCharacter = (character: string) => {
     localStorage.setItem(CHARACTER_STORAGE_KEY, character);
-    setCharacter(character);
     globalThis.window.dispatchEvent(
       new CustomEvent(CHARACTER_CHANGE_EVENT, {
         detail: { slug: character },

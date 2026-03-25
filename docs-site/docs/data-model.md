@@ -140,7 +140,6 @@ Regras:
 
 - `name` é único no schema atual
 
-Uso típico:
 
 - alimentar seletores de escola no cadastro e no perfil
 
@@ -265,10 +264,7 @@ Observação:
 - o arquivo físico fica no Firebase Storage
 - esta tabela guarda apenas metadados e vínculo com usuário
 - `user_id` referencia `users.firebase_uid`
-
-Uso típico:
-
-- listagem de biblioteca de mídia e organização por pasta
+- também sustenta a listagem da biblioteca de mídia e a organização por pasta
 
 ## Resumo relacional
 

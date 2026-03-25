@@ -2,20 +2,24 @@
 
 import dynamic from 'next/dynamic';
 
+type GameComponentProps = {
+	characterSlug?: string;
+};
+
 const GameLoading = () => (
 	<div className='p-6 text-center text-slate-500'>Carregando jogo...</div>
 );
 
-const GuessGame = dynamic(
-	() => import('@etnos/games/guess-game').then((module) => module.GuessGame),
+const GuessGame = dynamic<GameComponentProps>(
+	() => import('@etnos/games').then((module) => module.GuessGame),
 	{
 		ssr: false,
 		loading: () => <GameLoading />,
 	}
 );
 
-const MemoryGame = dynamic(
-	() => import('@etnos/games/memory-game').then((module) => module.MemoryGame),
+const MemoryGame = dynamic<GameComponentProps>(
+	() => import('@etnos/games').then((module) => module.MemoryGame),
 	{
 		ssr: false,
 		loading: () => <GameLoading />,

@@ -1,3 +1,80 @@
+# [1.4.0](https://github.com/joaojuniorbr/etnos/compare/v1.3.0...v1.4.0) (2026-03-25)
+
+### code review
+
+#### 🔨 Refatoração
+
+* ajustes de issues do sonnar ([31f3fc8](https://github.com/joaojuniorbr/etnos/commit/31f3fc8ef1008ef8b3d19cc379dcb98f3a19a765))
+* ajustes do code review ([cc8436f](https://github.com/joaojuniorbr/etnos/commit/cc8436f72ecab8c08c2bffdb76739c2b7e29daab))
+
+### documentação
+
+#### 📝 Documentação
+
+* atualização da documentação do projeto ([85b2a1c](https://github.com/joaojuniorbr/etnos/commit/85b2a1cf9a13c4a4d8ebf13dff75e07546b2fdfc))
+
+### geral
+
+#### 🧪 CI/CD
+
+* ajustes na pipeline ([35b74cb](https://github.com/joaojuniorbr/etnos/commit/35b74cb1cceac34124774f383d8265f4ac2e202c))
+
+#### 🔀 Merges
+
+* Merge pull request #27 from joaojuniorbr/feature/sprint-3 ([d885437](https://github.com/joaojuniorbr/etnos/commit/d8854372246b356767c7257d8158bd2c1a3a4720))
+
+### jogos
+
+#### ✨ Features (Novidades)
+
+* [CU-86agbzd72] Adicionar nível de dificuldade no jogo da memória ([2fa1ce1](https://github.com/joaojuniorbr/etnos/commit/2fa1ce10a88f591524b8293debe3e88a599b9418))
+
+#### 🔨 Refatoração
+
+* [CU-86agbyfvq] Alterara forma de pontuação do jogo da memória ([46b0c19](https://github.com/joaojuniorbr/etnos/commit/46b0c1932cf72276494e954cd810486b735aac1a))
+
+### monitoramento
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq03w9] Implementar Observabilidade Básica e Logs Estruturados (RNF003) ([03154af](https://github.com/joaojuniorbr/etnos/commit/03154afa8a40f9ad767c31042d29ec8a86256007))
+
+### otimizacao
+
+#### 🔨 Refatoração
+
+* [CU-86afq03yg] Otimização de Performance e Lazy Loading (RNF001) ([823f7d4](https://github.com/joaojuniorbr/etnos/commit/823f7d4feedcef920ec33388ffd1cda173c8a09d))
+
+### perfil
+
+#### ✨ Features (Novidades)
+
+* [CU-86age1qak] Seleção de Avatar no perfil ([703deac](https://github.com/joaojuniorbr/etnos/commit/703deacfa75d7ff662bf27d5ea7dc821f31c271b))
+
+### pipeline
+
+#### 🧪 CI/CD
+
+* ajuste do github actions ([c16e990](https://github.com/joaojuniorbr/etnos/commit/c16e9909156dc8b33ce0b655d106449fa74d0b5e))
+* configuração do coverage de testes do sonnar cloud ([3e46871](https://github.com/joaojuniorbr/etnos/commit/3e4687144870967bca81d02f68c20707cdf4c8a9))
+* configuracoes de typescript do modulo de games ([27b781c](https://github.com/joaojuniorbr/etnos/commit/27b781cf5239ede8e3fcce48ff6f20dfb69e45bf))
+* ajuste no import do componente Games.tsx ([a42083d](https://github.com/joaojuniorbr/etnos/commit/a42083dff93c726c42e3bed5ba6e2561fc92e45e))
+* otimizacao das tarefas de qualidade ([5254108](https://github.com/joaojuniorbr/etnos/commit/52541084ce1b42f543aa489338d6202cae6e3144))
+* ajuste nos jobs do github actions ([7d3cd48](https://github.com/joaojuniorbr/etnos/commit/7d3cd484e8854625a99ff2e432542fcf71392937))
+* mudanças nara o deploy da pipeline ([3172c77](https://github.com/joaojuniorbr/etnos/commit/3172c779f5ac98f29a93a6dd946cc663db90a8c8))
+
+### segurança
+
+#### 🔨 Refatoração
+
+* [CU-86afq03xh] Reforço de Segurança no Firebase (RNF009 / RNF011) ([be7aa7e](https://github.com/joaojuniorbr/etnos/commit/be7aa7e402400b3b13f3e7851ff0ff1d53086ae5))
+
+### senha
+
+#### ✨ Features (Novidades)
+
+* [CU-86age04ga] Criar fluxo de alteração de senha ([fc7a5b0](https://github.com/joaojuniorbr/etnos/commit/fc7a5b0eb6b0fbe81b8224413d256572ce1e4c64))
+
 # [1.3.0](https://github.com/joaojuniorbr/etnos/compare/v1.2.2...v1.3.0) (2026-03-22)
 
 ### controle de sessão

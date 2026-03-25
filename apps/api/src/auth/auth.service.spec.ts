@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  BadRequestException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -68,6 +69,7 @@ describe('AuthService', () => {
         email: 'google@test.com',
         displayName: 'Google User',
       }),
+      updateUser: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-id' }),
     });
   });
@@ -180,6 +182,86 @@ describe('AuthService', () => {
     });
   });
 
+  describe('changePassword', () => {
+    it('deve validar a senha atual e atualizar para a nova senha', async () => {
+      const updateUser = jest.fn().mockResolvedValue({ uid: 'user-123' });
+
+      mockedAdminAuth.mockReturnValue({
+        createUser: jest.fn(),
+        getUserByEmail: jest.fn(),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'user-123',
+          email: TEST_EMAIL,
+        }),
+        updateUser,
+        verifyIdToken: jest.fn(),
+      });
+
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'validated-token',
+        },
+      });
+
+      const result = await service.changePassword(
+        'user-123',
+        TEST_PASSWORD,
+        'nova-senha@123',
+      );
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+        {
+          email: TEST_EMAIL,
+          password: TEST_PASSWORD,
+          returnSecureToken: true,
+        },
+        expect.objectContaining({
+          params: { key: FAKE_FIREBASE_API_KEY },
+        }),
+      );
+      expect(updateUser).toHaveBeenCalledWith('user-123', {
+        password: 'nova-senha@123',
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('deve rejeitar quando a nova senha for igual à atual', async () => {
+      await expect(
+        service.changePassword('user-123', TEST_PASSWORD, TEST_PASSWORD),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve lançar UnauthorizedException quando a senha atual for inválida', async () => {
+      mockedAxios.post.mockRejectedValueOnce(new Error('Invalid credentials'));
+
+      await expect(
+        service.changePassword('user-123', TEST_PASSWORD, 'nova-senha@123'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('deve lançar UnauthorizedException quando o usuário autenticado não possuir email', async () => {
+      mockedAdminAuth.mockReturnValue({
+        createUser: jest.fn(),
+        getUserByEmail: jest.fn(),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'user-123',
+          email: null,
+        }),
+        updateUser: jest.fn(),
+        verifyIdToken: jest.fn(),
+      });
+
+      await expect(
+        service.changePassword('user-123', TEST_PASSWORD, 'nova-senha@123'),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Não foi possível identificar o email do usuário autenticado',
+        ),
+      );
+    });
+  });
+
   describe('updateProfile', () => {
     it('deve atualizar perfil quando usuário existir', async () => {
       prismaService.user.findUnique
@@ -239,14 +321,11 @@ describe('AuthService', () => {
         });
       prismaService.user.update.mockResolvedValueOnce({} as never);
 
-      await service.updateProfile(
-        'user-123',
-        {
-          parentName: 'Novo Nome',
-          role: ['admin'],
-          uid: 'hack',
-        } as any,
-      );
+      await service.updateProfile('user-123', {
+        parentName: 'Novo Nome',
+        role: ['admin'],
+        uid: 'hack',
+      } as any);
 
       expect(prismaService.user.update).toHaveBeenCalledWith({
         where: { firebaseUid: 'user-123' },
@@ -311,7 +390,9 @@ describe('AuthService', () => {
         createUser: jest.fn().mockRejectedValue({
           errorInfo: { code: 'auth/email-already-exists' },
         }),
-        getUserByEmail: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
+        getUserByEmail: jest
+          .fn()
+          .mockResolvedValue({ uid: 'existing-user-id' }),
         verifyIdToken: jest.fn().mockResolvedValue({ uid: 'existing-user-id' }),
       } as any;
       mockedAdminAuth.mockReturnValueOnce(authMock);

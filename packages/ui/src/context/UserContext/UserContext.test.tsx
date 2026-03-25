@@ -37,6 +37,7 @@ describe('UserContext', () => {
 			onSignOut: vi.fn(),
 			onSignInWithEmailAndPassword: vi.fn(),
 			onRecoveryPass: vi.fn(),
+			onChangePassword: vi.fn(),
 			loginWithGoogle: vi.fn(),
 		});
 

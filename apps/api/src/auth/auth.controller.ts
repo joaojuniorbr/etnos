@@ -23,6 +23,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RecoveryDto } from './dto/recovery.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -142,5 +143,34 @@ export class AuthController {
     }
 
     return this.authService.updateProfile(req.user.uid, body);
+  }
+
+  @UseGuards(AuthGuard('firebase-auth'), RequestUserOwnershipGuard)
+  @Post('change-password')
+  @ApiOperation({
+    summary: 'Alterar senha do usuário autenticado',
+    description:
+      'Valida a senha atual do usuário autenticado e atualiza para a nova senha informada.',
+  })
+  @ApiBody({
+    type: ChangePasswordDto,
+    description: 'Senha atual e nova senha desejada.',
+  })
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Senha alterada com sucesso.',
+  })
+  @ApiResponse({ status: 401, description: 'Usuário não autenticado.' })
+  async changePassword(@Req() req, @Body() body: ChangePasswordDto) {
+    if (!req.user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authService.changePassword(
+      req.user.uid,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 }

@@ -5,6 +5,7 @@ import { scoreGamesService, useAuth } from '@etnos/tools';
 import { GameNameEnum, type ScoreInterface } from '@etnos/types';
 import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import { PasswordForm } from '../../@molecules';
 
 export const ProfilePage = () => {
 	const [form] = Form.useForm();
@@ -17,7 +18,9 @@ export const ProfilePage = () => {
 
 	const getScore = useCallback(async () => {
 		if (user) {
-			const allScore = (await scoreGamesService.getScore(user.uid)) as ScoreInterface[];
+			const allScore = (await scoreGamesService.getScore(
+				user.uid
+			)) as ScoreInterface[];
 
 			setGames(allScore);
 
@@ -135,43 +138,58 @@ export const ProfilePage = () => {
 								Salvar Alterações
 							</Button>
 						</div>
-
-						<Divider />
-
-						<>
-							<h2 className='text-xl font-bold text-primary'>Jogos</h2>
-
-							<p className='text-xs text-gray-400 mb-6'>
-								Veja seus melhores resultados nos jogos
-							</p>
-
-							<div className='grid md:grid-cols-2 gap-4'>
-								{games.map((game) => (
-									<div
-										key={game.slug}
-										className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
-									>
-										<Image
-											src={`/games/${game.slug}/cover/${game.characterSlug}.jpg`}
-											alt={game.slug}
-											width={80}
-											height={80}
-											className='object-cover object-center'
-											preview={false}
-										/>
-										<dl>
-											<dt className='text-primary text-xs uppercase'>
-												{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
-											</dt>
-											<dd className='text-xl font-black text-primary'>
-												{game.score}
-											</dd>
-										</dl>
-									</div>
-								))}
-							</div>
-						</>
 					</Form>
+
+					<Divider />
+
+					<div className='mb-6'>
+						<h2 className='text-xl font-bold text-primary mb-2'>
+							Alterar Senha
+						</h2>
+
+						<p className='text-xs text-gray-400'>
+							Informe sua senha atual para definir uma nova senha. Se não
+							lembrar dela, envie um e-mail de redefinição.
+						</p>
+					</div>
+
+					<PasswordForm />
+
+					<Divider />
+
+					<>
+						<h2 className='text-xl font-bold text-primary'>Jogos</h2>
+
+						<p className='text-xs text-gray-400 mb-6'>
+							Veja seus melhores resultados nos jogos
+						</p>
+
+						<div className='grid md:grid-cols-2 gap-4'>
+							{games.map((game) => (
+								<div
+									key={game.slug}
+									className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
+								>
+									<Image
+										src={`/games/${game.slug}/cover/${game.characterSlug}.jpg`}
+										alt={game.slug}
+										width={80}
+										height={80}
+										className='object-cover object-center'
+										preview={false}
+									/>
+									<dl>
+										<dt className='text-primary text-xs uppercase'>
+											{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
+										</dt>
+										<dd className='text-xl font-black text-primary'>
+											{game.score}
+										</dd>
+									</dl>
+								</div>
+							))}
+						</div>
+					</>
 				</div>
 			</div>
 		</div>

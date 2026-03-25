@@ -98,9 +98,9 @@ export const MemoryGameExperience = ({
 	};
 
 	const handleRestart = () => {
-		if (selectedLevel) {
-			setLevelContent(getMemoryGameLevelContent(content, selectedLevel));
-		}
+		setLevelContent(
+			selectedLevel ? getMemoryGameLevelContent(content, selectedLevel) : []
+		);
 
 		initializeGame();
 	};

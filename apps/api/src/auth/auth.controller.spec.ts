@@ -40,6 +40,7 @@ describe('AuthController', () => {
             sendRecoveryEmail: jest.fn(),
             getProfile: jest.fn(),
             updateProfile: jest.fn(),
+            changePassword: jest.fn(),
           },
         },
       ],
@@ -197,10 +198,49 @@ describe('AuthController', () => {
     it('deve lançar UnauthorizedException no updateProfile se req.user não existir', async () => {
       const req = {};
 
-      await expect(controller.updateProfile(req, { parentName: 'Joao' })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        controller.updateProfile(req, { parentName: 'Joao' }),
+      ).rejects.toThrow(UnauthorizedException);
       expect(authService.updateProfile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('deve alterar a senha quando usuário autenticado existir', async () => {
+      authService.changePassword.mockResolvedValueOnce({
+        success: true,
+      } as any);
+
+      const req = {
+        user: {
+          uid: 'user-1',
+        },
+      };
+      const body = {
+        currentPassword: 'senha-atual',
+        newPassword: 'senha-nova',
+      };
+
+      const result = await controller.changePassword(req, body);
+
+      expect(authService.changePassword).toHaveBeenCalledWith(
+        'user-1',
+        'senha-atual',
+        'senha-nova',
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('deve lançar UnauthorizedException no changePassword se req.user não existir', async () => {
+      const req = {};
+
+      await expect(
+        controller.changePassword(req, {
+          currentPassword: 'senha-atual',
+          newPassword: 'senha-nova',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(authService.changePassword).not.toHaveBeenCalled();
     });
   });
 });

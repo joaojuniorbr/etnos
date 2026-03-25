@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -56,23 +57,33 @@ export class AuthService {
     };
   }
 
+  private async authenticateWithEmailAndPassword(
+    email: string,
+    password: string,
+  ) {
+    return axios.post(
+      'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+      {
+        email,
+        password,
+        returnSecureToken: true,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        params: {
+          key: this.firebaseApiKey,
+        },
+      },
+    );
+  }
+
   async loginWithEmailAndPassword(email: string, password: string) {
     try {
-      const response = await axios.post(
-        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
-        {
-          email,
-          password,
-          returnSecureToken: true,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            key: this.firebaseApiKey,
-          },
-        },
+      const response = await this.authenticateWithEmailAndPassword(
+        email,
+        password,
       );
 
       const decoded = await admin.auth().verifyIdToken(response.data.idToken);
@@ -211,6 +222,54 @@ export class AuthService {
       return true;
     } catch {
       throw new UnauthorizedException('Não foi possível enviar o e-mail');
+    }
+  }
+
+  async changePassword(
+    uid: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'A nova senha deve ser diferente da senha atual',
+      );
+    }
+
+    try {
+      const userRecord = await admin.auth().getUser(uid);
+
+      if (!userRecord.email) {
+        throw new UnauthorizedException(
+          'Não foi possível identificar o email do usuário autenticado',
+        );
+      }
+
+      await this.authenticateWithEmailAndPassword(
+        userRecord.email,
+        currentPassword,
+      );
+
+      await admin.auth().updateUser(uid, {
+        password: newPassword,
+      });
+
+      logger.info('changePassword', { uid });
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        'Não foi possível alterar a senha informada',
+      );
     }
   }
 

@@ -17,6 +17,8 @@ model User {
   childBirthDate String?     @map("child_birth_date") @db.VarChar(50)
   parentPhone    String?     @map("parent_phone") @db.VarChar(50)
   school         String?     @db.VarChar(255)
+  photoURL       String?     @map("photo_url")
+  avatarCharacterSlug String? @map("avatar_character_slug") @db.VarChar(255)
   roles          String[]    @default(["student"])
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")

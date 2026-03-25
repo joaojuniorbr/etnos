@@ -25,14 +25,12 @@ e RNFs), abrangendo usabilidade e segurança.
 
 ## RESULTADOS E DISCUSSÃO
 
-O projeto se encontra em fase de desenvolvimento e estruturação. Os resultados
-parciais incluem a definição completa dos RFs e RNFs, detalhando gestão de
-usuários, sistema de personagens e a especificação do primeiro jogo, o Jogo da
-Memória. O Jogo da Memória foi detalhado para implementação com 12 cartas de
-elementos culturais, pontuação baseada em tempo e salvamento de progresso via
-Firebase. Um Painel Administrativo também foi planejado para a gestão de
-usuários/escolas e monitoramento de progresso, garantindo a sustentabilidade
-pedagógica e a atualização contínua do conteúdo.
+O trabalho apresenta a definição dos RFs e RNFs, detalhando a gestão de
+usuários, o sistema de personagens e a especificação do primeiro jogo, o Jogo
+da Memória. O jogo foi descrito com 12 cartas de elementos culturais,
+pontuação baseada em tempo e salvamento de progresso. O painel administrativo
+aparece como parte da estrutura de gestão de usuários, escolas e monitoramento
+de progresso da plataforma.
 
 ### Palavras-chave:
 

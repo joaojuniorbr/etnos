@@ -8,9 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  GamesService,
-} from './games.service';
+import { GamesService } from './games.service';
 import type { MemoryGameContentInterface } from '@etnos/types';
 import {
   ApiBearerAuth,
@@ -18,21 +16,24 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { GameDto } from './dto/game.dto';
 import { SaveScoreDto } from './dto/save-score.dto';
 import { SaveMemoryGameContentDto } from './dto/save-memory-game-content.dto';
+import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Jogos')
-@UseGuards(AuthGuard('firebase-auth'))
+@UseGuards(AuthGuard('firebase-auth'), RequestUserOwnershipGuard)
 @ApiBearerAuth()
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Get()
+  @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Lista todos os jogos configurados' })
   @ApiOkResponse({ type: [GameDto] })
   async getGames(): Promise<GameDto[]> {
@@ -58,6 +59,7 @@ export class GamesController {
   }
 
   @Post('config')
+  @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Cria/atualiza configuração de jogo' })
   @ApiBody({ type: GameDto })
   async saveConfig(@Body() data: GameDto) {
@@ -65,7 +67,14 @@ export class GamesController {
   }
 
   @Delete('config/:gameSlug/:characterSlug')
+  @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Remove configuração de jogo' })
+  @ApiParam({ name: 'gameSlug', required: true, description: 'Slug do jogo' })
+  @ApiParam({
+    name: 'characterSlug',
+    required: true,
+    description: 'Slug do personagem',
+  })
   async removeConfig(
     @Param('gameSlug') gameSlug: string,
     @Param('characterSlug') characterSlug: string,
@@ -74,26 +83,48 @@ export class GamesController {
   }
 
   @Get('memory/:characterSlug')
-  @ApiOperation({ summary: 'Lista conteúdos do jogo da memória por personagem' })
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Lista conteúdos do jogo da memória por personagem',
+  })
+  @ApiParam({
+    name: 'characterSlug',
+    required: true,
+    description: 'Slug do personagem',
+  })
   async getMemoryGameContent(@Param('characterSlug') characterSlug: string) {
     return this.gamesService.getMemoryGameContent(characterSlug);
   }
 
   @Get('memory/images/:characterSlug')
   @ApiOperation({ summary: 'Lista imagens formatadas do jogo da memória' })
+  @ApiParam({
+    name: 'characterSlug',
+    required: true,
+    description: 'Slug do personagem',
+  })
   async getMemoryGameImages(@Param('characterSlug') characterSlug: string) {
     return this.gamesService.getMemoryGameImages(characterSlug);
   }
 
   @Post('memory')
+  @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Salva conteúdo do jogo da memória' })
   @ApiBody({ type: SaveMemoryGameContentDto })
   async saveMemoryGameContent(@Body() data: SaveMemoryGameContentDto) {
-    return this.gamesService.saveMemoryGameContent(data as MemoryGameContentInterface);
+    return this.gamesService.saveMemoryGameContent(
+      data as MemoryGameContentInterface,
+    );
   }
 
   @Delete('memory/:id')
+  @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Remove item do jogo da memória' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID do item do jogo da memória',
+  })
   async deleteMemoryGameContent(@Param('id') id: string) {
     return this.gamesService.deleteMemoryGameContent(id);
   }
@@ -101,6 +132,7 @@ export class GamesController {
   @Post('score')
   @ApiOperation({ summary: 'Salva a pontuação do jogo' })
   @ApiBody({ type: SaveScoreDto })
+  @ApiResponse({ status: 201, description: 'Pontuação salva com sucesso.' })
   async saveScoreGame(@Req() req, @Body() data: SaveScoreDto) {
     return this.gamesService.saveScoreGame({
       slug: data.slug,
@@ -112,6 +144,7 @@ export class GamesController {
 
   @Get('score')
   @ApiOperation({ summary: 'Retorna todas as pontuações do usuário' })
+  @ApiResponse({ status: 200, description: 'Pontuações retornadas com sucesso.' })
   async getScore(@Req() req) {
     return this.gamesService.getScoreByUser(req.user.uid);
   }
@@ -120,6 +153,7 @@ export class GamesController {
   @ApiOperation({ summary: 'Obtém a pontuação do jogo para um usuário' })
   @ApiParam({ name: 'slug', required: true })
   @ApiParam({ name: 'characterSlug', required: true })
+  @ApiResponse({ status: 200, description: 'Pontuação retornada com sucesso.' })
   async getFromGameScore(
     @Req() req,
     @Param('slug') slug: string,
@@ -133,6 +167,7 @@ export class GamesController {
   }
 
   @Get(':gameSlug')
+  @UseGuards(AdminRoleGuard)
   @ApiOkResponse({ type: GameDto })
   @ApiOperation({ summary: 'Busca um jogo por slug' })
   @ApiParam({ name: 'gameSlug', required: true, description: 'Slug do jogo' })

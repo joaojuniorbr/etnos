@@ -6,13 +6,79 @@ import { PrismaService } from 'src/prisma';
 export class CharactersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getCharacters() {
-    return this.prismaService.character.findMany();
+  private getAvatarFolder(slug: string) {
+    return `avatar/${slug}`;
+  }
+
+  async getCharacters(slug?: string) {
+    const characters = await this.prismaService.character.findMany({
+      where: slug ? { slug } : undefined,
+    });
+
+    const avatarFolders = characters.map((character) =>
+      this.getAvatarFolder(character.slug),
+    );
+    const avatarRows = avatarFolders.length
+      ? await this.prismaService.midia.findMany({
+          where: {
+            folder: {
+              in: avatarFolders,
+            },
+          },
+          select: {
+            folder: true,
+            url: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        })
+      : [];
+
+    const avatarsByFolder = avatarRows.reduce<Record<string, string[]>>(
+      (acc, avatar) => {
+        if (!avatar.folder) {
+          return acc;
+        }
+
+        acc[avatar.folder] ??= [];
+        acc[avatar.folder].push(avatar.url);
+        return acc;
+      },
+      {},
+    );
+
+    return characters.map((character) => ({
+      ...character,
+      avatarUrls: avatarsByFolder[this.getAvatarFolder(character.slug)] ?? [],
+    }));
   }
 
   async getCharacterBySlug(slug: string) {
-    return this.prismaService.character.findUnique({
+    const character = await this.prismaService.character.findUnique({
       where: { slug },
+    });
+
+    if (!character) {
+      return null;
+    }
+
+    return {
+      ...character,
+      avatarUrls: (await this.getCharacterAvatars(slug)).map(
+        (item) => item.url,
+      ),
+    };
+  }
+
+  async getCharacterAvatars(slug: string) {
+    return this.prismaService.midia.findMany({
+      where: {
+        folder: this.getAvatarFolder(slug),
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 

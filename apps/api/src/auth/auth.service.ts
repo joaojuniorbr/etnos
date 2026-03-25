@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { logger } from '@sentry/nestjs';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import { PrismaService } from 'src/prisma';
@@ -24,6 +26,8 @@ export class AuthService {
     'childBirthDate',
     'parentPhone',
     'school',
+    'photoURL',
+    'avatarCharacterSlug',
   ]);
 
   private async findProfileByFirebaseUid(firebaseUid: string) {
@@ -32,7 +36,9 @@ export class AuthService {
     });
   }
 
-  private mapProfile(profile: Awaited<ReturnType<AuthService['findProfileByFirebaseUid']>>) {
+  private mapProfile(
+    profile: Awaited<ReturnType<AuthService['findProfileByFirebaseUid']>>,
+  ) {
     if (!profile) {
       return null;
     }
@@ -46,6 +52,8 @@ export class AuthService {
       childBirthDate: profile.childBirthDate,
       parentPhone: profile.parentPhone,
       school: profile.school,
+      photoURL: profile.photoURL,
+      avatarCharacterSlug: profile.avatarCharacterSlug,
       roles: profile.roles,
       role: profile.roles,
       createdAt: profile.createdAt,
@@ -53,23 +61,33 @@ export class AuthService {
     };
   }
 
+  private async authenticateWithEmailAndPassword(
+    email: string,
+    password: string,
+  ) {
+    return axios.post(
+      'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+      {
+        email,
+        password,
+        returnSecureToken: true,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        params: {
+          key: this.firebaseApiKey,
+        },
+      },
+    );
+  }
+
   async loginWithEmailAndPassword(email: string, password: string) {
     try {
-      const response = await axios.post(
-        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
-        {
-          email,
-          password,
-          returnSecureToken: true,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            key: this.firebaseApiKey,
-          },
-        },
+      const response = await this.authenticateWithEmailAndPassword(
+        email,
+        password,
       );
 
       const decoded = await admin.auth().verifyIdToken(response.data.idToken);
@@ -93,7 +111,9 @@ export class AuthService {
     try {
       const decoded = await admin.auth().verifyIdToken(idToken, true);
       const userRecord = await admin.auth().getUser(decoded.uid);
-      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
+      const existingProfile = await this.findProfileByFirebaseUid(
+        userRecord.uid,
+      );
 
       if (!existingProfile) {
         await this.prismaService.user.create({
@@ -105,6 +125,8 @@ export class AuthService {
             childBirthDate: null,
             parentPhone: null,
             school: null,
+            photoURL: userRecord.photoURL ?? null,
+            avatarCharacterSlug: null,
             roles: ['student'],
           },
         });
@@ -150,7 +172,9 @@ export class AuthService {
         userRecord = await admin.auth().getUserByEmail(data.email);
       }
 
-      const existingProfile = await this.findProfileByFirebaseUid(userRecord.uid);
+      const existingProfile = await this.findProfileByFirebaseUid(
+        userRecord.uid,
+      );
 
       if (existingProfile) {
         throw new UnauthorizedException('Email já cadastrado');
@@ -165,6 +189,8 @@ export class AuthService {
           childBirthDate: data.childBirthDate ?? null,
           parentPhone: data.parentPhone ?? null,
           school: data.school ?? null,
+          photoURL: null,
+          avatarCharacterSlug: null,
           roles: ['student'],
         },
       });
@@ -199,14 +225,65 @@ export class AuthService {
         },
       );
 
+      logger.info('sendRecoveryEmail', { status: 'sent' });
+
       return true;
     } catch {
       throw new UnauthorizedException('Não foi possível enviar o e-mail');
     }
   }
 
+  async changePassword(
+    uid: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'A nova senha deve ser diferente da senha atual',
+      );
+    }
+
+    try {
+      const userRecord = await admin.auth().getUser(uid);
+
+      if (!userRecord.email) {
+        throw new UnauthorizedException(
+          'Não foi possível identificar o email do usuário autenticado',
+        );
+      }
+
+      await this.authenticateWithEmailAndPassword(
+        userRecord.email,
+        currentPassword,
+      );
+
+      await admin.auth().updateUser(uid, {
+        password: newPassword,
+      });
+
+      logger.info('changePassword', { uid });
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        'Não foi possível alterar a senha informada',
+      );
+    }
+  }
+
   async getProfile(id: string) {
     const data = await this.findProfileByFirebaseUid(id);
+    logger.info('getProfile', { id, exists: !!data });
     return this.mapProfile(data);
   }
 
@@ -218,6 +295,8 @@ export class AuthService {
       childBirthDate: unknown;
       parentPhone: unknown;
       school: unknown;
+      photoURL: unknown;
+      avatarCharacterSlug: unknown;
     }>,
   ) {
     const user = await this.findProfileByFirebaseUid(id);

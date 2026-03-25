@@ -1,14 +1,52 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import './instrument';
+
+const getReleaseVersion = () => {
+  try {
+    const packageJsonPath = resolve(process.cwd(), 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+      version?: string;
+    };
+
+    return packageJson.version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+};
+
+const releaseVersion = getReleaseVersion();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Etnos')
-    .setVersion('0.0.1')
-    .addBearerAuth()
+    .setDescription(
+      'Documentação da API do Etnos com autenticação, conteúdo, jogos, mídia e endpoints públicos.',
+    )
+    .setVersion(releaseVersion)
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description:
+          'Use o idToken retornado pelos endpoints de autenticação para testar rotas protegidas.',
+      },
+      'bearer',
+    )
     .build();
 
   app.enableCors();
@@ -41,7 +79,7 @@ async function bootstrap() {
         return response;
       },
       requestInterceptor: (request: any) => {
-        if (typeof globalThis.window) {
+        if (globalThis.window === undefined) {
           return request;
         }
         const token = globalThis.window.localStorage.getItem('swagger_token');

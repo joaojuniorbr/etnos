@@ -1,17 +1,12 @@
-# Midia e storage
+# Mídia
 
-## Objetivo
+## Visão geral
 
-Documentar como o Etnos faz upload, catalogacao e remocao de arquivos usando
-Firebase Storage para os binarios e Postgres para os metadados.
+O fluxo de mídia do Etnos é híbrido:
 
-## Visao geral
-
-O fluxo de midia e hibrido:
-
-- o arquivo fisico vai para o `Firebase Storage`;
+- o arquivo físico vai para o `Firebase Storage`;
 - os metadados ficam na tabela `midia` no Postgres;
-- a API centraliza upload, assinatura de URL, listagem e remocao.
+- a API centraliza upload, assinatura de URL, listagem e remoção.
 
 ## Diagrama da arquitetura
 
@@ -27,12 +22,12 @@ flowchart LR
 
 ![Modelagem de Dados](files/flow-midia.png)
 
-## Por que essa separacao existe
+## Como esse fluxo foi organizado
 
-Essa arquitetura permite:
+Essa arquitetura deixa cada parte no lugar certo:
 
 - armazenar arquivos grandes fora do banco;
-- paginar e filtrar assets por usuario e pasta;
+- paginar e filtrar assets por usuário e pasta;
 - reutilizar a mesma biblioteca de imagens no admin;
 - desacoplar o dominio da URL assinada em si.
 
@@ -47,14 +42,14 @@ Essa arquitetura permite:
 5. a API persiste `url`, `folder`, `path` e `userId` na tabela `midia`;
 6. o frontend passa a consumir esse item pela biblioteca de imagens.
 
-### Upload multiplo
+### Upload múltiplo
 
-O endpoint `POST /midia/upload/multiple` repete o mesmo fluxo para varios
+O endpoint `POST /midia/upload/multiple` repete o mesmo fluxo para vários
 arquivos em paralelo.
 
 ## Fluxo de consulta
 
-Os assets sao listados por usuario autenticado com suporte a:
+Os assets são listados por usuário autenticado com suporte a:
 
 - `limit`
 - `page`
@@ -62,12 +57,12 @@ Os assets sao listados por usuario autenticado com suporte a:
 
 O retorno inclui:
 
-- `data`: lista da pagina atual;
-- `nextCursor`: pagina seguinte, quando existir.
+- `data`: lista da página atual;
+- `nextCursor`: página seguinte, quando existir.
 
-## Fluxo de remocao
+## Fluxo de remoção
 
-Existem tres formas principais de apagar um asset:
+Existem três formas principais de apagar um asset:
 
 - por URL, usando `DELETE /midia/by-url`;
 - por ID, usando `DELETE /midia/:id`;
@@ -75,9 +70,9 @@ Existem tres formas principais de apagar um asset:
 
 Em todos os casos, a API tenta:
 
-1. localizar o registro do usuario;
+1. localizar o registro do usuário;
 2. resolver o caminho real no bucket;
-3. apagar o arquivo fisico;
+3. apagar o arquivo físico;
 4. remover o metadado do Postgres.
 
 ## Diagrama de sequencia
@@ -120,9 +115,9 @@ Indices relevantes:
 - indice por `userId`
 - indice por `folder`
 
-## Convencoes importantes
+## Convenções importantes
 
-### Pasta logica
+### Pasta lógica
 
 O campo `folder` funciona como agrupador funcional dos assets. Exemplos:
 
@@ -130,25 +125,25 @@ O campo `folder` funciona como agrupador funcional dos assets. Exemplos:
 - `games/dandara`
 - `uploads`
 
-Essa convencao e importante porque a interface administrativa usa a pasta para
+Essa convenção é importante porque a interface administrativa usa a pasta para
 filtrar a biblioteca de imagens.
 
-### Caminho fisico
+### Caminho físico
 
-O `path` identifica o arquivo real no bucket. Quando ele nao existe, a API pode
-reconstruir o caminho a partir da URL assinada.
+O `path` identifica o arquivo real no bucket. Quando ele não existe, a API
+reconstrói o caminho a partir da URL assinada.
 
 ### Signed URL
 
-As URLs de leitura sao assinadas com validade muito longa, o que simplifica o
-consumo no frontend e no admin sem exigir nova assinatura a cada acesso.
+As URLs de leitura são assinadas com validade muito longa, o que simplifica o
+consumo no frontend e no admin.
 
-## Integracao com o painel administrativo
+## Integração com o admin
 
-O fluxo de jogos depende diretamente da arquitetura de midia:
+O fluxo de jogos depende diretamente da arquitetura de mídia:
 
-- a capa do jogo da memoria pode ser escolhida da biblioteca de imagens;
-- as cartas do jogo da memoria sao selecionadas a partir dos assets de uma pasta
+- a capa do jogo da memória vem da biblioteca de imagens;
+- as cartas do jogo da memória são selecionadas a partir dos assets de uma pasta
   por personagem;
 - o componente `ImageLibrary` depende da listagem paginada da API.
 
@@ -163,17 +158,8 @@ O fluxo de jogos depende diretamente da arquitetura de midia:
 - `DELETE /midia/:id`
 - `DELETE /midia`
 
-## Dependencias externas
+## Dependências externas
 
 - `Firebase Storage`
 - `PostgreSQL`
 - `Prisma`
-
-## Pontos de atencao
-
-- a remocao fisica do arquivo e a remocao do metadado precisam permanecer
-  consistentes;
-- pastas mal definidas dificultam curadoria de assets;
-- URLs assinadas muito longas simplificam uso, mas merecem politica clara de
-  acesso;
-- assets de jogos e conteudos do admin dependem dessa camada para funcionar bem.

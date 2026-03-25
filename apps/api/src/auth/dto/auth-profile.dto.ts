@@ -24,6 +24,12 @@ export class ProfileResponseDto {
   @ApiProperty()
   childBirthDate: boolean;
 
+  @ApiProperty({ required: false })
+  photoURL?: string | null;
+
+  @ApiProperty({ required: false })
+  avatarCharacterSlug?: string | null;
+
   @ApiProperty({ type: [String] })
   roles: string[];
 

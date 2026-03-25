@@ -20,9 +20,10 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { SchoolDto } from './dto/school.dto';
+import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 
 @ApiTags('Escolas')
-@UseGuards(AuthGuard('firebase-auth'))
+@UseGuards(AuthGuard('firebase-auth'), AdminRoleGuard)
 @ApiBearerAuth()
 @Controller('schools')
 export class SchoolsController {

@@ -1,18 +1,14 @@
 # Arquitetura de Banco de Dados
 
-## Objetivo
-
-Documentar como a API usa a stack de dados atual:
-
-- `Firebase Auth` para identidade
-- `Firebase Storage` para arquivos
-- `PostgreSQL` para persistência de domínio
-- `Prisma` para acesso ao banco
-
 ## Visão geral
 
-A aplicação deixou de usar o Firestore como banco principal. O backend NestJS
-passou a centralizar as regras de negócio e a persistir os dados no Postgres.
+No Etnos, a API concentra as regras de negócio e usa uma stack de dados bem
+dividida:
+
+- `Firebase Auth` para identidade;
+- `Firebase Storage` para arquivos;
+- `PostgreSQL` para os dados de domínio;
+- `Prisma` para acessar o banco.
 
 Fluxo principal:
 
@@ -48,7 +44,7 @@ flowchart LR
 
 ### Firebase Auth
 
-Responsável por:
+Cuida de:
 
 - login com e-mail e senha
 - login com Google
@@ -59,7 +55,7 @@ O backend usa o `firebaseUid` como elo entre identidade e perfil.
 
 ### PostgreSQL
 
-Responsável por:
+É onde ficam:
 
 - perfis de usuário
 - escolas
@@ -71,7 +67,7 @@ Responsável por:
 
 ### Prisma
 
-Responsável por:
+É a camada que:
 
 - mapear o schema relacional
 - gerar o client tipado
@@ -82,40 +78,32 @@ Arquivo principal do schema:
 
 - `apps/api/prisma/schema.prisma`
 
-## Decisões de arquitetura
+## Como essa arquitetura foi organizada
 
 ### 1. Auth separado de perfil
 
-O usuário autentica no Firebase, mas o perfil de negócio fica no Postgres.
-
-Isso permite:
-
-- reaproveitar o mesmo backend para web e app nativo
-- centralizar regras no servidor
-- evoluir o domínio sem depender do SDK do Firestore
+O usuário autentica no Firebase, mas o perfil de negócio fica no Postgres. Com
+isso, o mesmo backend atende web e app nativo, as regras ficam centralizadas no
+servidor e o domínio continua desacoplado do SDK do banco no frontend.
 
 ### 2. Storage separado de metadados
 
 Os arquivos continuam no Firebase Storage, mas os metadados ficam em `midia`.
 
-Isso permite:
-
-- paginação e filtros no banco relacional
-- vínculo com usuário
-- futura troca de storage sem reestruturar o domínio
+Assim, a API consegue paginar, filtrar e relacionar arquivos com usuários sem
+misturar tudo no bucket.
 
 ### 3. API como fonte de verdade
 
 O frontend não deve conhecer detalhes do banco. Toda regra de acesso, validação
 e persistência passa pela API.
 
-## Benefícios da arquitetura atual
+## O que isso traz para o projeto
 
 - backend mais consistente para web e app nativo
 - regras de negócio centralizadas no servidor
 - modelagem explícita e versionada com Prisma
 - menor acoplamento do domínio ao SDK de banco do frontend
-- documentação mais simples de manter
 
 ## Convenções adotadas
 
@@ -135,7 +123,7 @@ e persistência passa pela API.
 
 ## Operação do banco
 
-Comandos mais usados:
+Comandos mais usados no dia a dia:
 
 ```bash
 yarn prisma:generate

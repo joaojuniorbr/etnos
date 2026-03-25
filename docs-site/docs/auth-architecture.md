@@ -1,24 +1,27 @@
-# Autenticacao e sessao
+# Autenticação
 
-## Objetivo
+## Visão geral
 
-Documentar como o Etnos autentica usuarios, protege rotas e mantem sessoes
-ativas com seguranca no frontend e na API.
+No Etnos, a autenticação acontece em duas frentes: o `Firebase Auth` cuida da
+identidade do usuário, e a API cuida do perfil da plataforma. Em outras
+palavras, o login nasce no Firebase, mas os dados de negócio vivem no Postgres.
 
-## Componentes envolvidos
+As peças principais desse fluxo são:
 
-- `Firebase Auth`: identidade, emissao de token e recuperacao de senha.
-- `apps/api`: validacao do token e persistencia do perfil.
-- `packages/tools/useAuth`: fluxo de login, cadastro, logout e perfil.
-- `packages/tools/authSession`: armazenamento local, refresh e expiração por
-  inatividade.
-- `packages/ui/AuthProtected`: bloqueio de rotas autenticadas.
+- `Firebase Auth`, que faz login, cadastro, recuperação de senha e emissão de
+  token;
+- `apps/api`, que valida o token e busca o perfil do usuário;
+- `packages/tools/useAuth`, que organiza login, cadastro, logout e perfil no
+  frontend;
+- `packages/tools/authSession`, que guarda a sessão local e faz o refresh do
+  token;
+- `packages/ui/AuthProtected`, que protege as áreas autenticadas.
 
-## Visao geral do fluxo
+## Como o fluxo funciona
 
 ```mermaid
 flowchart LR
-    A["Usuario"] --> B["Frontend Next.js"]
+    A["Usuário"] --> B["Frontend Next.js"]
     B --> C["Firebase Auth"]
     B --> D["API NestJS"]
     C --> D
@@ -27,86 +30,89 @@ flowchart LR
 
 ![Modelagem de Dados](files/auth-flow.png)
 
-## Principios da arquitetura
+O caminho é simples: o usuário entra pelo frontend, o Firebase confirma a
+identidade, a API valida o token e o Postgres devolve o perfil completo.
 
-### 1. Identidade separada de perfil
+## O que cada parte faz
 
-O Firebase e responsavel pela identidade tecnica do usuario. Ja o perfil de
-negocio do Etnos fica no Postgres.
+### Identidade e perfil
 
-Na pratica:
+O Firebase é responsável pela identidade técnica do usuário. Já o perfil do
+Etnos fica salvo no Postgres.
 
-- Firebase guarda credenciais e emite `idToken`;
-- a API valida o token e usa `uid` como chave de integracao;
-- o perfil do usuario e carregado da tabela `users`.
+Na prática:
 
-### 2. API como fronteira de negocio
+- o Firebase guarda as credenciais e emite o `idToken`;
+- a API valida esse token e usa o `uid` como chave de integração;
+- o perfil é carregado a partir da tabela `users`.
 
-O frontend nao fala diretamente com o banco. Mesmo em autenticacao, o cliente
-nao decide regras de perfil nem persistencia do dominio.
+### API como fronteira
 
-### 3. Sessao controlada no frontend
+O frontend não conversa direto com o banco. Toda regra de autenticação, perfil e
+persistência passa pela API.
 
-O token e mantido no navegador e renovado quando esta perto de expirar, desde
-que a sessao ainda esteja dentro da janela de atividade permitida.
+### Sessão no frontend
+
+O token fica no navegador e é renovado quando está perto de expirar, desde que
+a sessão ainda esteja dentro da janela de atividade permitida.
 
 ## Fluxos principais
 
-### Login com email e senha
+### Login com e-mail e senha
 
-1. o frontend envia email e senha para `POST /auth/login`;
-2. a API delega a validacao ao endpoint do Firebase Identity Toolkit;
+1. o frontend envia e-mail e senha para `POST /auth/login`;
+2. a API delega a validação ao endpoint do Firebase Identity Toolkit;
 3. a API valida o `idToken` recebido;
 4. a API busca o perfil pelo `firebaseUid`;
-5. o frontend salva `idToken`, `refreshToken`, expiracao e ultima atividade no
+5. o frontend salva `idToken`, `refreshToken`, expiração e última atividade no
    `localStorage`.
 
-### Cadastro com email e senha
+### Cadastro com e-mail e senha
 
 1. o frontend envia dados para `POST /auth/register`;
-2. a API cria o usuario no Firebase;
+2. a API cria o usuário no Firebase;
 3. a API cria o perfil no Postgres;
-4. a API retorna a sessao autenticada;
-5. o frontend persiste a sessao localmente.
+4. a API retorna a sessão autenticada;
+5. o frontend persiste a sessão localmente.
 
 ### Login com Google
 
 1. o frontend usa `signInWithPopup` do Firebase;
-2. o token do Firebase e enviado para `POST /auth/google`;
+2. o token do Firebase é enviado para `POST /auth/google`;
 3. a API valida o token;
-4. se ainda nao existir perfil, a API cria um perfil base;
-5. o frontend salva a sessao e passa a consultar `/auth/profile`.
+4. se ainda não existir perfil, a API cria um perfil base;
+5. o frontend salva a sessão e passa a consultar `/auth/profile`.
 
-### Recuperacao de senha
+### Recuperação de senha
 
 1. o frontend chama `POST /auth/recovery`;
-2. a API usa o Firebase Identity Toolkit para disparar o email de reset.
+2. a API usa o Firebase Identity Toolkit para disparar o e-mail de reset.
 
-## Fluxo de perfil autenticado
+## Perfil autenticado
 
 ```mermaid
 sequenceDiagram
     participant UI as Frontend
     participant SESSION as authSession
     participant API as API /auth/profile
-    participant FIREBASE as firebase-auth strategy
+    participant FIREBASE as "firebase-auth strategy"
     participant DB as PostgreSQL
 
-    UI->>SESSION: resolve token valido
+    UI->>SESSION: resolve token válido
     SESSION-->>UI: retorna bearer token
     UI->>API: GET /auth/profile
     API->>FIREBASE: verifyIdToken
     FIREBASE-->>API: uid autenticado
     API->>DB: busca user por firebaseUid
     DB-->>API: retorna perfil
-    API-->>UI: responde dados do usuario
+    API-->>UI: responde dados do usuário
 ```
 
 ![Modelagem de Dados](files/profile-sequence.png)
 
-## Gestao de sessao no frontend
+## Sessão no frontend
 
-Os dados de sessao sao armazenados em chaves locais:
+Os dados da sessão ficam nestas chaves locais:
 
 - `etnos_auth_token`
 - `etnos_auth_refresh_token`
@@ -115,14 +121,14 @@ Os dados de sessao sao armazenados em chaves locais:
 
 ### Regras principais
 
-- toda request autenticada passa por um interceptor Axios;
-- antes da request, o frontend tenta resolver um token valido;
-- se o token estiver perto da expiracao, ocorre refresh automatico;
-- se a sessao exceder o limite de inatividade, os dados locais sao limpos.
+- toda requisição autenticada passa por um interceptor Axios;
+- antes da requisição, o frontend tenta resolver um token válido;
+- se o token estiver perto da expiração, acontece refresh automático;
+- se a sessão passar do limite de inatividade, os dados locais são limpos.
 
 ### Inatividade
 
-O limite atual de inatividade e de **8 dias**. A atividade do usuario e
+O limite atual de inatividade é de **8 dias**. A atividade do usuário é
 atualizada em eventos como:
 
 - `pointerdown`
@@ -130,21 +136,21 @@ atualizada em eventos como:
 - `scroll`
 - `visibilitychange`
 
-## Protecao de rotas
+## Proteção de rotas
 
 `student` e `admin` usam `AuthProtected`, que:
 
 - espera o carregamento do perfil;
-- redireciona para `/login` quando nao existe usuario autenticado;
-- renderiza loading enquanto a consulta de perfil esta em andamento.
+- redireciona para `/login` quando não existe usuário autenticado;
+- renderiza um loading enquanto a consulta de perfil está em andamento.
 
 ## Responsabilidades por camada
 
 ### Frontend
 
 - iniciar login ou cadastro;
-- salvar e renovar sessao;
-- enviar bearer token nas requests;
+- salvar e renovar sessão;
+- enviar bearer token nas requisições;
 - bloquear rotas autenticadas;
 - editar perfil com `POST /auth/profile`.
 
@@ -153,15 +159,15 @@ atualizada em eventos como:
 - validar token com `passport-firebase-jwt`;
 - mapear `uid` para perfil no banco;
 - criar perfil inicial em cadastro e Google login;
-- limitar atualizacao de perfil a campos permitidos.
+- limitar atualização de perfil a campos permitidos.
 
 ### Banco
 
-Na tabela `users`, o campo central da integracao e:
+Na tabela `users`, o campo central da integração é:
 
 - `firebase_uid`
 
-Esse campo conecta identidade do Firebase ao perfil do Etnos.
+É esse campo que conecta a identidade do Firebase ao perfil do Etnos.
 
 ## Endpoints principais
 
@@ -190,10 +196,3 @@ Esse campo conecta identidade do Firebase ao perfil do Etnos.
 - `FIREBASE_API_KEY`
 - `FIREBASE_BASE64`
 - `FIREBASE_STORAGE_BUCKET`
-
-## Riscos e pontos de atencao
-
-- qualquer problema no refresh do token pode causar logout aparente no frontend;
-- divergencias entre usuario no Firebase e perfil no Postgres afetam o acesso;
-- apps autenticados dependem do `GET /auth/profile` para consolidar a sessao;
-- o frontend usa `localStorage`, entao a sessao e estritamente client-side.

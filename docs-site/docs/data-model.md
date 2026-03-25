@@ -2,9 +2,9 @@
 
 ## Visão geral
 
-O banco principal da API é relacional e modelado em Prisma. Abaixo está a
-documentação das tabelas atuais e de como elas representam o domínio da
-aplicação.
+O banco principal da API é relacional e modelado em Prisma. Esta página mostra
+como as tabelas se conectam e como o domínio do Etnos foi organizado no
+Postgres.
 
 ## Arquivos relacionados
 
@@ -120,11 +120,8 @@ Regras:
 - `firebase_uid` é único
 - o usuário autentica no Firebase, mas o perfil é salvo aqui
 
-Observação:
-
-- o campo persistido hoje se chama `school`, mas semanticamente ele representa o
-  `schoolId`
-- essa relação aponta para `schools.id`
+Na prática, o campo persistido hoje se chama `school`, mas ele representa o
+`schoolId` e aponta para `schools.id`.
 
 ### `schools`
 
@@ -143,9 +140,8 @@ Regras:
 
 - `name` é único no schema atual
 
-Uso típico:
 
-- popular combos e seletores de escola no cadastro/perfil
+- alimentar seletores de escola no cadastro e no perfil
 
 ### `characters`
 
@@ -168,7 +164,7 @@ Regras:
 
 Uso típico:
 
-- catálogo principal da experiência cultural e base dos jogos
+- servir como catálogo principal da experiência cultural e base dos jogos
 
 ### `game_configs`
 
@@ -193,7 +189,7 @@ Regras:
 
 Uso típico:
 
-- capa/configuração do `memory-game` para cada personagem
+- guardar a capa e a configuração visual do `memory-game` para cada personagem
 
 ### `memory_game_contents`
 
@@ -208,14 +204,12 @@ Campos principais:
 - `created_at`
 - `updated_at`
 
-Observação:
-
-- `character_id` referencia `characters.id`
-- o campo `slug` continua sendo usado nas consultas por personagem
+Aqui, `character_id` referencia `characters.id`, e o campo `slug` continua
+sendo usado nas consultas por personagem.
 
 Uso típico:
 
-- montar as cartas/imagens do jogo da memória por personagem
+- montar as cartas e imagens do jogo da memória por personagem
 
 ### `game_scores`
 
@@ -235,14 +229,12 @@ Regras:
 
 - combinação `slug + character_slug + user_id` é única
 
-Observação:
-
-- `character_slug` referencia `characters.slug`
-- `user_id` referencia `users.firebase_uid`
+Aqui, `character_slug` referencia `characters.slug` e `user_id` referencia
+`users.firebase_uid`.
 
 Uso típico:
 
-- recuperar progresso e desempenho do estudante por jogo
+- recuperar o desempenho do estudante por jogo
 
 ### `midia`
 
@@ -258,6 +250,10 @@ Campos principais:
 - `created_at`
 - `updated_at`
 
+Uso típico:
+
+- organizar a biblioteca de imagens usada pelo admin e pelos jogos
+
 Regras:
 
 - índice por `user_id`
@@ -268,10 +264,7 @@ Observação:
 - o arquivo físico fica no Firebase Storage
 - esta tabela guarda apenas metadados e vínculo com usuário
 - `user_id` referencia `users.firebase_uid`
-
-Uso típico:
-
-- listagem de biblioteca de mídia e organização por pasta
+- também sustenta a listagem da biblioteca de mídia e a organização por pasta
 
 ## Resumo relacional
 
@@ -296,14 +289,6 @@ Alguns vínculos ainda carregam nomes herdados da estrutura anterior,
 principalmente o campo `users.school`, que semanticamente funciona como
 `schoolId`. Na documentação, essas relações aparecem do ponto de vista do
 domínio, mesmo quando o nome físico da coluna ainda é legado.
-
-### Evoluções naturais no futuro
-
-Se o domínio crescer, os próximos passos mais naturais de modelagem seriam:
-
-- transformar `users.school` em relação explícita com `schools`
-- manter coerência entre os nomes físicos das colunas e a semântica do domínio
-- criar tabelas adicionais para auditoria, progresso e permissões, se necessário
 
 ## Índices e unicidade
 

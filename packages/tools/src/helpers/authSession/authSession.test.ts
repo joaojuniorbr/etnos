@@ -75,6 +75,27 @@ describe('authSession', () => {
 		});
 	});
 
+	it('ignora números inválidos armazenados no localStorage', () => {
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) => {
+					if (key === AUTH_TOKEN_STORAGE_KEY) return 'token-123';
+					if (key === AUTH_REFRESH_TOKEN_STORAGE_KEY) return 'refresh-123';
+					if (key === AUTH_EXPIRES_AT_STORAGE_KEY) return 'not-a-number';
+					if (key === AUTH_LAST_ACTIVITY_STORAGE_KEY) return 'NaN';
+					return null;
+				}),
+			},
+		} as unknown as Window);
+
+		expect(getStoredSession()).toEqual({
+			token: 'token-123',
+			refreshToken: 'refresh-123',
+			expiresAt: null,
+			lastActivityAt: null,
+		});
+	});
+
 	it('atualiza a última atividade', () => {
 		const setItem = vi.fn();
 		vi.stubGlobal('window', {
@@ -89,6 +110,12 @@ describe('authSession', () => {
 			AUTH_LAST_ACTIVITY_STORAGE_KEY,
 			'12345'
 		);
+	});
+
+	it('não tenta atualizar atividade sem window', () => {
+		vi.stubGlobal('window', undefined);
+
+		expect(() => updateAuthActivity(12345)).not.toThrow();
 	});
 
 	it('salva token, refresh token e expiração', () => {
@@ -123,6 +150,68 @@ describe('authSession', () => {
 		);
 	});
 
+	it('salva apenas o token quando refreshToken ou expiresIn forem inválidos', () => {
+		const setItem = vi.fn();
+		vi.stubGlobal('window', {
+			localStorage: {
+				setItem,
+			},
+		} as unknown as Window);
+
+		saveStoredAuthSession({
+			idToken: 'token-123',
+			refreshToken: '',
+			expiresIn: 'abc',
+		});
+
+		expect(setItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY, 'token-123');
+		expect(setItem).not.toHaveBeenCalledWith(
+			AUTH_REFRESH_TOKEN_STORAGE_KEY,
+			expect.anything()
+		);
+		expect(setItem).not.toHaveBeenCalledWith(
+			AUTH_EXPIRES_AT_STORAGE_KEY,
+			expect.anything()
+		);
+	});
+
+	it('não grava expiração quando expiresIn não for informado', () => {
+		const setItem = vi.fn();
+		vi.stubGlobal('window', {
+			localStorage: {
+				setItem,
+			},
+		} as unknown as Window);
+
+		saveStoredAuthSession({
+			idToken: 'token-123',
+			refreshToken: 'refresh-123',
+			expiresIn: null,
+		});
+
+		expect(setItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY, 'token-123');
+		expect(setItem).toHaveBeenCalledWith(
+			AUTH_REFRESH_TOKEN_STORAGE_KEY,
+			'refresh-123'
+		);
+		expect(setItem).not.toHaveBeenCalledWith(
+			AUTH_EXPIRES_AT_STORAGE_KEY,
+			expect.anything()
+		);
+	});
+
+	it('não tenta salvar sessão sem window', () => {
+		vi.stubGlobal('window', undefined);
+
+		expect(() =>
+			saveStoredAuthSession({
+				idToken: 'token-123',
+				refreshToken: 'refresh-123',
+				expiresIn: '3600',
+			})
+		).not.toThrow();
+	});
+
 	it('limpa toda a sessão armazenada', () => {
 		const removeItem = vi.fn();
 		vi.stubGlobal('window', {
@@ -137,6 +226,12 @@ describe('authSession', () => {
 		expect(removeItem).toHaveBeenCalledWith(AUTH_REFRESH_TOKEN_STORAGE_KEY);
 		expect(removeItem).toHaveBeenCalledWith(AUTH_EXPIRES_AT_STORAGE_KEY);
 		expect(removeItem).toHaveBeenCalledWith(AUTH_LAST_ACTIVITY_STORAGE_KEY);
+	});
+
+	it('não tenta limpar sessão sem window', () => {
+		vi.stubGlobal('window', undefined);
+
+		expect(() => clearStoredAuthSession()).not.toThrow();
 	});
 
 	it('identifica quando a sessão excedeu o limite de inatividade', () => {
@@ -154,6 +249,7 @@ describe('authSession', () => {
 				now
 			)
 		).toBe(false);
+		expect(hasSessionExceededInactivityLimit(null, now)).toBe(false);
 	});
 
 	it('renova token usando refresh token armazenado', async () => {
@@ -378,6 +474,44 @@ describe('authSession', () => {
 		await expect(tokenPromise).resolves.toBe('token-antigo');
 	});
 
+	it('retorna null se o refresh expirar e a sessão atual já estiver vencida', async () => {
+		const storage = new Map<string, string>();
+		const now = Date.now();
+		vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', 'firebase-key');
+		vi.useFakeTimers();
+
+		storage.set(AUTH_TOKEN_STORAGE_KEY, 'token-antigo');
+		storage.set(AUTH_REFRESH_TOKEN_STORAGE_KEY, 'refresh-antigo');
+		storage.set(AUTH_EXPIRES_AT_STORAGE_KEY, String(now - 1));
+		storage.set(AUTH_LAST_ACTIVITY_STORAGE_KEY, String(now));
+
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn((key: string) => storage.get(key) ?? null),
+				setItem: vi.fn((key: string, value: string) => {
+					storage.set(key, value);
+				}),
+				removeItem: vi.fn((key: string) => {
+					storage.delete(key);
+				}),
+			},
+		} as unknown as Window);
+
+		axiosPostMock.mockImplementationOnce(
+			(_url: string, _body: URLSearchParams, config?: { signal?: AbortSignal }) =>
+				new Promise((_, reject) => {
+					config?.signal?.addEventListener('abort', () => {
+						reject(new Error('refresh aborted'));
+					});
+				})
+		);
+
+		const tokenPromise = resolveValidStoredAuthToken();
+		await vi.advanceTimersByTimeAsync(5_000);
+
+		await expect(tokenPromise).resolves.toBeNull();
+	});
+
 	it('propaga erro quando o refresh falha sem timeout', async () => {
 		vi.stubGlobal('window', {
 			localStorage: {
@@ -417,5 +551,16 @@ describe('authSession', () => {
 
 		await expect(resolveValidStoredAuthToken()).resolves.toBeNull();
 		expect(removeItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
+	});
+
+	it('retorna null quando não existe token armazenado', async () => {
+		vi.stubGlobal('window', {
+			localStorage: {
+				getItem: vi.fn(() => null),
+				removeItem: vi.fn(),
+			},
+		} as unknown as Window);
+
+		await expect(resolveValidStoredAuthToken()).resolves.toBeNull();
 	});
 });

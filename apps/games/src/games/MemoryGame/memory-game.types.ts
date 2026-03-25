@@ -10,3 +10,12 @@ export type MemoryGameCard = MemoryGameCardContent & {
 };
 
 export type MemoryGameSound = 'flip' | 'success' | 'error' | 'finish';
+
+export type MemoryGameLevelConfig = {
+	level: number;
+	label: string;
+	pairs: number;
+	pointBonus: number;
+	pointPenalty: number;
+	pointAddition: number;
+};

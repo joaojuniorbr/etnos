@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import {
 	RiArrowLeftRightFill,
 	RiCheckDoubleLine,
@@ -9,14 +10,19 @@ import {
 import { Spin } from 'antd';
 import Image from 'next/image';
 import { FinishGame, ScoreHighlight } from '../../components';
+import { MemoryGameLevelSelector } from './MemoryGameLevelSelector';
 import { useMemoryGame } from './useMemoryGame';
 import { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
 import { CharacterInterface } from '@etnos/types';
+import {
+	getAvailableMemoryGameLevels,
+	getMemoryGameLevelConfig,
+	getMemoryGameLevelContent,
+} from './memory-game.utils';
 
 type MemoryGameExperienceProps = {
 	content: MemoryGameCardContent[];
 	bestScore?: number;
-	characterSlug?: string;
 	coverImage?: string;
 	isLoading?: boolean;
 	matchDelayMs?: number;
@@ -35,6 +41,43 @@ export const MemoryGameExperience = ({
 	onSaveScore,
 	selectedCharacter,
 }: MemoryGameExperienceProps) => {
+	const availableLevels = useMemo(
+		() => getAvailableMemoryGameLevels(content.length),
+		[content.length]
+	);
+	const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
+
+	useEffect(() => {
+		if (!availableLevels.length) {
+			setSelectedLevel(null);
+			setLevelContent([]);
+			return;
+		}
+
+		setSelectedLevel((currentLevel) => {
+			if (!currentLevel) {
+				return null;
+			}
+
+			return availableLevels.some((level) => level.level === currentLevel)
+				? currentLevel
+				: null;
+		});
+	}, [availableLevels]);
+
+	useEffect(() => {
+		if (!selectedLevel) {
+			return;
+		}
+
+		setLevelContent(getMemoryGameLevelContent(content, selectedLevel));
+	}, [content, selectedLevel]);
+
+	const currentLevelConfig = selectedLevel
+		? getMemoryGameLevelConfig(selectedLevel)
+		: undefined;
+
 	const {
 		cards,
 		handleCardClick,
@@ -45,18 +88,97 @@ export const MemoryGameExperience = ({
 		score,
 		totalPairs,
 	} = useMemoryGame({
-		content,
+		content: levelContent,
+		levelConfig: currentLevelConfig,
 		matchDelayMs,
 		onPlaySound,
 	});
 
+	const handleSelectLevel = (level: number) => {
+		setSelectedLevel(level);
+		setLevelContent(getMemoryGameLevelContent(content, level));
+	};
+
 	const handleRestart = () => {
+		const levelToRestart = selectedLevel ?? availableLevels[0]?.level;
+
+		if (!levelToRestart) {
+			return;
+		}
+
+		setLevelContent(getMemoryGameLevelContent(content, levelToRestart));
+
 		initializeGame();
 	};
 
 	const handleSaveScore = async () => {
 		await onSaveScore?.(score);
 	};
+
+	let contentView: React.ReactNode;
+
+	if (selectedLevel === null) {
+		contentView = (
+			<MemoryGameLevelSelector
+				availableLevels={availableLevels}
+				content={content}
+				onSelectLevel={handleSelectLevel}
+				selectedCharacter={selectedCharacter}
+			/>
+		);
+	} else if (isFinished) {
+		contentView = (
+			<FinishGame
+				selectedCharacter={selectedCharacter}
+				isLoading={isLoading}
+				isLoser={false}
+				handleRestart={handleRestart}
+				handleSaveScore={handleSaveScore}
+			/>
+		);
+	} else {
+		contentView = (
+			<div className='grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 lg:grid-cols-8 w-full'>
+				{cards.map((card) => (
+					<button
+						key={card.id}
+						onClick={() => handleCardClick(card.id)}
+						className={`
+							relative rounded-lg shadow-md aspect-square w-full
+							cursor-pointer transform transition-transform duration-500
+							${card.isFlipped || card.isMatched ? 'rotate-y-180' : ''}
+							${card.isMatched ? 'opacity-50 pointer-events-none' : ''}
+						`}
+						style={{ perspective: '1000px' }}
+					>
+						<div
+							className={`absolute inset-0 rounded-lg flex items-center justify-center transform transition-transform duration-500 backface-hidden ${card.isFlipped || card.isMatched ? 'rotate-y-180' : 'rotate-y-0'}`}
+						>
+							<Image
+								src={coverImage ?? ''}
+								alt={selectedCharacter?.name ?? 'Carta virada'}
+								width={500}
+								height={500}
+								className='object-cover aspect-square rounded'
+							/>
+						</div>
+
+						<div
+							className={`absolute inset-0 backface-hidden rounded-lg overflow-hidden transform transition-transform duration-500 ${card.isFlipped || card.isMatched ? 'rotate-y-0' : 'rotate-y-180'}`}
+						>
+							<Image
+								src={card.image}
+								alt={card.name}
+								width={500}
+								height={500}
+								className='object-cover aspect-square rounded'
+							/>
+						</div>
+					</button>
+				))}
+			</div>
+		);
+	}
 
 	return (
 		<Spin spinning={isLoading}>
@@ -90,55 +212,7 @@ export const MemoryGameExperience = ({
 					</div>
 				</div>
 
-				{isFinished ? (
-					<FinishGame
-						selectedCharacter={selectedCharacter}
-						isLoading={isLoading}
-						isLoser={false}
-						handleRestart={handleRestart}
-						handleSaveScore={handleSaveScore}
-					/>
-				) : (
-					<div className='grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 lg:grid-cols-8 w-full'>
-						{cards.map((card) => (
-							<button
-								key={card.id}
-								onClick={() => handleCardClick(card.id)}
-								className={`
-									relative rounded-lg shadow-md aspect-square w-full
-									cursor-pointer transform transition-transform duration-500
-									${card.isFlipped || card.isMatched ? 'rotate-y-180' : ''}
-									${card.isMatched ? 'opacity-50 pointer-events-none' : ''}
-								`}
-								style={{ perspective: '1000px' }}
-							>
-								<div
-									className={`absolute inset-0 rounded-lg flex items-center justify-center transform transition-transform duration-500 backface-hidden ${card.isFlipped || card.isMatched ? 'rotate-y-180' : 'rotate-y-0'}`}
-								>
-									<Image
-										src={coverImage ?? ''}
-										alt={selectedCharacter?.name ?? 'Carta virada'}
-										width={500}
-										height={500}
-										className='object-cover aspect-square rounded'
-									/>
-								</div>
-
-								<div
-									className={`absolute inset-0 backface-hidden rounded-lg overflow-hidden transform transition-transform duration-500 ${card.isFlipped || card.isMatched ? 'rotate-y-0' : 'rotate-y-180'}`}
-								>
-									<Image
-										src={card.image}
-										alt={card.name}
-										width={500}
-										height={500}
-										className='object-cover aspect-square rounded'
-									/>
-								</div>
-							</button>
-						))}
-					</div>
-				)}
+				{contentView}
 			</div>
 		</Spin>
 	);

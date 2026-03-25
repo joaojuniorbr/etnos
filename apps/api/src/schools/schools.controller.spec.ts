@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolsController } from './schools.controller';
 import { SchoolsService } from './schools.service';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 
 describe('SchoolsController', () => {
   let controller: SchoolsController;
@@ -23,7 +25,12 @@ describe('SchoolsController', () => {
           useValue: mockSchoolsService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard('firebase-auth'))
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(AdminRoleGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<SchoolsController>(SchoolsController);
     service = module.get<SchoolsService>(SchoolsService);

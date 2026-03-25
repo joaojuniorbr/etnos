@@ -5,7 +5,6 @@ import * as admin from 'firebase-admin';
 @Injectable()
 export class FirebaseService implements OnModuleInit {
   private readonly logger = new Logger(FirebaseService.name);
-  private firestore: admin.firestore.Firestore;
   private app: admin.app.App;
 
   constructor(private readonly configService: ConfigService) {}
@@ -37,7 +36,6 @@ export class FirebaseService implements OnModuleInit {
         storageBucket,
       });
 
-      this.firestore = this.app.firestore();
       this.logger.log(
         `Firebase inicializado com sucesso (bucket: ${storageBucket})`,
       );

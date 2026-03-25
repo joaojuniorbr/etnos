@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { MemoryGameCard, MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
-import { createMemoryGameDeck, resolveMemoryGameTurn } from './memory-game.utils';
+import type {
+	MemoryGameCard,
+	MemoryGameCardContent,
+	MemoryGameLevelConfig,
+	MemoryGameSound,
+} from './memory-game.types';
+import {
+	createMemoryGameDeck,
+	getMemoryGameLevelConfig,
+	resolveMemoryGameTurn,
+} from './memory-game.utils';
 
 type UseMemoryGameProps = {
 	content: MemoryGameCardContent[];
+	levelConfig?: MemoryGameLevelConfig;
 	matchDelayMs?: number;
 	onPlaySound?: (sound: MemoryGameSound) => void;
 };
@@ -12,6 +22,7 @@ const DEFAULT_MATCH_DELAY_MS = 1000;
 
 export const useMemoryGame = ({
 	content,
+	levelConfig = getMemoryGameLevelConfig(1),
 	matchDelayMs = DEFAULT_MATCH_DELAY_MS,
 	onPlaySound,
 }: UseMemoryGameProps) => {
@@ -21,6 +32,7 @@ export const useMemoryGame = ({
 	const [score, setScore] = useState(0);
 	const [moves, setMoves] = useState(0);
 	const [isFinished, setIsFinished] = useState(false);
+	const [consecutiveMatches, setConsecutiveMatches] = useState(0);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const initializeGame = useCallback(() => {
@@ -31,6 +43,7 @@ export const useMemoryGame = ({
 			setIsFinished(false);
 			setFlippedCards([]);
 			setIsChecking(false);
+			setConsecutiveMatches(0);
 			return;
 		}
 
@@ -44,6 +57,7 @@ export const useMemoryGame = ({
 		setIsFinished(false);
 		setFlippedCards([]);
 		setIsChecking(false);
+		setConsecutiveMatches(0);
 	}, [content]);
 
 	useEffect(() => {
@@ -88,12 +102,15 @@ export const useMemoryGame = ({
 				const result = resolveMemoryGameTurn(
 					nextCards,
 					nextFlippedCards as [number, number],
-					score
+					score,
+					consecutiveMatches,
+					levelConfig
 				);
 
 				setCards(result.cards);
 				setScore(result.score);
 				setIsFinished(result.isFinished);
+				setConsecutiveMatches(result.consecutiveMatches);
 
 				if (result.isMatch) {
 					onPlaySound?.('success');
@@ -109,7 +126,17 @@ export const useMemoryGame = ({
 				setIsChecking(false);
 			}, matchDelayMs);
 		},
-		[cards, flippedCards, isChecking, isFinished, matchDelayMs, onPlaySound, score]
+		[
+			cards,
+			consecutiveMatches,
+			flippedCards,
+			isChecking,
+			isFinished,
+			levelConfig,
+			matchDelayMs,
+			onPlaySound,
+			score,
+		]
 	);
 
 	const totalPairs = content.length;

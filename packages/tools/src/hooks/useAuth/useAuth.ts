@@ -64,7 +64,7 @@ export const useAuth = () => {
 		enabled: Boolean(getStoredAuthToken()),
 	});
 
-	const cleanDataForFirestore = (data: any) => {
+	const normalizeProfilePayload = (data: any) => {
 		return Object.keys(data).reduce((acc: any, key) => {
 			acc[key] = data[key] === undefined ? null : data[key];
 			return acc;
@@ -146,10 +146,7 @@ export const useAuth = () => {
 				? new Date(tokenResult.expirationTime).getTime()
 				: null;
 			const expiresIn = expirationTime
-				? Math.max(
-						Math.floor((expirationTime - Date.now()) / 1000),
-						0
-				  )
+				? Math.max(Math.floor((expirationTime - Date.now()) / 1000), 0)
 				: undefined;
 
 			saveStoredAuthSession({
@@ -192,9 +189,29 @@ export const useAuth = () => {
 		}
 	};
 
+	const onChangePassword = async (
+		currentPassword: string,
+		newPassword: string
+	) => {
+		setIsLoading(true);
+		try {
+			await api.post('/auth/change-password', {
+				currentPassword,
+				newPassword,
+			});
+			message.success('Senha alterada com sucesso!');
+			return true;
+		} catch (error) {
+			message.error(errorMessage(error, 'Erro ao alterar a senha.'));
+			return false;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const updateUserProfile = async (profile: Partial<UserProfileInterface>) => {
 		try {
-			const dataToSave = cleanDataForFirestore(profile);
+			const dataToSave = normalizeProfilePayload(profile);
 
 			await api.post('/auth/profile', dataToSave);
 
@@ -247,6 +264,7 @@ export const useAuth = () => {
 		onSignOut,
 		onSignInWithEmailAndPassword,
 		onRecoveryPass,
+		onChangePassword,
 		loginWithGoogle,
 	};
 };

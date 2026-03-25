@@ -1,6 +1,6 @@
 'use client';
 
-import { MemoryGame, GuessGame } from '@etnos/games';
+import { GuessGame, MemoryGame } from '@etnos/games';
 
 export type GameType = 'memory-game' | 'guess-game';
 

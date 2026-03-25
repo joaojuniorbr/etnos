@@ -1,19 +1,19 @@
 # Arquitetura dos jogos
 
-## Visao geral
+## Visão geral
 
-Os jogos do Etnos foram organizados para separar bem experiencia visual, regras
-de negocio, integracao com API e persistencia. A feature de games hoje atravessa
-seis partes principais do monorepo:
+Os jogos do Etnos foram organizados para separar bem experiência visual, regras
+do jogo, integração com API e persistência. Hoje essa parte passa por seis áreas
+principais do monorepo:
 
-- `apps/student`: entrega a experiencia jogavel para o estudante.
-- `apps/admin`: permite configurar conteudo e capas dos jogos.
+- `apps/student`: entrega a experiência jogável para o estudante.
+- `apps/admin`: permite configurar conteúdo e capas dos jogos.
 - `apps/games`: biblioteca React com os jogos reutilizaveis.
-- `apps/api`: expoe endpoints autenticados para configuracao, conteudo e score.
+- `apps/api`: expõe endpoints autenticados para configuração, conteúdo e score.
 - `packages/tools`: hooks e services que conectam frontend e API.
 - `packages/types`: enums e interfaces compartilhadas entre apps e pacotes.
 
-## Fluxo de alto nivel
+## Fluxo geral
 
 ```mermaid
 flowchart LR
@@ -37,7 +37,7 @@ flowchart LR
 
 ### `apps/student`
 
-O portal do estudante controla navegacao, breadcrumb e contexto da experiencia.
+O portal do estudante controla navegação, breadcrumb e contexto da experiência.
 As paginas de jogos ficam em `app/jogos` e delegam a renderizacao para o
 componente `Games`, que decide qual jogo da biblioteca deve ser exibido.
 
@@ -45,12 +45,12 @@ Responsabilidades principais:
 
 - selecionar o tipo de jogo pela rota;
 - recuperar o personagem via query string;
-- renderizar o layout da experiencia no contexto do estudante.
+- renderizar o layout da experiência no contexto do estudante.
 
 ### `apps/games`
 
-E a biblioteca compartilhada de jogos. Ela concentra a interface, os estados do
-jogo e os componentes reutilizaveis como placar e tela final.
+É a biblioteca compartilhada de jogos. Ela concentra a interface, os estados do
+jogo e os componentes reutilizáveis, como placar e tela final.
 
 Hoje a biblioteca exporta:
 
@@ -59,8 +59,8 @@ Hoje a biblioteca exporta:
 - `FinishGame`
 - `ScoreHighlight`
 
-Isso permite que o `student` consuma um jogo pronto sem duplicar logica de
-pontuacao, feedback visual ou integracao com score.
+Assim, o `student` consome um jogo pronto sem duplicar lógica de pontuação,
+feedback visual ou integração com score.
 
 ### `packages/tools`
 
@@ -70,42 +70,42 @@ Faz a ponte entre UI e backend. Nessa camada ficam:
   `useMemoryGameContent`;
 - services HTTP como `scoreGamesService`, `configGamesService` e
   `memoryGameContentService`;
-- utilitarios de experiencia, incluindo listagem dos jogos e reproducao de sons.
+- utilitários de experiência, incluindo listagem dos jogos e reprodução de sons.
 
 ### `apps/admin`
 
-O painel administrativo opera o lado editorial dos jogos. No caso do jogo da
-memoria, o admin consegue:
+O painel administrativo cuida do lado editorial dos jogos. No caso do jogo da
+memória, o admin consegue:
 
 - definir a imagem de capa por personagem;
 - selecionar as imagens que formam o baralho;
-- remover itens de conteudo cadastrados.
+- remover itens de conteúdo cadastrados.
 
 ### `apps/api`
 
-Centraliza as regras de persistencia. A controller `games.controller.ts` oferece
+Centraliza as regras de persistência. A controller `games.controller.ts` oferece
 endpoints para:
 
-- configuracao de capa por jogo e personagem;
-- cadastro e remocao de conteudo do jogo da memoria;
+- configuração de capa por jogo e personagem;
+- cadastro e remoção de conteúdo do jogo da memória;
 - consulta e gravacao de pontuacoes;
 - listagem de imagens formatadas para o frontend.
 
-## Arquitetura do jogo da memoria
+## Jogo da memória
 
-O jogo da memoria foi estruturado como uma experiencia configuravel por
-personagem. Em vez de ter cartas fixas dentro da aplicacao, o frontend consome
-um conjunto de imagens cadastrado pelo admin e o transforma em um tabuleiro.
+O jogo da memória foi estruturado como uma experiência configurável por
+personagem. Em vez de deixar cartas fixas dentro da aplicação, o frontend busca
+um conjunto de imagens cadastrado no admin e transforma isso em tabuleiro.
 
 ### Componentes principais
 
-- `MemoryGame.tsx`: ponto de integracao entre hooks, score, configuracao e UI.
+- `MemoryGame.tsx`: ponto de integração entre hooks, score, configuração e UI.
 - `MemoryGameExperience.tsx`: renderiza placar, grid de cartas e tela final.
 - `useMemoryGame.ts`: gerencia estado do tabuleiro, pares, movimentos e score.
-- `memory-game.utils.ts`: utilitarios de preparacao e embaralhamento das cartas.
+- `memory-game.utils.ts`: utilitários de preparação e embaralhamento das cartas.
 - `memory-game.types.ts`: contratos locais da feature.
 
-### Fluxo do jogo da memoria
+### Fluxo do jogo da memória
 
 ```mermaid
 sequenceDiagram
@@ -118,7 +118,7 @@ sequenceDiagram
 
     U->>S: abre /estudante/jogos/jogo-da-memoria?personagem=anita
     S->>G: renderiza <MemoryGame characterSlug="anita" />
-    G->>T: busca score, configuracao e conteudo
+    G->>T: busca score, configuração e conteúdo
     T->>A: GET /games/score/memory-game/anita
     T->>A: GET /games/config/by-game/memory-game
     T->>A: GET /games/memory/images/anita
@@ -128,7 +128,7 @@ sequenceDiagram
     T-->>G: entrega capa, recorde e cartas
     G-->>U: exibe tabuleiro
     U->>G: joga e conclui a partida
-    G->>T: salva pontuacao final
+    G->>T: salva pontuação final
     T->>A: POST /games/score
     A->>DB: upsert do score
     DB-->>A: score salvo
@@ -138,14 +138,14 @@ sequenceDiagram
 
 ![Modelagem de Dados](files/memory-game-flow.png)
 
-## Modelo de configuracao do jogo da memoria
+## Como o jogo é montado
 
-Existem duas fontes principais para montar a experiencia:
+Para montar a experiência, o jogo usa duas fontes principais.
 
-### 1. Configuracao visual
+### 1. Configuração visual
 
-Persistida como configuracao de jogo por personagem. Nela fica, por exemplo, a
-imagem de capa usada no verso das cartas.
+Fica salva como configuração de jogo por personagem. É daí que sai, por
+exemplo, a imagem de capa usada no verso das cartas.
 
 Campos relevantes:
 
@@ -153,10 +153,10 @@ Campos relevantes:
 - `characterSlug`
 - `imageCoverUrl`
 
-### 2. Conteudo do baralho
+### 2. Conteúdo do baralho
 
-Persistido em itens de conteudo do jogo da memoria. Cada registro representa uma
-imagem disponivel para duplicacao e montagem dos pares.
+Fica salvo nos itens de conteúdo do jogo da memória. Cada registro representa
+uma imagem disponível para duplicação e montagem dos pares.
 
 Campos relevantes:
 
@@ -167,47 +167,34 @@ Campos relevantes:
 
 ## Como o score funciona
 
-O score do jogo da memoria fica vinculado a tres dimensoes:
+O score do jogo da memória fica vinculado a três dimensões:
 
 - jogo;
 - personagem;
-- usuario.
+- usuário.
 
-Na API, a gravacao e feita com `upsert`, o que simplifica o fluxo de atualizar o
-recorde do estudante sem criar duplicidade para a mesma combinacao.
+Na API, a gravação é feita com `upsert`, o que simplifica a atualização do
+recorde do estudante sem criar duplicidade para a mesma combinação.
 
-## Relacao entre admin e experiencia do estudante
+## Relação com o admin
 
-O jogo da memoria depende diretamente do painel administrativo:
+O jogo da memória depende diretamente do painel administrativo:
 
 - se o admin altera a capa, o verso das cartas muda no frontend;
 - se o admin adiciona ou remove imagens, o conjunto de pares muda no jogo;
-- se nao houver conteudo configurado para um personagem, o frontend fica sem
-  cartas para montar a partida.
+- sem conteúdo configurado para um personagem, o frontend fica sem cartas para
+  montar a partida.
 
-Essa separacao reduz deploys para ajustes de conteudo e deixa a equipe livre
-para evoluir a curadoria das cartas sem alterar o codigo do jogo.
+Essa separação deixa a curadoria do conteúdo no admin e a experiência jogável
+no student, cada um no seu papel.
 
-## Adicionando novos jogos
+## Jogos da plataforma
 
-O fluxo atual favorece expansao incremental:
-
-1. criar a implementacao em `apps/games/src/games`;
-2. exportar o jogo em `apps/games/src/games/index.ts`;
-3. conectar o jogo em `student/components/@molecules/Games/Games.tsx`;
-4. registrar nome, descricao e rota em
-   `packages/tools/src/hooks/useGames/useGames.ts`;
-5. criar pagina no `student`;
-6. adicionar configuracao administrativa e endpoints, se o jogo precisar de
-   conteudo dinamico ou persistencia.
-
-## Estado atual
-
-Hoje a arquitetura de jogos cobre dois desafios principais:
+Hoje a arquitetura de jogos cobre dois desafios:
 
 - `guess-game`
 - `memory-game`
 
-O jogo da memoria e a feature mais configuravel da camada de games neste
-momento, porque combina edicao de conteudo, configuracao visual por personagem e
-persistencia de score por usuario.
+O jogo da memória é o mais configurável dessa camada, porque junta edição de
+conteúdo, configuração visual por personagem e persistência de score por
+usuário.

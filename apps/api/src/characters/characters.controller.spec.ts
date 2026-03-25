@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CharactersController } from './characters.controller';
 import { CharactersService } from './characters.service';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
 
 describe('CharactersController', () => {
   let controller: CharactersController;
@@ -17,6 +19,9 @@ describe('CharactersController', () => {
   const mockCharactersService = {
     getCharacters: jest.fn().mockResolvedValue([mockCharacter]),
     getCharacterBySlug: jest.fn().mockResolvedValue(mockCharacter),
+    getCharacterAvatars: jest
+      .fn()
+      .mockResolvedValue([{ id: 'midia-1', url: 'https://avatar.test/1.png' }]),
     save: jest.fn().mockResolvedValue(mockCharacter),
     update: jest.fn().mockResolvedValue(mockCharacter),
   };
@@ -30,7 +35,12 @@ describe('CharactersController', () => {
           useValue: mockCharactersService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard('firebase-auth'))
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(AdminRoleGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<CharactersController>(CharactersController);
     service = module.get<CharactersService>(CharactersService);
@@ -41,7 +51,13 @@ describe('CharactersController', () => {
     const result = await controller.getCharacters();
 
     expect(result).toEqual([mockCharacter]);
-    expect(service.getCharacters).toHaveBeenCalledTimes(1);
+    expect(service.getCharacters).toHaveBeenCalledWith(undefined);
+  });
+
+  it('deve retornar personagens filtrados por slug', async () => {
+    await controller.getCharacters('joao-silva');
+
+    expect(service.getCharacters).toHaveBeenCalledWith('joao-silva');
   });
 
   it('deve retornar um personagem específico baseado no slug', async () => {
@@ -50,6 +66,15 @@ describe('CharactersController', () => {
 
     expect(result).toEqual(mockCharacter);
     expect(service.getCharacterBySlug).toHaveBeenCalledWith(slug);
+  });
+
+  it('deve retornar os avatares de um personagem', async () => {
+    const result = await controller.getCharacterAvatars('joao-silva');
+
+    expect(service.getCharacterAvatars).toHaveBeenCalledWith('joao-silva');
+    expect(result).toEqual([
+      { id: 'midia-1', url: 'https://avatar.test/1.png' },
+    ]);
   });
 
   it('deve salvar personagem', async () => {

@@ -1,11 +1,15 @@
 {
 	"extends": "@etnos/typescript-config/nextjs.json",
 	"compilerOptions": {
+		"baseUrl": ".",
 		"plugins": [
 			{
 				"name": "next"
 			}
-		]
+		],
+		"paths": {
+			"@etnos/games": ["../games/src/index.ts"]
+		}
 	},
 	"include": [
 		"**/*.ts",

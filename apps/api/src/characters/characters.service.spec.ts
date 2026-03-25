@@ -76,6 +76,47 @@ describe('CharactersService', () => {
     });
   });
 
+  it('deve ignorar mídias sem folder ao montar avatarUrls', async () => {
+    prismaService.midia.findMany.mockResolvedValueOnce([
+      {
+        id: 'midia-1',
+        url: 'https://avatar.test/1.png',
+        folder: 'avatar/joao-silva',
+      },
+      {
+        id: 'midia-2',
+        url: 'https://avatar.test/2.png',
+        folder: null,
+      },
+    ]);
+
+    const result = await service.getCharacters();
+
+    expect(result).toEqual([mockCharacter]);
+  });
+
+  it('deve evitar consulta de mídias quando não houver personagens', async () => {
+    prismaService.character.findMany.mockResolvedValueOnce([]);
+
+    const result = await service.getCharacters();
+
+    expect(result).toEqual([]);
+    expect(prismaService.midia.findMany).not.toHaveBeenCalled();
+  });
+
+  it('deve retornar avatarUrls vazio quando não houver mídia para o personagem', async () => {
+    prismaService.midia.findMany.mockResolvedValueOnce([]);
+
+    const result = await service.getCharacters();
+
+    expect(result).toEqual([
+      {
+        ...mockCharacter,
+        avatarUrls: [],
+      },
+    ]);
+  });
+
   it('deve buscar por slug', async () => {
     const slug = 'joao-silva';
     const result = await service.getCharacterBySlug(slug);

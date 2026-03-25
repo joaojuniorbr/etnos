@@ -79,7 +79,7 @@ async function bootstrap() {
         return response;
       },
       requestInterceptor: (request: any) => {
-        if (typeof globalThis.window === 'undefined') {
+        if (globalThis.window === undefined) {
           return request;
         }
         const token = globalThis.window.localStorage.getItem('swagger_token');

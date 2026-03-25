@@ -27,11 +27,11 @@ Sentry.init({
   enableLogs: true,
   tracesSampleRate: parseNumberEnv(
     process.env.SENTRY_TRACES_SAMPLE_RATE,
-    isProduction ? 0.1 : 1.0,
+    isProduction ? 0.1 : 1,
   ),
   profileSessionSampleRate: parseNumberEnv(
     process.env.SENTRY_PROFILE_SESSION_SAMPLE_RATE,
-    isProduction ? 0 : 1.0,
+    isProduction ? 0 : 1,
   ),
   profileLifecycle: 'trace',
   sendDefaultPii: parseBooleanEnv(

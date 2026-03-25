@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { RiStarFill, RiStarSLine } from 'react-icons/ri';
 import type {
 	MemoryGameCardContent,
-	MemoryGameLevel,
 	MemoryGameLevelConfig,
 } from './memory-game.types';
 import type { CharacterInterface } from '@etnos/types';
@@ -12,7 +11,7 @@ import type { CharacterInterface } from '@etnos/types';
 type MemoryGameLevelSelectorProps = {
 	availableLevels: MemoryGameLevelConfig[];
 	content: MemoryGameCardContent[];
-	onSelectLevel: (level: MemoryGameLevel) => void;
+	onSelectLevel: (level: number) => void;
 	selectedCharacter?: CharacterInterface;
 };
 

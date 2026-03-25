@@ -1,7 +1,6 @@
 import type {
 	MemoryGameCard,
 	MemoryGameCardContent,
-	MemoryGameLevel,
 	MemoryGameLevelConfig,
 } from './memory-game.types';
 
@@ -44,7 +43,7 @@ export const createMemoryGameDeck = (
 	);
 
 export const getMemoryGameLevelConfig = (
-	level: MemoryGameLevel
+	level: number
 ): MemoryGameLevelConfig => ({
 	level,
 	label: `Nível ${level}`,
@@ -62,7 +61,7 @@ export const getAvailableMemoryGameLevels = (contentCount: number) =>
 
 export const getMemoryGameLevelContent = (
 	content: MemoryGameCardContent[],
-	level: MemoryGameLevel,
+	level: number,
 	shuffle: <T>(items: T[]) => T[] = shuffleArray
 ) => shuffle(content).slice(0, getMemoryGameLevelConfig(level).pairs);
 

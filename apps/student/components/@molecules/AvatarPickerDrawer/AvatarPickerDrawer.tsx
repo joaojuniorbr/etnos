@@ -118,35 +118,29 @@ export const AvatarPickerDrawer = ({
 				</div>
 
 				{selectedCharacterSlug ? (
-					avatarsError ? (
-						<p className='text-sm text-slate-500'>
-							Não foi possível carregar os avatares.
-						</p>
-					) : (
-						<div className='grid grid-cols-2 gap-4 md:grid-cols-5'>
-							{avatars.map((avatar) => {
-								const isSelected = user.photoURL === avatar.url;
+					<div className='grid grid-cols-2 gap-4 md:grid-cols-5'>
+						{avatars.map((avatar) => {
+							const isSelected = user.photoURL === avatar.url;
 
-								return (
-									<button
-										key={avatar.id || avatar.url}
-										type='button'
-										onClick={() => handleSelectAvatar(avatar.url)}
-										className={`rounded border overflow-hidden flex w-full ${
-											isSelected ? 'border-primary border-2' : 'border-none'
-										}`}
-									>
-										<Image
-											src={avatar.url}
-											alt='Avatar do personagem'
-											preview={false}
-											className='aspect-square object-cover'
-										/>
-									</button>
-								);
-							})}
-						</div>
-					)
+							return (
+								<button
+									key={avatar.id || avatar.url}
+									type='button'
+									onClick={() => handleSelectAvatar(avatar.url)}
+									className={`rounded border overflow-hidden flex w-full ${
+										isSelected ? 'border-primary border-2' : 'border-none'
+									}`}
+								>
+									<Image
+										src={avatar.url}
+										alt='Avatar do personagem'
+										preview={false}
+										className='aspect-square object-cover'
+									/>
+								</button>
+							);
+						})}
+					</div>
 				) : (
 					<p className='text-sm text-slate-500'>
 						Selecione um personagem para visualizar os avatares.

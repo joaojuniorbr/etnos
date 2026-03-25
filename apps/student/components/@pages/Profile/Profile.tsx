@@ -11,11 +11,7 @@ import {
 	Select,
 } from 'antd';
 import { scoreGamesService, useAuth, useSchools } from '@etnos/tools';
-import {
-	GameNameEnum,
-	type ScoreInterface,
-	type SchoolInterface,
-} from '@etnos/types';
+import { GameNameEnum, type ScoreInterface } from '@etnos/types';
 import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { AvatarPickerDrawer, PasswordForm } from '../../@molecules';
@@ -106,9 +102,7 @@ export const ProfilePage = () => {
 
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
 	const profileName = user?.childName || (user?.email as string);
-	const selectedSchool = schools?.find(
-		(school) => school.id === user.school
-	);
+	const selectedSchool = schools?.find((school) => school.id === user.school);
 	const schoolLabel = selectedSchool?.name || user.school;
 
 	return (
@@ -223,39 +217,37 @@ export const ProfilePage = () => {
 
 					<Divider />
 
-					<>
-						<h2 className='text-xl font-bold text-primary'>Jogos</h2>
+					<h2 className='text-xl font-bold text-primary'>Jogos</h2>
 
-						<p className='text-xs text-gray-400 mb-6'>
-							Veja seus melhores resultados nos jogos
-						</p>
+					<p className='text-xs text-gray-400 mb-6'>
+						Veja seus melhores resultados nos jogos
+					</p>
 
-						<div className='grid md:grid-cols-2 gap-4'>
-							{games.map((game) => (
-								<div
-									key={game.slug}
-									className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
-								>
-									<Image
-										src={`/games/${game.slug}/cover/${game.characterSlug}.jpg`}
-										alt={game.slug}
-										width={80}
-										height={80}
-										className='object-cover object-center'
-										preview={false}
-									/>
-									<dl>
-										<dt className='text-primary text-xs uppercase'>
-											{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
-										</dt>
-										<dd className='text-xl font-black text-primary'>
-											{game.score}
-										</dd>
-									</dl>
-								</div>
-							))}
-						</div>
-					</>
+					<div className='grid md:grid-cols-2 gap-4'>
+						{games.map((game) => (
+							<div
+								key={game.slug}
+								className='flex items-center gap-4 w-full overflow-hidden rounded border border-slate-200'
+							>
+								<Image
+									src={`/games/${game.slug}/cover/${game.characterSlug}.jpg`}
+									alt={game.slug}
+									width={80}
+									height={80}
+									className='object-cover object-center'
+									preview={false}
+								/>
+								<dl>
+									<dt className='text-primary text-xs uppercase'>
+										{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
+									</dt>
+									<dd className='text-xl font-black text-primary'>
+										{game.score}
+									</dd>
+								</dl>
+							</div>
+						))}
+					</div>
 				</div>
 			</div>
 
@@ -264,7 +256,6 @@ export const ProfilePage = () => {
 				onClose={() => setIsAvatarDrawerOpen(false)}
 				title='Escolher avatar'
 				placement='right'
-				width={720}
 				destroyOnHidden
 			>
 				<AvatarPickerDrawer

@@ -93,4 +93,33 @@ describe("MemoryGameLevelSelector", () => {
 
     expect(screen.queryByAltText("Etnos")).toBeNull();
   });
+
+  it("usa a imagem derivada do slug quando imageUrl não estiver disponível", () => {
+    render(
+      <MemoryGameLevelSelector
+        availableLevels={[
+          {
+            level: 1,
+            label: "Nível 1",
+            pairs: 3,
+            pointBonus: 100,
+            pointPenalty: 50,
+            pointAddition: 50,
+          },
+        ]}
+        content={[{ name: "chimarrao", image: "/a.jpg" }]}
+        onSelectLevel={vi.fn()}
+        selectedCharacter={
+          {
+            name: "Anita",
+            slug: "anita",
+          } as any
+        }
+      />,
+    );
+
+    expect(screen.getByAltText("Etnos").getAttribute("src")).toBe(
+      "/images/character/md/anita.png",
+    );
+  });
 });

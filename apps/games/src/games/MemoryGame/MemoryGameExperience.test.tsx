@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryGameExperience } from "./MemoryGameExperience";
 
@@ -51,6 +51,10 @@ vi.mock("../../components", () => ({
 }));
 
 describe("MemoryGameExperience", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renderiza cartas e encaminha clique para o hook", () => {
     const handleCardClick = vi.fn();
     useMemoryGameMock.mockReturnValue({

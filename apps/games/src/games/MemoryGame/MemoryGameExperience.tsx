@@ -100,13 +100,8 @@ export const MemoryGameExperience = ({
 	};
 
 	const handleRestart = () => {
-		const levelToRestart = selectedLevel ?? availableLevels[0]?.level;
-
-		if (!levelToRestart) {
-			return;
-		}
-
-		setLevelContent(getMemoryGameLevelContent(content, levelToRestart));
+		// `restart` só fica acessível depois que um nível é escolhido.
+		setLevelContent(getMemoryGameLevelContent(content, selectedLevel!));
 
 		initializeGame();
 	};

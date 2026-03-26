@@ -1,3 +1,11 @@
+## [1.4.1](https://github.com/joaojuniorbr/etnos/compare/v1.4.0...v1.4.1) (2026-03-26)
+
+### api
+
+#### 🐛 Bug Fixes (Correções)
+
+* mudança na configuraçao que deixa todos os decorators mais rigidos ([3a28a9c](https://github.com/joaojuniorbr/etnos/commit/3a28a9c327351ccb01be8699af90b849b5a9ae54))
+
 # [1.4.0](https://github.com/joaojuniorbr/etnos/compare/v1.3.0...v1.4.0) (2026-03-25)
 
 ### code review

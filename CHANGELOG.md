@@ -1,3 +1,11 @@
+## [1.4.2](https://github.com/joaojuniorbr/etnos/compare/v1.4.1...v1.4.2) (2026-03-26)
+
+### personagens
+
+#### 🐛 Bug Fixes (Correções)
+
+* erro na seleção de personagens pós build ([6e877c1](https://github.com/joaojuniorbr/etnos/commit/6e877c1baf682779cfa6d45851f210dad123c67d))
+
 ## [1.4.1](https://github.com/joaojuniorbr/etnos/compare/v1.4.0...v1.4.1) (2026-03-26)
 
 ### api

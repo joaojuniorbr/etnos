@@ -81,7 +81,9 @@ describe('useCharacter', () => {
 			wrapper: createWrapper(),
 		});
 
-		result.current.selectCharacter('link');
+		act(() => {
+			result.current.selectCharacter('link');
+		});
 
 		await waitFor(() => {
 			expect(result.current.selectedCharacter).toEqual(mockCharacter);
@@ -344,6 +346,7 @@ describe('useCharacter', () => {
 	it('ignora erro de uma busca antiga quando já existe uma seleção mais nova', async () => {
 		const slowRequest = createDeferred<CharacterInterface | null>();
 		const fastRequest = createDeferred<CharacterInterface | null>();
+		void slowRequest.promise.catch(() => undefined);
 
 		vi.mocked(charactersService.getCharacterBySlug).mockImplementation(
 			(slug: string) => {

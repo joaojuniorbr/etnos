@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import type { CharacterInterface } from "@etnos/types";
@@ -16,38 +16,33 @@ type UseCharacterOptions = {
 export const useCharacter = (options?: UseCharacterOptions) => {
   const fetchList = options?.fetchList ?? true;
 
-  const [selectedCharacter, setSelectedCharacter] =
-    useState<CharacterInterface>();
-  const requestSequenceRef = useRef(0);
+  const [selectedSlug, setSelectedSlug] = useState<string>();
 
-  const setCharacter = (slug: string) => {
-    const requestId = ++requestSequenceRef.current;
+  const charactersQuery = useQuery<CharacterInterface[]>({
+    queryKey: ["character", "all"],
+    enabled: fetchList,
+    queryFn: () => charactersService.getCharacters(),
+  });
 
-    if (!slug) {
-      setSelectedCharacter(undefined);
-      return;
-    }
+  const selectedCharacterFromList = charactersQuery.data?.find(
+    (character) => character.slug === selectedSlug,
+  );
 
-    void charactersService
-      .getCharacterBySlug(slug)
-      .then((res) => {
-        if (requestId !== requestSequenceRef.current) {
-          return;
-        }
-
-        setSelectedCharacter(res ?? undefined);
-      })
-      .catch(() => {
-        if (requestId !== requestSequenceRef.current) {
-          return;
-        }
-
-        setSelectedCharacter(undefined);
-      });
-  };
+  const selectedCharacterQuery = useQuery<CharacterInterface | null>({
+    queryKey: ["character", "selected", selectedSlug],
+    enabled: Boolean(selectedSlug) && !selectedCharacterFromList,
+    queryFn: () => charactersService.getCharacterBySlug(selectedSlug!),
+  });
 
   const selectCharacter = (character: string) => {
-    localStorage.setItem(CHARACTER_STORAGE_KEY, character);
+    if (!character) {
+      localStorage.removeItem(CHARACTER_STORAGE_KEY);
+      setSelectedSlug(undefined);
+    } else {
+      localStorage.setItem(CHARACTER_STORAGE_KEY, character);
+      setSelectedSlug(character);
+    }
+
     globalThis.window.dispatchEvent(
       new CustomEvent(CHARACTER_CHANGE_EVENT, {
         detail: { slug: character },
@@ -57,7 +52,7 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 
   useEffect(() => {
     const syncSelectedCharacter = (slug?: string | null) => {
-      setCharacter(slug ?? "");
+      setSelectedSlug(slug ?? undefined);
     };
 
     syncSelectedCharacter(localStorage.getItem(CHARACTER_STORAGE_KEY));
@@ -90,13 +85,12 @@ export const useCharacter = (options?: UseCharacterOptions) => {
     };
   }, []);
 
+  const selectedCharacter =
+    selectedCharacterFromList ?? selectedCharacterQuery.data ?? undefined;
+
   return {
     selectedCharacter,
     selectCharacter,
-    ...useQuery<CharacterInterface[]>({
-      queryKey: ["character", "all"],
-      enabled: fetchList,
-      queryFn: () => charactersService.getCharacters(),
-    }),
+    ...charactersQuery,
   };
 };

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { randomInt } from 'node:crypto';
 import type {
   ConfigGamesInterface,
   GuessGameContentInterface,
@@ -17,8 +18,7 @@ export class GamesService {
   private isMissingGuessGameContentTable(error: unknown) {
     return (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2021' &&
-      String(error.meta?.table ?? '').includes('guess_game_contents')
+      error.code === 'P2021'
     );
   }
 
@@ -174,14 +174,14 @@ export class GamesService {
       return null;
     }
 
-    const selectedItem = items[Math.floor(Math.random() * items.length)];
+    const selectedItem = items[randomInt(items.length)];
 
     if (!selectedItem) {
       return null;
     }
 
     return {
-      id: selectedItem.id as string,
+      id: selectedItem.id,
       title: selectedItem.title,
       tips: selectedItem.tips,
       imageUrl: selectedItem.imageUrl ?? null,

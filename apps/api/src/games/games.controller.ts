@@ -9,8 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
-import type { MemoryGameContentInterface } from '@etnos/types';
-import type { GuessGameContentInterface } from '@etnos/types';
+import type {
+  MemoryGameContentInterface,
+  GuessGameContentInterface,
+} from '@etnos/types';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -200,7 +202,9 @@ export class GamesController {
   }
 
   @Post('score/history')
-  @ApiOperation({ summary: 'Salva uma entrada no histórico de pontuação do jogo' })
+  @ApiOperation({
+    summary: 'Salva uma entrada no histórico de pontuação do jogo',
+  })
   @ApiBody({ type: SaveScoreDto })
   @ApiResponse({
     status: 201,
@@ -217,7 +221,10 @@ export class GamesController {
 
   @Get('score')
   @ApiOperation({ summary: 'Retorna todas as pontuações do usuário' })
-  @ApiResponse({ status: 200, description: 'Pontuações retornadas com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pontuações retornadas com sucesso.',
+  })
   async getScore(@Req() req) {
     return this.gamesService.getScoreByUser(req.user.uid);
   }

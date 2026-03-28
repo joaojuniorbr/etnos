@@ -160,6 +160,10 @@ yarn check-types
   [Dashboard Looker](https://lookerstudio.google.com/reporting/7c5d87fa-106f-4041-9e4f-9fc865675b7a/):
   dados sobre a plataforma
 
+- 🔍
+  [Sonar Cloud](https://sonarcloud.io/project/overview?id=joaojuniorbr_etnos):
+  análise de qualidade, testes, cobertura e segurança.
+
 ## Licença
 
 `UNLICENSED`

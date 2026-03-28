@@ -7,6 +7,36 @@ describe('SentryExceptionFilter', () => {
   let filter: SentryExceptionFilter;
   let host: ArgumentsHost;
 
+  const setupSpies = () => {
+    const setTag = jest.fn();
+    const setExtra = jest.fn();
+    const withScope = jest.spyOn(Sentry, 'withScope');
+    const captureException = jest
+      .spyOn(Sentry, 'captureException')
+      .mockImplementation(jest.fn());
+    const loggerError = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(jest.fn());
+    const baseCatch = jest
+      .spyOn(BaseExceptionFilter.prototype, 'catch')
+      .mockImplementation(jest.fn());
+
+    withScope.mockImplementation(((callback: (scope: unknown) => void) => {
+      if (typeof callback === 'function') {
+        callback({ setTag, setExtra });
+      }
+    }) as never);
+
+    return {
+      setTag,
+      setExtra,
+      withScope,
+      captureException,
+      loggerError,
+      baseCatch,
+    };
+  };
+
   beforeEach(() => {
     filter = new SentryExceptionFilter();
     host = {
@@ -19,23 +49,14 @@ describe('SentryExceptionFilter', () => {
   });
 
   it('deve capturar HttpException com tags e extras no Sentry', () => {
-    const setTag = jest.fn();
-    const setExtra = jest.fn();
-    const withScope = jest.spyOn(Sentry, 'withScope');
-    withScope.mockImplementation(((callback: (scope: any) => void) => {
-      if (typeof callback === 'function') {
-        callback({ setTag, setExtra });
-      }
-    }) as any);
-    const captureException = jest
-      .spyOn(Sentry, 'captureException')
-      .mockImplementation(jest.fn());
-    const loggerError = jest
-      .spyOn(Logger.prototype, 'error')
-      .mockImplementation(jest.fn());
-    const baseCatch = jest
-      .spyOn(BaseExceptionFilter.prototype, 'catch')
-      .mockImplementation(jest.fn());
+    const {
+      setTag,
+      setExtra,
+      withScope,
+      captureException,
+      loggerError,
+      baseCatch,
+    } = setupSpies();
 
     const exception = new HttpException(
       { message: 'Erro de teste', statusCode: 404 },
@@ -61,23 +82,14 @@ describe('SentryExceptionFilter', () => {
   });
 
   it('deve capturar excecao desconhecida sem logar erro quando nao for Error', () => {
-    const setTag = jest.fn();
-    const setExtra = jest.fn();
-    const withScope = jest.spyOn(Sentry, 'withScope');
-    withScope.mockImplementation(((callback: (scope: any) => void) => {
-      if (typeof callback === 'function') {
-        callback({ setTag, setExtra });
-      }
-    }) as any);
-    const captureException = jest
-      .spyOn(Sentry, 'captureException')
-      .mockImplementation(jest.fn());
-    const loggerError = jest
-      .spyOn(Logger.prototype, 'error')
-      .mockImplementation(jest.fn());
-    const baseCatch = jest
-      .spyOn(BaseExceptionFilter.prototype, 'catch')
-      .mockImplementation(jest.fn());
+    const {
+      setTag,
+      setExtra,
+      withScope,
+      captureException,
+      loggerError,
+      baseCatch,
+    } = setupSpies();
 
     const exception = { message: 'objeto qualquer' };
 

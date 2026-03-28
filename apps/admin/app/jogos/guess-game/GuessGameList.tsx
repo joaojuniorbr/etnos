@@ -1,24 +1,12 @@
 'use client';
 
-import {
-	guessGameContentService,
-	useCharacter,
-} from '@etnos/tools';
+import { guessGameContentService, useCharacter } from '@etnos/tools';
 import type {
 	CharacterInterface,
 	GuessGameContentInterface,
 } from '@etnos/types';
 import { ImageLibrary, Title, useUser } from '@etnos/ui';
-import {
-	Button,
-	Drawer,
-	Form,
-	Input,
-	Modal,
-	Spin,
-	Table,
-	message,
-} from 'antd';
+import { Button, Drawer, Form, Input, Modal, Spin, Table, message } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -33,7 +21,8 @@ export const GuessGameList = () => {
 	const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 	const [form] = Form.useForm<GuessGameContentInterface>();
 
-	const { data: characters = [], isLoading: isLoadingCharacters } = useCharacter();
+	const { data: characters = [], isLoading: isLoadingCharacters } =
+		useCharacter();
 	const { user } = useUser();
 	const queryClient = useQueryClient();
 
@@ -193,7 +182,10 @@ export const GuessGameList = () => {
 							title: 'Ações',
 							width: 180,
 							render: (item: CharacterInterface) => (
-								<Button type='primary' onClick={() => openCharacterEditor(item)}>
+								<Button
+									type='primary'
+									onClick={() => openCharacterEditor(item)}
+								>
 									Editar conteúdo
 								</Button>
 							),
@@ -218,7 +210,11 @@ export const GuessGameList = () => {
 						</p>
 					</div>
 
-					<Button type='primary' icon={<PlusOutlined />} onClick={openCreateForm}>
+					<Button
+						type='primary'
+						icon={<PlusOutlined />}
+						onClick={openCreateForm}
+					>
 						Novo conteúdo
 					</Button>
 				</div>
@@ -297,7 +293,7 @@ export const GuessGameList = () => {
 					setEditingItem(null);
 				}}
 				title={editingItem ? 'Editar conteúdo' : 'Novo conteúdo'}
-				width={720}
+				size='large'
 				destroyOnHidden
 			>
 				<Form layout='vertical' form={form} onFinish={handleSave}>
@@ -321,9 +317,9 @@ export const GuessGameList = () => {
 						{(fields, { add, remove }) => (
 							<div className='mb-6'>
 								<div className='mb-2 flex items-center justify-between'>
-									<label className='text-sm font-medium text-slate-700'>
+									<div className='text-sm font-medium text-slate-700'>
 										Dicas
-									</label>
+									</div>
 									<Button onClick={() => add('')} icon={<PlusOutlined />}>
 										Adicionar dica
 									</Button>

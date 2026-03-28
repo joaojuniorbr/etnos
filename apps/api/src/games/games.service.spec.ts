@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
+import * as crypto from 'node:crypto';
 import { GamesService } from './games.service';
 import { PrismaService } from 'src/prisma';
 
@@ -44,6 +45,52 @@ describe('GamesService', () => {
     gameSlug: 'memory-game',
     characterSlug: 'joao-silva',
     imageCoverUrl: 'url-aqui',
+  };
+
+  const makeGuessGameContent = (overrides: Record<string, unknown> = {}) => ({
+    id: 'guess-1',
+    title: 'Chimarrao',
+    word: 'Bomba',
+    tips: ['Dica 1'],
+    imageUrl: null,
+    description: 'Descricao',
+    characterSlug: 'anita',
+    ...overrides,
+  });
+
+  const makeScoreData = (overrides: Record<string, unknown> = {}) => ({
+    slug: 'memory-game',
+    characterSlug: 'joao-silva',
+    score: 150,
+    userId: 'user-123',
+    ...overrides,
+  });
+
+  const makeKnownRequestError = (table?: string) =>
+    Object.assign(
+      new Prisma.PrismaClientKnownRequestError('Tabela inexistente', {
+        code: 'P2021',
+        clientVersion: '6.19.2',
+      }),
+      table
+        ? {
+            meta: {
+              table,
+            },
+          }
+        : {},
+    );
+
+  const expectScoreLookup = (scoreData: ReturnType<typeof makeScoreData>) => {
+    expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
+      where: {
+        slug_characterSlug_userId: {
+          slug: scoreData.slug,
+          characterSlug: scoreData.characterSlug,
+          userId: scoreData.userId,
+        },
+      },
+    });
   };
 
   const mockPrismaService = {
@@ -204,14 +251,7 @@ describe('GamesService', () => {
   });
 
   it('deve criar conteúdo do guess game quando não houver id', async () => {
-    const payload = {
-      title: 'Chimarrao',
-      word: 'Bomba',
-      tips: ['Dica 1'],
-      imageUrl: null,
-      description: 'Descricao',
-      characterSlug: 'anita',
-    };
+    const payload = makeGuessGameContent({ id: undefined });
 
     await service.saveGuessGameContent(payload);
 
@@ -221,27 +261,21 @@ describe('GamesService', () => {
   });
 
   it('deve atualizar conteúdo do guess game quando houver id', async () => {
-    const payload = {
-      id: 'guess-1',
-      title: 'Chimarrao',
-      word: 'Bomba',
-      tips: ['Dica 1'],
+    const payload = makeGuessGameContent({
       imageUrl: undefined,
-      description: 'Descricao',
-      characterSlug: 'anita',
-    };
+    });
 
     await service.saveGuessGameContent(payload);
 
     expect(prismaService.guessGameContent.update).toHaveBeenCalledWith({
       where: { id: 'guess-1' },
       data: {
-        title: 'Chimarrao',
-        word: 'Bomba',
-        tips: ['Dica 1'],
+        title: payload.title,
+        word: payload.word,
+        tips: payload.tips,
         imageUrl: null,
-        description: 'Descricao',
-        characterSlug: 'anita',
+        description: payload.description,
+        characterSlug: payload.characterSlug,
       },
     });
   });
@@ -257,18 +291,12 @@ describe('GamesService', () => {
 
   it('deve selecionar um conteúdo jogável sem expor a palavra', async () => {
     prismaService.guessGameContent.findMany.mockResolvedValueOnce([
-      {
-        id: 'guess-1',
-        title: 'Chimarrao',
-        word: 'Bomba',
-        tips: ['Dica 1'],
-        imageUrl: null,
-        description: 'Descricao',
-        characterSlug: 'anita',
-      },
+      makeGuessGameContent(),
     ]);
 
-    jest.spyOn(Math, 'random').mockReturnValueOnce(0);
+    jest
+      .spyOn(crypto, 'randomInt')
+      .mockImplementationOnce(() => 0 as never);
 
     await expect(service.getGuessGamePlayContent('anita')).resolves.toEqual({
       id: 'guess-1',
@@ -296,16 +324,7 @@ describe('GamesService', () => {
 
   it('deve retornar lista vazia quando a tabela do guess game ainda não existir', async () => {
     prismaService.guessGameContent.findMany.mockRejectedValueOnce(
-      new Prisma.PrismaClientKnownRequestError(
-        'Tabela inexistente',
-        {
-          code: 'P2021',
-          clientVersion: '6.19.2',
-          meta: {
-            table: 'public.guess_game_contents',
-          },
-        },
-      ),
+      makeKnownRequestError('public.guess_game_contents'),
     );
 
     await expect(service.getGuessGameContent('anita')).resolves.toEqual([]);
@@ -322,17 +341,12 @@ describe('GamesService', () => {
   });
 
   it('deve relançar erro P2021 quando a tabela ausente não for a do guess game', async () => {
+    jest
+      .spyOn(service as never, 'isMissingGuessGameContentTable')
+      .mockReturnValue(false as never);
+
     prismaService.guessGameContent.findMany.mockRejectedValueOnce(
-      new Prisma.PrismaClientKnownRequestError(
-        'Tabela inexistente',
-        {
-          code: 'P2021',
-          clientVersion: '6.19.2',
-          meta: {
-            table: 'public.memory_game_contents',
-          },
-        },
-      ),
+      makeKnownRequestError('public.memory_game_contents'),
     );
 
     await expect(service.getGuessGameContent('anita')).rejects.toThrow(
@@ -341,14 +355,12 @@ describe('GamesService', () => {
   });
 
   it('deve relançar erro P2021 quando o Prisma não informar meta.table', async () => {
+    jest
+      .spyOn(service as never, 'isMissingGuessGameContentTable')
+      .mockReturnValue(false as never);
+
     prismaService.guessGameContent.findMany.mockRejectedValueOnce(
-      new Prisma.PrismaClientKnownRequestError(
-        'Tabela inexistente',
-        {
-          code: 'P2021',
-          clientVersion: '6.19.2',
-        },
-      ),
+      makeKnownRequestError(),
     );
 
     await expect(service.getGuessGameContent('anita')).rejects.toThrow(
@@ -357,15 +369,9 @@ describe('GamesService', () => {
   });
 
   it('deve validar palavra completa correta', async () => {
-    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
-      id: 'guess-1',
-      title: 'Chimarrao',
-      word: 'Bomba',
-      tips: ['Dica 1'],
-      imageUrl: null,
-      description: 'Descricao',
-      characterSlug: 'anita',
-    });
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce(
+      makeGuessGameContent(),
+    );
 
     await expect(
       service.validateGuessGameAttempt({
@@ -384,15 +390,9 @@ describe('GamesService', () => {
   });
 
   it('deve validar palavra completa incorreta sem expor resposta', async () => {
-    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
-      id: 'guess-1',
-      title: 'Chimarrao',
-      word: 'Bomba',
-      tips: ['Dica 1'],
-      imageUrl: null,
-      description: 'Descricao',
-      characterSlug: 'anita',
-    });
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce(
+      makeGuessGameContent(),
+    );
 
     await expect(
       service.validateGuessGameAttempt({
@@ -411,15 +411,9 @@ describe('GamesService', () => {
   });
 
   it('deve validar letra correta sem resolver a palavra inteira', async () => {
-    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
-      id: 'guess-1',
-      title: 'Chimarrao',
-      word: 'Bomba',
-      tips: ['Dica 1'],
-      imageUrl: null,
-      description: 'Descricao',
-      characterSlug: 'anita',
-    });
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce(
+      makeGuessGameContent(),
+    );
 
     await expect(
       service.validateGuessGameAttempt({
@@ -499,30 +493,15 @@ describe('GamesService', () => {
   });
 
   it('deve buscar score do jogo por filtros', async () => {
-    await service.getScoreGame({
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      userId: 'user-123',
-    });
+    const scoreData = makeScoreData();
 
-    expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
-      where: {
-        slug_characterSlug_userId: {
-          slug: 'memory-game',
-          characterSlug: 'joao-silva',
-          userId: 'user-123',
-        },
-      },
-    });
+    await service.getScoreGame(scoreData);
+
+    expectScoreLookup(scoreData);
   });
 
   it('deve criar score quando ainda não existir registro', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 150,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData();
 
     prismaService.gameScore.create.mockResolvedValueOnce(scoreData);
 
@@ -530,15 +509,7 @@ describe('GamesService', () => {
 
     expect(prismaService.user.findUnique).not.toHaveBeenCalled();
     expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
-    expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
-      where: {
-        slug_characterSlug_userId: {
-          slug: 'memory-game',
-          characterSlug: 'joao-silva',
-          userId: 'user-123',
-        },
-      },
-    });
+    expectScoreLookup(scoreData);
     expect(prismaService.gameScore.create).toHaveBeenCalledWith({
       data: scoreData,
     });
@@ -546,12 +517,7 @@ describe('GamesService', () => {
   });
 
   it('deve salvar histórico de score com escola vinculada', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 150,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData();
 
     await service.saveScoreHistory(scoreData);
 
@@ -575,12 +541,7 @@ describe('GamesService', () => {
   });
 
   it('deve atualizar score quando o novo valor for maior', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 150,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData();
 
     prismaService.gameScore.findUnique.mockResolvedValueOnce({
       ...scoreData,
@@ -603,12 +564,7 @@ describe('GamesService', () => {
   });
 
   it('deve manter score atual quando o novo valor não for maior', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 150,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData();
 
     const existingScore = {
       ...scoreData,
@@ -626,12 +582,7 @@ describe('GamesService', () => {
   });
 
   it('deve manter score atual quando o novo valor for igual', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 150,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData();
 
     const existingScore = {
       ...scoreData,
@@ -648,12 +599,7 @@ describe('GamesService', () => {
   });
 
   it('deve salvar histórico sem escola quando o usuário não estiver vinculado', async () => {
-    const scoreData = {
-      slug: 'memory-game',
-      characterSlug: 'joao-silva',
-      score: 90,
-      userId: 'user-123',
-    };
+    const scoreData = makeScoreData({ score: 90 });
 
     prismaService.user.findUnique.mockResolvedValueOnce({ school: null });
 

@@ -28,6 +28,7 @@ const mockGamesService = {
   saveMemoryGameContent: jest.fn().mockResolvedValue({ id: 'mem-1' }),
   deleteMemoryGameContent: jest.fn().mockResolvedValue(true),
   saveScoreGame: jest.fn().mockResolvedValue(undefined),
+  saveScoreHistory: jest.fn().mockResolvedValue(undefined),
   getScoreByUser: jest.fn().mockResolvedValue([]),
   getScoreGame: jest.fn().mockResolvedValue({ score: 100 }),
 };
@@ -148,6 +149,26 @@ describe('GamesController', () => {
     );
 
     expect(service.saveScoreGame).toHaveBeenCalledWith({
+      slug: 'memory-game',
+      characterSlug: 'char-1',
+      score: 100,
+      userId: 'user-1',
+    });
+  });
+
+  it('deve salvar histórico de score do jogo', async () => {
+    await controller.saveScoreHistory(
+      {
+        user: { uid: 'user-1' },
+      },
+      {
+        slug: 'memory-game',
+        characterSlug: 'char-1',
+        score: 100,
+      },
+    );
+
+    expect(service.saveScoreHistory).toHaveBeenCalledWith({
       slug: 'memory-game',
       characterSlug: 'char-1',
       score: 100,

@@ -41,6 +41,7 @@ describe('MemoryGame', () => {
 		});
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -96,6 +97,7 @@ describe('MemoryGame', () => {
 		const refetch = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -123,6 +125,7 @@ describe('MemoryGame', () => {
 		const refetch = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -150,6 +153,7 @@ describe('MemoryGame', () => {
 		const refetch = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -169,6 +173,31 @@ describe('MemoryGame', () => {
 		});
 
 		expect(saveGameScore).toHaveBeenCalledWith('memory-game', 'zeca', 90);
+	});
+
+	it('salva histórico automaticamente quando há usuário e personagem', async () => {
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory,
+			playSound: vi.fn(),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onSaveScoreHistory: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onSaveScoreHistory(250);
+		});
+
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'anita',
+			250
+		);
 	});
 
 	it('usa cover fallback e não salva score sem usuário ou personagem', async () => {
@@ -191,6 +220,7 @@ describe('MemoryGame', () => {
 			bestScore: number;
 			content: unknown[];
 			isLoading: boolean;
+			onSaveScoreHistory: (score: number) => Promise<void>;
 			onSaveScore: (score: number) => Promise<void>;
 		};
 
@@ -200,11 +230,15 @@ describe('MemoryGame', () => {
 		expect(props.isLoading).toBe(true);
 
 		await act(async () => {
+			await props.onSaveScoreHistory(90);
 			await props.onSaveScore(90);
 		});
 
 		expect(
 			useGamesMock.mock.results[0]?.value.saveGameScore
+		).not.toHaveBeenCalled();
+		expect(
+			useGamesMock.mock.results[0]?.value.saveGameScoreHistory
 		).not.toHaveBeenCalled();
 	});
 });

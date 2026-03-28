@@ -18,6 +18,23 @@ export const scoreGamesService = {
 			.then((res) => res.data);
 	},
 
+	saveScoreHistory(
+		slug: string,
+		characterSlug: string,
+		score: number,
+		userId: string
+	) {
+		if (!userId) return Promise.resolve(null);
+
+		return api
+			.post('/games/score/history', {
+				slug,
+				characterSlug,
+				score,
+			})
+			.then((res) => res.data);
+	},
+
 	getScore(userId: string) {
 		if (!userId) return Promise.resolve([]);
 

@@ -145,7 +145,7 @@ yarn test
 yarn check-types
 ```
 
-## Acessos
+## Dados
 
 - 📘 [Swagger](https://api.etnos.online/docs): a porta de entrada para explorar
   a API, testar rotas e ver os contratos em ação.
@@ -156,6 +156,9 @@ yarn check-types
   em um só lugar.
 - 🎨 [Storybook](https://691f7645d388cc8aa2a047b6-amyptzoyzk.chromatic.com/):
   vitrine dos componentes, telas e padrões visuais que dão forma à interface.
+- 📈
+  [Dashboard Looker](https://lookerstudio.google.com/reporting/7c5d87fa-106f-4041-9e4f-9fc865675b7a/):
+  dados sobre a plataforma
 
 ## Licença
 

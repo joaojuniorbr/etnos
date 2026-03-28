@@ -27,6 +27,7 @@ type MemoryGameExperienceProps = {
 	isLoading?: boolean;
 	matchDelayMs?: number;
 	onPlaySound?: (sound: MemoryGameSound) => void;
+	onSaveScoreHistory?: (score: number) => Promise<void> | void;
 	onSaveScore?: (score: number) => Promise<void> | void;
 	selectedCharacter?: CharacterInterface;
 };
@@ -38,6 +39,7 @@ export const MemoryGameExperience = ({
 	isLoading = false,
 	matchDelayMs,
 	onPlaySound,
+	onSaveScoreHistory,
 	onSaveScore,
 	selectedCharacter,
 }: MemoryGameExperienceProps) => {
@@ -123,8 +125,8 @@ export const MemoryGameExperience = ({
 		}
 
 		autoSavedScoreRef.current = score;
-		void onSaveScore?.(score);
-	}, [isFinished, onSaveScore, score]);
+		void onSaveScoreHistory?.(score);
+	}, [isFinished, onSaveScoreHistory, score]);
 
 	let contentView: React.ReactNode;
 

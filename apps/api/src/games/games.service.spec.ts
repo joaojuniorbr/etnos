@@ -5,6 +5,9 @@ import { PrismaService } from 'src/prisma';
 describe('GamesService', () => {
   let service: GamesService;
   let prismaService: {
+    user: {
+      findUnique: jest.Mock;
+    };
     gameConfig: {
       findMany: jest.Mock;
       findFirst: jest.Mock;
@@ -23,6 +26,9 @@ describe('GamesService', () => {
       findUnique: jest.Mock;
       findMany: jest.Mock;
     };
+    gameScoreHistory: {
+      create: jest.Mock;
+    };
   };
 
   const mockGame = {
@@ -33,6 +39,9 @@ describe('GamesService', () => {
   };
 
   const mockPrismaService = {
+    user: {
+      findUnique: jest.fn().mockResolvedValue({ school: 'school-1' }),
+    },
     gameConfig: {
       findMany: jest.fn().mockResolvedValue([mockGame]),
       findFirst: jest.fn().mockResolvedValue(mockGame),
@@ -50,6 +59,9 @@ describe('GamesService', () => {
       update: jest.fn(),
       findUnique: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
+    },
+    gameScoreHistory: {
+      create: jest.fn(),
     },
   };
 
@@ -236,6 +248,8 @@ describe('GamesService', () => {
 
     await service.saveScoreGame(scoreData);
 
+    expect(prismaService.user.findUnique).not.toHaveBeenCalled();
+    expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
       where: {
         slug_characterSlug_userId: {
@@ -249,6 +263,35 @@ describe('GamesService', () => {
       data: scoreData,
     });
     expect(prismaService.gameScore.update).not.toHaveBeenCalled();
+  });
+
+  it('deve salvar histórico de score com escola vinculada', async () => {
+    const scoreData = {
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      score: 150,
+      userId: 'user-123',
+    };
+
+    await service.saveScoreHistory(scoreData);
+
+    expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      where: {
+        firebaseUid: 'user-123',
+      },
+      select: {
+        school: true,
+      },
+    });
+    expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
+      data: {
+        gameSlug: 'memory-game',
+        characterSlug: 'joao-silva',
+        score: 150,
+        userId: 'user-123',
+        schoolId: 'school-1',
+      },
+    });
   });
 
   it('deve atualizar score quando o novo valor for maior', async () => {
@@ -266,6 +309,7 @@ describe('GamesService', () => {
 
     await service.saveScoreGame(scoreData);
 
+    expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.update).toHaveBeenCalledWith({
       where: {
         slug_characterSlug_userId: {
@@ -295,6 +339,7 @@ describe('GamesService', () => {
 
     const result = await service.saveScoreGame(scoreData);
 
+    expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.update).not.toHaveBeenCalled();
     expect(result).toEqual(existingScore);
@@ -316,9 +361,34 @@ describe('GamesService', () => {
 
     const result = await service.saveScoreGame(scoreData);
 
+    expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.create).not.toHaveBeenCalled();
     expect(prismaService.gameScore.update).not.toHaveBeenCalled();
     expect(result).toEqual(existingScore);
+  });
+
+  it('deve salvar histórico sem escola quando o usuário não estiver vinculado', async () => {
+    const scoreData = {
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      score: 90,
+      userId: 'user-123',
+    };
+
+    prismaService.user.findUnique.mockResolvedValueOnce({ school: null });
+
+    await service.saveScoreHistory(scoreData);
+
+    expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
+      data: {
+        gameSlug: 'memory-game',
+        characterSlug: 'joao-silva',
+        score: 90,
+        userId: 'user-123',
+        schoolId: null,
+      },
+    });
+    expect(prismaService.gameScore.create).not.toHaveBeenCalled();
   });
 
   it('deve listar score por usuário', async () => {

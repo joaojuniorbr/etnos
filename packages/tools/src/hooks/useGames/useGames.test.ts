@@ -27,6 +27,7 @@ vi.mock('antd', () => ({
 vi.mock('../../services', () => ({
 	scoreGamesService: {
 		saveScore: vi.fn(),
+		saveScoreHistory: vi.fn(),
 	},
 }));
 
@@ -105,6 +106,36 @@ describe('useGames hook', () => {
 		expect(message.success).toHaveBeenCalledWith(
 			'Pontuação salva com sucesso!'
 		);
+	});
+
+	it('deve salvar histórico automaticamente quando houver userId', async () => {
+		(scoreGamesService.saveScoreHistory as any).mockResolvedValueOnce('ok');
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await act(async () => {
+			await result.current.saveGameScoreHistory('memory-game', 'iara', 200);
+		});
+
+		expect(scoreGamesService.saveScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'iara',
+			200,
+			'user123'
+		);
+		expect(message.success).not.toHaveBeenCalledWith(
+			'Pontuação salva com sucesso!'
+		);
+	});
+
+	it('não tenta salvar histórico quando não houver userId', async () => {
+		const { result } = renderHook(() => useGames());
+
+		await act(async () => {
+			await result.current.saveGameScoreHistory('memory-game', 'iara', 100);
+		});
+
+		expect(scoreGamesService.saveScoreHistory).not.toHaveBeenCalled();
 	});
 
 	it('deve mostrar erro ao falhar salvar pontuação', async () => {

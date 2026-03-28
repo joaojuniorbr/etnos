@@ -147,6 +147,7 @@ describe("MemoryGameExperience", () => {
 
   it("renderiza estado final e aciona restart/save", async () => {
     const initializeGame = vi.fn();
+    const onSaveScoreHistory = vi.fn().mockResolvedValue(undefined);
     const onSaveScore = vi.fn().mockResolvedValue(undefined);
     useMemoryGameMock.mockReturnValue({
       cards: [],
@@ -166,6 +167,7 @@ describe("MemoryGameExperience", () => {
           { name: "churrasco", image: "/b.jpg" },
           { name: "cafe", image: "/c.jpg" },
         ]}
+        onSaveScoreHistory={onSaveScoreHistory}
         onSaveScore={onSaveScore}
         selectedCharacter={{ name: "Anita" } as any}
       />,
@@ -174,19 +176,20 @@ describe("MemoryGameExperience", () => {
     fireEvent.click(screen.getByText("Nível 1"));
 
     await waitFor(() => {
-      expect(onSaveScore).toHaveBeenCalledWith(120);
+      expect(onSaveScoreHistory).toHaveBeenCalledWith(120);
     });
 
     fireEvent.click(screen.getByText("restart"));
     fireEvent.click(screen.getByText("save"));
 
     expect(initializeGame).toHaveBeenCalledTimes(1);
-    expect(onSaveScore).toHaveBeenCalledTimes(2);
+    expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
+    expect(onSaveScore).toHaveBeenCalledTimes(1);
   });
 
   it("salva automaticamente só uma vez por finalização enquanto o score não muda", async () => {
-    const onSaveScore = vi.fn().mockResolvedValue(undefined);
-    const nextOnSaveScore = vi.fn().mockResolvedValue(undefined);
+    const onSaveScoreHistory = vi.fn().mockResolvedValue(undefined);
+    const nextOnSaveScoreHistory = vi.fn().mockResolvedValue(undefined);
     useMemoryGameMock.mockReturnValue({
       cards: [],
       handleCardClick: vi.fn(),
@@ -205,14 +208,14 @@ describe("MemoryGameExperience", () => {
           { name: "churrasco", image: "/b.jpg" },
           { name: "cafe", image: "/c.jpg" },
         ]}
-        onSaveScore={onSaveScore}
+        onSaveScoreHistory={onSaveScoreHistory}
       />,
     );
 
     fireEvent.click(screen.getByText("Nível 1"));
 
     await waitFor(() => {
-      expect(onSaveScore).toHaveBeenCalledTimes(1);
+      expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
     });
 
     rerender(
@@ -222,12 +225,12 @@ describe("MemoryGameExperience", () => {
           { name: "churrasco", image: "/b.jpg" },
           { name: "cafe", image: "/c.jpg" },
         ]}
-        onSaveScore={nextOnSaveScore}
+        onSaveScoreHistory={nextOnSaveScoreHistory}
       />,
     );
 
-    expect(onSaveScore).toHaveBeenCalledTimes(1);
-    expect(nextOnSaveScore).not.toHaveBeenCalled();
+    expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
+    expect(nextOnSaveScoreHistory).not.toHaveBeenCalled();
   });
 
   it("exibe botoes de nivel antes de iniciar o jogo", () => {

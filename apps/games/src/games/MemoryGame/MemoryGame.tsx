@@ -19,7 +19,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, playSound } = useGames(user?.uid);
+	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(user?.uid);
 
 	const {
 		data: scoreGame,
@@ -59,6 +59,20 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		}
 	};
 
+	const handleSaveScoreHistory = async (score: number) => {
+		const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug;
+
+		if (!user?.uid || !activeCharacterSlug) {
+			return;
+		}
+
+		await saveGameScoreHistory(
+			GamesEnum.MEMORY_GAME,
+			activeCharacterSlug,
+			score
+		);
+	};
+
 	const imageCover = () => {
 		if (gamesConfig && selectedCharacter) {
 			return gamesConfig.find(
@@ -77,6 +91,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 			coverImage={imageCover()}
 			isLoading={isLoading || scoreIsLoading}
 			onPlaySound={playSound}
+			onSaveScoreHistory={handleSaveScoreHistory}
 			onSaveScore={handleSaveScore}
 			selectedCharacter={selectedCharacter}
 		/>

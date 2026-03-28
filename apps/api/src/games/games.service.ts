@@ -10,6 +10,19 @@ import { PrismaService } from 'src/prisma';
 export class GamesService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  private async getUserSchoolId(userId: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        firebaseUid: userId,
+      },
+      select: {
+        school: true,
+      },
+    });
+
+    return user?.school ?? null;
+  }
+
   async getGames() {
     return this.prismaService.gameConfig.findMany();
   }
@@ -117,6 +130,25 @@ export class GamesService {
       name: `${characterSlug}-${index + 1}`,
       image: doc.url,
     }));
+  }
+
+  async saveScoreHistory(data: {
+    slug: string;
+    characterSlug: string;
+    score: number;
+    userId: string;
+  }) {
+    const schoolId = await this.getUserSchoolId(data.userId);
+
+    return this.prismaService.gameScoreHistory.create({
+      data: {
+        gameSlug: data.slug,
+        characterSlug: data.characterSlug,
+        score: data.score,
+        userId: data.userId,
+        schoolId,
+      },
+    });
   }
 
   async saveScoreGame(data: {

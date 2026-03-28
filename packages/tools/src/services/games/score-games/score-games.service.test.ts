@@ -42,6 +42,35 @@ describe('scoreGamesService', () => {
 		expect(apiMock.post).not.toHaveBeenCalled();
 	});
 
+	it('deve salvar histórico de score quando userId existir', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { ok: true } });
+
+		await scoreGamesService.saveScoreHistory(
+			'memory-game',
+			'joao',
+			10,
+			'user-1'
+		);
+
+		expect(apiMock.post).toHaveBeenCalledWith('/games/score/history', {
+			slug: 'memory-game',
+			characterSlug: 'joao',
+			score: 10,
+		});
+	});
+
+	it('deve retornar null quando userId não existir em saveScoreHistory', async () => {
+		const result = await scoreGamesService.saveScoreHistory(
+			'memory-game',
+			'joao',
+			10,
+			''
+		);
+
+		expect(result).toBeNull();
+		expect(apiMock.post).not.toHaveBeenCalled();
+	});
+
 	it('deve buscar scores do usuário', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: [{ score: 100 }] });
 

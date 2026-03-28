@@ -142,6 +142,22 @@ export class GamesController {
     });
   }
 
+  @Post('score/history')
+  @ApiOperation({ summary: 'Salva uma entrada no histórico de pontuação do jogo' })
+  @ApiBody({ type: SaveScoreDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Histórico de pontuação salvo com sucesso.',
+  })
+  async saveScoreHistory(@Req() req, @Body() data: SaveScoreDto) {
+    return this.gamesService.saveScoreHistory({
+      slug: data.slug,
+      characterSlug: data.characterSlug,
+      score: data.score,
+      userId: req.user.uid,
+    });
+  }
+
   @Get('score')
   @ApiOperation({ summary: 'Retorna todas as pontuações do usuário' })
   @ApiResponse({ status: 200, description: 'Pontuações retornadas com sucesso.' })

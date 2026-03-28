@@ -50,6 +50,18 @@ export const useGames = (userId?: string) => {
 			});
 	};
 
+	const saveGameScoreHistory = (
+		slug: string,
+		characterSlug: string,
+		score: number
+	) => {
+		if (!userId) {
+			return;
+		}
+
+		return scoreGamesService.saveScoreHistory(slug, characterSlug, score, userId);
+	};
+
 	const playSound = (sound: keyof typeof sounds) => {
 		const audio = new Audio(sounds[sound]);
 
@@ -63,6 +75,7 @@ export const useGames = (userId?: string) => {
 	return {
 		allGames,
 		saveGameScore,
+		saveGameScoreHistory,
 		playSound,
 	};
 };

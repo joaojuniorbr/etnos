@@ -35,12 +35,12 @@ export const useCharacter = (options?: UseCharacterOptions) => {
   });
 
   const selectCharacter = (character: string) => {
-    if (!character) {
-      localStorage.removeItem(CHARACTER_STORAGE_KEY);
-      setSelectedSlug(undefined);
-    } else {
+    if (character) {
       localStorage.setItem(CHARACTER_STORAGE_KEY, character);
       setSelectedSlug(character);
+    } else {
+      localStorage.removeItem(CHARACTER_STORAGE_KEY);
+      setSelectedSlug(undefined);
     }
 
     globalThis.window.dispatchEvent(

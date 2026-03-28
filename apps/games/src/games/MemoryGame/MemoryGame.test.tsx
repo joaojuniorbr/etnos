@@ -111,11 +111,64 @@ describe('MemoryGame', () => {
 		};
 
 		await act(async () => {
+			await props.onSaveScore(320);
+		});
+
+		expect(saveGameScore).toHaveBeenCalledWith('memory-game', 'anita', 320);
+		expect(refetch).toHaveBeenCalled();
+	});
+
+	it('não salva score menor ou igual ao recorde atual', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const refetch = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: { score: 300 },
+			refetch,
+			isLoading: false,
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onSaveScore: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onSaveScore(300);
 			await props.onSaveScore(120);
 		});
 
-		expect(saveGameScore).toHaveBeenCalledWith('memory-game', 'anita', 120);
-		expect(refetch).toHaveBeenCalled();
+		expect(saveGameScore).not.toHaveBeenCalled();
+	});
+
+	it('usa characterSlug da prop para salvar score quando disponível', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const refetch = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: { score: 10 },
+			refetch,
+			isLoading: false,
+		});
+
+		render(<MemoryGame characterSlug='zeca' />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onSaveScore: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onSaveScore(90);
+		});
+
+		expect(saveGameScore).toHaveBeenCalledWith('memory-game', 'zeca', 90);
 	});
 
 	it('usa cover fallback e não salva score sem usuário ou personagem', async () => {

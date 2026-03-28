@@ -40,9 +40,7 @@ const getFirebaseAuthContext = () => {
 		authFirebase = getAuth(app);
 	}
 
-	if (!googleProvider) {
-		googleProvider = new GoogleAuthProvider();
-	}
+	googleProvider ??= new GoogleAuthProvider();
 
 	return {
 		authFirebase,

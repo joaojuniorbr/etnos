@@ -125,19 +125,34 @@ export class GamesService {
     score: number;
     userId: string;
   }) {
-    return this.prismaService.gameScore.upsert({
-      where: {
-        slug_characterSlug_userId: {
-          slug: data.slug,
-          characterSlug: data.characterSlug,
-          userId: data.userId,
-        },
+    const where = {
+      slug_characterSlug_userId: {
+        slug: data.slug,
+        characterSlug: data.characterSlug,
+        userId: data.userId,
       },
-      create: data,
-      update: {
-        score: data.score,
-      },
+    };
+
+    const existingScore = await this.prismaService.gameScore.findUnique({
+      where,
     });
+
+    if (!existingScore) {
+      return this.prismaService.gameScore.create({
+        data,
+      });
+    }
+
+    if (data.score > existingScore.score) {
+      return this.prismaService.gameScore.update({
+        where,
+        data: {
+          score: data.score,
+        },
+      });
+    }
+
+    return existingScore;
   }
 
   getScoreGame(data: { slug: string; characterSlug: string; userId: string }) {

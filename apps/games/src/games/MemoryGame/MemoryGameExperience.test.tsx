@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryGameExperience } from "./MemoryGameExperience";
 
 const useMemoryGameMock = vi.fn();
@@ -172,11 +172,62 @@ describe("MemoryGameExperience", () => {
     );
 
     fireEvent.click(screen.getByText("Nível 1"));
+
+    await waitFor(() => {
+      expect(onSaveScore).toHaveBeenCalledWith(120);
+    });
+
     fireEvent.click(screen.getByText("restart"));
     fireEvent.click(screen.getByText("save"));
 
     expect(initializeGame).toHaveBeenCalledTimes(1);
-    expect(onSaveScore).toHaveBeenCalledWith(120);
+    expect(onSaveScore).toHaveBeenCalledTimes(2);
+  });
+
+  it("salva automaticamente só uma vez por finalização enquanto o score não muda", async () => {
+    const onSaveScore = vi.fn().mockResolvedValue(undefined);
+    const nextOnSaveScore = vi.fn().mockResolvedValue(undefined);
+    useMemoryGameMock.mockReturnValue({
+      cards: [],
+      handleCardClick: vi.fn(),
+      initializeGame: vi.fn(),
+      isFinished: true,
+      matchedPairs: 2,
+      moves: 4,
+      score: 120,
+      totalPairs: 2,
+    });
+
+    const { rerender } = render(
+      <MemoryGameExperience
+        content={[
+          { name: "chimarrao", image: "/a.jpg" },
+          { name: "churrasco", image: "/b.jpg" },
+          { name: "cafe", image: "/c.jpg" },
+        ]}
+        onSaveScore={onSaveScore}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Nível 1"));
+
+    await waitFor(() => {
+      expect(onSaveScore).toHaveBeenCalledTimes(1);
+    });
+
+    rerender(
+      <MemoryGameExperience
+        content={[
+          { name: "chimarrao", image: "/a.jpg" },
+          { name: "churrasco", image: "/b.jpg" },
+          { name: "cafe", image: "/c.jpg" },
+        ]}
+        onSaveScore={nextOnSaveScore}
+      />,
+    );
+
+    expect(onSaveScore).toHaveBeenCalledTimes(1);
+    expect(nextOnSaveScore).not.toHaveBeenCalled();
   });
 
   it("exibe botoes de nivel antes de iniciar o jogo", () => {

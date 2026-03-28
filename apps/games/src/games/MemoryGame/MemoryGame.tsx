@@ -42,22 +42,21 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	}, [selectedCharacter, scoreGameRefetch]);
 
 	const handleSaveScore = async (score: number) => {
-		setIsLoading(true);
+		const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug;
+		const currentBestScore = scoreGame?.score ?? 0;
 
-		if (!user?.uid || !selectedCharacter?.slug) {
-			setIsLoading(false);
+		if (!user?.uid || !activeCharacterSlug || score <= currentBestScore) {
 			return;
 		}
 
-		await saveGameScore(
-			GamesEnum.MEMORY_GAME,
-			selectedCharacter.slug,
-			score
-		);
+		setIsLoading(true);
 
-		setIsLoading(false);
-
-		scoreGameRefetch();
+		try {
+			await saveGameScore(GamesEnum.MEMORY_GAME, activeCharacterSlug, score);
+			await scoreGameRefetch();
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const imageCover = () => {

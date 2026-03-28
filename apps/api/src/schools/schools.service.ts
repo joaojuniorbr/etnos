@@ -15,6 +15,25 @@ import { PrismaService } from 'src/prisma';
 export class SchoolsService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  private getUserRankingLabel(user: Pick<
+    UserRankingInterface,
+    'childName' | 'parentName' | 'email'
+  >) {
+    if (user.childName) {
+      return user.childName;
+    }
+
+    if (user.parentName) {
+      return user.parentName;
+    }
+
+    if (user.email) {
+      return user.email;
+    }
+
+    return '';
+  }
+
   private async getUserRankingBySchoolId(
     schoolId: string,
     gameSlug?: string,
@@ -98,8 +117,8 @@ export class SchoolsService {
           return right.totalScore - left.totalScore;
         }
 
-        return (left.childName || left.parentName || left.email || '').localeCompare(
-          right.childName || right.parentName || right.email || '',
+        return this.getUserRankingLabel(left).localeCompare(
+          this.getUserRankingLabel(right),
         );
       })
       .map((ranking, index) => ({
@@ -230,57 +249,63 @@ export class SchoolsService {
 
     const normalizedSearch = search?.trim();
 
-    return this.prismaService.user.findMany({
-      where: {
-        school: user.school,
-        ...(normalizedSearch
-          ? {
-              OR: [
-                {
-                  childName: {
-                    contains: normalizedSearch,
-                    mode: 'insensitive',
+    return this.prismaService.user
+      .findMany({
+        where: {
+          school: user.school,
+          ...(normalizedSearch
+            ? {
+                OR: [
+                  {
+                    childName: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
                   },
-                },
-                {
-                  parentName: {
-                    contains: normalizedSearch,
-                    mode: 'insensitive',
+                  {
+                    parentName: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
                   },
-                },
-                {
-                  email: {
-                    contains: normalizedSearch,
-                    mode: 'insensitive',
+                  {
+                    email: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
                   },
-                },
-              ],
-            }
-          : {}),
-      },
-      orderBy: [{ childName: 'asc' }, { parentName: 'asc' }, { email: 'asc' }],
-      select: {
-        id: true,
-        firebaseUid: true,
-        email: true,
-        parentName: true,
-        childName: true,
-        school: true,
-        roles: true,
-        updatedAt: true,
-      },
-    }).then((users) =>
-      users.map((schoolUser) => ({
-        id: schoolUser.id,
-        uid: schoolUser.firebaseUid,
-        email: schoolUser.email,
-        parentName: schoolUser.parentName,
-        childName: schoolUser.childName,
-        school: schoolUser.school,
-        roles: schoolUser.roles,
-        updatedAt: schoolUser.updatedAt,
-      })),
-    );
+                ],
+              }
+            : {}),
+        },
+        orderBy: [
+          { childName: 'asc' },
+          { parentName: 'asc' },
+          { email: 'asc' },
+        ],
+        select: {
+          id: true,
+          firebaseUid: true,
+          email: true,
+          parentName: true,
+          childName: true,
+          school: true,
+          roles: true,
+          updatedAt: true,
+        },
+      })
+      .then((users) =>
+        users.map((schoolUser) => ({
+          id: schoolUser.id,
+          uid: schoolUser.firebaseUid,
+          email: schoolUser.email,
+          parentName: schoolUser.parentName,
+          childName: schoolUser.childName,
+          school: schoolUser.school,
+          roles: schoolUser.roles,
+          updatedAt: schoolUser.updatedAt,
+        })),
+      );
   }
 
   async getSchoolRanking(gameSlug?: string): Promise<SchoolRankingInterface[]> {
@@ -315,7 +340,7 @@ export class SchoolsService {
     const schoolByUserId = new Map(
       users
         .filter((user) => !!user.school)
-        .map((user) => [user.firebaseUid, user.school as string]),
+        .map((user) => [user.firebaseUid, user.school]),
     );
 
     const rankingMap = new Map<

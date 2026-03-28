@@ -18,7 +18,8 @@ describe('GamesService', () => {
       delete: jest.Mock;
     };
     gameScore: {
-      upsert: jest.Mock;
+      create: jest.Mock;
+      update: jest.Mock;
       findUnique: jest.Mock;
       findMany: jest.Mock;
     };
@@ -45,7 +46,8 @@ describe('GamesService', () => {
       delete: jest.fn(),
     },
     gameScore: {
-      upsert: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
       findUnique: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
     },
@@ -222,7 +224,7 @@ describe('GamesService', () => {
     });
   });
 
-  it('deve salvar score com upsert', async () => {
+  it('deve criar score quando ainda não existir registro', async () => {
     const scoreData = {
       slug: 'memory-game',
       characterSlug: 'joao-silva',
@@ -230,9 +232,11 @@ describe('GamesService', () => {
       userId: 'user-123',
     };
 
+    prismaService.gameScore.create.mockResolvedValueOnce(scoreData);
+
     await service.saveScoreGame(scoreData);
 
-    expect(prismaService.gameScore.upsert).toHaveBeenCalledWith({
+    expect(prismaService.gameScore.findUnique).toHaveBeenCalledWith({
       where: {
         slug_characterSlug_userId: {
           slug: 'memory-game',
@@ -240,9 +244,81 @@ describe('GamesService', () => {
           userId: 'user-123',
         },
       },
-      create: scoreData,
-      update: { score: 150 },
     });
+    expect(prismaService.gameScore.create).toHaveBeenCalledWith({
+      data: scoreData,
+    });
+    expect(prismaService.gameScore.update).not.toHaveBeenCalled();
+  });
+
+  it('deve atualizar score quando o novo valor for maior', async () => {
+    const scoreData = {
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      score: 150,
+      userId: 'user-123',
+    };
+
+    prismaService.gameScore.findUnique.mockResolvedValueOnce({
+      ...scoreData,
+      score: 120,
+    });
+
+    await service.saveScoreGame(scoreData);
+
+    expect(prismaService.gameScore.update).toHaveBeenCalledWith({
+      where: {
+        slug_characterSlug_userId: {
+          slug: 'memory-game',
+          characterSlug: 'joao-silva',
+          userId: 'user-123',
+        },
+      },
+      data: { score: 150 },
+    });
+  });
+
+  it('deve manter score atual quando o novo valor não for maior', async () => {
+    const scoreData = {
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      score: 150,
+      userId: 'user-123',
+    };
+
+    const existingScore = {
+      ...scoreData,
+      score: 200,
+    };
+
+    prismaService.gameScore.findUnique.mockResolvedValueOnce(existingScore);
+
+    const result = await service.saveScoreGame(scoreData);
+
+    expect(prismaService.gameScore.create).not.toHaveBeenCalled();
+    expect(prismaService.gameScore.update).not.toHaveBeenCalled();
+    expect(result).toEqual(existingScore);
+  });
+
+  it('deve manter score atual quando o novo valor for igual', async () => {
+    const scoreData = {
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      score: 150,
+      userId: 'user-123',
+    };
+
+    const existingScore = {
+      ...scoreData,
+    };
+
+    prismaService.gameScore.findUnique.mockResolvedValueOnce(existingScore);
+
+    const result = await service.saveScoreGame(scoreData);
+
+    expect(prismaService.gameScore.create).not.toHaveBeenCalled();
+    expect(prismaService.gameScore.update).not.toHaveBeenCalled();
+    expect(result).toEqual(existingScore);
   });
 
   it('deve listar score por usuário', async () => {

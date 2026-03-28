@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
 	RiArrowLeftRightFill,
 	RiCheckDoubleLine,
@@ -47,6 +47,7 @@ export const MemoryGameExperience = ({
 	);
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
+	const autoSavedScoreRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		if (!availableLevels.length) {
@@ -101,6 +102,7 @@ export const MemoryGameExperience = ({
 
 	const handleRestart = () => {
 		// `restart` só fica acessível depois que um nível é escolhido.
+		autoSavedScoreRef.current = null;
 		setLevelContent(getMemoryGameLevelContent(content, selectedLevel!));
 
 		initializeGame();
@@ -109,6 +111,20 @@ export const MemoryGameExperience = ({
 	const handleSaveScore = async () => {
 		await onSaveScore?.(score);
 	};
+
+	useEffect(() => {
+		if (!isFinished) {
+			autoSavedScoreRef.current = null;
+			return;
+		}
+
+		if (autoSavedScoreRef.current === score) {
+			return;
+		}
+
+		autoSavedScoreRef.current = score;
+		void onSaveScore?.(score);
+	}, [isFinished, onSaveScore, score]);
 
 	let contentView: React.ReactNode;
 

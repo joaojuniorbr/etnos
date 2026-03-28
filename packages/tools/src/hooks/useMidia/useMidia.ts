@@ -17,7 +17,9 @@ export const useMidia = (
 		initialPageParam: 1,
 
 		queryFn: ({ pageParam }) =>
-			midiaService.getMidia(userId!, limit, pageParam, folder, showAll),
+			showAll
+				? midiaService.getMidia(userId!, limit, pageParam, folder, true)
+				: midiaService.getMidia(userId!, limit, pageParam, folder),
 
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
@@ -25,7 +27,10 @@ export const useMidia = (
 	const foldersQuery = useQuery({
 		queryKey: ['midia-folders', userId, showAll],
 		enabled: !!userId,
-		queryFn: () => midiaService.getFolders(userId!, showAll),
+		queryFn: () =>
+			showAll
+				? midiaService.getFolders(userId!, true)
+				: midiaService.getFolders(userId!),
 	});
 
 	return {
@@ -36,8 +41,10 @@ export const useMidia = (
 		refetchFolders: foldersQuery.refetch,
 
 		deleteMidia: (item: MidiaInterface) =>
-			midiaService.deleteMidia(item, showAll),
+			showAll ? midiaService.deleteMidia(item, true) : midiaService.deleteMidia(item),
 		deleteMidiaFromUrl: (url: string) =>
-			midiaService.deleteMidiaFromUrl(url, showAll),
+			showAll
+				? midiaService.deleteMidiaFromUrl(url, true)
+				: midiaService.deleteMidiaFromUrl(url),
 	};
 };

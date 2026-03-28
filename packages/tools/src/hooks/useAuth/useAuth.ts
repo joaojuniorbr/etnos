@@ -14,7 +14,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import {
+	getAuth,
+	GoogleAuthProvider,
+	signInWithPopup,
+	type Auth,
+} from 'firebase/auth';
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,9 +31,25 @@ const firebaseConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-const authFirebase = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+let authFirebase: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+
+const getFirebaseAuthContext = () => {
+	if (!authFirebase) {
+		const app = initializeApp(firebaseConfig);
+		authFirebase = getAuth(app);
+	}
+
+	if (!googleProvider) {
+		googleProvider = new GoogleAuthProvider();
+	}
+
+	return {
+		authFirebase,
+		googleProvider,
+	};
+};
+
 export const getStoredAuthToken = () => {
 	if (globalThis.window === undefined) {
 		return null;
@@ -135,6 +156,7 @@ export const useAuth = () => {
 	const loginWithGoogle = async (): Promise<UserProfileInterface | null> => {
 		setIsLoading(true);
 		try {
+			const { authFirebase, googleProvider } = getFirebaseAuthContext();
 			const result = await signInWithPopup(authFirebase, googleProvider);
 			const firebaseIdToken = await result.user.getIdToken(true);
 			const tokenResult = await result.user.getIdTokenResult();

@@ -103,4 +103,49 @@ describe('useMidia', () => {
 
 		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith('img.png');
 	});
+
+	it('usa endpoints administrativos quando showAll estiver ativo', async () => {
+		vi.mocked(midiaService.getMidia).mockResolvedValueOnce({
+			data: [{ id: '1', url: 'img.png' }],
+			nextCursor: undefined,
+		} as any);
+
+		vi.mocked(midiaService.getFolders).mockResolvedValueOnce([
+			{ folder: 'library', count: 2 },
+		] as any);
+
+		const { result } = renderHook(() => useMidia(mockId, 12, 'library', true), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(result.current.data).toBeDefined();
+		});
+
+		expect(midiaService.getMidia).toHaveBeenCalledWith(
+			mockId,
+			12,
+			1,
+			'library',
+			true
+		);
+		expect(midiaService.getFolders).toHaveBeenCalledWith(mockId, true);
+	});
+
+	it('encaminha remoções para o modo administrativo quando showAll estiver ativo', () => {
+		const item = { id: '1', url: 'img.png' } as any;
+
+		const { result } = renderHook(() => useMidia(mockId, 10, undefined, true), {
+			wrapper: createWrapper(),
+		});
+
+		result.current.deleteMidia(item);
+		result.current.deleteMidiaFromUrl('img.png');
+
+		expect(midiaService.deleteMidia).toHaveBeenCalledWith(item, true);
+		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith(
+			'img.png',
+			true
+		);
+	});
 });

@@ -105,6 +105,25 @@ describe('MidiaController', () => {
     expect(service.getFolders).toHaveBeenCalledWith('user-1');
   });
 
+  it('deve listar todas as mídias para admin', async () => {
+    const result = await controller.getAllMidia('20', '3', 'library');
+
+    expect(service.getMidia).toHaveBeenCalledWith(undefined, 20, 3, 'library');
+    expect(result).toEqual({ data: [], nextCursor: undefined });
+  });
+
+  it('deve listar todas as mídias para admin com paginação padrão', async () => {
+    await controller.getAllMidia();
+
+    expect(service.getMidia).toHaveBeenCalledWith(undefined, 10, 1, undefined);
+  });
+
+  it('deve listar todas as pastas para admin', async () => {
+    await controller.getAllFolders();
+
+    expect(service.getFolders).toHaveBeenCalledWith();
+  });
+
   it('deve salvar registro de mídia forçando userId autenticado', async () => {
     await controller.saveMidia(req, { url: 'u', userId: 'x' } as any);
 
@@ -121,6 +140,13 @@ describe('MidiaController', () => {
     expect(result).toBe(true);
   });
 
+  it('deve remover mídia por id como admin', async () => {
+    const result = await controller.adminDeleteById('midia-1');
+
+    expect(service.deleteMidiaById).toHaveBeenCalledWith('midia-1');
+    expect(result).toBe(true);
+  });
+
   it('deve remover mídia por url', async () => {
     const result = await controller.deleteByUrl(req, secureUrl);
 
@@ -128,6 +154,13 @@ describe('MidiaController', () => {
       secureUrl,
       'user-1',
     );
+    expect(result).toBe(true);
+  });
+
+  it('deve remover mídia por url como admin', async () => {
+    const result = await controller.adminDeleteByUrl(secureUrl);
+
+    expect(service.deleteMidiaFromUrl).toHaveBeenCalledWith(secureUrl);
     expect(result).toBe(true);
   });
 

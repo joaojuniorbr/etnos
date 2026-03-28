@@ -104,6 +104,20 @@ describe('midiaService', () => {
 		});
 	});
 
+	it('deve listar mídias usando endpoint admin quando showAll estiver ativo', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+
+		await midiaService.getMidia('user-1', 20, 2, 'library', true);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia/admin', {
+			params: {
+				limit: 20,
+				page: 2,
+				folder: 'library',
+			},
+		});
+	});
+
 	it('deve salvar mídia', async () => {
 		apiMock.post.mockResolvedValueOnce({ data: { id: '1' } });
 
@@ -122,6 +136,17 @@ describe('midiaService', () => {
 		await midiaService.deleteMidia({ id: '1', url: 'u', userId: 'user-1' });
 
 		expect(apiMock.delete).toHaveBeenCalledWith('/midia/1');
+	});
+
+	it('deve remover por id no endpoint admin quando showAll estiver ativo', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		await midiaService.deleteMidia(
+			{ id: '1', url: 'u', userId: 'user-1' },
+			true
+		);
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/admin/1');
 	});
 
 	it('deve remover por url quando não houver id', async () => {
@@ -145,6 +170,17 @@ describe('midiaService', () => {
 		expect(result).toBe(true);
 	});
 
+	it('deve remover por url via endpoint admin quando showAll estiver ativo', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		const result = await midiaService.deleteMidiaFromUrl('http://img', true);
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/midia/admin/by-url', {
+			params: { url: 'http://img' },
+		});
+		expect(result).toBe(true);
+	});
+
 	it('deve retornar lista vazia de pastas quando não houver userId', async () => {
 		const result = await midiaService.getFolders('');
 
@@ -161,5 +197,16 @@ describe('midiaService', () => {
 
 		expect(apiMock.get).toHaveBeenCalledWith('/midia/folders');
 		expect(result).toEqual([{ folder: 'games', count: 1 }]);
+	});
+
+	it('deve buscar pastas no endpoint admin quando showAll estiver ativo', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ folder: 'library', count: 3 }],
+		});
+
+		const result = await midiaService.getFolders('user-1', true);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia/admin/folders');
+		expect(result).toEqual([{ folder: 'library', count: 3 }]);
 	});
 });

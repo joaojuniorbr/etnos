@@ -190,6 +190,24 @@ describe('MidiaService', () => {
     });
   });
 
+  it('deve listar todas as mídias quando userId não for informado', async () => {
+    mockPrismaService.midia.findMany.mockResolvedValue([{ id: '1', url: 'u1' }]);
+    mockPrismaService.midia.count.mockResolvedValue(1);
+
+    const result = await service.getMidia(undefined, 10, 1);
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: {},
+      skip: 0,
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(result).toEqual({
+      data: [{ id: '1', url: 'u1' }],
+      nextCursor: undefined,
+    });
+  });
+
   it('deve usar page=1 por padrão quando não informado', async () => {
     mockPrismaService.midia.findMany.mockResolvedValueOnce([]);
     mockPrismaService.midia.count.mockResolvedValueOnce(0);
@@ -294,6 +312,24 @@ describe('MidiaService', () => {
     expect(result).toBe(true);
   });
 
+  it('deve remover mídias por url sem filtrar por usuário no modo admin', async () => {
+    mockPrismaService.midia.findMany.mockResolvedValueOnce([
+      {
+        id: '1',
+        path: 'folder/img.png',
+        userId: 'user-1',
+        url: 'url',
+      },
+    ]);
+
+    const result = await service.deleteMidiaFromUrl('url');
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: { url: 'url' },
+    });
+    expect(result).toBe(true);
+  });
+
   it('deve remover mídias por url calculando path quando item não tem path', async () => {
     mockPrismaService.midia.findMany.mockResolvedValueOnce([
       {
@@ -369,5 +405,17 @@ describe('MidiaService', () => {
       { folder: 'A', count: 1 },
       { folder: 'B', count: 2 },
     ]);
+  });
+
+  it('deve listar pastas sem filtrar por usuário no modo admin', async () => {
+    mockPrismaService.midia.findMany.mockResolvedValue([{ folder: 'games' }]);
+
+    const result = await service.getFolders();
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: {},
+      select: { folder: true },
+    });
+    expect(result).toEqual([{ folder: 'games', count: 1 }]);
   });
 });

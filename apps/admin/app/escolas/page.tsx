@@ -1,5 +1,7 @@
 'use client';
 
+import { useDeferredValue, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	Breadcrumb,
 	Button,
@@ -21,7 +23,6 @@ import {
 	type SchoolUserInterface,
 	type UserRankingInterface,
 } from '@etnos/types';
-import { useEffect, useState } from 'react';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Title } from '@etnos/ui';
@@ -40,11 +41,6 @@ const gameOptions = [
 
 export default function EscolasPage() {
 	const [open, setOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const [data, setData] = useState<SchoolInterface[]>([]);
-	const [schoolUsers, setSchoolUsers] = useState<SchoolUserInterface[]>([]);
-	const [userRanking, setUserRanking] = useState<UserRankingInterface[]>([]);
-	const [mySchool, setMySchool] = useState<SchoolInterface | null>(null);
 	const [selectedSchoolId, setSelectedSchoolId] = useState<string>();
 	const [userSearch, setUserSearch] = useState('');
 	const [selectedGame, setSelectedGame] = useState<string>('all');
@@ -54,102 +50,140 @@ export default function EscolasPage() {
 	const [form] = Form.useForm();
 
 	const { user, onRecoveryPass } = useAuth();
+	const queryClient = useQueryClient();
+	const deferredUserSearch = useDeferredValue(userSearch.trim());
 
 	const isAdmin = user?.role?.includes('admin');
 	const isSchoolProfile = user?.role?.includes('school') && !isAdmin;
+	const selectedGameSlug = selectedGame === 'all' ? undefined : selectedGame;
 
 	const toggleDrawer = () => {
 		setOpen(!open);
 	};
 
-	const loadAdminSchools = () => {
-		setIsLoading(true);
-		schoolService
-			.getAll()
-			.then((res) => {
-				setData(res);
-				setSelectedSchoolId((currentSelectedSchoolId) => {
-					if (
-						currentSelectedSchoolId &&
-						res.some((school) => school.id === currentSelectedSchoolId)
-					) {
-						return currentSelectedSchoolId;
-					}
+	const { data: schools = [], isLoading: isLoadingSchools } = useQuery({
+		queryKey: ['schools', 'admin'],
+		queryFn: () => schoolService.getAll(),
+		enabled: isAdmin,
+	});
 
-					return res[0]?.id;
-				});
-			})
-			.catch(() => {
-				message.error('Erro ao carregar escolas');
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
-	};
+	const effectiveSelectedSchoolId =
+		selectedSchoolId && schools.some((school) => school.id === selectedSchoolId)
+			? selectedSchoolId
+			: schools[0]?.id;
 
-	const loadSchoolArea = (gameSlug?: string) => {
-		setIsLoading(true);
-		Promise.all([
-			schoolService.getMySchool(),
-			schoolService.getMyUsers(userSearch.trim() || undefined),
-			schoolService.getMyUsersRanking(gameSlug),
-		])
-			.then(([school, users, ranking]) => {
-				setMySchool(school);
-				setSchoolUsers(users);
-				setUserRanking(ranking);
-			})
-			.catch(() => {
-				message.error('Erro ao carregar painel da escola');
-			})
-			.finally(() => {
-				setIsLoading(false);
+	const { data: mySchool = null, isLoading: isLoadingMySchool } = useQuery({
+		queryKey: ['schools', 'me'],
+		queryFn: () => schoolService.getMySchool(),
+		enabled: isSchoolProfile,
+	});
+
+	const { data: schoolUsers = [], isLoading: isLoadingSchoolUsers } = useQuery<
+		SchoolUserInterface[]
+	>({
+		queryKey: ['schools', 'me', 'users', deferredUserSearch],
+		queryFn: () => schoolService.getMyUsers(deferredUserSearch || undefined),
+		enabled: isSchoolProfile,
+	});
+
+	const {
+		data: schoolUserRanking = [],
+		isLoading: isLoadingSchoolUserRanking,
+	} = useQuery<UserRankingInterface[]>({
+		queryKey: ['schools', 'me', 'users-ranking', selectedGameSlug ?? 'all'],
+		queryFn: () => schoolService.getMyUsersRanking(selectedGameSlug),
+		enabled: isSchoolProfile,
+	});
+
+	const { data: adminUserRanking = [], isLoading: isLoadingAdminUserRanking } =
+		useQuery<UserRankingInterface[]>({
+			queryKey: [
+				'schools',
+				'admin',
+				'users-ranking',
+				effectiveSelectedSchoolId,
+				selectedGameSlug ?? 'all',
+			],
+			queryFn: () =>
+				schoolService.getUsersRankingBySchool(
+					effectiveSelectedSchoolId as string,
+					selectedGameSlug
+				),
+			enabled: isAdmin && !!effectiveSelectedSchoolId,
+		});
+
+	const createSchoolMutation = useMutation({
+		mutationFn: (values: SchoolInterface) => schoolService.create(values),
+		onSuccess: () => {
+			form.resetFields();
+			setOpen(false);
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'admin'],
 			});
-	};
+			message.success('Escola criada com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao criar escola');
+		},
+	});
+
+	const deleteSchoolMutation = useMutation({
+		mutationFn: (id: string) => schoolService.delete(id),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'admin'],
+			});
+			message.success('Escola excluida com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao excluir escola');
+		},
+	});
+
+	const updateSchoolMutation = useMutation({
+		mutationFn: ({
+			id,
+			field,
+			value,
+		}: {
+			id: string;
+			field: string;
+			value: string;
+		}) =>
+			schoolService.update(id, {
+				[field]: value,
+			}),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'admin'],
+			});
+			message.success('Campo atualizado com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao atualizar campo');
+		},
+	});
+
+	const isLoading =
+		isLoadingSchools ||
+		isLoadingMySchool ||
+		isLoadingSchoolUsers ||
+		isLoadingSchoolUserRanking ||
+		isLoadingAdminUserRanking ||
+		createSchoolMutation.isPending ||
+		deleteSchoolMutation.isPending ||
+		updateSchoolMutation.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
-		setIsLoading(true);
-		schoolService
-			.create(values)
-			.then(() => {
-				form.resetFields();
-				toggleDrawer();
-				loadAdminSchools();
-				message.success('Escola criada com sucesso');
-			})
-			.catch(() => {
-				message.error('Erro ao criar escola');
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
+		createSchoolMutation.mutate(values);
 	};
 
 	const handleDelete = (id: string) => {
-		setIsLoading(true);
-		schoolService
-			.delete(id)
-			.then(() => {
-				message.success('Escola excluida com sucesso');
-				loadAdminSchools();
-			})
-			.finally(() => setIsLoading(false));
+		deleteSchoolMutation.mutate(id);
 	};
 
 	const handleUpdateField = (id: string, field: string, value: string) => {
-		setIsLoading(true);
-		schoolService
-			.update(id, {
-				[field]: value,
-			})
-			.then(() => {
-				message.success('Campo atualizado com sucesso');
-				loadAdminSchools();
-			})
-			.catch(() => {
-				message.error('Erro ao atualizar campo');
-			})
-			.finally(() => setIsLoading(false));
+		updateSchoolMutation.mutate({ id, field, value });
 	};
 
 	const handleSendPassword = async (email?: string | null) => {
@@ -165,48 +199,6 @@ export default function EscolasPage() {
 			setSendingRecoveryEmail(null);
 		}
 	};
-
-	useEffect(() => {
-		if (!isSchoolProfile) {
-			loadAdminSchools();
-		}
-	}, [isSchoolProfile]);
-
-	useEffect(() => {
-		if (!isSchoolProfile) {
-			return;
-		}
-
-		const timeoutId = window.setTimeout(() => {
-			loadSchoolArea(selectedGame === 'all' ? undefined : selectedGame);
-		}, 300);
-
-		return () => {
-			window.clearTimeout(timeoutId);
-		};
-	}, [isSchoolProfile, selectedGame, userSearch]);
-
-	useEffect(() => {
-		if (isSchoolProfile || !selectedSchoolId) {
-			return;
-		}
-
-		setIsLoading(true);
-		schoolService
-			.getUsersRankingBySchool(
-				selectedSchoolId,
-				selectedGame === 'all' ? undefined : selectedGame
-			)
-			.then((ranking) => {
-				setUserRanking(ranking);
-			})
-			.catch(() => {
-				message.error('Erro ao carregar ranking da escola selecionada');
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
-	}, [isSchoolProfile, selectedGame, selectedSchoolId]);
 
 	if (isSchoolProfile) {
 		return (
@@ -241,7 +233,7 @@ export default function EscolasPage() {
 							sendingRecoveryEmail={sendingRecoveryEmail}
 						/>
 						<UserRanking
-							ranking={userRanking}
+							ranking={schoolUserRanking}
 							selectedGame={selectedGame}
 							onGameChange={setSelectedGame}
 							gameOptions={gameOptions}
@@ -311,7 +303,7 @@ export default function EscolasPage() {
 							),
 						},
 					]}
-					dataSource={data}
+					dataSource={schools}
 					pagination={false}
 					rowKey='id'
 				/>
@@ -328,9 +320,9 @@ export default function EscolasPage() {
 
 						<Select
 							placeholder='Selecione uma escola'
-							value={selectedSchoolId}
+							value={effectiveSelectedSchoolId}
 							onChange={setSelectedSchoolId}
-							options={data.map((school) => ({
+							options={schools.map((school) => ({
 								value: school.id,
 								label: school.name,
 							}))}
@@ -339,7 +331,7 @@ export default function EscolasPage() {
 					</div>
 
 					<UserRanking
-						ranking={userRanking}
+						ranking={adminUserRanking}
 						selectedGame={selectedGame}
 						onGameChange={setSelectedGame}
 						gameOptions={gameOptions}

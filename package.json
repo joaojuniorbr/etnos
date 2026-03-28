@@ -8,6 +8,7 @@
 		"test": "turbo run test",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
 		"check-types": "turbo run check-types",
+		"sonar": "node scripts/run-sonar.mjs",
 		"release": "semantic-release",
 		"prepare": "husky",
 		"commit": "cz",

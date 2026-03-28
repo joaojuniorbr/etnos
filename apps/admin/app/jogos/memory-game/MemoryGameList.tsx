@@ -13,8 +13,8 @@ import {
 	type MemoryGameContentInterface,
 } from '@etnos/types';
 import { RiCloseLine } from 'react-icons/ri';
-import { ImageLibrary, useUser } from '@etnos/ui';
-import { Button, Drawer, Modal, Spin, Table, Typography } from 'antd';
+import { ImageLibrary, Title, useUser } from '@etnos/ui';
+import { Button, Drawer, Modal, Spin, Table } from 'antd';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -98,43 +98,43 @@ export const MemoryGameList = () => {
 
 	return (
 		<Spin spinning={isLoading}>
-			<Typography.Title level={1} className='mb-10 mt-4'>
-				Jogo da Memória
-			</Typography.Title>
+			<Title className='mb-4 mt-6'>Jogo da Memória</Title>
 
-			<Table
-				rowKey='id'
-				pagination={false}
-				columns={[
-					{
-						title: 'Imagem',
-						width: 100,
-						render: (item) => (
-							<Image
-								src={imageCoverUrl(item.slug) || item.imageUrl}
-								alt={item.name}
-								width={100}
-								height={100}
-								onClick={() => openEditImageCover(item)}
-								className='border border-slate-200'
-							/>
-						),
-					},
-					{
-						title: 'Nome',
-						dataIndex: 'name',
-					},
-					{
-						width: 100,
-						render: (item) => (
-							<Button type='primary' onClick={() => openEdit(item)}>
-								Editar Conteúdo
-							</Button>
-						),
-					},
-				]}
-				dataSource={data}
-			/>
+			<div className='border border-slate-200 border-b-0'>
+				<Table
+					rowKey='id'
+					pagination={false}
+					columns={[
+						{
+							title: 'Imagem',
+							width: 100,
+							render: (item) => (
+								<Image
+									src={imageCoverUrl(item.slug) || item.imageUrl}
+									alt={item.name}
+									width={100}
+									height={100}
+									onClick={() => openEditImageCover(item)}
+									className='border border-slate-200'
+								/>
+							),
+						},
+						{
+							title: 'Nome',
+							dataIndex: 'name',
+						},
+						{
+							width: 100,
+							render: (item) => (
+								<Button type='primary' onClick={() => openEdit(item)}>
+									Editar Conteúdo
+								</Button>
+							),
+						},
+					]}
+					dataSource={data}
+				/>
+			</div>
 
 			<Modal
 				open={!!character}

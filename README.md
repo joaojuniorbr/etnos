@@ -147,10 +147,10 @@ yarn check-types
 
 ## Acessos
 
-- 📘 [Swagger](https://etnos-api-496963560523.us-central1.run.app/docs): a porta
-  de entrada para explorar a API, testar rotas e ver os contratos em ação.
-- 🚀 [Aplicação funcionando](https://etnos.vercel.app): a plataforma publicada
-  para navegar, conhecer a experiência e ver o Etnos em movimento.
+- 📘 [Swagger](https://api.etnos.online/docs): a porta de entrada para explorar
+  a API, testar rotas e ver os contratos em ação.
+- 🚀 [Aplicação funcionando](https://etnos.online): a plataforma publicada para
+  navegar, conhecer a experiência e ver o Etnos em movimento.
 - 📚 [Documentação acadêmica](https://joaojuniorbr.github.io/etnos/):
   arquitetura, banco de dados, contexto do projeto e material técnico reunidos
   em um só lugar.

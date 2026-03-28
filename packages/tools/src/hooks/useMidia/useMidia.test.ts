@@ -43,7 +43,8 @@ describe('useMidia', () => {
 			mockId,
 			10,
 			1,
-			undefined
+			undefined,
+			false
 		);
 
 		expect(result.current.folders).toEqual(['Folder A', 'Folder B']);
@@ -78,7 +79,8 @@ describe('useMidia', () => {
 			mockId,
 			10,
 			cursor,
-			undefined
+			undefined,
+			false
 		);
 	});
 
@@ -91,7 +93,7 @@ describe('useMidia', () => {
 
 		result.current.deleteMidia(item);
 
-		expect(midiaService.deleteMidia).toHaveBeenCalledWith(item);
+		expect(midiaService.deleteMidia).toHaveBeenCalledWith(item, false);
 	});
 
 	it('chama deleteMidiaFromUrl corretamente', () => {
@@ -101,7 +103,10 @@ describe('useMidia', () => {
 
 		result.current.deleteMidiaFromUrl('img.png');
 
-		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith('img.png');
+		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith(
+			'img.png',
+			false
+		);
 	});
 
 	it('usa endpoints administrativos quando showAll estiver ativo', async () => {

@@ -17,6 +17,7 @@ import type { SchoolInterface } from '@etnos/types';
 import { useEffect, useState } from 'react';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Title } from '@etnos/ui';
 
 export default function EscolasPage() {
 	const [open, setOpen] = useState(false);
@@ -108,9 +109,7 @@ export default function EscolasPage() {
 					]}
 				/>
 
-				<Typography.Title level={1} className='mb-10 mt-4'>
-					Escolas
-				</Typography.Title>
+				<Title className='mb-4 mt-6'>Escolas</Title>
 
 				<Table
 					columns={[

@@ -2,17 +2,15 @@
 
 import {
 	Breadcrumb,
-	Divider,
-	Modal,
 	Spin,
-	Typography,
 	FloatButton,
 	message,
 	Table,
 	Image,
 	Button,
+	Drawer,
 } from 'antd';
-import { useUser } from '@etnos/ui';
+import { Title, useUser } from '@etnos/ui';
 import { FormCharacter } from '@etnos/components';
 import { useState } from 'react';
 
@@ -58,8 +56,7 @@ export default function PersonagensPage() {
 		setIsLoading(true);
 		charactersService
 			.update(character)
-			.catch((err) => {
-				console.log(err);
+			.catch(() => {
 				message.error('Erro ao atualizar personagem');
 			})
 			.finally(() => {
@@ -101,9 +98,7 @@ export default function PersonagensPage() {
 					]}
 				/>
 
-				<Typography.Title level={1} className='mb-10 mt-4'>
-					Personagens
-				</Typography.Title>
+				<Title className='mb-4 mt-6'>Personagens</Title>
 
 				<FloatButton
 					icon={<RiAddLine className='text-2xl' />}
@@ -111,21 +106,21 @@ export default function PersonagensPage() {
 					type='primary'
 				/>
 
-				<Modal
+				<Drawer
 					open={openCharacter}
 					title='Novo Personagem'
 					footer={null}
 					destroyOnHidden
-					onCancel={onCloseModal}
+					onClose={onCloseModal}
+					size='large'
 				>
-					<Divider />
 					<FormCharacter
 						data={characterData}
 						user={user}
 						onSubmit={onSubmit}
 						isLoading={isLoading}
 					/>
-				</Modal>
+				</Drawer>
 
 				<div className='bg-white rounded shadow'>
 					<Table
@@ -136,7 +131,7 @@ export default function PersonagensPage() {
 							{
 								title: 'Imagem',
 								render: (item) => (
-									<div className='w-20 border border-slate-200 rounded flex overflow-hidden'>
+									<div className='w-20 md:w-32 border border-slate-200 rounded flex overflow-hidden'>
 										<Image src={item.imageUrl} />
 									</div>
 								),

@@ -1,10 +1,10 @@
 'use client';
 
 import { useGames } from '@etnos/tools';
-import { Breadcrumb, Button, Card, Spin, Table, Tag, Typography } from 'antd';
-import Link from 'next/link';
+import { Breadcrumb, Button, Spin, Tag } from 'antd';
 import { useState } from 'react';
 import { gameManagementLinks } from '../admin-navigation';
+import { Title } from '@etnos/ui';
 
 export default function JogosPage() {
 	const [isLoading] = useState(false);
@@ -26,40 +26,35 @@ export default function JogosPage() {
 					]}
 				/>
 
-				<div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8'>
-					<Typography.Title level={1} className='!mb-2'>
-						Jogos
-					</Typography.Title>
-					<Typography.Paragraph className='!mb-0 !max-w-3xl !text-slate-600'>
-						Veja os jogos cadastrados, abra a experiencia do aluno e entre
-						direto nas rotas de gestao ja disponiveis no admin.
-					</Typography.Paragraph>
-				</div>
+				<Title className='mb-4 mt-6'>Jogos</Title>
+				<p className='text-slate-600'>
+					Veja os jogos cadastrados, abra a experiencia do aluno e entre direto
+					nas rotas de gestao ja disponiveis no admin.
+				</p>
 
-				<div className='mt-6 grid gap-4 md:grid-cols-2'>
+				<div className='mt-6 grid gap-4 md:grid-cols-2 mb-4'>
 					{allGames.map((game) => {
 						const management = gameManagementLinks[game.slug];
 
 						return (
-							<Card
+							<div
 								key={game.slug}
-								className='rounded-2xl border border-slate-200 shadow-sm'
+								className='rounded border border-slate-200 shadow-sm bg-white p-6'
 							>
-								<div className='flex flex-wrap items-start justify-between gap-3'>
+								<div className='flex flex-wrap items-start justify-between gap-3 mb-4'>
 									<div>
-										<Typography.Title level={4} className='!mb-1'>
-											{game.name}
-										</Typography.Title>
-										<Typography.Text type='secondary'>{game.slug}</Typography.Text>
+										<Title>{game.name}</Title>
+										<p className='text-slate-600 text-xs'>{game.slug}</p>
 									</div>
+
 									<Tag color={management?.available ? 'green' : 'default'}>
 										{management?.available ? 'Gestao disponivel' : 'Sem painel'}
 									</Tag>
 								</div>
 
-								<Typography.Paragraph className='!mt-4 !mb-5 !text-slate-600'>
+								<p className='text-slate-600 text-base mb-4'>
 									{game.description}
-								</Typography.Paragraph>
+								</p>
 
 								<div className='flex flex-wrap gap-3'>
 									<Button href={game.url} target='_blank'>
@@ -71,53 +66,14 @@ export default function JogosPage() {
 											{management.label}
 										</Button>
 									) : (
-										<Button disabled>{management?.label ?? 'Gestao indisponivel'}</Button>
+										<Button disabled>
+											{management?.label ?? 'Gestao indisponivel'}
+										</Button>
 									)}
 								</div>
-							</Card>
+							</div>
 						);
 					})}
-				</div>
-
-				<div className='mt-8 rounded-2xl bg-white p-4 shadow-sm'>
-					<Table
-						columns={[
-							{
-								title: 'Nome',
-								dataIndex: 'name',
-								render: (name) => (
-									<span className='text-base font-bold text-primary'>{name}</span>
-								),
-							},
-							{
-								title: 'Descricao',
-								dataIndex: 'description',
-								render: (description) => (
-									<div className='text-sm text-slate-600'>{description}</div>
-								),
-							},
-							{
-								title: 'Slug',
-								dataIndex: 'slug',
-							},
-							{
-								title: 'Gestao',
-								dataIndex: 'slug',
-								render: (slug) => {
-									const management = gameManagementLinks[slug];
-
-									if (!management?.available || !management.href) {
-										return <Tag>Em breve</Tag>;
-									}
-
-									return <Link href={management.href}>{management.label}</Link>;
-								},
-							},
-						]}
-						dataSource={allGames}
-						pagination={false}
-						rowKey='slug'
-					/>
 				</div>
 			</div>
 		</Spin>

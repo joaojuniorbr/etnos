@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import type { MemoryGameContentInterface } from '@etnos/types';
+import type { GuessGameContentInterface } from '@etnos/types';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -23,6 +24,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { GameDto } from './dto/game.dto';
 import { SaveScoreDto } from './dto/save-score.dto';
 import { SaveMemoryGameContentDto } from './dto/save-memory-game-content.dto';
+import { SaveGuessGameContentDto } from './dto/save-guess-game-content.dto';
+import { ValidateGuessGameDto } from './dto/validate-guess-game.dto';
 import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Jogos')
@@ -107,6 +110,31 @@ export class GamesController {
     return this.gamesService.getMemoryGameImages(characterSlug);
   }
 
+  @Get('guess/:characterSlug')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({ summary: 'Lista conteúdos do jogo adivinhe por personagem' })
+  @ApiParam({
+    name: 'characterSlug',
+    required: true,
+    description: 'Slug do personagem',
+  })
+  async getGuessGameContent(@Param('characterSlug') characterSlug: string) {
+    return this.gamesService.getGuessGameContent(characterSlug);
+  }
+
+  @Get('guess/play/:characterSlug')
+  @ApiOperation({
+    summary: 'Obtém um conteúdo jogável do adivinhe sem expor a palavra',
+  })
+  @ApiParam({
+    name: 'characterSlug',
+    required: true,
+    description: 'Slug do personagem',
+  })
+  async getGuessGamePlayContent(@Param('characterSlug') characterSlug: string) {
+    return this.gamesService.getGuessGamePlayContent(characterSlug);
+  }
+
   @Post('memory')
   @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Salva conteúdo do jogo da memória' })
@@ -114,6 +142,16 @@ export class GamesController {
   async saveMemoryGameContent(@Body() data: SaveMemoryGameContentDto) {
     return this.gamesService.saveMemoryGameContent(
       data as MemoryGameContentInterface,
+    );
+  }
+
+  @Post('guess')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({ summary: 'Salva conteúdo do jogo adivinhe' })
+  @ApiBody({ type: SaveGuessGameContentDto })
+  async saveGuessGameContent(@Body() data: SaveGuessGameContentDto) {
+    return this.gamesService.saveGuessGameContent(
+      data as GuessGameContentInterface,
     );
   }
 
@@ -127,6 +165,25 @@ export class GamesController {
   })
   async deleteMemoryGameContent(@Param('id') id: string) {
     return this.gamesService.deleteMemoryGameContent(id);
+  }
+
+  @Delete('guess/:id')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({ summary: 'Remove item do jogo adivinhe' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID do item do jogo adivinhe',
+  })
+  async deleteGuessGameContent(@Param('id') id: string) {
+    return this.gamesService.deleteGuessGameContent(id);
+  }
+
+  @Post('guess/validate')
+  @ApiOperation({ summary: 'Valida tentativa do jogo adivinhe' })
+  @ApiBody({ type: ValidateGuessGameDto })
+  async validateGuessGameAttempt(@Body() data: ValidateGuessGameDto) {
+    return this.gamesService.validateGuessGameAttempt(data);
   }
 
   @Post('score')

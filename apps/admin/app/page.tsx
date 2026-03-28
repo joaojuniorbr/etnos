@@ -111,7 +111,7 @@ export default function Page() {
 								administração.
 							</p>
 
-							<div className='grid md:grid-cols-2'>
+							<div className='grid md:grid-cols-2 gap-4'>
 								{gameHighlights.map((game) => (
 									<dl
 										className='border border-slate-200 bg-white rounded p-6	shadow'

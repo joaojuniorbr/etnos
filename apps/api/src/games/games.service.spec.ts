@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Prisma } from '@prisma/client';
 import { GamesService } from './games.service';
 import { PrismaService } from 'src/prisma';
 
@@ -18,6 +19,13 @@ describe('GamesService', () => {
     memoryGameContent: {
       create: jest.Mock;
       findMany: jest.Mock;
+      delete: jest.Mock;
+    };
+    guessGameContent: {
+      create: jest.Mock;
+      update: jest.Mock;
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
       delete: jest.Mock;
     };
     gameScore: {
@@ -52,6 +60,13 @@ describe('GamesService', () => {
     memoryGameContent: {
       create: jest.fn(),
       findMany: jest.fn().mockResolvedValue([]),
+      delete: jest.fn(),
+    },
+    guessGameContent: {
+      create: jest.fn(),
+      update: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue(null),
       delete: jest.fn(),
     },
     gameScore: {
@@ -188,6 +203,255 @@ describe('GamesService', () => {
     ]);
   });
 
+  it('deve criar conteúdo do guess game quando não houver id', async () => {
+    const payload = {
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    };
+
+    await service.saveGuessGameContent(payload);
+
+    expect(prismaService.guessGameContent.create).toHaveBeenCalledWith({
+      data: payload,
+    });
+  });
+
+  it('deve atualizar conteúdo do guess game quando houver id', async () => {
+    const payload = {
+      id: 'guess-1',
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: undefined,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    };
+
+    await service.saveGuessGameContent(payload);
+
+    expect(prismaService.guessGameContent.update).toHaveBeenCalledWith({
+      where: { id: 'guess-1' },
+      data: {
+        title: 'Chimarrao',
+        word: 'Bomba',
+        tips: ['Dica 1'],
+        imageUrl: null,
+        description: 'Descricao',
+        characterSlug: 'anita',
+      },
+    });
+  });
+
+  it('deve buscar conteúdo do guess game ordenado por título e palavra', async () => {
+    await service.getGuessGameContent('anita');
+
+    expect(prismaService.guessGameContent.findMany).toHaveBeenCalledWith({
+      where: { characterSlug: 'anita' },
+      orderBy: [{ title: 'asc' }, { word: 'asc' }],
+    });
+  });
+
+  it('deve selecionar um conteúdo jogável sem expor a palavra', async () => {
+    prismaService.guessGameContent.findMany.mockResolvedValueOnce([
+      {
+        id: 'guess-1',
+        title: 'Chimarrao',
+        word: 'Bomba',
+        tips: ['Dica 1'],
+        imageUrl: null,
+        description: 'Descricao',
+        characterSlug: 'anita',
+      },
+    ]);
+
+    jest.spyOn(Math, 'random').mockReturnValueOnce(0);
+
+    await expect(service.getGuessGamePlayContent('anita')).resolves.toEqual({
+      id: 'guess-1',
+      title: 'Chimarrao',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      characterSlug: 'anita',
+      wordLength: 5,
+    });
+  });
+
+  it('deve retornar null quando não houver conteúdo jogável', async () => {
+    prismaService.guessGameContent.findMany.mockResolvedValueOnce([]);
+
+    await expect(service.getGuessGamePlayContent('anita')).resolves.toBeNull();
+  });
+
+  it('deve retornar null quando o item sorteado não existir', async () => {
+    jest
+      .spyOn(service, 'getGuessGameContent')
+      .mockResolvedValueOnce([undefined] as any);
+
+    await expect(service.getGuessGamePlayContent('anita')).resolves.toBeNull();
+  });
+
+  it('deve retornar lista vazia quando a tabela do guess game ainda não existir', async () => {
+    prismaService.guessGameContent.findMany.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError(
+        'Tabela inexistente',
+        {
+          code: 'P2021',
+          clientVersion: '6.19.2',
+          meta: {
+            table: 'public.guess_game_contents',
+          },
+        },
+      ),
+    );
+
+    await expect(service.getGuessGameContent('anita')).resolves.toEqual([]);
+  });
+
+  it('deve relançar erro inesperado ao buscar conteúdo do guess game', async () => {
+    prismaService.guessGameContent.findMany.mockRejectedValueOnce(
+      new Error('erro inesperado'),
+    );
+
+    await expect(service.getGuessGameContent('anita')).rejects.toThrow(
+      'erro inesperado',
+    );
+  });
+
+  it('deve relançar erro P2021 quando a tabela ausente não for a do guess game', async () => {
+    prismaService.guessGameContent.findMany.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError(
+        'Tabela inexistente',
+        {
+          code: 'P2021',
+          clientVersion: '6.19.2',
+          meta: {
+            table: 'public.memory_game_contents',
+          },
+        },
+      ),
+    );
+
+    await expect(service.getGuessGameContent('anita')).rejects.toThrow(
+      'Tabela inexistente',
+    );
+  });
+
+  it('deve relançar erro P2021 quando o Prisma não informar meta.table', async () => {
+    prismaService.guessGameContent.findMany.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError(
+        'Tabela inexistente',
+        {
+          code: 'P2021',
+          clientVersion: '6.19.2',
+        },
+      ),
+    );
+
+    await expect(service.getGuessGameContent('anita')).rejects.toThrow(
+      'Tabela inexistente',
+    );
+  });
+
+  it('deve validar palavra completa correta', async () => {
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
+      id: 'guess-1',
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    });
+
+    await expect(
+      service.validateGuessGameAttempt({
+        contentId: 'guess-1',
+        guess: 'bomba',
+        type: 'word',
+      }),
+    ).resolves.toEqual({
+      isCorrect: true,
+      isSolved: true,
+      matchedIndexes: [],
+      revealedCharacters: [],
+      word: 'Bomba',
+      description: 'Descricao',
+    });
+  });
+
+  it('deve validar palavra completa incorreta sem expor resposta', async () => {
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
+      id: 'guess-1',
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    });
+
+    await expect(
+      service.validateGuessGameAttempt({
+        contentId: 'guess-1',
+        guess: 'cuia',
+        type: 'word',
+      }),
+    ).resolves.toEqual({
+      isCorrect: false,
+      isSolved: false,
+      matchedIndexes: [],
+      revealedCharacters: [],
+      word: undefined,
+      description: undefined,
+    });
+  });
+
+  it('deve validar letra correta sem resolver a palavra inteira', async () => {
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce({
+      id: 'guess-1',
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    });
+
+    await expect(
+      service.validateGuessGameAttempt({
+        contentId: 'guess-1',
+        guess: 'b',
+        type: 'letter',
+      }),
+    ).resolves.toEqual({
+      isCorrect: true,
+      isSolved: false,
+      matchedIndexes: [0, 3],
+      revealedCharacters: ['B', 'b'],
+    });
+  });
+
+  it('deve retornar tentativa inválida quando o conteúdo não existir', async () => {
+    prismaService.guessGameContent.findUnique.mockResolvedValueOnce(null);
+
+    await expect(
+      service.validateGuessGameAttempt({
+        contentId: 'missing',
+        guess: 'b',
+        type: 'letter',
+      }),
+    ).resolves.toEqual({
+      isCorrect: false,
+      isSolved: false,
+      matchedIndexes: [],
+      revealedCharacters: [],
+    });
+  });
+
   it('deve deletar conteúdo do memory game com sucesso', async () => {
     prismaService.memoryGameContent.delete.mockResolvedValueOnce(undefined);
 
@@ -196,10 +460,26 @@ describe('GamesService', () => {
     expect(result).toBe(true);
   });
 
+  it('deve deletar conteúdo do guess game com sucesso', async () => {
+    prismaService.guessGameContent.delete.mockResolvedValueOnce(undefined);
+
+    const result = await service.deleteGuessGameContent('id-1');
+
+    expect(result).toBe(true);
+  });
+
   it('deve retornar false ao falhar no delete do memory game', async () => {
     prismaService.memoryGameContent.delete.mockRejectedValueOnce(new Error('fail'));
 
     const result = await service.deleteMemoryGameContent('id-1');
+
+    expect(result).toBe(false);
+  });
+
+  it('deve retornar false ao falhar no delete do guess game', async () => {
+    prismaService.guessGameContent.delete.mockRejectedValueOnce(new Error('fail'));
+
+    const result = await service.deleteGuessGameContent('id-1');
 
     expect(result).toBe(false);
   });

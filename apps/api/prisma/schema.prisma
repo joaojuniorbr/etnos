@@ -76,6 +76,21 @@ model MemoryGameContent {
   @@map("memory_game_contents")
 }
 
+model GuessGameContent {
+  id            String   @id @default(cuid())
+  title         String   @db.VarChar(255)
+  word          String   @db.VarChar(255)
+  tips          String[]
+  imageUrl      String?  @map("image_url")
+  description   String
+  characterSlug String   @map("character_slug") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([characterSlug], map: "guess_game_contents_character_slug_idx")
+  @@map("guess_game_contents")
+}
+
 model GameScore {
   id            String   @id @default(cuid())
   slug          String   @db.VarChar(255)

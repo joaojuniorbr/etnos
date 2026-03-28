@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type {
   ConfigGamesInterface,
+  GuessGameContentInterface,
+  GuessGamePlayItemInterface,
+  GuessGameValidationResultInterface,
   MemoryGameContentInterface,
   ScoreInterface,
 } from '@etnos/types';
@@ -9,6 +13,14 @@ import { PrismaService } from 'src/prisma';
 @Injectable()
 export class GamesService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private isMissingGuessGameContentTable(error: unknown) {
+    return (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2021' &&
+      String(error.meta?.table ?? '').includes('guess_game_contents')
+    );
+  }
 
   private async getUserSchoolId(userId: string) {
     const user = await this.prismaService.user.findUnique({
@@ -100,6 +112,33 @@ export class GamesService {
     });
   }
 
+  async saveGuessGameContent(props: GuessGameContentInterface) {
+    if (props.id) {
+      return this.prismaService.guessGameContent.update({
+        where: { id: props.id },
+        data: {
+          title: props.title,
+          word: props.word,
+          tips: props.tips,
+          imageUrl: props.imageUrl ?? null,
+          description: props.description,
+          characterSlug: props.characterSlug,
+        },
+      });
+    }
+
+    return this.prismaService.guessGameContent.create({
+      data: {
+        title: props.title,
+        word: props.word,
+        tips: props.tips,
+        imageUrl: props.imageUrl ?? null,
+        description: props.description,
+        characterSlug: props.characterSlug,
+      },
+    });
+  }
+
   async getMemoryGameContent(slug: string) {
     const docs = await this.prismaService.memoryGameContent.findMany({
       where: { slug },
@@ -111,9 +150,121 @@ export class GamesService {
     }));
   }
 
+  async getGuessGameContent(characterSlug: string) {
+    try {
+      return await this.prismaService.guessGameContent.findMany({
+        where: { characterSlug },
+        orderBy: [{ title: 'asc' }, { word: 'asc' }],
+      });
+    } catch (error) {
+      if (this.isMissingGuessGameContentTable(error)) {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async getGuessGamePlayContent(
+    characterSlug: string,
+  ): Promise<GuessGamePlayItemInterface | null> {
+    const items = await this.getGuessGameContent(characterSlug);
+
+    if (!items.length) {
+      return null;
+    }
+
+    const selectedItem = items[Math.floor(Math.random() * items.length)];
+
+    if (!selectedItem) {
+      return null;
+    }
+
+    return {
+      id: selectedItem.id as string,
+      title: selectedItem.title,
+      tips: selectedItem.tips,
+      imageUrl: selectedItem.imageUrl ?? null,
+      characterSlug: selectedItem.characterSlug,
+      wordLength: selectedItem.word.length,
+    };
+  }
+
+  async validateGuessGameAttempt(data: {
+    contentId: string;
+    guess: string;
+    type: 'letter' | 'word';
+    currentGuesses?: string;
+  }): Promise<GuessGameValidationResultInterface> {
+    const content = await this.prismaService.guessGameContent.findUnique({
+      where: {
+        id: data.contentId,
+      },
+    });
+
+    if (!content) {
+      return {
+        isCorrect: false,
+        isSolved: false,
+        matchedIndexes: [],
+        revealedCharacters: [],
+      };
+    }
+
+    const normalize = (value: string) =>
+      value
+        .normalize('NFD')
+        .replaceAll(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    if (data.type === 'word') {
+      const isCorrect = normalize(data.guess) === normalize(content.word);
+
+      return {
+        isCorrect,
+        isSolved: isCorrect,
+        matchedIndexes: [],
+        revealedCharacters: [],
+        word: isCorrect ? content.word : undefined,
+        description: isCorrect ? content.description : undefined,
+      };
+    }
+
+    const normalizedGuess = normalize(data.guess);
+    const matchedIndexes: number[] = [];
+    const revealedCharacters: string[] = [];
+
+    for (let index = 0; index < content.word.length; index += 1) {
+      const character = content.word[index];
+
+      if (character && normalize(character) === normalizedGuess) {
+        matchedIndexes.push(index);
+        revealedCharacters.push(character);
+      }
+    }
+
+    return {
+      isCorrect: matchedIndexes.length > 0,
+      isSolved: false,
+      matchedIndexes,
+      revealedCharacters,
+    };
+  }
+
   async deleteMemoryGameContent(id: string) {
     try {
       await this.prismaService.memoryGameContent.delete({
+        where: { id },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async deleteGuessGameContent(id: string) {
+    try {
+      await this.prismaService.guessGameContent.delete({
         where: { id },
       });
       return true;

@@ -25,8 +25,13 @@ const mockGamesService = {
   removeConfig: jest.fn().mockResolvedValue(true),
   getMemoryGameContent: jest.fn().mockResolvedValue([]),
   getMemoryGameImages: jest.fn().mockResolvedValue([]),
+  getGuessGameContent: jest.fn().mockResolvedValue([]),
+  getGuessGamePlayContent: jest.fn().mockResolvedValue(null),
   saveMemoryGameContent: jest.fn().mockResolvedValue({ id: 'mem-1' }),
+  saveGuessGameContent: jest.fn().mockResolvedValue({ id: 'guess-1' }),
   deleteMemoryGameContent: jest.fn().mockResolvedValue(true),
+  deleteGuessGameContent: jest.fn().mockResolvedValue(true),
+  validateGuessGameAttempt: jest.fn().mockResolvedValue({ isCorrect: true }),
   saveScoreGame: jest.fn().mockResolvedValue(undefined),
   saveScoreHistory: jest.fn().mockResolvedValue(undefined),
   getScoreByUser: jest.fn().mockResolvedValue([]),
@@ -117,6 +122,18 @@ describe('GamesController', () => {
     expect(service.getMemoryGameImages).toHaveBeenCalledWith('char-1');
   });
 
+  it('deve listar conteúdo de guess game', async () => {
+    await controller.getGuessGameContent('char-1');
+
+    expect(service.getGuessGameContent).toHaveBeenCalledWith('char-1');
+  });
+
+  it('deve listar conteúdo jogável de guess game', async () => {
+    await controller.getGuessGamePlayContent('char-1');
+
+    expect(service.getGuessGamePlayContent).toHaveBeenCalledWith('char-1');
+  });
+
   it('deve salvar conteúdo do memory game', async () => {
     const payload = {
       url: 'u',
@@ -129,11 +146,45 @@ describe('GamesController', () => {
     expect(service.saveMemoryGameContent).toHaveBeenCalledWith(payload);
   });
 
+  it('deve salvar conteúdo do guess game', async () => {
+    const payload = {
+      title: 'Chimarrao',
+      word: 'Bomba',
+      tips: ['Dica 1'],
+      imageUrl: null,
+      description: 'Descricao',
+      characterSlug: 'anita',
+    };
+
+    await controller.saveGuessGameContent(payload);
+
+    expect(service.saveGuessGameContent).toHaveBeenCalledWith(payload);
+  });
+
   it('deve deletar conteúdo do memory game', async () => {
     const result = await controller.deleteMemoryGameContent('id-1');
 
     expect(service.deleteMemoryGameContent).toHaveBeenCalledWith('id-1');
     expect(result).toBe(true);
+  });
+
+  it('deve deletar conteúdo do guess game', async () => {
+    const result = await controller.deleteGuessGameContent('id-1');
+
+    expect(service.deleteGuessGameContent).toHaveBeenCalledWith('id-1');
+    expect(result).toBe(true);
+  });
+
+  it('deve validar tentativa do guess game', async () => {
+    const payload = {
+      contentId: 'guess-1',
+      guess: 'B',
+      type: 'letter' as const,
+    };
+
+    await controller.validateGuessGameAttempt(payload);
+
+    expect(service.validateGuessGameAttempt).toHaveBeenCalledWith(payload);
   });
 
   it('deve salvar score do jogo', async () => {

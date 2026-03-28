@@ -1,80 +1,193 @@
-# 📚 ETNOS - Storybook Documentation
+# 📚 ETNOS Storybook
 
-Documentação interativa dos componentes do sistema ETNOS utilizando Storybook.
+Bem-vindo à documentação visual do ETNOS. Este espaço existe para que a gente
+consiga construir interfaces com mais consistência, mais velocidade e muito
+menos retrabalho. ✨
 
-## 🎯 Sobre
+O Storybook do projeto não é só uma vitrine de componentes. Ele é uma ferramenta
+de trabalho do time para:
 
-Este projeto contém a documentação visual e interativa de todos os componentes
-da biblioteca de UI do ETNOS. Utilizamos o Storybook para desenvolver, testar e
-documentar componentes de forma isolada, seguindo a metodologia Atomic Design.
+- 🎯 validar comportamento visual em isolamento
+- 🧩 evoluir componentes da UI sem depender da aplicação inteira
+- 🔍 revisar estados, variações e edge cases
+- ♿ observar acessibilidade e legibilidade com mais clareza
+- 🚀 acelerar desenvolvimento, QA e alinhamento entre produto, design e dev
 
-## 🚀 Como Executar
+## 💡 Por que isso é importante para a UI do projeto?
 
-### Desenvolvimento
+No ETNOS, a interface é uma parte central da experiência. A criança, a escola, o
+responsável e o admin dependem de fluxos claros, acessíveis e consistentes.
 
-Para iniciar o Storybook em modo de desenvolvimento:
+Por isso, o Storybook funciona como uma espécie de **fonte visual de verdade**
+da UI. Antes de pensar em tela pronta, fluxo integrado ou deploy, a gente pode
+ver e evoluir cada peça isoladamente.
+
+Isso ajuda muito a:
+
+- ✅ padronizar componentes entre produtos e áreas do sistema
+- ✅ evitar regressões visuais
+- ✅ documentar estados importantes de cada componente
+- ✅ facilitar onboarding de quem entra no projeto
+- ✅ deixar decisões de UI mais explícitas para o time inteiro
+
+## 🧱 O que está documentado aqui?
+
+Este Storybook reúne principalmente:
+
+- 🧪 componentes do pacote
+  [`@etnos/ui`](/Users/joaojunior/WORK/etnos/packages/ui/src)
+- 🎮 experiências de jogos vindas de
+  [`apps/games/src`](/Users/joaojunior/WORK/etnos/apps/games/src)
+- 📖 páginas e documentos MDX de apoio dentro de
+  [`apps/docs/stories`](/Users/joaojunior/WORK/etnos/apps/docs/stories)
+
+As stories são carregadas automaticamente de:
+
+- [`apps/docs/stories`](/Users/joaojunior/WORK/etnos/apps/docs/stories)
+- [`packages/ui/src/**/*.stories.tsx`](/Users/joaojunior/WORK/etnos/packages/ui/src)
+- [`apps/games/src/**/*.stories.tsx`](/Users/joaojunior/WORK/etnos/apps/games/src)
+
+## 🎮 Jogos no Storybook
+
+Os jogos também fazem parte da experiência do produto, então eles merecem o
+mesmo cuidado de documentação da UI tradicional.
+
+Hoje, já temos no Storybook:
+
+- 🧠 `MemoryGame`
+- 🔎 `GuessGame`
+
+### 🧠 MemoryGame
+
+O `MemoryGame` está documentado com uma experiência isolada, o que permite:
+
+- testar níveis e interações sem depender da aplicação inteira
+- validar estados de pontuação, movimentos e acertos
+- revisar comportamento visual das cartas e cobertura
+- evoluir a UX do jogo com mais segurança
+
+### 🔎 GuessGame
+
+O `GuessGame` agora também roda bem no Storybook com uma experiência isolada.
+Isso é importante porque ele passou a depender de conteúdo vindo do banco e de
+validação no backend, então a story funciona como um ambiente controlado para:
+
+- visualizar o layout completo do jogo
+- testar fluxo de dicas, letras e verificação da palavra
+- validar o estado final com descrição da resposta
+- revisar a UI sem depender de autenticação ou API real
+
+Esse tipo de isolamento é muito valioso para jogos, porque comportamento visual
+e interação normalmente mudam bastante ao longo da evolução do produto. 🎯
+
+## 🚀 Como executar
+
+### Desenvolvimento local
+
+Se você estiver dentro de [`apps/docs`](/Users/joaojunior/WORK/etnos/apps/docs):
 
 ```bash
 npm run dev
 ```
 
-O Storybook estará disponível em `http://localhost:6006`
+Ou, a partir da raiz do monorepo:
 
-### Build
+```bash
+yarn workspace @etnos/docs dev
+```
 
-Para gerar a versão estática do Storybook:
+O Storybook ficará disponível em:
+
+```txt
+http://localhost:6006
+```
+
+### Build estática
+
+Se você estiver dentro de [`apps/docs`](/Users/joaojunior/WORK/etnos/apps/docs):
 
 ```bash
 npm run build-storybook
 ```
 
-Os arquivos serão gerados no diretório `storybook-static/`
+Ou pela raiz:
 
-## 🛠️ Tecnologias
+```bash
+yarn workspace @etnos/docs build-storybook
+```
 
-- **Storybook 10.1.4** - Ferramenta principal de documentação
-- **React** - Framework de componentes
-- **Vite** - Build tool
-- **TailwindCSS 4.1.17** - Framework CSS
-- **TypeScript** - Tipagem estática
+Os arquivos gerados ficam em:
 
-## 🔌 Addons Instalados
+```txt
+storybook-static/
+```
 
-- **@chromatic-com/storybook** - Integração com Chromatic para testes visuais
-- **@storybook/addon-docs** - Documentação automática
-- **@storybook/addon-a11y** - Testes de acessibilidade
-- **@storybook/addon-vitest** - Integração com Vitest para testes
+## 🛠️ Stack usada
 
-### Integração com Monorepo
+- ⚛️ React
+- ⚡ Vite
+- 🎨 Tailwind CSS
+- 🧠 TypeScript
+- 📚 Storybook `10.1.4`
 
-Este projeto faz parte de um monorepo e consome componentes do pacote
-`@etnos/ui`. As stories são automaticamente carregadas de:
+## 🔌 Addons instalados
 
-- `../stories/**/*.mdx`
-- `../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)`
-- `../../../packages/ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)`
+- 📄 `@storybook/addon-docs` Gera documentação e páginas ricas com MDX e
+  autodocs.
 
-## 📖 Como Adicionar Novos Componentes
+- ♿ `@storybook/addon-a11y` Ajuda a observar problemas de acessibilidade nos
+  componentes.
 
-1. Crie seu componente em
-2. Crie o arquivo de story: `[NomeComponente].stories.tsx`
-3. Defina as variações do componente usando CSF (Component Story Format)
-4. Execute o Storybook para visualizar
+- 🧪 `@storybook/addon-vitest` Faz ponte com a estratégia de testes usando
+  Vitest.
+
+- 🌈 `@chromatic-com/storybook` Permite integração com Chromatic para revisão
+  visual e comparação de mudanças.
+
+## 🧬 Organização por Atomic Design
+
+A UI segue a lógica de Atomic Design para facilitar composição e manutenção:
+
+1. **Átomos** ⚪  
+   Componentes básicos, como botões, cards simples e elementos essenciais.
+
+2. **Moléculas** 🟡  
+   Combinações pequenas de átomos com uma responsabilidade clara.
+
+3. **Organismos** 🟠  
+   Blocos maiores, normalmente com mais regras visuais e funcionais.
+
+4. **Templates** 🔵  
+   Estruturas de página que organizam regiões e composição.
+
+5. **Experiências / Fluxos** 🟣  
+   No caso dos jogos, temos experiências completas que simulam a interação real.
+
+## ✍️ Como adicionar um novo componente
+
+Fluxo recomendado:
+
+1. Crie ou ajuste o componente no pacote ou app correto.
+2. Crie uma story próxima do componente, preferencialmente no mesmo diretório.
+3. Documente pelo menos o estado principal e os estados críticos.
+4. Se houver comportamento complexo, crie uma story interativa.
+5. Se fizer sentido, complemente com MDX para contexto adicional.
 
 Exemplo de story básica:
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MeuComponente } from './MeuComponente';
 
-const meta: Meta<typeof MeuComponente> = {
+const meta = {
 	title: 'Atoms/MeuComponente',
 	component: MeuComponente,
 	tags: ['autodocs'],
-};
+} satisfies Meta<typeof MeuComponente>;
 
 export default meta;
-type Story = StoryObj<typeof MeuComponente>;
+
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
 	args: {
@@ -83,12 +196,46 @@ export const Default: Story = {
 };
 ```
 
-## 📝 Metodologia Atomic Design
+## ✅ Boas práticas para stories
 
-Seguimos a metodologia Atomic Design para organização dos componentes:
+- 🧩 prefira stories pequenas, objetivas e úteis
+- 🎛️ exponha props que ajudem a testar variações reais
+- 📚 documente estados vazios, loading, erro e sucesso quando fizer sentido
+- 🎮 para jogos e fluxos complexos, prefira experiências isoladas
+- 🧪 use stories para facilitar teste manual e revisão visual
+- ♿ observe contraste, leitura, foco e área clicável
 
-1. **Átomos** - Componentes básicos (botões, inputs, labels)
-2. **Moléculas** - Combinações simples de átomos
-3. **Organismos** - Componentes complexos e funcionais
-4. **Templates** - Estruturas de página
-5. **Pages** - Instâncias específicas de templates
+## 🕹️ Padrão recomendado para jogos
+
+Para jogos, o padrão ideal no ETNOS é separar:
+
+- um **container**, responsável por hooks, query, autenticação e integração
+- uma **experience**, responsável por renderização e interação local
+
+Esse formato traz várias vantagens:
+
+- facilita o Storybook
+- reduz acoplamento com backend
+- simplifica testes
+- melhora reuso
+- deixa a UI mais previsível
+
+## 🔍 O que revisar antes de subir uma mudança de UI?
+
+Checklist rápido:
+
+- 🎨 o componente respeita o visual esperado?
+- 📱 funciona bem em resoluções menores?
+- 🧠 os estados importantes estão cobertos na story?
+- ♿ a interface continua acessível?
+- 🧪 existe teste cobrindo o comportamento principal?
+- 📚 a documentação do Storybook ajuda alguém novo a entender o componente?
+
+## 🤝 Objetivo final
+
+O grande objetivo deste Storybook é simples:
+
+> tornar a UI do ETNOS mais clara, mais confiável e mais fácil de evoluir. 🚀
+
+Quanto melhor documentados estiverem nossos componentes e experiências, mais
+seguro fica o projeto para crescer sem perder qualidade visual e consistência.

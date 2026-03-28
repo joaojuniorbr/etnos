@@ -51,12 +51,20 @@ export const gameManagementLinks: Record<
 		available: true,
 	},
 	[GamesEnum.GUESS_GAME]: {
-		label: 'Gestao em breve',
-		available: false,
+		href: '/admin/jogos/guess-game',
+		label: 'Gerenciar conteudo',
+		available: true,
 	},
 };
 
 export const gameHighlights = [
+	{
+		name: GameNameEnum[GamesEnum.GUESS_GAME],
+		description:
+			'Gerencie palavras, dicas, descrição final e imagens reutilizando a biblioteca de mídia.',
+		href: '/admin/jogos/guess-game',
+		cta: 'Abrir Adivinhe',
+	},
 	{
 		name: GameNameEnum[GamesEnum.MEMORY_GAME],
 		description:

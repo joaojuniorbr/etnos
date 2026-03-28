@@ -1,17 +1,48 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GuessGame } from './GuessGame';
 
-const getRandomIndexMock = vi.fn();
 const useCharacterMock = vi.fn();
+const useGuessGamePlayableContentMock = vi.fn();
 const useGamesMock = vi.fn();
 const useGameScoreMock = vi.fn();
 const useUserMock = vi.fn();
+const validateAttemptMock = vi.fn();
 const finishGameMock = vi.fn();
+const playableContent = {
+	id: 'guess-1',
+	title: 'Chimarrao',
+	tips: ['Uso para beber chimarrão.', 'Tenho furinhos na ponta.'],
+	imageUrl: '/imagem.jpg',
+	characterSlug: 'anita',
+	wordLength: 5,
+};
+
+const renderWithQueryClient = (ui: React.ReactNode) => {
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				retry: false,
+			},
+			mutations: {
+				retry: false,
+			},
+		},
+	});
+
+	return render(
+		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+	);
+};
 
 vi.mock('@etnos/tools', () => ({
-	getRandomIndex: (...args: unknown[]) => getRandomIndexMock(...args),
+	guessGameContentService: {
+		validateAttempt: (...args: unknown[]) => validateAttemptMock(...args),
+	},
 	useCharacter: (...args: unknown[]) => useCharacterMock(...args),
+	useGuessGamePlayableContent: (...args: unknown[]) =>
+		useGuessGamePlayableContentMock(...args),
 	useGames: (...args: unknown[]) => useGamesMock(...args),
 	useGameScore: (...args: unknown[]) => useGameScoreMock(...args),
 }));
@@ -62,16 +93,12 @@ vi.mock('antd', () => {
 		Button,
 		Divider: () => <hr />,
 		Input: { OTP: InputOtp },
-		Spin: ({ children }: { children: React.ReactNode }) => (
-			<div>{children}</div>
-		),
+		Spin: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 	};
 });
 
 vi.mock('next/image', () => ({
-	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => (
-		<img {...props} />
-	),
+	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
 vi.mock('../../components', () => ({
@@ -96,7 +123,6 @@ vi.mock('../../components', () => ({
 describe('GuessGame', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		getRandomIndexMock.mockReturnValue(0);
 		useCharacterMock.mockReturnValue({
 			selectedCharacter: { slug: 'anita', name: 'Anita' },
 		});
@@ -107,6 +133,11 @@ describe('GuessGame', () => {
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: playableContent,
+			isLoading: false,
+			refetch: vi.fn().mockResolvedValue({ data: playableContent }),
+		});
 		useGameScoreMock.mockReturnValue({
 			data: { score: 400 },
 			refetch: vi.fn(),
@@ -115,40 +146,16 @@ describe('GuessGame', () => {
 	});
 
 	it('renderiza conteúdo inicial e revela dica', () => {
-		render(<GuessGame />);
+		renderWithQueryClient(<GuessGame />);
 
 		expect(screen.getByText('Jogo Adivinhe a Palavra')).toBeTruthy();
 		expect(screen.getByText('Recorde')).toBeTruthy();
 		expect(screen.getByText('400')).toBeTruthy();
+		expect(screen.getByRole('img').getAttribute('src')).toBe('/imagem.jpg');
 
 		fireEvent.click(screen.getByText('Pedir uma dica'));
 
 		expect(screen.getByText('Uso para beber chimarrão.')).toBeTruthy();
-	});
-
-	it('mantem recorde zerado e toca erro quando nao ha mais dicas', () => {
-		const playSound = vi.fn();
-		useCharacterMock.mockReturnValue({
-			selectedCharacter: { slug: 'personagem-inexistente', name: 'Sem Conteudo' },
-		});
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
-		});
-		useGameScoreMock.mockReturnValue({
-			data: undefined,
-			refetch: vi.fn(),
-			isLoading: false,
-		});
-
-		render(<GuessGame />);
-
-		expect(screen.getAllByText('0').length).toBeGreaterThan(0);
-
-		fireEvent.click(screen.getByText('Pedir uma dica'));
-
-		expect(playSound).toHaveBeenCalledWith('error');
-		expect(screen.queryByRole('img')).toBeNull();
 	});
 
 	it('usa slug vazio quando nao houver prop nem personagem selecionado', () => {
@@ -161,180 +168,458 @@ describe('GuessGame', () => {
 			isLoading: false,
 		});
 
-		render(<GuessGame />);
+		renderWithQueryClient(<GuessGame />);
 
 		expect(useGameScoreMock).toHaveBeenCalledWith('user-1', 'guess-game', '');
+		expect(useGuessGamePlayableContentMock).toHaveBeenCalledWith('', 0);
 	});
 
-	it('trata letra incorreta e palavra correta finalizando o jogo', () => {
+	it('trata letra incorreta', async () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
-
-		render(<GuessGame />);
-
-		const inputs = screen.getAllByRole('textbox');
-
-		fireEvent.change(inputs[1]!, { target: { value: 'x' } });
-		expect(playSound).toHaveBeenCalledWith('error');
-
-		fireEvent.change(inputs[2]!, { target: { value: 'Bomba' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
-
-		expect(playSound).toHaveBeenCalledWith('finish');
-		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
-		expect(screen.getByTestId('finish-game')).toBeTruthy();
-	});
-
-	it('finaliza ao descobrir a ultima letra pelo campo de letra', () => {
-		const playSound = vi.fn();
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: false,
+			isSolved: false,
+			matchedIndexes: [],
+			revealedCharacters: [],
 		});
 
-		render(<GuessGame />);
+		renderWithQueryClient(<GuessGame />);
 
 		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'o' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'm' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'a' } });
-
-		expect(playSound).toHaveBeenCalledWith('finish');
-		expect(screen.getByTestId('finish-game')).toBeTruthy();
-	});
-
-	it('aplica bonus de 30 ao acertar a palavra com pelo menos metade revelada', () => {
-		const playSound = vi.fn();
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
-		});
-
-		render(<GuessGame />);
-
-		const inputs = screen.getAllByRole('textbox');
-
-		fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'o' } });
-		fireEvent.change(inputs[2]!, { target: { value: 'bomba' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
-
-		expect(playSound).toHaveBeenCalledWith('flip');
-		expect(playSound).toHaveBeenCalledWith('finish');
-		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
-		expect(screen.getByText('50')).toBeTruthy();
-	});
-
-	it('aplica bonus de 50 ao acertar a palavra com 80 por cento ou mais revelado', () => {
-		const playSound = vi.fn();
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
-		});
-
-		render(<GuessGame />);
-
-		const inputs = screen.getAllByRole('textbox');
-
-		fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'o' } });
-		fireEvent.change(inputs[1]!, { target: { value: 'm' } });
-		fireEvent.change(inputs[2]!, { target: { value: 'bomba' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
-
-		expect(playSound).toHaveBeenCalledWith('finish');
-		expect(screen.getByText('80')).toBeTruthy();
-	});
-
-	it('marca derrota depois de exceder as tentativas', () => {
-		const playSound = vi.fn();
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
-		});
-
-		render(<GuessGame />);
-
-		const inputs = screen.getAllByRole('textbox');
-
-		for (let index = 0; index < 11; index += 1) {
+		await act(async () => {
 			fireEvent.change(inputs[1]!, { target: { value: 'x' } });
-		}
-
-		expect(playSound).toHaveBeenCalledWith('error');
-		expect(screen.getByTestId('finish-game')).toBeTruthy();
-
-		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
-			isLoser?: boolean;
-		};
-		expect(props.isLoser).toBe(true);
-	});
-
-	it('trata tentativa de palavra incorreta com erro', () => {
-		const playSound = vi.fn();
-		useGamesMock.mockReturnValue({
-			saveGameScore: vi.fn().mockResolvedValue(undefined),
-			playSound,
 		});
 
-		render(<GuessGame />);
-
-		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[2]!, { target: { value: 'errado' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
-
+		expect(validateAttemptMock).toHaveBeenCalledWith({
+			contentId: 'guess-1',
+			guess: 'X',
+			type: 'letter',
+		}, expect.any(Object));
 		expect(playSound).toHaveBeenCalledWith('error');
 		expect(screen.getByText('9')).toBeTruthy();
 	});
 
+	it('ignora tentativa de letra vazia', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: '' } });
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('ignora tentativa de letra quando o conteúdo ainda não carregou', async () => {
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: null,
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'x' } });
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('resolve a palavra por tentativa completa usando o backend', async () => {
+		const playSound = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			playSound,
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		expect(validateAttemptMock).toHaveBeenCalledWith({
+			contentId: 'guess-1',
+			guess: 'BOMBA',
+			type: 'word',
+		}, expect.any(Object));
+		expect(playSound).toHaveBeenCalledWith('finish');
+		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
+		expect(screen.getByText('Descricao final')).toBeTruthy();
+	});
+
+	it('aplica bonus intermediario quando parte da palavra ja foi revelada', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			playSound: vi.fn(),
+		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: {
+				...playableContent,
+				wordLength: 4,
+			},
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+		validateAttemptMock
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [0],
+				revealedCharacters: ['B'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [1],
+				revealedCharacters: ['o'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: true,
+				matchedIndexes: [],
+				revealedCharacters: [],
+				word: 'Bola',
+				description: 'Descricao final',
+			});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
+		});
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'o' } });
+		});
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOLA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
+			handleSaveScore: () => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.handleSaveScore();
+		});
+
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 50);
+	});
+
+	it('resolve a palavra ao completar as letras e busca descrição no backend', async () => {
+		const playSound = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			playSound,
+		});
+		validateAttemptMock
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [0],
+				revealedCharacters: ['B'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [1],
+				revealedCharacters: ['o'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [2, 3],
+				revealedCharacters: ['m', 'b'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: false,
+				matchedIndexes: [4],
+				revealedCharacters: ['a'],
+			})
+			.mockResolvedValueOnce({
+				isCorrect: true,
+				isSolved: true,
+				matchedIndexes: [],
+				revealedCharacters: [],
+				word: 'Bomba',
+				description: 'Descricao final',
+			});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
+		});
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'o' } });
+		});
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'm' } });
+		});
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'a' } });
+		});
+
+		expect(validateAttemptMock).toHaveBeenLastCalledWith({
+			contentId: 'guess-1',
+			guess: 'Bomba',
+			type: 'word',
+		}, expect.any(Object));
+		expect(playSound).toHaveBeenCalledWith('finish');
+		expect(screen.getByTestId('finish-game')).toBeTruthy();
+	});
+
+	it('tolera resposta parcial sem caractere revelado correspondente', async () => {
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: false,
+			matchedIndexes: [0],
+			revealedCharacters: [],
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
+		});
+
+		expect(screen.getAllByTestId('otp-5')[0]?.getAttribute('value')).toBe('••••');
+	});
+
+	it('trata palavra incorreta e encerra como derrota ao acabar tentativas', async () => {
+		const playSound = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			playSound,
+		});
+		validateAttemptMock.mockResolvedValue({
+			isCorrect: false,
+			isSolved: false,
+			matchedIndexes: [],
+			revealedCharacters: [],
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+
+		for (let index = 0; index < 11; index += 1) {
+			await act(async () => {
+				fireEvent.change(inputs[2]!, { target: { value: 'ERRO' } });
+				fireEvent.click(screen.getByText('VERIFICAR'));
+			});
+		}
+
+		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
+			isLoser?: boolean;
+		};
+
+		expect(playSound).toHaveBeenCalledWith('error');
+		expect(props.isLoser).toBe(true);
+	});
+
+	it('ignora verificação de palavra vazia', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await act(async () => {
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('mantém a máscara atual quando o backend conclui sem retornar a palavra', async () => {
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
+		expect(
+			screen.getByText('A palavra correta é:').parentElement?.querySelector('span:last-child')
+				?.textContent
+		).toBe('');
+	});
+
+	it('calcula bônus mínimo quando o conteúdo vier com tamanho zero', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			playSound: vi.fn(),
+		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: {
+				...playableContent,
+				wordLength: 0,
+			},
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
+			handleSaveScore: () => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.handleSaveScore();
+		});
+
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 10);
+	});
+
+	it('não exibe descrição quando o backend não retornar descrição', async () => {
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: { ...playableContent, imageUrl: null },
+			isLoading: false,
+			refetch: vi.fn().mockResolvedValue({ data: { ...playableContent, imageUrl: null } }),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		expect(screen.queryByRole('img')).toBeNull();
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		expect(screen.queryByText('O que e isso?')).toBeNull();
+	});
+
+	it('toca erro quando não houver conteúdo para exibir dicas', () => {
+		const playSound = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			playSound,
+		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: null,
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		fireEvent.click(screen.getByText('Pedir uma dica'));
+
+		expect(playSound).toHaveBeenCalledWith('error');
+	});
+
 	it('passa callbacks do estado final para o FinishGame', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
-		const refetch = vi.fn();
+		const refetchScore = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
 			data: { score: 400 },
-			refetch,
+			refetch: refetchScore,
 			isLoading: false,
 		});
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: playableContent,
+			isLoading: false,
+			refetch: vi.fn().mockResolvedValue({ data: playableContent }),
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
 
-		render(<GuessGame />);
+		renderWithQueryClient(<GuessGame />);
 
 		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[2]!, { target: { value: 'Bomba' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
-			handleRestart: () => void;
+			handleRestart: () => Promise<void>;
 			handleSaveScore: () => Promise<void>;
 			isLoser?: boolean;
 		};
 
-		expect(props).toBeTruthy();
 		expect(props.isLoser).toBe(false);
+
 		await act(async () => {
 			await props.handleSaveScore();
 		});
 
-		act(() => {
-			props.handleRestart();
+		await act(async () => {
+			await props.handleRestart();
 		});
 
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 10);
-		expect(refetch).toHaveBeenCalled();
+		expect(refetchScore).toHaveBeenCalled();
+		expect(useGuessGamePlayableContentMock).toHaveBeenLastCalledWith('anita', 1);
 	});
 
-	it('nao salva score quando nao houver usuario ou personagem selecionado', async () => {
+	it('nao salva score quando nao houver usuario', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
-		useCharacterMock.mockReturnValue({
-			selectedCharacter: { slug: 'anita', name: 'Anita' },
-		});
 		useUserMock.mockReturnValue({
 			user: null,
 		});
@@ -342,12 +627,22 @@ describe('GuessGame', () => {
 			saveGameScore,
 			playSound: vi.fn(),
 		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
 
-		render(<GuessGame characterSlug='anita' />);
+		renderWithQueryClient(<GuessGame characterSlug='anita' />);
 
 		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[2]!, { target: { value: 'bomba' } });
-		fireEvent.click(screen.getByText('VERIFICAR'));
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleSaveScore: () => Promise<void>;
@@ -358,14 +653,5 @@ describe('GuessGame', () => {
 		});
 
 		expect(saveGameScore).not.toHaveBeenCalled();
-	});
-
-	it('nao inicializa conteúdo quando o índice sorteado nao existir', () => {
-		getRandomIndexMock.mockReturnValue(999);
-
-		render(<GuessGame />);
-
-		expect(screen.queryByRole('img')).toBeNull();
-		expect(screen.getAllByTestId('otp-0')[0]?.getAttribute('value')).toBe('');
 	});
 });

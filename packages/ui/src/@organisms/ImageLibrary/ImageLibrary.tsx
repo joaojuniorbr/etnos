@@ -14,6 +14,7 @@ interface ImageLibraryProps {
 	limitPage?: number;
 	itemsSelected?: string[];
 	onSelect?: (url: string) => void;
+	showAll?: boolean;
 }
 
 interface MidiaFolder {
@@ -27,6 +28,7 @@ export const ImageLibrary = ({
 	limitPage = 8,
 	itemsSelected,
 	onSelect,
+	showAll = false,
 }: ImageLibraryProps) => {
 	const [selectFolder, setSelectFolder] = useState<string>();
 	const [openUpload, setOpenUpload] = useState<boolean>();
@@ -43,7 +45,7 @@ export const ImageLibrary = ({
 		refetch,
 		fetchNextPage,
 		deleteMidia,
-	} = useMidia(user?.uid, limitPage, selectFolder);
+	} = useMidia(user?.uid, limitPage, selectFolder, showAll);
 
 	const handleDeleteMidia = (item: MidiaInterface) => {
 		deleteMidia(item).finally(refetch);

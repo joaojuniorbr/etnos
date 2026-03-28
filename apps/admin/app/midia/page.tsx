@@ -21,7 +21,7 @@ export default function MidiasPage() {
 				]}
 			/>
 
-			<ImageLibrary user={user!} folder='library' limitPage={24} />
+			<ImageLibrary user={user!} folder='library' limitPage={24} showAll />
 		</div>
 	);
 }

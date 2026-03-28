@@ -36,7 +36,8 @@ export const midiaService = {
 		userId: string,
 		limitNumber: number,
 		cursor?: number,
-		folder?: string
+		folder?: string,
+		showAll?: boolean
 	) {
 		if (!userId) {
 			return {
@@ -47,7 +48,7 @@ export const midiaService = {
 
 		const page = cursor ?? 1;
 
-		const response = await api.get('/midia', {
+		const response = await api.get(showAll ? '/midia/admin' : '/midia', {
 			params: {
 				limit: limitNumber,
 				page,
@@ -62,25 +63,28 @@ export const midiaService = {
 		return api.post('/midia', props).then((res) => res.data);
 	},
 
-	async deleteMidia(item: MidiaInterface) {
+	async deleteMidia(item: MidiaInterface, showAll?: boolean) {
 		if (item.id) {
-			return api.delete(`/midia/${item.id}`).then((res) => res.data);
+			const path = showAll ? `/midia/admin/${item.id}` : `/midia/${item.id}`;
+			return api.delete(path).then((res) => res.data);
 		}
 
-		return this.deleteMidiaFromUrl(item.url);
+		return this.deleteMidiaFromUrl(item.url, showAll);
 	},
 
-	async deleteMidiaFromUrl(url: string) {
+	async deleteMidiaFromUrl(url: string, showAll?: boolean) {
 		return api
-			.delete('/midia/by-url', {
+			.delete(showAll ? '/midia/admin/by-url' : '/midia/by-url', {
 				params: { url },
 			})
 			.then((res) => res.data);
 	},
 
-	getFolders(userId: string) {
+	getFolders(userId: string, showAll?: boolean) {
 		if (!userId) return Promise.resolve([]);
 
-		return api.get('/midia/folders').then((res) => res.data);
+		return api
+			.get(showAll ? '/midia/admin/folders' : '/midia/folders')
+			.then((res) => res.data);
 	},
 };

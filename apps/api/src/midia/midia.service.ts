@@ -61,13 +61,13 @@ export class MidiaService {
   }
 
   async getMidia(
-    userId: string,
+    userId: string | undefined,
     limitNumber: number,
     page = 1,
     folder?: string,
   ) {
     const where = {
-      userId,
+      ...(userId ? { userId } : {}),
       ...(folder ? { folder } : {}),
     };
     const skip = (Math.max(page, 1) - 1) * limitNumber;
@@ -120,12 +120,12 @@ export class MidiaService {
     }
   }
 
-  async deleteMidiaFromUrl(url: string, userId: string) {
+  async deleteMidiaFromUrl(url: string, userId?: string) {
     try {
       const items = await this.prismaService.midia.findMany({
         where: {
           url,
-          userId,
+          ...(userId ? { userId } : {}),
         },
       });
 
@@ -148,21 +148,25 @@ export class MidiaService {
     }
   }
 
-  async deleteMidiaById(id: string, userId: string) {
+  async deleteMidiaById(id: string, userId?: string) {
     const item = await this.prismaService.midia.findUnique({
       where: { id },
     });
 
-    if (item?.userId !== userId) {
+    if (!item) {
+      return false;
+    }
+
+    if (userId && item.userId !== userId) {
       return false;
     }
 
     return this.deleteMidia(item);
   }
 
-  async getFolders(userId: string) {
+  async getFolders(userId?: string) {
     const docs = await this.prismaService.midia.findMany({
-      where: { userId },
+      where: userId ? { userId } : {},
       select: { folder: true },
     });
 

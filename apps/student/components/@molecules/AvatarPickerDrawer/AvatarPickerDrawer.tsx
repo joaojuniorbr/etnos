@@ -77,7 +77,7 @@ export const AvatarPickerDrawer = ({
 						Não foi possível carregar os personagens.
 					</p>
 				) : (
-					<div className='grid grid-cols-2 gap-4 md:grid-cols-5'>
+					<div className='grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8'>
 						{characters.map((character) => {
 							const isSelected = selectedCharacterSlug === character.slug;
 
@@ -118,7 +118,7 @@ export const AvatarPickerDrawer = ({
 				</div>
 
 				{selectedCharacterSlug ? (
-					<div className='grid grid-cols-2 gap-4 md:grid-cols-5'>
+					<div className='grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10'>
 						{avatars.map((avatar) => {
 							const isSelected = user.photoURL === avatar.url;
 

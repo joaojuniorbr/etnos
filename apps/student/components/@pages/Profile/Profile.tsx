@@ -255,14 +255,17 @@ export const ProfilePage = () => {
 				open={isAvatarDrawerOpen}
 				onClose={() => setIsAvatarDrawerOpen(false)}
 				title='Escolher avatar'
-				placement='right'
+				placement='bottom'
 				destroyOnHidden
+				size='large'
 			>
-				<AvatarPickerDrawer
-					user={user}
-					onClose={() => setIsAvatarDrawerOpen(false)}
-					onSaveAvatar={onSaveAvatar}
-				/>
+				<div className='container mx-auto'>
+					<AvatarPickerDrawer
+						user={user}
+						onClose={() => setIsAvatarDrawerOpen(false)}
+						onSaveAvatar={onSaveAvatar}
+					/>
+				</div>
 			</Drawer>
 		</div>
 	);

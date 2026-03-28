@@ -3,6 +3,7 @@ import { SchoolsController } from './schools.controller';
 import { SchoolsService } from './schools.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminRoleGuard } from 'src/common/guards/admin-role.guard';
+import { SchoolRoleGuard } from 'src/common/guards/school-role.guard';
 
 describe('SchoolsController', () => {
   let controller: SchoolsController;
@@ -14,6 +15,19 @@ describe('SchoolsController', () => {
     create: jest.fn().mockResolvedValue({ id: '1', name: 'IFPR' }),
     update: jest.fn().mockResolvedValue({ id: '1', name: 'IFPR Atualizado' }),
     delete: jest.fn().mockResolvedValue(true),
+    getMySchool: jest.fn().mockResolvedValue({ id: '1', name: 'IFPR' }),
+    getUsersFromMySchool: jest.fn().mockResolvedValue([
+      { uid: 'user-1', childName: 'Aluno 1' },
+    ]),
+    getSchoolRanking: jest.fn().mockResolvedValue([
+      { position: 1, schoolId: '1', schoolName: 'IFPR', totalScore: 100 },
+    ]),
+    getUserRankingFromMySchool: jest.fn().mockResolvedValue([
+      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+    ]),
+    getUserRankingBySchoolForAdmin: jest.fn().mockResolvedValue([
+      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+    ]),
   };
 
   beforeEach(async () => {
@@ -29,6 +43,8 @@ describe('SchoolsController', () => {
       .overrideGuard(AuthGuard('firebase-auth'))
       .useValue({ canActivate: jest.fn(() => true) })
       .overrideGuard(AdminRoleGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(SchoolRoleGuard)
       .useValue({ canActivate: jest.fn(() => true) })
       .compile();
 
@@ -49,6 +65,67 @@ describe('SchoolsController', () => {
 
     expect(service.getOne).toHaveBeenCalledWith('1');
     expect(result).toEqual({ id: '1', name: 'IFPR' });
+  });
+
+  it('deve buscar a escola do perfil autenticado', async () => {
+    const result = await controller.getMySchool({
+      user: { uid: 'firebase-user-1' },
+    });
+
+    expect(service.getMySchool).toHaveBeenCalledWith('firebase-user-1');
+    expect(result).toEqual({ id: '1', name: 'IFPR' });
+  });
+
+  it('deve listar usuarios da escola autenticada com busca', async () => {
+    const result = await controller.getUsersFromMySchool(
+      { user: { uid: 'firebase-user-1' } },
+      'Aluno',
+    );
+
+    expect(service.getUsersFromMySchool).toHaveBeenCalledWith(
+      'firebase-user-1',
+      'Aluno',
+    );
+    expect(result).toEqual([{ uid: 'user-1', childName: 'Aluno 1' }]);
+  });
+
+  it('deve retornar ranking de escolas filtrando por jogo', async () => {
+    const result = await controller.getSchoolRanking('memory-game');
+
+    expect(service.getSchoolRanking).toHaveBeenCalledWith('memory-game');
+    expect(result).toEqual([
+      { position: 1, schoolId: '1', schoolName: 'IFPR', totalScore: 100 },
+    ]);
+  });
+
+  it('deve retornar ranking de usuarios da escola autenticada', async () => {
+    const result = await controller.getUserRankingFromMySchool(
+      { user: { uid: 'firebase-user-1' } },
+      'memory-game',
+    );
+
+    expect(service.getUserRankingFromMySchool).toHaveBeenCalledWith(
+      'firebase-user-1',
+      'memory-game',
+    );
+    expect(result).toEqual([
+      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+    ]);
+  });
+
+  it('deve retornar ranking de usuarios por escola para admin', async () => {
+    const result = await controller.getUserRankingBySchoolForAdmin(
+      'school-1',
+      'memory-game',
+    );
+
+    expect(service.getUserRankingBySchoolForAdmin).toHaveBeenCalledWith(
+      'school-1',
+      'memory-game',
+    );
+    expect(result).toEqual([
+      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+    ]);
   });
 
   it('deve criar escola', async () => {

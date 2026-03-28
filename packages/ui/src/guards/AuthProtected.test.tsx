@@ -1,6 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthProtected, redirectIfUnauthenticated } from './AuthProtected';
+import {
+	AuthProtected,
+	hasAllowedRole,
+	redirectIfUnauthenticated,
+} from './AuthProtected';
 
 const useAuthMock = vi.fn();
 const originalLocation = globalThis.window.location;
@@ -97,6 +101,39 @@ describe('AuthProtected', () => {
 				user: null,
 			}),
 		).not.toThrow();
+	});
+
+	it('redireciona quando o usuário não tem uma role permitida', async () => {
+		useAuthMock.mockReturnValue({
+			user: { uid: 'user-1', role: ['student'] },
+			isProfileLoading: false,
+		});
+
+		const { container } = render(
+			<AuthProtected
+				allowedRoles={['admin', 'school']}
+				forbiddenRedirectTo='/admin/escolas'
+			>
+				<div>Conteudo protegido</div>
+			</AuthProtected>,
+		);
+
+		expect(container).toBeEmptyDOMElement();
+
+		await waitFor(() => {
+			expect(globalThis.window.location.href).toBe('/admin/escolas');
+		});
+	});
+
+	it('aceita roles vindas de role ou roles', () => {
+		expect(hasAllowedRole({ role: ['school'] }, ['admin', 'school'])).toBe(
+			true,
+		);
+		expect(hasAllowedRole({ roles: ['admin'] }, ['admin'])).toBe(true);
+		expect(hasAllowedRole({ role: ['student'] }, ['admin'])).toBe(false);
+		expect(hasAllowedRole(undefined, ['admin'])).toBe(false);
+		expect(hasAllowedRole({ uid: 'user-1' } as any, ['admin'])).toBe(false);
+		expect(hasAllowedRole({ role: ['student'] }, undefined)).toBe(true);
 	});
 });
 

@@ -31,6 +31,16 @@ export const adminSections = [
 	},
 ];
 
+export const schoolSections = [
+	{
+		title: 'Minha Escola',
+		description:
+			'Consulte os dados da escola vinculada ao seu perfil, veja os usuários e acompanhe o ranking por jogo.',
+		href: '/admin/escolas',
+		cta: 'Abrir painel da escola',
+	},
+];
+
 export const gameManagementLinks: Record<
 	string,
 	{ href?: string; label: string; available: boolean }

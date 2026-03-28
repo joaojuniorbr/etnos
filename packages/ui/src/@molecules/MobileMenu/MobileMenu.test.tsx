@@ -123,4 +123,28 @@ describe('MobileMenu', () => {
 			expect(screen.getByText(/Área do administrador/i)).toBeInTheDocument();
 		});
 	});
+
+	it('renderiza acesso de escola sem links exclusivos de admin', async () => {
+		render(
+			<MobileMenu
+				open={true}
+				toggleDrawer={() => {}}
+				user={{ ...mockUser, role: ['school'] }}
+				onLogout={() => {}}
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(/Área do administrador/i)).toBeInTheDocument();
+		});
+
+		await userEvent.click(screen.getByText(/Área do administrador/i));
+
+		await waitFor(() => {
+			expect(screen.getByText(/Escolas/i)).toBeInTheDocument();
+		});
+
+		expect(screen.queryByText(/Personagens/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/Midia/i)).not.toBeInTheDocument();
+	});
 });

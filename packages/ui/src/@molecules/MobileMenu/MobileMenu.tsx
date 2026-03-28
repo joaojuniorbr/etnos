@@ -33,6 +33,8 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
 
+	const hasAdminAccess =
+		user?.role?.includes('admin') || user?.role?.includes('school');
 	const isAdmin = user?.role?.includes('admin');
 
 	return (
@@ -127,27 +129,33 @@ export const MobileMenu = ({
 										}
 									: null,
 
-								isAdmin
+								hasAdminAccess
 									? {
 											key: 'admin',
 											label: <a href='/admin'>Área do administrador</a>,
 											icon: <RiLockStarLine />,
 											children: [
 												{
-													key: 'characters',
-													label: <a href='/admin/personagens'>Personagens</a>,
-													icon: <RiStarLine />,
-												},
-												{
-													key: 'midia',
-													label: <a href='/admin/midia'>Midia</a>,
-													icon: <RiImageLine />,
-												},
-												{
 													key: 'schools',
 													label: <a href='/admin/escolas'>Escolas</a>,
 													icon: <RiSchoolLine />,
 												},
+												...(isAdmin
+													? [
+															{
+																key: 'characters',
+																label: (
+																	<a href='/admin/personagens'>Personagens</a>
+																),
+																icon: <RiStarLine />,
+															},
+															{
+																key: 'midia',
+																label: <a href='/admin/midia'>Midia</a>,
+																icon: <RiImageLine />,
+															},
+														]
+													: []),
 											],
 										}
 									: null,

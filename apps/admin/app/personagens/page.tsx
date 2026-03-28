@@ -10,7 +10,7 @@ import {
 	Button,
 	Drawer,
 } from 'antd';
-import { Title, useUser } from '@etnos/ui';
+import { AuthProtected, Title, useUser } from '@etnos/ui';
 import { FormCharacter } from '@etnos/components';
 import { useState } from 'react';
 
@@ -83,84 +83,86 @@ export default function PersonagensPage() {
 	}
 
 	return (
-		<Spin spinning={isLoading}>
-			<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
-				<Breadcrumb
-					items={[
-						{ title: 'Home', href: '/' },
-						{
-							title: 'Área do administrador',
-							href: '/admin',
-						},
-						{
-							title: 'Personagens',
-						},
-					]}
-				/>
-
-				<Title className='mb-4 mt-6'>Personagens</Title>
-
-				<FloatButton
-					icon={<RiAddLine className='text-2xl' />}
-					onClick={toggleCharacter}
-					type='primary'
-				/>
-
-				<Drawer
-					open={openCharacter}
-					title='Novo Personagem'
-					footer={null}
-					destroyOnHidden
-					onClose={onCloseModal}
-					size='large'
-				>
-					<FormCharacter
-						data={characterData}
-						user={user}
-						onSubmit={onSubmit}
-						isLoading={isLoading}
-					/>
-				</Drawer>
-
-				<div className='bg-white rounded shadow'>
-					<Table
-						rowKey='slug'
-						dataSource={data}
-						pagination={false}
-						columns={[
+		<AuthProtected allowedRoles={['admin']} forbiddenRedirectTo='/admin/escolas'>
+			<Spin spinning={isLoading}>
+				<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+					<Breadcrumb
+						items={[
+							{ title: 'Home', href: '/' },
 							{
-								title: 'Imagem',
-								render: (item) => (
-									<div className='w-20 md:w-32 border border-slate-200 rounded flex overflow-hidden'>
-										<Image src={item.imageUrl} />
-									</div>
-								),
+								title: 'Área do administrador',
+								href: '/admin',
 							},
 							{
-								dataIndex: 'name',
-								title: 'Nome',
-							},
-							{
-								dataIndex: 'region',
-								title: 'Região',
-							},
-							{
-								dataIndex: 'description',
-								title: 'Descrição',
-							},
-							{
-								title: 'Editar',
-								render: (item) => (
-									<Button
-										onClick={() => onEditCharacter(item)}
-										icon={<RiEditLine />}
-									/>
-								),
+								title: 'Personagens',
 							},
 						]}
 					/>
+
+					<Title className='mb-4 mt-6'>Personagens</Title>
+
+					<FloatButton
+						icon={<RiAddLine className='text-2xl' />}
+						onClick={toggleCharacter}
+						type='primary'
+					/>
+
+					<Drawer
+						open={openCharacter}
+						title='Novo Personagem'
+						footer={null}
+						destroyOnHidden
+						onClose={onCloseModal}
+						size='large'
+					>
+						<FormCharacter
+							data={characterData}
+							user={user}
+							onSubmit={onSubmit}
+							isLoading={isLoading}
+						/>
+					</Drawer>
+
+					<div className='bg-white rounded shadow'>
+						<Table
+							rowKey='slug'
+							dataSource={data}
+							pagination={false}
+							columns={[
+								{
+									title: 'Imagem',
+									render: (item) => (
+										<div className='w-20 md:w-32 border border-slate-200 rounded flex overflow-hidden'>
+											<Image src={item.imageUrl} />
+										</div>
+									),
+								},
+								{
+									dataIndex: 'name',
+									title: 'Nome',
+								},
+								{
+									dataIndex: 'region',
+									title: 'Região',
+								},
+								{
+									dataIndex: 'description',
+									title: 'Descrição',
+								},
+								{
+									title: 'Editar',
+									render: (item) => (
+										<Button
+											onClick={() => onEditCharacter(item)}
+											icon={<RiEditLine />}
+										/>
+									),
+								},
+							]}
+						/>
+					</div>
 				</div>
-			</div>
-		</Spin>
+			</Spin>
+		</AuthProtected>
 	);
 }

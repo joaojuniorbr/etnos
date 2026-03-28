@@ -7,6 +7,8 @@ import { useAuth } from '@etnos/tools';
 interface AuthProtectedProps {
 	children: React.ReactNode;
 	redirectTo?: string;
+	allowedRoles?: string[];
+	forbiddenRedirectTo?: string;
 }
 
 export const redirectIfUnauthenticated = ({
@@ -29,11 +31,27 @@ export const redirectIfUnauthenticated = ({
 	}
 };
 
+export const hasAllowedRole = (
+	user: { role?: string[]; roles?: string[] } | null | undefined,
+	allowedRoles?: string[]
+) => {
+	if (!allowedRoles?.length) {
+		return true;
+	}
+
+	const userRoles = user?.role ?? user?.roles ?? [];
+
+	return allowedRoles.some((allowedRole) => userRoles.includes(allowedRole));
+};
+
 export const AuthProtected = ({
 	children,
 	redirectTo = '/login',
+	allowedRoles,
+	forbiddenRedirectTo = '/',
 }: AuthProtectedProps) => {
 	const { user, isProfileLoading } = useAuth();
+	const isAuthorized = hasAllowedRole(user, allowedRoles);
 
 	useEffect(() => {
 		redirectIfUnauthenticated({
@@ -44,7 +62,24 @@ export const AuthProtected = ({
 		});
 	}, [isProfileLoading, redirectTo, user]);
 
+	useEffect(() => {
+		if (
+			globalThis.window === undefined ||
+			isProfileLoading ||
+			!user ||
+			isAuthorized
+		) {
+			return;
+		}
+
+		globalThis.window.location.href = forbiddenRedirectTo;
+	}, [forbiddenRedirectTo, isAuthorized, isProfileLoading, user]);
+
 	if (!isProfileLoading && !user) {
+		return null;
+	}
+
+	if (!isProfileLoading && user && !isAuthorized) {
 		return null;
 	}
 

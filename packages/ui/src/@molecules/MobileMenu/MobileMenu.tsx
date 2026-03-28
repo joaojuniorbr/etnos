@@ -48,9 +48,11 @@ export const MobileMenu = ({
 				onClose={toggleDrawer}
 				title='Etnos'
 				footer={
-					<Button onClick={onLogout} danger block>
-						SAIR
-					</Button>
+					user && (
+						<Button onClick={onLogout} danger block>
+							SAIR
+						</Button>
+					)
 				}
 			>
 				{user ? (

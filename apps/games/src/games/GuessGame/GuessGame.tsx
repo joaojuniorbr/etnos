@@ -16,7 +16,7 @@ import { GuessGameExperience } from './GuessGameExperience';
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, playSound } = useGames(user?.uid);
+	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(user?.uid);
 	const [round, setRound] = useState(0);
 
 	const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug ?? '';
@@ -35,12 +35,22 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	});
 
 	const handleSaveScore = async (score: number) => {
-		if (!user?.uid || !activeCharacterSlug) {
+		const currentBestScore = scoreGame?.score ?? 0;
+
+		if (!user?.uid || !activeCharacterSlug || score <= currentBestScore) {
 			return;
 		}
 
 		await saveGameScore(GamesEnum.GUESS_GAME, activeCharacterSlug, score);
 		await scoreGameRefetch();
+	};
+
+	const handleSaveScoreHistory = async (score: number) => {
+		if (!user?.uid || !activeCharacterSlug) {
+			return;
+		}
+
+		await saveGameScoreHistory(GamesEnum.GUESS_GAME, activeCharacterSlug, score);
 	};
 
 	return (
@@ -55,6 +65,7 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			}}
 			onPlaySound={playSound}
 			onSaveScore={handleSaveScore}
+			onSaveScoreHistory={handleSaveScoreHistory}
 			onValidateAttempt={(payload) => validateGuessMutation.mutateAsync(payload)}
 		/>
 	);

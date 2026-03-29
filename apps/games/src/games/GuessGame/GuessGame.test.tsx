@@ -131,6 +131,7 @@ describe('GuessGame', () => {
 		});
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -178,6 +179,7 @@ describe('GuessGame', () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValueOnce({
@@ -235,6 +237,7 @@ describe('GuessGame', () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValueOnce({
@@ -266,8 +269,10 @@ describe('GuessGame', () => {
 
 	it('aplica bonus intermediario quando parte da palavra ja foi revelada', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory,
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -322,13 +327,15 @@ describe('GuessGame', () => {
 			await props.handleSaveScore();
 		});
 
-		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 50);
+		expect(saveGameScoreHistory).toHaveBeenCalledWith('guess-game', 'anita', 440);
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 440);
 	});
 
 	it('resolve a palavra ao completar as letras e busca descrição no backend', async () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
 		validateAttemptMock
@@ -413,6 +420,7 @@ describe('GuessGame', () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValue({
@@ -477,8 +485,10 @@ describe('GuessGame', () => {
 
 	it('calcula bônus mínimo quando o conteúdo vier com tamanho zero', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory,
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -514,7 +524,8 @@ describe('GuessGame', () => {
 			await props.handleSaveScore();
 		});
 
-		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 10);
+		expect(saveGameScoreHistory).toHaveBeenCalledWith('guess-game', 'anita', 0);
+		expect(saveGameScore).not.toHaveBeenCalled();
 	});
 
 	it('não exibe descrição quando o backend não retornar descrição', async () => {
@@ -548,6 +559,7 @@ describe('GuessGame', () => {
 		const playSound = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			playSound,
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -565,9 +577,11 @@ describe('GuessGame', () => {
 
 	it('passa callbacks do estado final para o FinishGame', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
 		const refetchScore = vi.fn();
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory,
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -613,18 +627,119 @@ describe('GuessGame', () => {
 			await props.handleRestart();
 		});
 
-		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 10);
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			1000
+		);
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 		expect(refetchScore).toHaveBeenCalled();
 		expect(useGuessGamePlayableContentMock).toHaveBeenLastCalledWith('anita', 1);
 	});
 
-	it('nao salva score quando nao houver usuario', async () => {
+	it('não salva recorde quando a pontuação final for menor que o recorde atual', async () => {
 		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			saveGameScoreHistory,
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: { score: 1200 },
+			refetch: vi.fn(),
+			isLoading: false,
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
+			handleSaveScore: () => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.handleSaveScore();
+		});
+
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			1000
+		);
+		expect(saveGameScore).not.toHaveBeenCalled();
+	});
+
+	it('salva recorde usando zero como fallback quando ainda não existir score anterior', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		const refetchScore = vi.fn();
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			saveGameScoreHistory,
+			playSound: vi.fn(),
+		});
+		useGameScoreMock.mockReturnValue({
+			data: undefined,
+			refetch: refetchScore,
+			isLoading: false,
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
+			handleSaveScore: () => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.handleSaveScore();
+		});
+
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			1000
+		);
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
+		expect(refetchScore).toHaveBeenCalled();
+	});
+
+	it('nao salva score nem histórico quando nao houver usuario', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
 		useUserMock.mockReturnValue({
 			user: null,
 		});
 		useGamesMock.mockReturnValue({
 			saveGameScore,
+			saveGameScoreHistory,
 			playSound: vi.fn(),
 		});
 		validateAttemptMock.mockResolvedValueOnce({
@@ -653,5 +768,6 @@ describe('GuessGame', () => {
 		});
 
 		expect(saveGameScore).not.toHaveBeenCalled();
+		expect(saveGameScoreHistory).not.toHaveBeenCalled();
 	});
 });

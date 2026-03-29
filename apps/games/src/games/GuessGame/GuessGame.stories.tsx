@@ -43,6 +43,9 @@ const meta = {
 		onSaveScore: async (score: number) => {
 			message.success(`Pontuação ${score} salva na story`);
 		},
+		onSaveScoreHistory: async (score: number) => {
+			message.info(`Histórico salvo com ${score} pontos`);
+		},
 		onValidateAttempt: async ({
 			guess,
 			type,

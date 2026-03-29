@@ -2,7 +2,7 @@
 
 import { Button, Divider, Input, Spin } from 'antd';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	RiCheckDoubleLine,
 	RiInformationLine,
@@ -17,6 +17,12 @@ import type {
 	GuessGameValidationResultInterface,
 } from '@etnos/types';
 import { FinishGame, ScoreHighlight } from '../../components';
+import {
+	getGuessGameLetterHitPoints,
+	getGuessGameRevealedLettersCount,
+	getGuessGameTipPenalty,
+	getGuessGameWordSolvePoints,
+} from './guess-game.scoring';
 
 const { OTP: InputOtp } = Input;
 
@@ -25,18 +31,6 @@ const TOTAL_GUESS = 10;
 
 const getMaskedWord = (wordLength?: number) =>
 	CHARACTER_DEFAULT.repeat(wordLength ?? 0);
-
-const getSolvedBonus = (percentage: number) => {
-	if (percentage >= 80) {
-		return 50;
-	}
-
-	if (percentage >= 50) {
-		return 30;
-	}
-
-	return 10;
-};
 
 type GuessGameExperienceProps = {
 	content?: GuessGamePlayItemInterface | null;
@@ -47,6 +41,7 @@ type GuessGameExperienceProps = {
 	onPlaySound?: (sound: 'flip' | 'error' | 'finish') => void;
 	onNextRound?: () => void;
 	onSaveScore?: (score: number) => Promise<void> | void;
+	onSaveScoreHistory?: (score: number) => Promise<void> | void;
 	onValidateAttempt: (
 		payload: GuessGameValidationPayloadInterface
 	) => Promise<GuessGameValidationResultInterface>;
@@ -61,6 +56,7 @@ export const GuessGameExperience = ({
 	onPlaySound,
 	onNextRound,
 	onSaveScore,
+	onSaveScoreHistory,
 	onValidateAttempt,
 }: GuessGameExperienceProps) => {
 	const [isSavingScore, setIsSavingScore] = useState(false);
@@ -73,6 +69,7 @@ export const GuessGameExperience = ({
 	const [isLoser, setIsLoser] = useState(false);
 	const [solvedWord, setSolvedWord] = useState<string>();
 	const [solvedDescription, setSolvedDescription] = useState<string>();
+	const autoSavedScoreRef = useRef<number | null>(null);
 
 	const resetRound = () => {
 		setAttempt('');
@@ -84,6 +81,7 @@ export const GuessGameExperience = ({
 		setSolvedWord(undefined);
 		setSolvedDescription(undefined);
 		setGuesses('');
+		autoSavedScoreRef.current = null;
 	};
 
 	const displayedGuesses = guesses || getMaskedWord(content?.wordLength);
@@ -93,12 +91,10 @@ export const GuessGameExperience = ({
 		total: number,
 		currentGuesses: string
 	) => {
-		const revealed = currentGuesses
-			.split('')
-			.filter((character) => character !== CHARACTER_DEFAULT).length;
-		const percentage = total > 0 ? (revealed / total) * 100 : 0;
+		const revealed = getGuessGameRevealedLettersCount(currentGuesses);
+		const solvePoints = getGuessGameWordSolvePoints(total, revealed);
 
-		setScore((prev) => prev + getSolvedBonus(percentage));
+		setScore((prev) => prev + solvePoints);
 		setSolvedWord(result.word);
 		setSolvedDescription(result.description);
 		setGuesses(result.word ?? currentGuesses);
@@ -109,7 +105,6 @@ export const GuessGameExperience = ({
 	const handleFailedAttempt = () => {
 		if (TOTAL_GUESS > countGuess) {
 			setCountGuess((prev) => prev + 1);
-			setScore((prev) => Math.max(prev - 5, 0));
 			return;
 		}
 
@@ -135,7 +130,7 @@ export const GuessGameExperience = ({
 		}
 
 		onPlaySound?.('flip');
-		setScore((prev) => prev + 10);
+		setScore((prev) => prev + getGuessGameLetterHitPoints());
 		const updatedGuesses = displayedGuesses.split('');
 
 		result.matchedIndexes.forEach((matchedIndex, index) => {
@@ -179,6 +174,7 @@ export const GuessGameExperience = ({
 	const getTips = () => {
 		if (content && countTips < content.tips.length) {
 			setCountTips((prev) => prev + 1);
+			setScore((prev) => Math.max(prev - getGuessGameTipPenalty(), 0));
 			return;
 		}
 
@@ -199,6 +195,20 @@ export const GuessGameExperience = ({
 			setIsSavingScore(false);
 		}
 	};
+
+	useEffect(() => {
+		if (!isFinished) {
+			autoSavedScoreRef.current = null;
+			return;
+		}
+
+		if (autoSavedScoreRef.current === score) {
+			return;
+		}
+
+		autoSavedScoreRef.current = score;
+		void onSaveScoreHistory?.(score);
+	}, [isFinished, onSaveScoreHistory, score]);
 
 	return (
 		<Spin spinning={isLoading || isValidating || isSavingScore}>

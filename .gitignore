@@ -47,6 +47,7 @@ yarn-error.log*
 storybook-static
 
 .scannerwork
+.gemini/
 
 
 cloudbuild.yaml

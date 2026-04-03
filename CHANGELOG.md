@@ -1,3 +1,88 @@
+# [1.5.0](https://github.com/joaojuniorbr/etnos/compare/v1.4.2...v1.5.0) (2026-04-03)
+
+### 404
+
+#### 🔨 Refatoração
+
+* ajuste na página de não encontrado, incluindo novos botões de navegação ([17547f2](https://github.com/joaojuniorbr/etnos/commit/17547f2564fa96508b5c265f8c209bbf15ce80ce))
+
+### adivinhe a palavra
+
+#### 🔨 Refatoração
+
+* [CU-86aggwgeq] mudança no salvamento dos dados do jogo ([2c46d71](https://github.com/joaojuniorbr/etnos/commit/2c46d710dac982ae252f63d44f9ef10efa1cf57d))
+
+### admin
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq05jt] Implementar Gestão de Escolas ([8dd0bef](https://github.com/joaojuniorbr/etnos/commit/8dd0befdf33d03e5a2a1d2cd802653b955d03d83))
+* nova página inicial de administração ([66d551f](https://github.com/joaojuniorbr/etnos/commit/66d551fe95cb35bb37ca7583cb0347330fa5fa67))
+
+#### 🔨 Refatoração
+
+* ajustes no admin e na documentação ([c5bac7e](https://github.com/joaojuniorbr/etnos/commit/c5bac7e3525f6a17ffe24068f3239293d093ccc4))
+
+### documentação
+
+#### 📝 Documentação
+
+* documentação das entregas apresentadas para os docentes da IFPR ([de53610](https://github.com/joaojuniorbr/etnos/commit/de53610eea21968d2ce8305feea206b7cbd3e83a))
+
+### geral
+
+#### ⚙️ Manutenção
+
+* setup do spec kit do github ([3a6b5cc](https://github.com/joaojuniorbr/etnos/commit/3a6b5cc3a8e9c1b9705ce5256d29902d44f08b07))
+
+#### 🔀 Merges
+
+* Merge pull request #28 from joaojuniorbr/001-student-score-history ([36dc84e](https://github.com/joaojuniorbr/etnos/commit/36dc84ee4d3f35de74c5c028064782618d055871))
+
+### guessgame
+
+#### ✨ Features (Novidades)
+
+* [CU-86aggwgeq] Migração dos Dados estáticos do jogo adivinhe uma palavra ([e93ffeb](https://github.com/joaojuniorbr/etnos/commit/e93ffebdd819de3ec161f0943a4b40b42f2aa9d5))
+
+### jogo da memoria
+
+#### 🔨 Refatoração
+
+* [CU-86afpzy8n] Salvamento automático da maior pontuação ([45ea9f3](https://github.com/joaojuniorbr/etnos/commit/45ea9f31f9af09e6a52c976d49221a901c192feb))
+
+### jogos
+
+#### ✨ Features (Novidades)
+
+* [CU-86aggtzkm] Histórico de Jogos ([27df0fb](https://github.com/joaojuniorbr/etnos/commit/27df0fb0c6d230f9594d539e1769ca3ae29fa00d))
+
+### menu
+
+#### 🐛 Bug Fixes (Correções)
+
+* quando usuário nao estava autenticado, aparecia o botão de sair no menu ([b711711](https://github.com/joaojuniorbr/etnos/commit/b711711b31c03fc881b9205ba145f71c24bb07af))
+
+### perfil
+
+#### ✨ Features (Novidades)
+
+* histórico de pontuação no perfil ([ac5739f](https://github.com/joaojuniorbr/etnos/commit/ac5739ff79e276df6c1017e636d70f0bf42fa420))
+
+### sonar
+
+#### ⚙️ Manutenção
+
+* remoção de variaveis não utilizadas ([26262ef](https://github.com/joaojuniorbr/etnos/commit/26262ef0702389c02ac24d47c512e4a3d217a919))
+* ajustes de issues do sonar ([1bf9bce](https://github.com/joaojuniorbr/etnos/commit/1bf9bcea46687e955acf51004ed2d67c38aee1e9))
+* configuracao do sonar cloud para executar localmente ([1ea214d](https://github.com/joaojuniorbr/etnos/commit/1ea214d772a5fee4f7d1f8b001d029430122b834))
+
+### storybook
+
+#### 📝 Documentação
+
+* ajustes do story NotFound ([fe3932a](https://github.com/joaojuniorbr/etnos/commit/fe3932a61e72d5f5ef164b712f01b0c212398821))
+
 ## [1.4.2](https://github.com/joaojuniorbr/etnos/compare/v1.4.1...v1.4.2) (2026-03-26)
 
 ### personagens

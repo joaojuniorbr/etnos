@@ -84,7 +84,6 @@ export const MemoryGameExperience = ({
 	const {
 		cards,
 		handleCardClick,
-		initializeGame,
 		isFinished,
 		matchedPairs,
 		moves,

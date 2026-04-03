@@ -103,11 +103,9 @@ export const MemoryGameExperience = ({
 	};
 
 	const handleRestart = () => {
-		// `restart` só fica acessível depois que um nível é escolhido.
 		autoSavedScoreRef.current = null;
-		setLevelContent(getMemoryGameLevelContent(content, selectedLevel!));
-
-		initializeGame();
+		setSelectedLevel(null);
+		setLevelContent([]);
 	};
 
 	const handleSaveScore = async () => {

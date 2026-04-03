@@ -146,13 +146,12 @@ describe('MemoryGameExperience', () => {
 	});
 
 	it('renderiza estado final e aciona restart/save', async () => {
-		const initializeGame = vi.fn();
 		const onSaveScoreHistory = vi.fn().mockResolvedValue(undefined);
 		const onSaveScore = vi.fn().mockResolvedValue(undefined);
 		useMemoryGameMock.mockReturnValue({
 			cards: [],
 			handleCardClick: vi.fn(),
-			initializeGame,
+			initializeGame: vi.fn(),
 			isFinished: true,
 			matchedPairs: 2,
 			moves: 4,
@@ -179,10 +178,12 @@ describe('MemoryGameExperience', () => {
 			expect(onSaveScoreHistory).toHaveBeenCalledWith(120);
 		});
 
-		fireEvent.click(screen.getByText('restart'));
 		fireEvent.click(screen.getByText('save'));
+		fireEvent.click(screen.getByText('restart'));
 
-		expect(initializeGame).toHaveBeenCalledTimes(1);
+		expect(
+			screen.getByText('Escolha o nível para começar'),
+		).toBeTruthy();
 		expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
 		expect(onSaveScore).toHaveBeenCalledTimes(1);
 	});

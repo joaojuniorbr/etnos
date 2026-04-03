@@ -18,7 +18,7 @@ export const ScoreHistoryList = ({
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center py-20">
-				<Spin size="large" tip="Carregando seu histórico..." />
+				<Spin size="large" description="Carregando..." />
 			</div>
 		);
 	}
@@ -26,7 +26,6 @@ export const ScoreHistoryList = ({
 	if (isError) {
 		return (
 			<Alert
-				message="Erro ao carregar histórico"
 				description="Não foi possível carregar o seu histórico de pontuação. Tente novamente em instantes."
 				type="error"
 				showIcon

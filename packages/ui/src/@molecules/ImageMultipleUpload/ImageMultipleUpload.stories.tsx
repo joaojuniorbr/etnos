@@ -10,7 +10,7 @@ const meta: Meta<typeof ImageMultipleUpload> = {
 	tags: ['autodocs'],
 	args: {
 		userId: 'userTestId',
-		folder: 'unitTest'
+		folder: 'unitTest',
 	},
 	argTypes: {},
 };

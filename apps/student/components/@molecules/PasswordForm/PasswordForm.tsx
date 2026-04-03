@@ -19,7 +19,7 @@ export const PasswordForm = () => {
 		setIsPasswordLoading(true);
 		const wasChanged = await onChangePassword(
 			values.currentPassword,
-			values.newPassword
+			values.newPassword,
 		);
 
 		if (wasChanged) {
@@ -45,25 +45,25 @@ export const PasswordForm = () => {
 
 	return (
 		<Form
-			layout='vertical'
+			layout="vertical"
 			form={passwordForm}
 			onFinish={onFinishPassword}
 			disabled={isPasswordLoading}
 		>
-			<div className='md:w-1/2'>
+			<div className="md:w-1/2">
 				<Form.Item
-					name='currentPassword'
-					label='Senha Atual'
+					name="currentPassword"
+					label="Senha Atual"
 					rules={[{ required: true, message: 'Informe sua senha atual' }]}
 				>
 					<Input.Password />
 				</Form.Item>
 			</div>
 
-			<div className='w-full grid grid-cols-1 md:grid-cols-2 md:gap-x-8'>
+			<div className="w-full grid grid-cols-1 md:grid-cols-2 md:gap-x-8">
 				<Form.Item
-					name='newPassword'
-					label='Nova Senha'
+					name="newPassword"
+					label="Nova Senha"
 					rules={[
 						{ required: true, message: 'Informe a nova senha' },
 						{
@@ -76,8 +76,8 @@ export const PasswordForm = () => {
 				</Form.Item>
 
 				<Form.Item
-					name='confirmPassword'
-					label='Confirmar Nova Senha'
+					name="confirmPassword"
+					label="Confirmar Nova Senha"
 					dependencies={['newPassword']}
 					rules={[
 						{ required: true, message: 'Confirme a nova senha' },
@@ -88,7 +88,7 @@ export const PasswordForm = () => {
 								}
 
 								return Promise.reject(
-									new Error('As senhas informadas não coincidem')
+									new Error('As senhas informadas não coincidem'),
 								);
 							},
 						}),
@@ -98,14 +98,14 @@ export const PasswordForm = () => {
 				</Form.Item>
 			</div>
 
-			<div className='flex flex-col md:flex-row md:items-center gap-3 pt-2'>
-				<Button type='primary' htmlType='submit' loading={isPasswordLoading}>
+			<div className="flex flex-col md:flex-row md:items-center gap-3 pt-2">
+				<Button type="primary" htmlType="submit" loading={isPasswordLoading}>
 					Atualizar Senha
 				</Button>
 
 				<Button
-					type='default'
-					htmlType='button'
+					type="default"
+					htmlType="button"
 					onClick={onForgotPassword}
 					disabled={!user?.email}
 					loading={isRecoveryLoading}

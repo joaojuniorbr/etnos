@@ -24,7 +24,7 @@ describe('useMemoryGameContent', () => {
 		const slug = 'link';
 
 		vi.mocked(
-			memoryGameContentService.getMemoryGameImages
+			memoryGameContentService.getMemoryGameImages,
 		).mockResolvedValueOnce(mockImages);
 
 		const { result } = renderHook(() => useMemoryGameContent(slug), {
@@ -38,11 +38,11 @@ describe('useMemoryGameContent', () => {
 		});
 
 		expect(memoryGameContentService.getMemoryGameImages).toHaveBeenCalledTimes(
-			1
+			1,
 		);
 
 		expect(memoryGameContentService.getMemoryGameImages).toHaveBeenCalledWith(
-			slug
+			slug,
 		);
 
 		expect(result.current.data).toEqual(mockImages);

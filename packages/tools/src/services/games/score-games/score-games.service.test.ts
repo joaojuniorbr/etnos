@@ -35,7 +35,7 @@ describe('scoreGamesService', () => {
 			'memory-game',
 			'joao',
 			10,
-			''
+			'',
 		);
 
 		expect(result).toBeNull();
@@ -49,7 +49,7 @@ describe('scoreGamesService', () => {
 			'memory-game',
 			'joao',
 			10,
-			'user-1'
+			'user-1',
 		);
 
 		expect(apiMock.post).toHaveBeenCalledWith('/games/score/history', {
@@ -64,7 +64,7 @@ describe('scoreGamesService', () => {
 			'memory-game',
 			'joao',
 			10,
-			''
+			'',
 		);
 
 		expect(result).toBeNull();
@@ -99,10 +99,33 @@ describe('scoreGamesService', () => {
 		const result = await scoreGamesService.getFromGameScore(
 			'memory-game',
 			'joao',
-			''
+			'',
 		);
 
 		expect(result).toBeNull();
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
+
+	it('deve buscar histórico de score do usuário com filtro de jogo', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ gameSlug: 'memory-game', score: 80 }],
+		});
+
+		const result = await scoreGamesService.getScoreHistory(
+			'user-1',
+			'memory-game',
+		);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/games/score/history', {
+			params: { gameSlug: 'memory-game' },
+		});
+		expect(result).toEqual([{ gameSlug: 'memory-game', score: 80 }]);
+	});
+
+	it('deve retornar lista vazia quando não houver userId em getScoreHistory', async () => {
+		const result = await scoreGamesService.getScoreHistory('', 'memory-game');
+
+		expect(result).toEqual([]);
 		expect(apiMock.get).not.toHaveBeenCalled();
 	});
 });

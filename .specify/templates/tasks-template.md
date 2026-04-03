@@ -1,6 +1,5 @@
 ---
-
-description: "Task list template for feature implementation"
+description: 'Task list template for feature implementation'
 ---
 
 # Tasks: [FEATURE NAME]
@@ -33,21 +32,21 @@ prove 100% coverage for changed code in the touched scope.
 - Use the real monorepo paths from `plan.md`; do not fall back to generic
   `src/` placeholders in the final task list.
 
-<!-- 
+<!--
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
-  
+
   The /speckit.tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
   - Entities from data-model.md
   - Endpoints from contracts/
-  
+
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
   - Tested independently
   - Delivered as an MVP increment
-  
+
   DO NOT keep these sample tasks in the generated tasks.md file.
   ============================================================================
 -->
@@ -104,10 +103,12 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T013 [P] [US1] Update shared types, schemas, or UI contracts in the real
       touched paths
 - [ ] T014 [P] [US1] Implement core behavior in the affected app/package files
-- [ ] T015 [US1] Wire the end-to-end user flow across all touched boundaries
-- [ ] T016 [US1] Add validation plus loading/empty/error handling
-- [ ] T017 [US1] Add observability, analytics, or debug signals as required
-- [ ] T018 [US1] Document any migration, rollout, or manual verification step
+- [ ] T015 [US1] Normalize touched filenames and exports to match project naming
+      conventions
+- [ ] T016 [US1] Wire the end-to-end user flow across all touched boundaries
+- [ ] T017 [US1] Add validation plus loading/empty/error handling
+- [ ] T018 [US1] Add observability, analytics, or debug signals as required
+- [ ] T019 [US1] Document any migration, rollout, or manual verification step
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -131,9 +132,11 @@ Examples of foundational tasks (adjust based on your project):
 
 - [ ] T022 [P] [US2] Update the necessary shared contracts and domain logic in
       real repo paths
-- [ ] T023 [US2] Implement the story in the relevant app/package files
-- [ ] T024 [US2] Integrate the story with upstream/downstream dependencies
-- [ ] T025 [US2] Validate permissions, failure handling, and release notes
+- [ ] T023 [US2] Normalize touched filenames and exports to match project naming
+      conventions
+- [ ] T024 [US2] Implement the story in the relevant app/package files
+- [ ] T025 [US2] Integrate the story with upstream/downstream dependencies
+- [ ] T026 [US2] Validate permissions, failure handling, and release notes
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -155,8 +158,10 @@ Examples of foundational tasks (adjust based on your project):
 ### Implementation for User Story 3
 
 - [ ] T029 [P] [US3] Update shared artifacts required by the story
-- [ ] T030 [US3] Implement the story in the affected monorepo paths
-- [ ] T031 [US3] Validate observability, UX states, and deployment readiness
+- [ ] T030 [US3] Normalize touched filenames and exports to match project naming
+      conventions
+- [ ] T031 [US3] Implement the story in the affected monorepo paths
+- [ ] T032 [US3] Validate observability, UX states, and deployment readiness
 
 **Checkpoint**: All user stories should now be independently functional
 

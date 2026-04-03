@@ -18,7 +18,6 @@ vi.mock('../../@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,
-		block: _block,
 		...props
 	}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
 		htmlType?: 'button' | 'submit' | 'reset';
@@ -130,16 +129,18 @@ vi.mock('antd', async () => {
 		),
 		{
 			Password: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-				<input type='password' {...props} />
+				<input type="password" {...props} />
 			),
-		}
+		},
 	);
 
 	return {
 		DatePicker: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-			<input type='date' {...props} />
+			<input type="date" {...props} />
 		),
-		Divider: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+		Divider: ({ children }: { children?: React.ReactNode }) => (
+			<div>{children}</div>
+		),
 		Form,
 		Input,
 		Select: ({
@@ -149,7 +150,7 @@ vi.mock('antd', async () => {
 			options?: { value: string; label: string }[];
 		}) => (
 			<select {...props}>
-				<option value=''>Selecione</option>
+				<option value="">Selecione</option>
 				{options?.map((option) => (
 					<option key={option.value} value={option.value}>
 						{option.label}
@@ -164,7 +165,7 @@ vi.mock('antd', async () => {
 			spinning?: boolean;
 			children: React.ReactNode;
 		}) => (
-			<div data-testid='spin' data-spinning={String(!!spinning)}>
+			<div data-testid="spin" data-spinning={String(!!spinning)}>
 				{children}
 			</div>
 		),
@@ -195,7 +196,7 @@ describe('SignUpForm', () => {
 			<SignUpForm
 				schools={[{ id: 'school-1', name: 'Escola Teste' }]}
 				onRegisterSuccess={onRegisterSuccess}
-			/>
+			/>,
 		);
 
 		fireEvent.change(screen.getByLabelText('Escola'), {
@@ -241,7 +242,7 @@ describe('SignUpForm', () => {
 				confirmPassword: '123456',
 			});
 			expect(message.success).toHaveBeenCalledWith(
-				'Cadastro realizado com sucesso'
+				'Cadastro realizado com sucesso',
 			);
 			expect(resetFieldsMock).toHaveBeenCalledTimes(1);
 			expect(onRegisterSuccess).toHaveBeenCalledTimes(1);
@@ -328,7 +329,7 @@ describe('SignUpForm', () => {
 		}).validator;
 
 		await expect(invalidValidator(null, '654321')).rejects.toThrow(
-			'As senhas não coincidem'
+			'As senhas não coincidem',
 		);
 	});
 });

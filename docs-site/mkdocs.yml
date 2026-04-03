@@ -28,8 +28,13 @@ nav:
       - Banco de Dados: database-architecture.md
       - Modelagem: data-model.md
   - Entregas:
-      - Entrega 01: 2025-p1.md
-      - Entrega 02: 2025-p2.md
-      - Wipex: 2025-wipex.md
+      - Planejamento 2026:
+          - Sprint 01: planejamento-sprint-1.md
+          - Sprint 02: planejamento-sprint-2.md
+
+      - 2025:
+          - Entrega 01: 2025-p1.md
+          - Entrega 02: 2025-p2.md
+          - Wipex: 2025-wipex.md
 
 site_dir: ../site

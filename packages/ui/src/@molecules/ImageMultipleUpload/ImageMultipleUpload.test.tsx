@@ -28,7 +28,7 @@ vi.mock('antd', async () => {
 			error: vi.fn(),
 		},
 		Button: ({ children }: { children: React.ReactNode }) => (
-			<button data-testid='upload-button'>{children}</button>
+			<button data-testid="upload-button">{children}</button>
 		),
 		Upload: {
 			Dragger: ({
@@ -46,15 +46,15 @@ vi.mock('antd', async () => {
 				return (
 					<div>
 						<div
-							data-testid='dragger'
+							data-testid="dragger"
 							onClick={() =>
 								beforeUpload(
-									new File(['dummy'], 'image.png', { type: 'image/png' })
+									new File(['dummy'], 'image.png', { type: 'image/png' }),
 								)
 							}
 						/>
 						<div
-							data-testid='remove'
+							data-testid="remove"
 							onClick={() =>
 								onRemove?.({
 									uid: '1',
@@ -71,7 +71,7 @@ vi.mock('antd', async () => {
 	};
 });
 
-import { getRandomIndex, midiaService } from '@etnos/tools';
+import { midiaService } from '@etnos/tools';
 import { message, UploadFile } from 'antd';
 
 describe('<ImageMultipleUpload />', () => {
@@ -103,9 +103,9 @@ describe('<ImageMultipleUpload />', () => {
 		render(
 			<ImageMultipleUpload
 				userId={userId}
-				folder='gallery'
+				folder="gallery"
 				onUpload={onUpload}
-			/>
+			/>,
 		);
 
 		fireEvent.click(screen.getByTestId('dragger'));
@@ -114,7 +114,7 @@ describe('<ImageMultipleUpload />', () => {
 			expect(midiaService.uploadImage).toHaveBeenCalledWith(
 				expect.any(File),
 				'gallery',
-				userId
+				userId,
 			);
 		});
 
@@ -123,7 +123,7 @@ describe('<ImageMultipleUpload />', () => {
 
 	it('trata erro no upload corretamente', async () => {
 		vi.mocked(midiaService.uploadImage).mockRejectedValueOnce(
-			new Error('Upload failed')
+			new Error('Upload failed'),
 		);
 
 		render(<ImageMultipleUpload userId={userId} />);
@@ -132,7 +132,7 @@ describe('<ImageMultipleUpload />', () => {
 
 		await waitFor(() => {
 			expect(message.error).toHaveBeenCalledWith(
-				expect.stringContaining('Erro ao enviar')
+				expect.stringContaining('Erro ao enviar'),
 			);
 		});
 

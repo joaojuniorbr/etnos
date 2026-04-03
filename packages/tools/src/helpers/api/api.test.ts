@@ -21,7 +21,7 @@ const { resolveValidStoredAuthTokenMock, updateAuthActivityMock } = vi.hoisted(
 	() => ({
 		resolveValidStoredAuthTokenMock: vi.fn(),
 		updateAuthActivityMock: vi.fn(),
-	})
+	}),
 );
 
 vi.mock('axios', () => ({

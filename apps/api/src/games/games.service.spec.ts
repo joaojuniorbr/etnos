@@ -37,6 +37,7 @@ describe('GamesService', () => {
     };
     gameScoreHistory: {
       create: jest.Mock;
+      findMany: jest.Mock;
     };
   };
 
@@ -124,6 +125,7 @@ describe('GamesService', () => {
     },
     gameScoreHistory: {
       create: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
     },
   };
 
@@ -246,7 +248,13 @@ describe('GamesService', () => {
       where: { slug: 'maria' },
     });
     expect(result).toEqual([
-      { id: '1', slug: 'maria', url: 'u', characterId: 'c1', idCharacter: 'c1' },
+      {
+        id: '1',
+        slug: 'maria',
+        url: 'u',
+        characterId: 'c1',
+        idCharacter: 'c1',
+      },
     ]);
   });
 
@@ -294,9 +302,7 @@ describe('GamesService', () => {
       makeGuessGameContent(),
     ]);
 
-    jest
-      .spyOn(crypto, 'randomInt')
-      .mockImplementationOnce(() => 0 as never);
+    jest.spyOn(crypto, 'randomInt').mockImplementationOnce(() => 0 as never);
 
     await expect(service.getGuessGamePlayContent('anita')).resolves.toEqual({
       id: 'guess-1',
@@ -463,7 +469,9 @@ describe('GamesService', () => {
   });
 
   it('deve retornar false ao falhar no delete do memory game', async () => {
-    prismaService.memoryGameContent.delete.mockRejectedValueOnce(new Error('fail'));
+    prismaService.memoryGameContent.delete.mockRejectedValueOnce(
+      new Error('fail'),
+    );
 
     const result = await service.deleteMemoryGameContent('id-1');
 
@@ -471,7 +479,9 @@ describe('GamesService', () => {
   });
 
   it('deve retornar false ao falhar no delete do guess game', async () => {
-    prismaService.guessGameContent.delete.mockRejectedValueOnce(new Error('fail'));
+    prismaService.guessGameContent.delete.mockRejectedValueOnce(
+      new Error('fail'),
+    );
 
     const result = await service.deleteGuessGameContent('id-1');
 
@@ -622,6 +632,40 @@ describe('GamesService', () => {
 
     expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
       where: { userId: 'user-1' },
+    });
+  });
+
+  it('deve listar histórico de score por usuário', async () => {
+    const createdAt = new Date();
+    prismaService.gameScoreHistory.findMany.mockResolvedValueOnce([
+      {
+        gameSlug: 'memory-game',
+        score: 100,
+        createdAt,
+      },
+    ]);
+
+    const result = await service.getScoreHistory('user-1');
+
+    expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', gameSlug: undefined },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(result).toEqual([
+      {
+        gameName: 'memory-game',
+        score: 100,
+        timestamp: createdAt.toISOString(),
+      },
+    ]);
+  });
+
+  it('deve listar histórico de score filtrado por jogo', async () => {
+    await service.getScoreHistory('user-1', 'guess-game');
+
+    expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', gameSlug: 'guess-game' },
+      orderBy: { createdAt: 'desc' },
     });
   });
 });

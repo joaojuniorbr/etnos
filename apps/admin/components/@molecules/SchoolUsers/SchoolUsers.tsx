@@ -20,11 +20,11 @@ export const SchoolUsers = ({
 	sendingRecoveryEmail,
 }: SchoolUsersProps) => {
 	return (
-		<div className='border border-slate-200 p-6 rounded bg-white'>
-			<div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4'>
+		<div className="border border-slate-200 p-6 rounded bg-white">
+			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 				<div>
-					<Title className='mb-1'>Usuários da escola</Title>
-					<p className='text-slate-600 text-sm'>
+					<Title className="mb-1">Usuários da escola</Title>
+					<p className="text-slate-600 text-sm">
 						Use a busca para localizar alunos ou responsáveis vinculados à sua
 						escola.
 					</p>
@@ -32,15 +32,15 @@ export const SchoolUsers = ({
 
 				<Input.Search
 					allowClear
-					placeholder='Buscar por aluno, responsável ou e-mail'
+					placeholder="Buscar por aluno, responsável ou e-mail"
 					value={search}
 					onChange={(event) => onSearchChange(event.target.value)}
-					className='w-full md:max-w-md'
+					className="w-full md:max-w-md"
 				/>
 			</div>
 
 			<Table
-				rowKey='uid'
+				rowKey="uid"
 				pagination={{ pageSize: 8 }}
 				dataSource={users}
 				columns={[

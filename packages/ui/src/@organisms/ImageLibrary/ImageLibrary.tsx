@@ -74,8 +74,8 @@ export const ImageLibrary = ({
 				isLoading || isRefetching || isFetchingNextPage || isLoadingFolders
 			}
 		>
-			<div className='ui:mb-4 ui:flex ui:justify-between'>
-				<Button onClick={toggleUpload} type='primary' icon={<RiImageLine />}>
+			<div className="ui:mb-4 ui:flex ui:justify-between">
+				<Button onClick={toggleUpload} type="primary" icon={<RiImageLine />}>
 					Inserir Imagens
 				</Button>
 
@@ -84,16 +84,16 @@ export const ImageLibrary = ({
 						value: item.folder,
 						label: `${item.folder} (${item.count})`,
 					}))}
-					placeholder='Selecione uma pasta'
+					placeholder="Selecione uma pasta"
 					onChange={onSelectFolder}
-					data-testid='select-folder'
+					data-testid="select-folder"
 				/>
 			</div>
 
-			<section className='ui:grid ui:grid-cols-8 ui:gap-4 md:ui:grid-cols-6 lg:ui:grid-cols-8'>
+			<section className="ui:grid ui:grid-cols-8 ui:gap-4 md:ui:grid-cols-6 lg:ui:grid-cols-8">
 				{library?.pages.flatMap((page: { data: MidiaInterface[] }) =>
 					page.data.map((item: MidiaInterface) => (
-						<div key={item.id} className='relative'>
+						<div key={item.id} className="relative">
 							<Image
 								src={item.url}
 								alt={item.url}
@@ -102,33 +102,33 @@ export const ImageLibrary = ({
 								onClick={() => onSelect?.(item.url)}
 							/>
 							{!isOnSelect && (
-								<span className='ui:absolute ui:top-0 ui:right-0'>
+								<span className="ui:absolute ui:top-0 ui:right-0">
 									<Popconfirm
-										title='Tem certeza que deseja excluir esta imagem?'
+										title="Tem certeza que deseja excluir esta imagem?"
 										onConfirm={() => handleDeleteMidia(item)}
 									>
 										<Button
 											icon={<RiDeleteBinLine />}
-											type='text'
+											type="text"
 											danger
-											size='small'
-											aria-label='Excluir imagem'
+											size="small"
+											aria-label="Excluir imagem"
 										/>
 									</Popconfirm>
 								</span>
 							)}
 						</div>
-					))
+					)),
 				)}
 			</section>
 
 			{hasNextPage && (
-				<div className='ui:flex ui:justify-center ui:pt-4'>
+				<div className="ui:flex ui:justify-center ui:pt-4">
 					<Button
 						onClick={() => fetchNextPage()}
 						loading={isFetchingNextPage}
 						disabled={isFetchingNextPage}
-						className='uppercase'
+						className="uppercase"
 					>
 						Carregar mais
 					</Button>
@@ -136,14 +136,14 @@ export const ImageLibrary = ({
 			)}
 
 			<Drawer
-				title='Adicionar Imagens'
+				title="Adicionar Imagens"
 				open={openUpload}
 				onClose={toggleUpload}
-				placement='bottom'
-				size='large'
+				placement="bottom"
+				size="large"
 				destroyOnHidden
 			>
-				<div className='relative'>
+				<div className="relative">
 					{user?.uid && (
 						<ImageMultipleUpload
 							userId={user.uid}

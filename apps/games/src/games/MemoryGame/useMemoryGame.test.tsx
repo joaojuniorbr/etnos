@@ -26,12 +26,12 @@ const Harness = ({ content, matchDelayMs, onPlaySound }: HarnessProps) => {
 
 	return (
 		<div>
-			<div data-testid='score'>{score}</div>
-			<div data-testid='moves'>{moves}</div>
-			<div data-testid='matchedPairs'>{matchedPairs}</div>
-			<div data-testid='totalPairs'>{totalPairs}</div>
-			<div data-testid='isFinished'>{String(isFinished)}</div>
-			<div data-testid='cards-count'>{cards.length}</div>
+			<div data-testid="score">{score}</div>
+			<div data-testid="moves">{moves}</div>
+			<div data-testid="matchedPairs">{matchedPairs}</div>
+			<div data-testid="totalPairs">{totalPairs}</div>
+			<div data-testid="isFinished">{String(isFinished)}</div>
+			<div data-testid="cards-count">{cards.length}</div>
 			<button onClick={initializeGame}>restart</button>
 			{cards.map((card) => (
 				<button
@@ -71,7 +71,7 @@ describe('useMemoryGame', () => {
 				content={[{ name: 'chimarrao', image: '/chimarrao.jpg' }]}
 				matchDelayMs={1}
 				onPlaySound={onPlaySound}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -101,7 +101,7 @@ describe('useMemoryGame', () => {
 					{ name: 'churrasco', image: '/churrasco.jpg' },
 				]}
 				matchDelayMs={1}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -116,7 +116,7 @@ describe('useMemoryGame', () => {
 			(button, index) =>
 				index !== 0 &&
 				button.getAttribute('data-name') ===
-					firstPairFirstCard.getAttribute('data-name')
+					firstPairFirstCard.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(firstPairFirstCard);
@@ -132,7 +132,7 @@ describe('useMemoryGame', () => {
 				(button) =>
 					button !== screen.getByText('restart') &&
 					button.getAttribute('data-name') !==
-						firstPairFirstCard.getAttribute('data-name')
+						firstPairFirstCard.getAttribute('data-name'),
 			);
 
 		fireEvent.click(remainingCards[0]!);
@@ -155,7 +155,7 @@ describe('useMemoryGame', () => {
 				]}
 				matchDelayMs={1}
 				onPlaySound={onPlaySound}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -169,7 +169,8 @@ describe('useMemoryGame', () => {
 		const matchingCard = cards.find(
 			(button, index) =>
 				index !== 0 &&
-				button.getAttribute('data-name') === firstCard.getAttribute('data-name')
+				button.getAttribute('data-name') ===
+					firstCard.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(firstCard);
@@ -195,7 +196,7 @@ describe('useMemoryGame', () => {
 				]}
 				matchDelayMs={1}
 				onPlaySound={onPlaySound}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -208,7 +209,8 @@ describe('useMemoryGame', () => {
 		const firstCard = cards[0]!;
 		const mismatchCard = cards.find(
 			(button) =>
-				button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
+				button.getAttribute('data-name') !==
+				firstCard.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(firstCard);
@@ -233,7 +235,7 @@ describe('useMemoryGame', () => {
 					{ name: 'cafe', image: '/cafe.jpg' },
 				]}
 				matchDelayMs={1}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -251,7 +253,7 @@ describe('useMemoryGame', () => {
 			(button, index) =>
 				index !== 0 &&
 				button.getAttribute('data-name') ===
-					firstMatchFirst.getAttribute('data-name')
+					firstMatchFirst.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(firstMatchFirst);
@@ -264,13 +266,13 @@ describe('useMemoryGame', () => {
 		const cardsAfterFirstMatch = gameCards().filter(
 			(button) =>
 				button.getAttribute('data-name') !==
-				firstMatchFirst.getAttribute('data-name')
+				firstMatchFirst.getAttribute('data-name'),
 		);
 		const mismatchFirst = cardsAfterFirstMatch[0]!;
 		const mismatchSecond = cardsAfterFirstMatch.find(
 			(button) =>
 				button.getAttribute('data-name') !==
-				mismatchFirst.getAttribute('data-name')
+				mismatchFirst.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(mismatchFirst);
@@ -283,14 +285,14 @@ describe('useMemoryGame', () => {
 		const cardsAfterMismatch = gameCards().filter(
 			(button) =>
 				button.getAttribute('data-name') !==
-				firstMatchFirst.getAttribute('data-name')
+				firstMatchFirst.getAttribute('data-name'),
 		);
 		const secondMatchFirst = cardsAfterMismatch[0]!;
 		const secondMatchSecond = cardsAfterMismatch.find(
 			(button, index) =>
 				index !== 0 &&
 				button.getAttribute('data-name') ===
-					secondMatchFirst.getAttribute('data-name')
+					secondMatchFirst.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(secondMatchFirst);
@@ -306,7 +308,7 @@ describe('useMemoryGame', () => {
 			<Harness
 				content={[{ name: 'chimarrao', image: '/chimarrao.jpg' }]}
 				matchDelayMs={1}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -325,7 +327,7 @@ describe('useMemoryGame', () => {
 			<Harness
 				content={[{ name: 'chimarrao', image: '/chimarrao.jpg' }]}
 				matchDelayMs={1}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -359,7 +361,7 @@ describe('useMemoryGame', () => {
 					{ name: 'churrasco', image: '/churrasco.jpg' },
 				]}
 				matchDelayMs={100}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -372,7 +374,8 @@ describe('useMemoryGame', () => {
 		const firstCard = cards[0]!;
 		const mismatchCard = cards.find(
 			(button) =>
-				button.getAttribute('data-name') !== firstCard.getAttribute('data-name')
+				button.getAttribute('data-name') !==
+				firstCard.getAttribute('data-name'),
 		)!;
 
 		fireEvent.click(firstCard);

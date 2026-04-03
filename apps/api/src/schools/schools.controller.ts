@@ -33,7 +33,10 @@ export class SchoolsController {
 
   @Get()
   @UseGuards(AdminRoleGuard)
-  @ApiOperation({ summary: 'Lista escolas', description: 'Retorna todas as escolas.' })
+  @ApiOperation({
+    summary: 'Lista escolas',
+    description: 'Retorna todas as escolas.',
+  })
   @ApiOkResponse({ type: [SchoolDto] })
   async getAll() {
     return this.schoolsService.getAll();
@@ -63,13 +66,17 @@ export class SchoolsController {
   @Get('me/users/ranking')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({
-    summary: 'Retorna ranking de usuarios da escola autenticada com filtro por jogo',
+    summary:
+      'Retorna ranking de usuarios da escola autenticada com filtro por jogo',
   })
   async getUserRankingFromMySchool(
     @Req() req,
     @Query('gameSlug') gameSlug?: string,
   ) {
-    return this.schoolsService.getUserRankingFromMySchool(req.user.uid, gameSlug);
+    return this.schoolsService.getUserRankingFromMySchool(
+      req.user.uid,
+      gameSlug,
+    );
   }
 
   @Get(':id/users/ranking')

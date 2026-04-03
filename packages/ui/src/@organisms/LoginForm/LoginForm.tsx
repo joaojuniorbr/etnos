@@ -50,35 +50,35 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
 	return (
 		<Spin spinning={isLoading}>
-			<div className='ui:flex ui:flex-col ui:justify-center ui:gap-6'>
-				<h1 className='ui:text-xl ui:uppercase ui:font-bold ui:text-center ui:text-primary'>
+			<div className="ui:flex ui:flex-col ui:justify-center ui:gap-6">
+				<h1 className="ui:text-xl ui:uppercase ui:font-bold ui:text-center ui:text-primary">
 					Acesse sua conta
 				</h1>
 
-				<Form layout='vertical' onFinish={onFinish} size='large' form={form}>
-					<Form.Item name='login' rules={[{ required: true }]} label='Email'>
-						<Input placeholder='Digite seu email' />
+				<Form layout="vertical" onFinish={onFinish} size="large" form={form}>
+					<Form.Item name="login" rules={[{ required: true }]} label="Email">
+						<Input placeholder="Digite seu email" />
 					</Form.Item>
 
-					<Form.Item name='password' rules={[{ required: true }]} label='Senha'>
-						<Input.Password placeholder='Digite sua senha' />
+					<Form.Item name="password" rules={[{ required: true }]} label="Senha">
+						<Input.Password placeholder="Digite sua senha" />
 					</Form.Item>
 
-					<div className='ui:pt-2 ui:text-right'>
+					<div className="ui:pt-2 ui:text-right">
 						<button
-							className='ui:text-xs ui:uppercase ui:font-bold ui:underline ui:cursor-pointer'
+							className="ui:text-xs ui:uppercase ui:font-bold ui:underline ui:cursor-pointer"
 							onClick={toggleModal}
-							type='button'
+							type="button"
 						>
 							Esqueci minha senha
 						</button>
 					</div>
 
-					<div className='ui:pt-8'>
+					<div className="ui:pt-8">
 						<Button
 							block
-							type='secondary'
-							htmlType='submit'
+							type="secondary"
+							htmlType="submit"
 							onClick={() => form.submit?.()}
 						>
 							ENTRAR
@@ -91,14 +91,14 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 				<button
 					onClick={onLoginWithGoogle}
 					className={styleButton}
-					aria-label='Entrar com Conta Google'
-					type='button'
+					aria-label="Entrar com Conta Google"
+					type="button"
 				>
-					<span className='ui:w-4'>
+					<span className="ui:w-4">
 						<img
-							src='/images/google-icon.svg'
-							alt='Google'
-							className='ui:w-4'
+							src="/images/google-icon.svg"
+							alt="Google"
+							className="ui:w-4"
 						/>
 					</span>
 					<span>ENTRAR COM GOOGLE</span>

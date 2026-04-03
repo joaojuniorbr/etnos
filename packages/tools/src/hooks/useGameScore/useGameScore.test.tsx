@@ -22,7 +22,7 @@ describe('useGameScore hook', () => {
 
 		const { result } = renderHook(
 			() => useGameScore('user123', 'memory-game', 'iara'),
-			{ wrapper: createWrapper() }
+			{ wrapper: createWrapper() },
 		);
 
 		await waitFor(() => {
@@ -32,7 +32,7 @@ describe('useGameScore hook', () => {
 		expect(scoreGamesService.getFromGameScore).toHaveBeenCalledWith(
 			'memory-game',
 			'iara',
-			'user123'
+			'user123',
 		);
 		expect(result.current.data).toEqual({ score: 100 });
 	});

@@ -30,20 +30,20 @@ describe('@atoms/CharacterCard', () => {
 
 	it('aplica classe ui:border-primary quando selected=true', () => {
 		const { container } = render(
-			<CharacterCard character={mockCharacter} selected />
+			<CharacterCard character={mockCharacter} selected />,
 		);
 		expect(container.firstChild).toHaveClass('ui:border-primary');
 	});
 
 	it('aplica classe ui:border-white quando selected=false', () => {
 		const { container } = render(
-			<CharacterCard character={mockCharacter} selected={false} />
+			<CharacterCard character={mockCharacter} selected={false} />,
 		);
 		expect(container.firstChild).toHaveClass('ui:border-white');
 	});
 
 	it('prop extra é repassada para o div', () => {
-		render(<CharacterCard character={mockCharacter} data-testid='card-test' />);
+		render(<CharacterCard character={mockCharacter} data-testid="card-test" />);
 		expect(screen.getByTestId('card-test')).toBeInTheDocument();
 	});
 });

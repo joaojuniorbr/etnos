@@ -101,10 +101,10 @@ describe('useGames hook', () => {
 			'memory-game',
 			'iara',
 			200,
-			'user123'
+			'user123',
 		);
 		expect(message.success).toHaveBeenCalledWith(
-			'Pontuação salva com sucesso!'
+			'Pontuação salva com sucesso!',
 		);
 	});
 
@@ -121,10 +121,10 @@ describe('useGames hook', () => {
 			'memory-game',
 			'iara',
 			200,
-			'user123'
+			'user123',
 		);
 		expect(message.success).not.toHaveBeenCalledWith(
-			'Pontuação salva com sucesso!'
+			'Pontuação salva com sucesso!',
 		);
 	});
 
@@ -140,7 +140,7 @@ describe('useGames hook', () => {
 
 	it('deve mostrar erro ao falhar salvar pontuação', async () => {
 		(scoreGamesService.saveScore as any).mockRejectedValueOnce(
-			new Error('fail')
+			new Error('fail'),
 		);
 
 		const { result } = renderHook(() => useGames('user123'));

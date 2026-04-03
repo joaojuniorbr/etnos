@@ -4,6 +4,9 @@ export class DeleteMidiaDto {
   @ApiProperty({ example: 'midia-id-1', required: false })
   id?: string;
 
-  @ApiProperty({ example: 'https://storage.googleapis.com/...', required: false })
+  @ApiProperty({
+    example: 'https://storage.googleapis.com/...',
+    required: false,
+  })
   url?: string;
 }

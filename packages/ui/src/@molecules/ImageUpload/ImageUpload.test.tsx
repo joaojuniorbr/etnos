@@ -18,7 +18,7 @@ vi.mock('antd', async () => {
 			error: vi.fn(),
 		},
 		Image: ({ src }: { src: string }) => (
-			<img data-testid='uploaded-image' src={src} />
+			<img data-testid="uploaded-image" src={src} />
 		),
 		Upload: ({
 			beforeUpload,
@@ -28,7 +28,7 @@ vi.mock('antd', async () => {
 			children: React.ReactNode;
 		}) => (
 			<div
-				data-testid='upload'
+				data-testid="upload"
 				onClick={() =>
 					beforeUpload(new File(['dummy'], 'image.png', { type: 'image/png' }))
 				}
@@ -43,7 +43,7 @@ vi.mock('antd', async () => {
 			spinning: boolean;
 			children: React.ReactNode;
 		}) => (
-			<div data-testid='spin' data-spinning={spinning}>
+			<div data-testid="spin" data-spinning={spinning}>
 				{children}
 			</div>
 		),
@@ -68,7 +68,7 @@ describe('<ImageUpload />', () => {
 
 	it('renderiza imagem quando defaultImage é passada', () => {
 		render(
-			<ImageUpload userId={userId} defaultImage='http://image.com/test.png' />
+			<ImageUpload userId={userId} defaultImage="http://image.com/test.png" />,
 		);
 
 		const image = screen.getByTestId('uploaded-image');
@@ -83,7 +83,7 @@ describe('<ImageUpload />', () => {
 		});
 
 		render(
-			<ImageUpload userId={userId} folder='avatars' onUpload={onUpload} />
+			<ImageUpload userId={userId} folder="avatars" onUpload={onUpload} />,
 		);
 
 		fireEvent.click(screen.getByTestId('upload'));
@@ -92,7 +92,7 @@ describe('<ImageUpload />', () => {
 			expect(midiaService.uploadImage).toHaveBeenCalledWith(
 				expect.any(File),
 				'avatars',
-				userId
+				userId,
 			);
 		});
 
@@ -106,7 +106,7 @@ describe('<ImageUpload />', () => {
 
 	it('trata erro no upload e exibe mensagem de erro', async () => {
 		vi.mocked(midiaService.uploadImage).mockRejectedValueOnce(
-			new Error('Upload error')
+			new Error('Upload error'),
 		);
 
 		render(<ImageUpload userId={userId} />);

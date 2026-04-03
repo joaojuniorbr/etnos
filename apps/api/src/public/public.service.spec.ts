@@ -56,11 +56,15 @@ describe('PublicService', () => {
   });
 
   it('should throw when phone is not a string', () => {
-    expect(() => service.sendContactEmail(undefined)).toThrow(BadRequestException);
+    expect(() => service.sendContactEmail(undefined)).toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw when normalized phone has less than 10 digits', () => {
-    expect(() => service.sendContactEmail('12345')).toThrow(BadRequestException);
+    expect(() => service.sendContactEmail('12345')).toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw when normalized phone has more than 11 digits', () => {

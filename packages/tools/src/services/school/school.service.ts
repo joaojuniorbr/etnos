@@ -57,7 +57,7 @@ export const schoolService = {
 
 	getUsersRankingBySchool(
 		schoolId: string,
-		gameSlug?: string
+		gameSlug?: string,
 	): Promise<UserRankingInterface[]> {
 		return api
 			.get(`/schools/${schoolId}/users/ranking`, {

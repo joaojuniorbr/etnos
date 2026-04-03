@@ -16,18 +16,24 @@ describe('SchoolsController', () => {
     update: jest.fn().mockResolvedValue({ id: '1', name: 'IFPR Atualizado' }),
     delete: jest.fn().mockResolvedValue(true),
     getMySchool: jest.fn().mockResolvedValue({ id: '1', name: 'IFPR' }),
-    getUsersFromMySchool: jest.fn().mockResolvedValue([
-      { uid: 'user-1', childName: 'Aluno 1' },
-    ]),
-    getSchoolRanking: jest.fn().mockResolvedValue([
-      { position: 1, schoolId: '1', schoolName: 'IFPR', totalScore: 100 },
-    ]),
-    getUserRankingFromMySchool: jest.fn().mockResolvedValue([
-      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
-    ]),
-    getUserRankingBySchoolForAdmin: jest.fn().mockResolvedValue([
-      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
-    ]),
+    getUsersFromMySchool: jest
+      .fn()
+      .mockResolvedValue([{ uid: 'user-1', childName: 'Aluno 1' }]),
+    getSchoolRanking: jest
+      .fn()
+      .mockResolvedValue([
+        { position: 1, schoolId: '1', schoolName: 'IFPR', totalScore: 100 },
+      ]),
+    getUserRankingFromMySchool: jest
+      .fn()
+      .mockResolvedValue([
+        { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+      ]),
+    getUserRankingBySchoolForAdmin: jest
+      .fn()
+      .mockResolvedValue([
+        { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+      ]),
   };
 
   beforeEach(async () => {

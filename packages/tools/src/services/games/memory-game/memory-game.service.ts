@@ -14,9 +14,9 @@ export const memoryGameContentService = {
 		return api.delete(`/games/memory/${id}`).then((res) => res.data);
 	},
 
-	getMemoryGameImages(characterSlug: string): Promise<
-		{ name: string; image: string; id: string }[]
-	> {
+	getMemoryGameImages(
+		characterSlug: string,
+	): Promise<{ name: string; image: string; id: string }[]> {
 		return api
 			.get(`/games/memory/images/${characterSlug}`)
 			.then((res) => res.data);

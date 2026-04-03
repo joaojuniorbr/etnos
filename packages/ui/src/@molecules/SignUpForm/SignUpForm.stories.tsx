@@ -8,7 +8,7 @@ const meta: Meta<typeof SignUpForm> = {
 	tags: ['autodocs'],
 	decorators: [
 		(Story) => (
-			<div className='ui:w-full ui:max-w-2xl ui:border ui:border-slate-200 ui:p-10 ui:shadow-lg ui:rounded-lg ui:bg-white ui:mx-auto'>
+			<div className="ui:w-full ui:max-w-2xl ui:border ui:border-slate-200 ui:p-10 ui:shadow-lg ui:rounded-lg ui:bg-white ui:mx-auto">
 				<Story />
 			</div>
 		),

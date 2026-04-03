@@ -20,7 +20,7 @@ describe('Footer', () => {
 		render(<Footer />);
 		const year = new Date().getFullYear();
 		const text = screen.getByText(
-			new RegExp(`Etnos © ${year}\\. Todos os Direitos Reservados`, 'i')
+			new RegExp(`Etnos © ${year}\\. Todos os Direitos Reservados`, 'i'),
 		);
 		expect(text).toBeInTheDocument();
 	});

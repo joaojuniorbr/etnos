@@ -47,26 +47,25 @@ export const SignUpForm = ({
 
 	return (
 		<Spin spinning={isLoading || isLoadingSchools}>
-			<div className='ui:flex ui:flex-col ui:justify-center ui:gap-6'>
-				<h1 className='ui:text-xl ui:uppercase ui:font-bold ui:text-primary'>
+			<div className="ui:flex ui:flex-col ui:justify-center ui:gap-6">
+				<h1 className="ui:text-xl ui:uppercase ui:font-bold ui:text-primary">
 					Cadastre-se para começar a jogar
 				</h1>
 
-				<p className='ui:text-slate-600 ui:text-sm ui:md:text-base'>
-					Participe gratuitamente do Etnos e tenha acesso a jogos educativos
-					que valorizam a diversidade cultural e promovem o respeito às
-					diferenças.
+				<p className="ui:text-slate-600 ui:text-sm ui:md:text-base">
+					Participe gratuitamente do Etnos e tenha acesso a jogos educativos que
+					valorizam a diversidade cultural e promovem o respeito às diferenças.
 				</p>
 
 				<Form
 					form={form}
-					layout='vertical'
+					layout="vertical"
 					onFinish={onFinish}
 					disabled={isLoading || isLoadingSchools}
 				>
-					<Form.Item name='school' label='Escola'>
+					<Form.Item name="school" label="Escola">
 						<Select
-							placeholder='Selecione a escola'
+							placeholder="Selecione a escola"
 							options={schools?.map((school) => ({
 								value: school.id,
 								label: school.name,
@@ -77,30 +76,30 @@ export const SignUpForm = ({
 					<Divider />
 
 					<Form.Item
-						name='parentName'
+						name="parentName"
 						rules={[{ required: true }]}
-						label='Nome Pai/Mãe'
+						label="Nome Pai/Mãe"
 					>
-						<Input placeholder='Digite o nome completo' />
+						<Input placeholder="Digite o nome completo" />
 					</Form.Item>
 
 					<Form.Item
-						name='parentEmail'
+						name="parentEmail"
 						rules={[{ required: true }]}
-						label='Email Pai/Mãe'
+						label="Email Pai/Mãe"
 					>
-						<Input placeholder='Digite o email' />
+						<Input placeholder="Digite o email" />
 					</Form.Item>
 
-					<Form.Item name='parentPhone' label='Telefone Pai/Mãe'>
+					<Form.Item name="parentPhone" label="Telefone Pai/Mãe">
 						<Input
-							type='tel'
+							type="tel"
 							maxLength={15}
-							placeholder='Digite o telefone'
+							placeholder="Digite o telefone"
 							onChange={(event) => {
 								form.setFieldValue(
 									'parentPhone',
-									formatPhoneBR(event.target.value)
+									formatPhoneBR(event.target.value),
 								);
 							}}
 						/>
@@ -109,35 +108,35 @@ export const SignUpForm = ({
 					<Divider />
 
 					<Form.Item
-						name='childName'
+						name="childName"
 						rules={[{ required: true }]}
-						label='Nome da Criança'
+						label="Nome da Criança"
 					>
-						<Input placeholder='Digite o nome da criança' />
+						<Input placeholder="Digite o nome da criança" />
 					</Form.Item>
 
 					<Form.Item
-						name='childBirthDate'
-						label='Data de Nascimento da Criança'
+						name="childBirthDate"
+						label="Data de Nascimento da Criança"
 						rules={[{ required: true }]}
 					>
-						<DatePicker format='DD/MM/YYYY' className='ui:w-full' />
+						<DatePicker format="DD/MM/YYYY" className="ui:w-full" />
 					</Form.Item>
 
 					<Divider />
 
-					<div className='ui:grid ui:grid-cols-1 ui:md:grid-cols-2 ui:md:gap-4 ui:w-full'>
+					<div className="ui:grid ui:grid-cols-1 ui:md:grid-cols-2 ui:md:gap-4 ui:w-full">
 						<Form.Item
-							name='password'
+							name="password"
 							rules={[{ required: true }]}
-							label='Senha'
-							className='ui:w-full'
+							label="Senha"
+							className="ui:w-full"
 						>
-							<Input.Password placeholder='Digite sua senha' />
+							<Input.Password placeholder="Digite sua senha" />
 						</Form.Item>
 
 						<Form.Item
-							name='confirmPassword'
+							name="confirmPassword"
 							dependencies={['password']}
 							rules={[
 								{ required: true },
@@ -147,24 +146,22 @@ export const SignUpForm = ({
 											return Promise.resolve();
 										}
 
-										return Promise.reject(
-											new Error('As senhas não coincidem')
-										);
+										return Promise.reject(new Error('As senhas não coincidem'));
 									},
 								}),
 							]}
-							label='Confirmar Senha'
-							className='ui:w-full'
+							label="Confirmar Senha"
+							className="ui:w-full"
 						>
-							<Input.Password placeholder='Digite sua senha' />
+							<Input.Password placeholder="Digite sua senha" />
 						</Form.Item>
 					</div>
 
-					<div className='ui:pt-4'>
+					<div className="ui:pt-4">
 						<Button
 							block
-							type='secondary'
-							htmlType='submit'
+							type="secondary"
+							htmlType="submit"
 							disabled={isLoading || isLoadingSchools}
 						>
 							CADASTRAR

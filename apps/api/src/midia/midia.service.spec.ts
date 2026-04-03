@@ -78,7 +78,9 @@ describe('MidiaService', () => {
   });
 
   it('deve extrair path da URL sem /o/', () => {
-    const path = service.getPathFromUrl('https://storage.googleapis.com/folder/img.png');
+    const path = service.getPathFromUrl(
+      'https://storage.googleapis.com/folder/img.png',
+    );
 
     expect(path).toEqual('folder/img.png');
   });
@@ -191,7 +193,9 @@ describe('MidiaService', () => {
   });
 
   it('deve listar todas as mídias quando userId não for informado', async () => {
-    mockPrismaService.midia.findMany.mockResolvedValue([{ id: '1', url: 'u1' }]);
+    mockPrismaService.midia.findMany.mockResolvedValue([
+      { id: '1', url: 'u1' },
+    ]);
     mockPrismaService.midia.count.mockResolvedValue(1);
 
     const result = await service.getMidia(undefined, 10, 1);
@@ -383,7 +387,9 @@ describe('MidiaService', () => {
       userId: 'user-1',
     });
 
-    const deleteSpy = jest.spyOn(service, 'deleteMidia').mockResolvedValueOnce(true);
+    const deleteSpy = jest
+      .spyOn(service, 'deleteMidia')
+      .mockResolvedValueOnce(true);
 
     const result = await service.deleteMidiaById('id-1', 'user-1');
 

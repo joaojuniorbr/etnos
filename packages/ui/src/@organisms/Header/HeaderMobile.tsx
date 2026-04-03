@@ -45,12 +45,12 @@ export const HeaderMobile = () => {
 			/>
 
 			<Modal
-				title='Selecione um personagem'
+				title="Selecione um personagem"
 				open={openCharacter}
 				footer={null}
 				onCancel={toggleCharacter}
 			>
-				<div className='ui:flex ui:flex-col ui:gap-2'>
+				<div className="ui:flex ui:flex-col ui:gap-2">
 					{data?.map((character: CharacterInterface) => (
 						<button
 							key={character.slug}
@@ -61,7 +61,7 @@ export const HeaderMobile = () => {
 							onClick={() => handleCharacter(character.slug)}
 							aria-label={`Selecionar Personagem: ${character.name}`}
 						>
-							<div className='ui:w-26'>
+							<div className="ui:w-26">
 								<Image
 									src={
 										character.imageUrl ||
@@ -71,11 +71,11 @@ export const HeaderMobile = () => {
 									preview={false}
 								/>
 							</div>
-							<div className='ui:flex ui:flex-col'>
-								<div className='ui:text-sm ui:font-bold ui:text-primary ui:uppercase'>
+							<div className="ui:flex ui:flex-col">
+								<div className="ui:text-sm ui:font-bold ui:text-primary ui:uppercase">
 									{character.name}
 								</div>
-								<div className='ui:text-xs'>{character.description}</div>
+								<div className="ui:text-xs">{character.description}</div>
 							</div>
 						</button>
 					))}

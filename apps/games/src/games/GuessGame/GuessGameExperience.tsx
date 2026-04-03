@@ -43,7 +43,7 @@ type GuessGameExperienceProps = {
 	onSaveScore?: (score: number) => Promise<void> | void;
 	onSaveScoreHistory?: (score: number) => Promise<void> | void;
 	onValidateAttempt: (
-		payload: GuessGameValidationPayloadInterface
+		payload: GuessGameValidationPayloadInterface,
 	) => Promise<GuessGameValidationResultInterface>;
 };
 
@@ -89,7 +89,7 @@ export const GuessGameExperience = ({
 	const handleSolved = (
 		result: GuessGameValidationResultInterface,
 		total: number,
-		currentGuesses: string
+		currentGuesses: string,
 	) => {
 		const revealed = getGuessGameRevealedLettersCount(currentGuesses);
 		const solvePoints = getGuessGameWordSolvePoints(total, revealed);
@@ -212,36 +212,36 @@ export const GuessGameExperience = ({
 
 	return (
 		<Spin spinning={isLoading || isValidating || isSavingScore}>
-			<h1 className='text-2xl mb-4 font-bold uppercase text-primary text-center'>
+			<h1 className="text-2xl mb-4 font-bold uppercase text-primary text-center">
 				Jogo Adivinhe a Palavra
 			</h1>
 
 			<Divider />
 
-			<div className='grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full'>
+			<div className="grid grid-cols-2 gap-2 md:grid-cols-4 sm:gap-4 w-full">
 				<ScoreHighlight
 					icon={<RiTrophyLine />}
-					label='Pontuação'
+					label="Pontuação"
 					score={score}
-					className='border-primary text-primary bg-white'
+					className="border-primary text-primary bg-white"
 				/>
 				<ScoreHighlight
 					icon={<RiInformationLine />}
-					label='Dicas'
+					label="Dicas"
 					score={(content?.tips.length ?? 0) - countTips}
-					className='border-blue-800 text-blue-800 bg-white'
+					className="border-blue-800 text-blue-800 bg-white"
 				/>
 				<ScoreHighlight
 					icon={<RiCheckDoubleLine />}
-					label='Tentativas'
+					label="Tentativas"
 					score={TOTAL_GUESS - countGuess}
-					className='border-green-800 text-green-800 bg-white'
+					className="border-green-800 text-green-800 bg-white"
 				/>
 				<ScoreHighlight
 					icon={<RiStarFill />}
-					label='Recorde'
+					label="Recorde"
 					score={bestScore}
-					className='bg-primary text-white'
+					className="bg-primary text-white"
 				/>
 			</div>
 
@@ -249,18 +249,18 @@ export const GuessGameExperience = ({
 
 			{isFinished ? (
 				<>
-					<div className='text-xl uppercase text-center mb-10 flex items-center justify-center gap-2'>
-						<span className='pr-2'>A palavra correta é:</span>
-						<span className='text-primary underline text-2xl font-bold'>
+					<div className="text-xl uppercase text-center mb-10 flex items-center justify-center gap-2">
+						<span className="pr-2">A palavra correta é:</span>
+						<span className="text-primary underline text-2xl font-bold">
 							{solvedWord}
 						</span>
 					</div>
 					{solvedDescription ? (
-						<div className='mb-8 rounded border border-slate-200 bg-white p-4 text-left'>
-							<h2 className='mb-2 text-lg font-bold text-primary'>
+						<div className="mb-8 rounded border border-slate-200 bg-white p-4 text-left">
+							<h2 className="mb-2 text-lg font-bold text-primary">
 								O que e isso?
 							</h2>
-							<p className='leading-relaxed text-slate-700'>
+							<p className="leading-relaxed text-slate-700">
 								{solvedDescription}
 							</p>
 						</div>
@@ -275,15 +275,15 @@ export const GuessGameExperience = ({
 				</>
 			) : (
 				<>
-					<dl className='mb-4'>
-						<dt className='font-bold uppercase text-lg mb-1'>Dicas</dt>
+					<dl className="mb-4">
+						<dt className="font-bold uppercase text-lg mb-1">Dicas</dt>
 						<dd>
 							<ul>
 								{content?.tips.map((tip, index) => (
 									<li key={tip}>
 										{countTips > index ? (
-											<div className='flex gap-1 items-center text-sm'>
-												<span className='text-orange-400 text-xl'>
+											<div className="flex gap-1 items-center text-sm">
+												<span className="text-orange-400 text-xl">
 													<RiInformationLine />
 												</span>
 												{tip}
@@ -296,7 +296,7 @@ export const GuessGameExperience = ({
 					</dl>
 
 					<Button
-						type='primary'
+						type="primary"
 						icon={<RiInformationLine />}
 						onClick={getTips}
 						disabled={!!content && countTips >= content.tips.length}
@@ -307,7 +307,7 @@ export const GuessGameExperience = ({
 					<Divider />
 
 					{content?.imageUrl ? (
-						<div className='mb-6 flex justify-center'>
+						<div className="mb-6 flex justify-center">
 							<Image
 								src={content.imageUrl}
 								alt={content.title}
@@ -317,25 +317,25 @@ export const GuessGameExperience = ({
 						</div>
 					) : null}
 
-					<div className='text-center'>
+					<div className="text-center">
 						<InputOtp
 							disabled
 							length={content?.wordLength ?? 0}
-							size='large'
+							size="large"
 							value={displayedGuesses}
 						/>
 					</div>
 
 					<Divider />
 
-					<div className='flex gap-2 items-center justify-center'>
-						<span className='font-bold text-xl uppercase'>
+					<div className="flex gap-2 items-center justify-center">
+						<span className="font-bold text-xl uppercase">
 							Escolha uma letra
 						</span>
 						<InputOtp
 							formatter={(str) => str.toUpperCase()}
 							length={1}
-							size='large'
+							size="large"
 							onChange={(value) => {
 								void checkGuess(value);
 							}}
@@ -344,17 +344,17 @@ export const GuessGameExperience = ({
 
 					<Divider />
 
-					<div className='text-center flex flex-col gap-2 justify-center items-center'>
+					<div className="text-center flex flex-col gap-2 justify-center items-center">
 						<InputOtp
 							formatter={(str) => str.toUpperCase()}
 							length={content?.wordLength ?? 0}
-							size='large'
+							size="large"
 							value={attempt}
 							onChange={setAttempt}
 						/>
 
 						<Button
-							type='primary'
+							type="primary"
 							onClick={() => {
 								void checkWord();
 							}}

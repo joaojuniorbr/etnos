@@ -18,7 +18,7 @@ describe('UserContext', () => {
 		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 		expect(() => renderHook(() => useUser())).toThrow(
-			'useUser deve ser usado dentro de um UserProvider'
+			'useUser deve ser usado dentro de um UserProvider',
 		);
 
 		consoleSpy.mockRestore();
@@ -45,8 +45,8 @@ describe('UserContext', () => {
 			const { user, isLoading } = useUser();
 			return (
 				<div>
-					<span data-testid='user-id'>{user?.uid}</span>
-					<span data-testid='loading'>{isLoading.toString()}</span>
+					<span data-testid="user-id">{user?.uid}</span>
+					<span data-testid="loading">{isLoading.toString()}</span>
 				</div>
 			);
 		};
@@ -54,7 +54,7 @@ describe('UserContext', () => {
 		render(
 			<UserProvider>
 				<TestComponent />
-			</UserProvider>
+			</UserProvider>,
 		);
 
 		expect(screen.getByTestId('user-id').textContent).toBe('123');

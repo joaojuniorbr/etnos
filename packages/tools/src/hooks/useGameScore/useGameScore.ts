@@ -6,7 +6,7 @@ import { scoreGamesService } from '../../services';
 export const useGameScore = (
 	userId: string,
 	slug: string,
-	characterSlug: string
+	characterSlug: string,
 ) =>
 	useQuery({
 		queryKey: ['games', 'score', slug, userId],

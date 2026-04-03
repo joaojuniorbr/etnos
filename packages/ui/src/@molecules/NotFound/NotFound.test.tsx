@@ -37,22 +37,22 @@ describe('NotFound', () => {
 		const { container } = render(
 			<UserProvider>
 				<NotFound />
-			</UserProvider>
+			</UserProvider>,
 		);
 
 		expect(screen.getByAltText('Página não encontrada')).toHaveAttribute(
 			'src',
-			'/images/404.png'
+			'/images/404.png',
 		);
 		expect(container.firstChild).toHaveClass(
 			'ui:flex',
 			'ui:flex-1',
 			'ui:items-center',
-			'ui:justify-center'
+			'ui:justify-center',
 		);
 		expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute(
 			'href',
-			'/login'
+			'/login',
 		);
 	});
 
@@ -74,12 +74,12 @@ describe('NotFound', () => {
 		render(
 			<UserProvider>
 				<NotFound />
-			</UserProvider>
+			</UserProvider>,
 		);
 
 		expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute(
 			'href',
-			'/estudante'
+			'/estudante',
 		);
 	});
 });

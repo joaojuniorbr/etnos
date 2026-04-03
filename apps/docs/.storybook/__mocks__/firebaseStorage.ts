@@ -33,7 +33,7 @@ const mockUploadSnapshot = (ref: any) => ({
 /** Simula a Tarefa de Upload (UploadTask) que retorna um Snapshot */
 export const uploadBytes = async (ref: any, file: any) => {
 	console.log(
-		`[MOCK] Fazendo upload de ${ref.fullPath}. Tamanho: ${file?.size || (file as any).length} bytes`
+		`[MOCK] Fazendo upload de ${ref.fullPath}. Tamanho: ${file?.size || (file as any).length} bytes`,
 	);
 
 	// Retorna o Snapshot simulado
@@ -61,11 +61,11 @@ export const deleteObject = async (ref: any) => {
 export const uploadBytesResumable = (
 	ref: any,
 	file: File | Blob | Uint8Array,
-	metadata?: any
+	metadata?: any,
 ) => {
 	console.log(
 		`[MOCK] Upload Resumable de ${ref.fullPath} com metadados:`,
-		metadata
+		metadata,
 	);
 
 	// Retorna um objeto UploadTask simulado com métodos on() e pause()
@@ -74,7 +74,7 @@ export const uploadBytesResumable = (
 			state: string,
 			next: (snapshot: any) => void,
 			error: (e: any) => void,
-			complete: () => void
+			complete: () => void,
 		) => {
 			// Simula o estado completo imediatamente
 			setTimeout(() => complete(), 10);

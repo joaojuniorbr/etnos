@@ -24,33 +24,33 @@ export const ResetPasswordForm = ({ onSubmit }: ResetPasswordFormProps) => {
 			},
 			onError: () => {
 				message.error(
-					'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.'
+					'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.',
 				);
 			},
 		});
 	};
 
 	return (
-		<div className='ui:py-2'>
-			<h2 className='ui:text-xl ui:font-black ui:uppercase'>Recuperar senha</h2>
-			<p className='ui:text-base ui:mb-8 ui:mt-3'>
+		<div className="ui:py-2">
+			<h2 className="ui:text-xl ui:font-black ui:uppercase">Recuperar senha</h2>
+			<p className="ui:text-base ui:mb-8 ui:mt-3">
 				Insira o e-mail para recuperar a sua senha. Se você não receber o
 				e-mail, verifique sua caixa de spam.
 			</p>
 
 			<Form
-				layout='vertical'
-				size='large'
+				layout="vertical"
+				size="large"
 				form={form}
 				onFinish={onFinish}
 				disabled={isPending}
 			>
-				<Form.Item name='email' rules={[{ required: true }, { type: 'email' }]}>
-					<Input placeholder='Email' type='email' />
+				<Form.Item name="email" rules={[{ required: true }, { type: 'email' }]}>
+					<Input placeholder="Email" type="email" />
 				</Form.Item>
 
 				<Form.Item>
-					<Button htmlType='submit' block type='secondary' loading={isPending}>
+					<Button htmlType="submit" block type="secondary" loading={isPending}>
 						ENVIAR
 					</Button>
 				</Form.Item>

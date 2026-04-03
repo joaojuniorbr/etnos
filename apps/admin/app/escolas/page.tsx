@@ -107,7 +107,7 @@ export default function EscolasPage() {
 			queryFn: () =>
 				schoolService.getUsersRankingBySchool(
 					effectiveSelectedSchoolId as string,
-					selectedGameSlug
+					selectedGameSlug,
 				),
 			enabled: isAdmin && !!effectiveSelectedSchoolId,
 		});
@@ -203,7 +203,7 @@ export default function EscolasPage() {
 	if (isSchoolProfile) {
 		return (
 			<Spin spinning={isLoading}>
-				<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+				<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 					<Breadcrumb
 						items={[
 							{ title: 'Home', href: '/' },
@@ -217,13 +217,13 @@ export default function EscolasPage() {
 						]}
 					/>
 
-					<Title className='mb-4 mt-6'>Minha Escola</Title>
-					<p className='text-slate-600 mb-6'>
+					<Title className="mb-4 mt-6">Minha Escola</Title>
+					<p className="text-slate-600 mb-6">
 						Consulte os dados da sua escola, veja os usuários vinculados e
 						acompanhe o ranking por jogo.
 					</p>
 
-					<div className='grid gap-6'>
+					<div className="grid gap-6">
 						<SchoolData school={mySchool} />
 						<SchoolUsers
 							users={schoolUsers}
@@ -246,7 +246,7 @@ export default function EscolasPage() {
 
 	return (
 		<Spin spinning={isLoading}>
-			<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+			<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 				<Breadcrumb
 					items={[
 						{ title: 'Home', href: '/' },
@@ -260,7 +260,7 @@ export default function EscolasPage() {
 					]}
 				/>
 
-				<Title className='mb-4 mt-6'>Escolas</Title>
+				<Title className="mb-4 mt-6">Escolas</Title>
 
 				<Table
 					columns={[
@@ -305,28 +305,28 @@ export default function EscolasPage() {
 					]}
 					dataSource={schools}
 					pagination={false}
-					rowKey='id'
+					rowKey="id"
 				/>
 
-				<div className='mt-8'>
-					<div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4'>
+				<div className="mt-8">
+					<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 						<div>
-							<Title className='mb-1'>Ranking de usuários por escola</Title>
-							<p className='text-slate-600 text-sm'>
+							<Title className="mb-1">Ranking de usuários por escola</Title>
+							<p className="text-slate-600 text-sm">
 								Selecione uma escola para acompanhar a pontuação dos usuários
 								vinculados a ela.
 							</p>
 						</div>
 
 						<Select
-							placeholder='Selecione uma escola'
+							placeholder="Selecione uma escola"
 							value={effectiveSelectedSchoolId}
 							onChange={setSelectedSchoolId}
 							options={schools.map((school) => ({
 								value: school.id,
 								label: school.name,
 							}))}
-							className='w-full md:max-w-sm'
+							className="w-full md:max-w-sm"
 						/>
 					</div>
 
@@ -339,31 +339,31 @@ export default function EscolasPage() {
 				</div>
 
 				<FloatButton
-					type='primary'
+					type="primary"
 					icon={<PlusOutlined />}
 					onClick={toggleDrawer}
 				/>
 
 				<Drawer
 					open={open}
-					title='Adicionar Escola'
+					title="Adicionar Escola"
 					onClose={toggleDrawer}
 					destroyOnHidden
 				>
-					<Form layout='vertical' form={form} onFinish={handleCreateFinish}>
-						<Form.Item name='name' label='Nome'>
+					<Form layout="vertical" form={form} onFinish={handleCreateFinish}>
+						<Form.Item name="name" label="Nome">
 							<Input />
 						</Form.Item>
 
-						<Form.Item name='city' label='Cidade'>
+						<Form.Item name="city" label="Cidade">
 							<Input />
 						</Form.Item>
 
-						<Form.Item name='state' label='Estado'>
+						<Form.Item name="state" label="Estado">
 							<Input />
 						</Form.Item>
 
-						<Button type='primary' htmlType='submit' block>
+						<Button type="primary" htmlType="submit" block>
 							Salvar
 						</Button>
 					</Form>

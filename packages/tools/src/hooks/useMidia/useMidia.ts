@@ -8,7 +8,7 @@ export const useMidia = (
 	userId?: string,
 	limit = 10,
 	folder?: string,
-	showAll = false
+	showAll = false,
 ) => {
 	const infiniteQuery = useInfiniteQuery({
 		queryKey: ['midia', userId, limit, folder, showAll],

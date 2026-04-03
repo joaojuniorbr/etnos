@@ -1,5 +1,5 @@
 import { Breadcrumb } from 'antd';
-import { ProfilePage } from '../../components/@pages';
+import { ProfilePage } from '@/components/@pages';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
 	return (
-		<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+		<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 			<Breadcrumb
 				items={[
 					{ title: 'Home', href: '/' },

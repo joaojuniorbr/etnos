@@ -50,7 +50,7 @@ vi.mock('../../@molecules', () => {
 			onUpload: (urls: string[]) => void;
 		}) => (
 			<button
-				data-testid='mock-upload'
+				data-testid="mock-upload"
 				onClick={() => onUpload?.(['http://image.com/uploaded.png'])}
 			>
 				Mock Upload
@@ -77,7 +77,7 @@ describe('<ImageLibrary />', () => {
 				user={userMock}
 				onSelect={onSelectMock}
 				itemsSelected={['http://image/1.png']}
-			/>
+			/>,
 		);
 
 		const image = screen.getByAltText('http://image/1.png');
@@ -131,8 +131,6 @@ describe('<ImageLibrary />', () => {
 		await user.click(option);
 
 		await waitFor(() => {
-
-		
 			const select = screen.getByTestId('select-folder');
 
 			const value = select.querySelector('.ant-select-content-has-value');

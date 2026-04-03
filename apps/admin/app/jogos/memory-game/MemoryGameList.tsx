@@ -31,7 +31,7 @@ export const MemoryGameList = () => {
 	const { user } = useUser();
 
 	const { data: gamesConfig, refetch: refetchGamesConfig } = useGamesConfig(
-		GamesEnum.MEMORY_GAME
+		GamesEnum.MEMORY_GAME,
 	);
 
 	const { getContent, saveContent, deleteContent } = memoryGameContentService;
@@ -41,7 +41,7 @@ export const MemoryGameList = () => {
 	const refetch = (item?: CharacterInterface) => {
 		if (character || item) {
 			getContent((character || item)!.slug).then((content) =>
-				setContentEdit(content)
+				setContentEdit(content),
 			);
 		}
 	};
@@ -79,7 +79,7 @@ export const MemoryGameList = () => {
 
 	const imageCoverUrl = (characterSlug: string) => {
 		const config = gamesConfig?.find(
-			(item: ConfigGamesInterface) => item.characterSlug === characterSlug
+			(item: ConfigGamesInterface) => item.characterSlug === characterSlug,
 		);
 		return config?.imageCoverUrl;
 	};
@@ -98,11 +98,11 @@ export const MemoryGameList = () => {
 
 	return (
 		<Spin spinning={isLoading}>
-			<Title className='mb-4 mt-6'>Jogo da Memória</Title>
+			<Title className="mb-4 mt-6">Jogo da Memória</Title>
 
-			<div className='border border-slate-200 border-b-0'>
+			<div className="border border-slate-200 border-b-0">
 				<Table
-					rowKey='id'
+					rowKey="id"
 					pagination={false}
 					columns={[
 						{
@@ -115,7 +115,7 @@ export const MemoryGameList = () => {
 									width={100}
 									height={100}
 									onClick={() => openEditImageCover(item)}
-									className='border border-slate-200'
+									className="border border-slate-200"
 								/>
 							),
 						},
@@ -126,7 +126,7 @@ export const MemoryGameList = () => {
 						{
 							width: 100,
 							render: (item) => (
-								<Button type='primary' onClick={() => openEdit(item)}>
+								<Button type="primary" onClick={() => openEdit(item)}>
 									Editar Conteúdo
 								</Button>
 							),
@@ -143,18 +143,18 @@ export const MemoryGameList = () => {
 				footer={null}
 				destroyOnHidden
 			>
-				<Button type='primary' onClick={toggleOpenLibrary}>
+				<Button type="primary" onClick={toggleOpenLibrary}>
 					Selecionar Imagens
 				</Button>
 
-				<div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-5'>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-5">
 					{contentEdit?.map((item) => (
 						<div
 							key={item.id}
-							className='border border-slate-200 relative rounded overflow-hidden'
+							className="border border-slate-200 relative rounded overflow-hidden"
 						>
 							<button
-								className='absolute top-0 right-0 text-xl cursor-pointer'
+								className="absolute top-0 right-0 text-xl cursor-pointer"
 								onClick={() => onDeleteContent(item)}
 							>
 								<RiCloseLine />
@@ -166,9 +166,9 @@ export const MemoryGameList = () => {
 			</Modal>
 
 			<Drawer
-				size='large'
+				size="large"
 				open={!!characterEdit}
-				placement='bottom'
+				placement="bottom"
 				title={`Selecione uma imagem para ${characterEdit?.name}`}
 				onClose={onCloseImageCover}
 				destroyOnHidden
@@ -183,8 +183,8 @@ export const MemoryGameList = () => {
 			<Drawer
 				open={openLibrary}
 				title={`Imagens de ${character?.name}`}
-				size='large'
-				placement='bottom'
+				size="large"
+				placement="bottom"
 				onClose={toggleOpenLibrary}
 				destroyOnHidden
 			>

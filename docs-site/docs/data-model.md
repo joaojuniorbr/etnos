@@ -140,7 +140,6 @@ Regras:
 
 - `name` é único no schema atual
 
-
 - alimentar seletores de escola no cadastro e no perfil
 
 ### `characters`

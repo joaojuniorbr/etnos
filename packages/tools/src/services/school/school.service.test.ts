@@ -118,7 +118,9 @@ describe('schoolService', () => {
 	});
 
 	it('deve buscar ranking de usuarios da escola com filtro por jogo', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: [{ position: 1, uid: 'user-1' }] });
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'user-1' }],
+		});
 
 		const result = await schoolService.getMyUsersRanking('memory-game');
 
@@ -129,7 +131,9 @@ describe('schoolService', () => {
 	});
 
 	it('deve buscar ranking de usuarios da escola sem filtro por jogo', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: [{ position: 1, uid: 'user-1' }] });
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'user-1' }],
+		});
 
 		const result = await schoolService.getMyUsersRanking();
 
@@ -140,27 +144,37 @@ describe('schoolService', () => {
 	});
 
 	it('deve buscar ranking de usuarios por escola para admin', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: [{ position: 1, uid: 'user-1' }] });
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'user-1' }],
+		});
 
 		const result = await schoolService.getUsersRankingBySchool(
 			'school-1',
-			'memory-game'
+			'memory-game',
 		);
 
-		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/users/ranking', {
-			params: { gameSlug: 'memory-game' },
-		});
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/school-1/users/ranking',
+			{
+				params: { gameSlug: 'memory-game' },
+			},
+		);
 		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
 	});
 
 	it('deve buscar ranking de usuarios por escola para admin sem filtro por jogo', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: [{ position: 1, uid: 'user-1' }] });
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'user-1' }],
+		});
 
 		const result = await schoolService.getUsersRankingBySchool('school-1');
 
-		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/users/ranking', {
-			params: undefined,
-		});
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/school-1/users/ranking',
+			{
+				params: undefined,
+			},
+		);
 		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
 	});
 });

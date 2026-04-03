@@ -17,27 +17,27 @@ export const FinishGame = ({
 	handleRestart,
 	handleSaveScore,
 }: FinishGameProps) => (
-	<div className='text-center'>
-		<h2 className='text-3xl font-bold text-primary m-0'>
+	<div className="text-center">
+		<h2 className="text-3xl font-bold text-primary m-0">
 			{isLoser ? 'Você perdeu' : 'Parabéns!'}
 		</h2>
-		<h3 className='text-lg text-primary'>
+		<h3 className="text-lg text-primary">
 			{isLoser ? 'Tente novamente' : 'Você completou o desafio.'}
 		</h3>
 
 		{selectedCharacter?.slug && (
-			<div className='flex justify-center'>
+			<div className="flex justify-center">
 				<Image
 					src={`/games/${isLoser ? 'error' : 'success'}/${selectedCharacter.slug}.jpg`}
 					width={400}
 					height={400}
 					alt={selectedCharacter.name}
-					className='rounded'
+					className="rounded"
 				/>
 			</div>
 		)}
 
-		<div className='grid grid-cols-2 gap-4 max-w-md mx-auto'>
+		<div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
 			<Button
 				onClick={handleRestart}
 				loading={isLoading}
@@ -48,7 +48,7 @@ export const FinishGame = ({
 			</Button>
 
 			<Button
-				type='primary'
+				type="primary"
 				onClick={handleSaveScore}
 				loading={isLoading}
 				disabled={isLoading || isLoser}

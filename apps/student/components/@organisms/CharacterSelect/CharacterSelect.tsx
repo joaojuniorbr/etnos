@@ -15,8 +15,8 @@ export const CharacterSelect = () => {
 
 	return (
 		<Spin spinning={isLoading}>
-			<div className='flex flex-col gap-10'>
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+			<div className="flex flex-col gap-10">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					{data?.map((character: CharacterInterface) => (
 						<CharacterCard
 							key={character.slug}
@@ -28,8 +28,8 @@ export const CharacterSelect = () => {
 				</div>
 
 				<Button
-					type='primary'
-					size='large'
+					type="primary"
+					size="large"
 					disabled={!selectedCharacter}
 					onClick={() => router.push('/estudante/jogos')}
 				>

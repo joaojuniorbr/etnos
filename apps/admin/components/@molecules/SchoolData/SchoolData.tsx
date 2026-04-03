@@ -13,16 +13,16 @@ const infoRows = [
 
 export const SchoolData = ({ school }: SchoolDataProps) => {
 	return (
-		<div className='border border-slate-200 p-6 rounded bg-white'>
-			<Title className='mb-4'>Dados da escola</Title>
+		<div className="border border-slate-200 p-6 rounded bg-white">
+			<Title className="mb-4">Dados da escola</Title>
 
-			<div className='grid gap-4 md:grid-cols-3'>
+			<div className="grid gap-4 md:grid-cols-3">
 				{infoRows.map((item) => (
-					<div key={item.key} className='space-y-1'>
-						<p className='text-xs uppercase tracking-wide text-slate-500'>
+					<div key={item.key} className="space-y-1">
+						<p className="text-xs uppercase tracking-wide text-slate-500">
 							{item.label}
 						</p>
-						<p className='text-sm font-semibold text-slate-900'>
+						<p className="text-sm font-semibold text-slate-900">
 							{school?.[item.key] ?? '-'}
 						</p>
 					</div>

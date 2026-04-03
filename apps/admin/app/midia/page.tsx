@@ -7,8 +7,11 @@ export default function MidiasPage() {
 	const { user } = useUser();
 
 	return (
-		<AuthProtected allowedRoles={['admin']} forbiddenRedirectTo='/admin/escolas'>
-			<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+		<AuthProtected
+			allowedRoles={['admin']}
+			forbiddenRedirectTo="/admin/escolas"
+		>
+			<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 				<Breadcrumb
 					items={[
 						{ title: 'Home', href: '/' },
@@ -22,9 +25,9 @@ export default function MidiasPage() {
 					]}
 				/>
 
-				<Title className='mb-4 mt-6'>Mídias</Title>
+				<Title className="mb-4 mt-6">Mídias</Title>
 
-				<ImageLibrary user={user!} folder='library' limitPage={24} showAll />
+				<ImageLibrary user={user!} folder="library" limitPage={24} showAll />
 			</div>
 		</AuthProtected>
 	);

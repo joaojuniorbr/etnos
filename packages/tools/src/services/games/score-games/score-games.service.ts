@@ -5,7 +5,7 @@ export const scoreGamesService = {
 		slug: string,
 		characterSlug: string,
 		score: number,
-		userId: string
+		userId: string,
 	) {
 		if (!userId) return Promise.resolve(null);
 
@@ -22,7 +22,7 @@ export const scoreGamesService = {
 		slug: string,
 		characterSlug: string,
 		score: number,
-		userId: string
+		userId: string,
 	) {
 		if (!userId) return Promise.resolve(null);
 
@@ -46,6 +46,16 @@ export const scoreGamesService = {
 
 		return api
 			.get(`/games/score/${slug}/${characterSlug}`)
+			.then((res) => res.data);
+	},
+
+	getScoreHistory(userId: string, gameSlug?: string) {
+		if (!userId) return Promise.resolve([]);
+
+		return api
+			.get('/games/score/history', {
+				params: { gameSlug },
+			})
 			.then((res) => res.data);
 	},
 };

@@ -16,7 +16,9 @@ import { GuessGameExperience } from './GuessGameExperience';
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(user?.uid);
+	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(
+		user?.uid,
+	);
 	const [round, setRound] = useState(0);
 
 	const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug ?? '';
@@ -50,7 +52,11 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			return;
 		}
 
-		await saveGameScoreHistory(GamesEnum.GUESS_GAME, activeCharacterSlug, score);
+		await saveGameScoreHistory(
+			GamesEnum.GUESS_GAME,
+			activeCharacterSlug,
+			score,
+		);
 	};
 
 	return (
@@ -66,7 +72,9 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onPlaySound={playSound}
 			onSaveScore={handleSaveScore}
 			onSaveScoreHistory={handleSaveScoreHistory}
-			onValidateAttempt={(payload) => validateGuessMutation.mutateAsync(payload)}
+			onValidateAttempt={(payload) =>
+				validateGuessMutation.mutateAsync(payload)
+			}
 		/>
 	);
 };

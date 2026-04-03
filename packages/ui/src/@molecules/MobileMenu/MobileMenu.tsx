@@ -42,13 +42,13 @@ export const MobileMenu = ({
 			<Button
 				onClick={toggleDrawer}
 				icon={<RiMenu3Line />}
-				type='primary'
-				aria-label='Menu'
+				type="primary"
+				aria-label="Menu"
 			/>
 			<Drawer
 				open={open}
 				onClose={toggleDrawer}
-				title='Etnos'
+				title="Etnos"
 				footer={
 					user && (
 						<Button onClick={onLogout} danger block>
@@ -59,28 +59,28 @@ export const MobileMenu = ({
 			>
 				{user ? (
 					<>
-						<div className='ui:flex ui:gap-4 ui:items-center ui:pb-6 ui:border-b ui:border-slate-200 ui:mb-2'>
-							<div className='ui:h-18 ui:w-18 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300'>
-								<a href='/estudante/perfil'>
+						<div className="ui:flex ui:gap-4 ui:items-center ui:pb-6 ui:border-b ui:border-slate-200 ui:mb-2">
+							<div className="ui:h-18 ui:w-18 ui:rounded-full ui:overflow-hidden ui:border ui:border-slate-300">
+								<a href="/estudante/perfil">
 									<img
 										src={profileImage}
 										alt={user.email as string}
-										className='ui:h-18 ui:w-18 ui:object-cover'
+										className="ui:h-18 ui:w-18 ui:object-cover"
 									/>
 								</a>
 							</div>
-							<p className='ui:text-primary ui:text-base ui:font-bold ui:text-center'>
+							<p className="ui:text-primary ui:text-base ui:font-bold ui:text-center">
 								{user?.childName || user?.email}
 							</p>
 						</div>
 
 						{selectedCharacter && (
-							<div className='ui:border-b ui:border-slate-200 ui:pb-4 ui:pt-2 ui:mb-2'>
-								<div className='ui:text-sm ui:font-bold ui:text-primary ui:mb-1 ui:uppercase'>
+							<div className="ui:border-b ui:border-slate-200 ui:pb-4 ui:pt-2 ui:mb-2">
+								<div className="ui:text-sm ui:font-bold ui:text-primary ui:mb-1 ui:uppercase">
 									Personagem Selecionado
 								</div>
-								<div className='ui:flex ui:gap-4 ui:items-center ui:mb-4'>
-									<div className='ui:w-20'>
+								<div className="ui:flex ui:gap-4 ui:items-center ui:mb-4">
+									<div className="ui:w-20">
 										<Image
 											src={
 												selectedCharacter.imageUrl ||
@@ -90,41 +90,41 @@ export const MobileMenu = ({
 											preview={false}
 										/>
 									</div>
-									<div className='ui:flex-1'>
-										<div className='ui:text-base ui:text-black ui:font-bold'>
+									<div className="ui:flex-1">
+										<div className="ui:text-base ui:text-black ui:font-bold">
 											{selectedCharacter.name}
 										</div>
-										<div className='ui:text-xs ui:text-gray-400'>
+										<div className="ui:text-xs ui:text-gray-400">
 											{selectedCharacter.description}
 										</div>
 									</div>
 								</div>
 								<button
-									className='ui:text-xs ui:text-primary ui:uppercase ui:underline'
+									className="ui:text-xs ui:text-primary ui:uppercase ui:underline"
 									onClick={toggleCharacter}
-									aria-label='Alterar Personagem'
+									aria-label="Alterar Personagem"
 								>
 									Alterar Personagem
 								</button>
 							</div>
 						)}
 						<Menu
-							mode='inline'
+							mode="inline"
 							items={[
 								{
 									key: 'home',
-									label: <a href='/'>Home</a>,
+									label: <a href="/">Home</a>,
 									icon: <RiHomeLine />,
 								},
 								{
 									key: 'student',
-									label: <a href='/estudante'>Área do Estudante</a>,
+									label: <a href="/estudante">Área do Estudante</a>,
 									icon: <RiUserLine />,
 								},
 								selectedCharacter
 									? {
 											key: 'games',
-											label: <a href='/estudante/jogos'>Jogos</a>,
+											label: <a href="/estudante/jogos">Jogos</a>,
 											icon: <RiGameLine />,
 										}
 									: null,
@@ -132,12 +132,12 @@ export const MobileMenu = ({
 								hasAdminAccess
 									? {
 											key: 'admin',
-											label: <a href='/admin'>Área do administrador</a>,
+											label: <a href="/admin">Área do administrador</a>,
 											icon: <RiLockStarLine />,
 											children: [
 												{
 													key: 'schools',
-													label: <a href='/admin/escolas'>Escolas</a>,
+													label: <a href="/admin/escolas">Escolas</a>,
 													icon: <RiSchoolLine />,
 												},
 												...(isAdmin
@@ -145,13 +145,13 @@ export const MobileMenu = ({
 															{
 																key: 'characters',
 																label: (
-																	<a href='/admin/personagens'>Personagens</a>
+																	<a href="/admin/personagens">Personagens</a>
 																),
 																icon: <RiStarLine />,
 															},
 															{
 																key: 'midia',
-																label: <a href='/admin/midia'>Midia</a>,
+																label: <a href="/admin/midia">Midia</a>,
 																icon: <RiImageLine />,
 															},
 														]
@@ -161,7 +161,7 @@ export const MobileMenu = ({
 									: null,
 								{
 									key: 'profile',
-									label: <a href='/estudante/perfil'>Perfil</a>,
+									label: <a href="/estudante/perfil">Perfil</a>,
 									icon: <RiUserHeartLine />,
 								},
 							]}
@@ -169,20 +169,20 @@ export const MobileMenu = ({
 					</>
 				) : (
 					<>
-						<div className='ui:flex ui:justify-center ui:mb-6'>
-							<a href='/'>
+						<div className="ui:flex ui:justify-center ui:mb-6">
+							<a href="/">
 								<img
-									src='/images/brand-horizontal.svg'
-									alt='Etnos'
-									className='ui:w-32 ui:h-auto'
+									src="/images/brand-horizontal.svg"
+									alt="Etnos"
+									className="ui:w-32 ui:h-auto"
 								/>
 							</a>
 						</div>
-						<div className='ui:flex ui:gap-4 ui:w-full ui:items-center'>
-							<Button type='primary' block size='large' href='/login'>
+						<div className="ui:flex ui:gap-4 ui:w-full ui:items-center">
+							<Button type="primary" block size="large" href="/login">
 								Entrar
 							</Button>
-							<Button type='primary' block size='large' href='/cadastro'>
+							<Button type="primary" block size="large" href="/cadastro">
 								Cadastrar
 							</Button>
 						</div>

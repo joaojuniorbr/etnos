@@ -108,7 +108,7 @@ describe('authSession', () => {
 
 		expect(setItem).toHaveBeenCalledWith(
 			AUTH_LAST_ACTIVITY_STORAGE_KEY,
-			'12345'
+			'12345',
 		);
 	});
 
@@ -138,15 +138,15 @@ describe('authSession', () => {
 		expect(setItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY, 'token-123');
 		expect(setItem).toHaveBeenCalledWith(
 			AUTH_REFRESH_TOKEN_STORAGE_KEY,
-			'refresh-123'
+			'refresh-123',
 		);
 		expect(setItem).toHaveBeenCalledWith(
 			AUTH_EXPIRES_AT_STORAGE_KEY,
-			String(Date.now() + 3600 * 1000)
+			String(Date.now() + 3600 * 1000),
 		);
 		expect(setItem).toHaveBeenCalledWith(
 			AUTH_LAST_ACTIVITY_STORAGE_KEY,
-			String(Date.now())
+			String(Date.now()),
 		);
 	});
 
@@ -167,11 +167,11 @@ describe('authSession', () => {
 		expect(setItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY, 'token-123');
 		expect(setItem).not.toHaveBeenCalledWith(
 			AUTH_REFRESH_TOKEN_STORAGE_KEY,
-			expect.anything()
+			expect.anything(),
 		);
 		expect(setItem).not.toHaveBeenCalledWith(
 			AUTH_EXPIRES_AT_STORAGE_KEY,
-			expect.anything()
+			expect.anything(),
 		);
 	});
 
@@ -192,11 +192,11 @@ describe('authSession', () => {
 		expect(setItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY, 'token-123');
 		expect(setItem).toHaveBeenCalledWith(
 			AUTH_REFRESH_TOKEN_STORAGE_KEY,
-			'refresh-123'
+			'refresh-123',
 		);
 		expect(setItem).not.toHaveBeenCalledWith(
 			AUTH_EXPIRES_AT_STORAGE_KEY,
-			expect.anything()
+			expect.anything(),
 		);
 	});
 
@@ -208,7 +208,7 @@ describe('authSession', () => {
 				idToken: 'token-123',
 				refreshToken: 'refresh-123',
 				expiresIn: '3600',
-			})
+			}),
 		).not.toThrow();
 	});
 
@@ -240,14 +240,14 @@ describe('authSession', () => {
 		expect(
 			hasSessionExceededInactivityLimit(
 				now - AUTH_INACTIVITY_LIMIT_MS - 1,
-				now
-			)
+				now,
+			),
 		).toBe(true);
 		expect(
 			hasSessionExceededInactivityLimit(
 				now - AUTH_INACTIVITY_LIMIT_MS + 1,
-				now
-			)
+				now,
+			),
 		).toBe(false);
 		expect(hasSessionExceededInactivityLimit(null, now)).toBe(false);
 	});
@@ -321,7 +321,7 @@ describe('authSession', () => {
 		await expect(refreshStoredAuthToken('firebase-key')).resolves.toBeNull();
 		expect(storage.get(AUTH_TOKEN_STORAGE_KEY)).toBe('token-novo-login');
 		expect(storage.get(AUTH_REFRESH_TOKEN_STORAGE_KEY)).toBe(
-			'refresh-novo-login'
+			'refresh-novo-login',
 		);
 	});
 
@@ -354,7 +354,7 @@ describe('authSession', () => {
 		vi.stubGlobal('window', {
 			localStorage: {
 				getItem: vi.fn((key: string) =>
-					key === AUTH_TOKEN_STORAGE_KEY ? 'token-123' : null
+					key === AUTH_TOKEN_STORAGE_KEY ? 'token-123' : null,
 				),
 				removeItem,
 			},
@@ -372,7 +372,8 @@ describe('authSession', () => {
 			localStorage: {
 				getItem: vi.fn((key: string) => {
 					if (key === AUTH_TOKEN_STORAGE_KEY) return 'token-123';
-					if (key === AUTH_EXPIRES_AT_STORAGE_KEY) return String(now + 5 * 60 * 1000);
+					if (key === AUTH_EXPIRES_AT_STORAGE_KEY)
+						return String(now + 5 * 60 * 1000);
 					if (key === AUTH_LAST_ACTIVITY_STORAGE_KEY) return String(now);
 					return null;
 				}),
@@ -390,7 +391,7 @@ describe('authSession', () => {
 		vi.stubGlobal('window', {
 			localStorage: {
 				getItem: vi.fn((key: string) =>
-					key === AUTH_TOKEN_STORAGE_KEY ? 'token-legado' : null
+					key === AUTH_TOKEN_STORAGE_KEY ? 'token-legado' : null,
 				),
 				removeItem,
 			},
@@ -460,12 +461,16 @@ describe('authSession', () => {
 		} as unknown as Window);
 
 		axiosPostMock.mockImplementationOnce(
-			(_url: string, _body: URLSearchParams, config?: { signal?: AbortSignal }) =>
+			(
+				_url: string,
+				_body: URLSearchParams,
+				config?: { signal?: AbortSignal },
+			) =>
 				new Promise((_, reject) => {
 					config?.signal?.addEventListener('abort', () => {
 						reject(new Error('refresh aborted'));
 					});
-				})
+				}),
 		);
 
 		const tokenPromise = resolveValidStoredAuthToken();
@@ -498,12 +503,16 @@ describe('authSession', () => {
 		} as unknown as Window);
 
 		axiosPostMock.mockImplementationOnce(
-			(_url: string, _body: URLSearchParams, config?: { signal?: AbortSignal }) =>
+			(
+				_url: string,
+				_body: URLSearchParams,
+				config?: { signal?: AbortSignal },
+			) =>
 				new Promise((_, reject) => {
 					config?.signal?.addEventListener('abort', () => {
 						reject(new Error('refresh aborted'));
 					});
-				})
+				}),
 		);
 
 		const tokenPromise = resolveValidStoredAuthToken();
@@ -528,7 +537,7 @@ describe('authSession', () => {
 		axiosPostMock.mockRejectedValueOnce(refreshError);
 
 		await expect(refreshStoredAuthToken('firebase-key')).rejects.toThrow(
-			'refresh failed'
+			'refresh failed',
 		);
 	});
 

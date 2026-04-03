@@ -16,13 +16,15 @@ export const guessGameContentService = {
 	},
 
 	getPlayableContent(
-		characterSlug: string
+		characterSlug: string,
 	): Promise<GuessGamePlayItemInterface | null> {
-		return api.get(`/games/guess/play/${characterSlug}`).then((res) => res.data);
+		return api
+			.get(`/games/guess/play/${characterSlug}`)
+			.then((res) => res.data);
 	},
 
 	validateAttempt(
-		payload: GuessGameValidationPayloadInterface
+		payload: GuessGameValidationPayloadInterface,
 	): Promise<GuessGameValidationResultInterface> {
 		return api.post('/games/guess/validate', payload).then((res) => res.data);
 	},

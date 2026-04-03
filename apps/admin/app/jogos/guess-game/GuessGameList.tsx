@@ -128,7 +128,7 @@ export const GuessGameList = () => {
 				...item,
 				key: item.id,
 			})),
-		[content]
+		[content],
 	);
 
 	return (
@@ -140,15 +140,15 @@ export const GuessGameList = () => {
 				deleteMutation.isPending
 			}
 		>
-			<Title className='mb-4 mt-6'>Jogo Adivinhe</Title>
-			<p className='mb-6 text-slate-600'>
+			<Title className="mb-4 mt-6">Jogo Adivinhe</Title>
+			<p className="mb-6 text-slate-600">
 				Gerencie as palavras, dicas, imagens e descrições exibidas quando o
 				aluno descobre a resposta.
 			</p>
 
-			<div className='border border-slate-200 border-b-0'>
+			<div className="border border-slate-200 border-b-0">
 				<Table
-					rowKey='id'
+					rowKey="id"
 					pagination={false}
 					dataSource={characters}
 					columns={[
@@ -162,10 +162,10 @@ export const GuessGameList = () => {
 										alt={item.name}
 										width={64}
 										height={64}
-										className='rounded border border-slate-200 object-cover'
+										className="rounded border border-slate-200 object-cover"
 									/>
 								) : (
-									<div className='flex h-16 w-16 items-center justify-center rounded border border-dashed border-slate-300 text-xs text-slate-400'>
+									<div className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-slate-300 text-xs text-slate-400">
 										Sem imagem
 									</div>
 								),
@@ -183,7 +183,7 @@ export const GuessGameList = () => {
 							width: 180,
 							render: (item: CharacterInterface) => (
 								<Button
-									type='primary'
+									type="primary"
 									onClick={() => openCharacterEditor(item)}
 								>
 									Editar conteúdo
@@ -202,16 +202,16 @@ export const GuessGameList = () => {
 				title={`Conteúdo de ${selectedCharacter?.name ?? ''}`}
 				destroyOnHidden
 			>
-				<div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+				<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 					<div>
-						<p className='text-sm text-slate-500'>
+						<p className="text-sm text-slate-500">
 							Edite os itens do jogo associados ao personagem
 							{selectedCharacter ? ` ${selectedCharacter.name}` : ''}.
 						</p>
 					</div>
 
 					<Button
-						type='primary'
+						type="primary"
 						icon={<PlusOutlined />}
 						onClick={openCreateForm}
 					>
@@ -219,9 +219,9 @@ export const GuessGameList = () => {
 					</Button>
 				</div>
 
-				<div className='border border-slate-200 border-b-0'>
+				<div className="border border-slate-200 border-b-0">
 					<Table
-						rowKey='id'
+						rowKey="id"
 						pagination={false}
 						dataSource={rows}
 						locale={{
@@ -238,10 +238,10 @@ export const GuessGameList = () => {
 											alt={item.word}
 											width={64}
 											height={64}
-											className='rounded border border-slate-200 object-cover'
+											className="rounded border border-slate-200 object-cover"
 										/>
 									) : (
-										<div className='flex h-16 w-16 items-center justify-center rounded border border-dashed border-slate-300 text-xs text-slate-400'>
+										<div className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-slate-300 text-xs text-slate-400">
 											Sem imagem
 										</div>
 									),
@@ -261,14 +261,14 @@ export const GuessGameList = () => {
 							{
 								title: 'Descrição',
 								render: (item: GuessGameContentInterface) => (
-									<span className='line-clamp-2'>{item.description}</span>
+									<span className="line-clamp-2">{item.description}</span>
 								),
 							},
 							{
 								title: 'Ações',
 								width: 140,
 								render: (item: GuessGameContentInterface) => (
-									<div className='flex gap-2'>
+									<div className="flex gap-2">
 										<Button
 											icon={<EditOutlined />}
 											onClick={() => openEditForm(item)}
@@ -293,31 +293,31 @@ export const GuessGameList = () => {
 					setEditingItem(null);
 				}}
 				title={editingItem ? 'Editar conteúdo' : 'Novo conteúdo'}
-				size='large'
+				size="large"
 				destroyOnHidden
 			>
-				<Form layout='vertical' form={form} onFinish={handleSave}>
+				<Form layout="vertical" form={form} onFinish={handleSave}>
 					<Form.Item
-						name='title'
-						label='Título'
+						name="title"
+						label="Título"
 						rules={[{ required: true, message: 'Informe o título.' }]}
 					>
-						<Input placeholder='Ex.: Chimarrão' />
+						<Input placeholder="Ex.: Chimarrão" />
 					</Form.Item>
 
 					<Form.Item
-						name='word'
-						label='Palavra'
+						name="word"
+						label="Palavra"
 						rules={[{ required: true, message: 'Informe a palavra.' }]}
 					>
-						<Input placeholder='Ex.: Bomba' />
+						<Input placeholder="Ex.: Bomba" />
 					</Form.Item>
 
-					<Form.List name='tips'>
+					<Form.List name="tips">
 						{(fields, { add, remove }) => (
-							<div className='mb-6'>
-								<div className='mb-2 flex items-center justify-between'>
-									<div className='text-sm font-medium text-slate-700'>
+							<div className="mb-6">
+								<div className="mb-2 flex items-center justify-between">
+									<div className="text-sm font-medium text-slate-700">
 										Dicas
 									</div>
 									<Button onClick={() => add('')} icon={<PlusOutlined />}>
@@ -325,11 +325,11 @@ export const GuessGameList = () => {
 									</Button>
 								</div>
 
-								<div className='space-y-3'>
+								<div className="space-y-3">
 									{fields.map((field, index) => (
-										<div key={field.key} className='flex gap-2'>
+										<div key={field.key} className="flex gap-2">
 											<Form.Item
-												className='mb-0 flex-1'
+												className="mb-0 flex-1"
 												name={field.name}
 												rules={[
 													{
@@ -355,12 +355,12 @@ export const GuessGameList = () => {
 						)}
 					</Form.List>
 
-					<Form.Item name='imageUrl' label='Imagem'>
+					<Form.Item name="imageUrl" label="Imagem">
 						<Input
-							placeholder='Selecione uma imagem na biblioteca'
+							placeholder="Selecione uma imagem na biblioteca"
 							readOnly
 							suffix={
-								<Button type='link' onClick={() => setIsLibraryOpen(true)}>
+								<Button type="link" onClick={() => setIsLibraryOpen(true)}>
 									Escolher
 								</Button>
 							}
@@ -368,29 +368,29 @@ export const GuessGameList = () => {
 					</Form.Item>
 
 					{form.getFieldValue('imageUrl') ? (
-						<div className='mb-6'>
+						<div className="mb-6">
 							<Image
 								src={form.getFieldValue('imageUrl')}
-								alt='Pré-visualização'
+								alt="Pré-visualização"
 								width={180}
 								height={180}
-								className='rounded border border-slate-200 object-cover'
+								className="rounded border border-slate-200 object-cover"
 							/>
 						</div>
 					) : null}
 
 					<Form.Item
-						name='description'
-						label='Descrição'
+						name="description"
+						label="Descrição"
 						rules={[{ required: true, message: 'Informe a descrição.' }]}
 					>
 						<Input.TextArea
 							rows={5}
-							placeholder='Explique o que é a palavra e seu significado.'
+							placeholder="Explique o que é a palavra e seu significado."
 						/>
 					</Form.Item>
 
-					<div className='flex justify-end gap-2'>
+					<div className="flex justify-end gap-2">
 						<Button
 							onClick={() => {
 								setIsFormOpen(false);
@@ -399,7 +399,7 @@ export const GuessGameList = () => {
 						>
 							Cancelar
 						</Button>
-						<Button type='primary' htmlType='submit'>
+						<Button type="primary" htmlType="submit">
 							Salvar
 						</Button>
 					</div>
@@ -410,8 +410,8 @@ export const GuessGameList = () => {
 				open={isLibraryOpen}
 				onClose={() => setIsLibraryOpen(false)}
 				title={`Selecione uma imagem para ${selectedCharacter?.name ?? ''}`}
-				size='large'
-				placement='bottom'
+				size="large"
+				placement="bottom"
 				destroyOnHidden
 			>
 				<ImageLibrary

@@ -13,7 +13,7 @@ export const useGuessGameContent = (characterSlug: string) =>
 
 export const useGuessGamePlayableContent = (
 	characterSlug: string,
-	round: number
+	round: number,
 ) =>
 	useQuery({
 		queryKey: ['game', GamesEnum.GUESS_GAME, 'play', characterSlug, round],

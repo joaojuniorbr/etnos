@@ -5,9 +5,9 @@ import { Title } from './Title';
 describe('Title', () => {
 	it('renderiza o conteúdo e aplica as classes e props recebidas', () => {
 		render(
-			<Title className='custom-class' data-testid='title'>
+			<Title className="custom-class" data-testid="title">
 				Titulo
-			</Title>
+			</Title>,
 		);
 
 		const title = screen.getByTestId('title');
@@ -18,7 +18,7 @@ describe('Title', () => {
 			'ui:font-black',
 			'ui:uppercase',
 			'ui:text-primary',
-			'custom-class'
+			'custom-class',
 		);
 	});
 });

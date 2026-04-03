@@ -21,7 +21,7 @@ vi.mock('antd', () => ({
 		spinning?: boolean;
 		children: React.ReactNode;
 	}) => (
-		<div data-testid='spin' data-spinning={String(!!spinning)}>
+		<div data-testid="spin" data-spinning={String(!!spinning)}>
 			{children}
 		</div>
 	),
@@ -66,10 +66,7 @@ describe('AuthProtected', () => {
 			</AuthProtected>,
 		);
 
-		expect(screen.getByTestId('spin')).toHaveAttribute(
-			'data-spinning',
-			'true',
-		);
+		expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'true');
 		expect(screen.queryByText('Conteudo protegido')).not.toBeInTheDocument();
 	});
 
@@ -80,7 +77,7 @@ describe('AuthProtected', () => {
 		});
 
 		const { container } = render(
-			<AuthProtected redirectTo='/login'>
+			<AuthProtected redirectTo="/login">
 				<div>Conteudo protegido</div>
 			</AuthProtected>,
 		);
@@ -112,7 +109,7 @@ describe('AuthProtected', () => {
 		const { container } = render(
 			<AuthProtected
 				allowedRoles={['admin', 'school']}
-				forbiddenRedirectTo='/admin/escolas'
+				forbiddenRedirectTo="/admin/escolas"
 			>
 				<div>Conteudo protegido</div>
 			</AuthProtected>,
@@ -132,7 +129,12 @@ describe('AuthProtected', () => {
 		expect(hasAllowedRole({ roles: ['admin'] }, ['admin'])).toBe(true);
 		expect(hasAllowedRole({ role: ['student'] }, ['admin'])).toBe(false);
 		expect(hasAllowedRole(undefined, ['admin'])).toBe(false);
-		expect(hasAllowedRole({ uid: 'user-1' } as any, ['admin'])).toBe(false);
+		expect(
+			hasAllowedRole(
+				{ uid: 'user-1' } as { role?: string[]; roles?: string[] },
+				['admin'],
+			),
+		).toBe(false);
 		expect(hasAllowedRole({ role: ['student'] }, undefined)).toBe(true);
 	});
 });

@@ -34,6 +34,7 @@ const mockGamesService = {
   validateGuessGameAttempt: jest.fn().mockResolvedValue({ isCorrect: true }),
   saveScoreGame: jest.fn().mockResolvedValue(undefined),
   saveScoreHistory: jest.fn().mockResolvedValue(undefined),
+  getScoreHistory: jest.fn().mockResolvedValue([]),
   getScoreByUser: jest.fn().mockResolvedValue([]),
   getScoreGame: jest.fn().mockResolvedValue({ score: 100 }),
 };
@@ -246,5 +247,27 @@ describe('GamesController', () => {
       userId: 'user-1',
     });
     expect(result).toEqual({ score: 100 });
+  });
+
+  it('deve retornar histórico de score do usuário', async () => {
+    const history = [
+      {
+        gameName: 'memory-game',
+        score: 100,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+    mockGamesService.getScoreHistory.mockResolvedValueOnce(history);
+
+    const result = await controller.getScoreHistory(
+      { user: { uid: 'user-1' } },
+      { gameSlug: 'memory-game' },
+    );
+
+    expect(service.getScoreHistory).toHaveBeenCalledWith(
+      'user-1',
+      'memory-game',
+    );
+    expect(result).toEqual(history);
   });
 });

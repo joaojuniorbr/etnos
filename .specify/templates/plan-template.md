@@ -30,7 +30,7 @@ types, and game logic
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - [ ] Spec-first scope is clear, approved, and limited to explicit user outcomes.
 - [ ] Affected contracts between `apps/*`, `packages/*`, and API payloads are
@@ -39,6 +39,8 @@ types, and game logic
       the targeted automated tests needed for the touched behavior.
 - [ ] The plan explains how changed code will achieve and verify 100% coverage
       for the applicable configured metrics.
+- [ ] New or touched files follow project naming conventions, including
+      `camelCase` hook filenames and `PascalCase` component filenames.
 - [ ] User-facing loading, empty, error, accessibility, and performance impacts
       are explicitly addressed.
 - [ ] Operational, security, and release considerations are documented for any
@@ -85,7 +87,7 @@ by the feature and keep the plan focused on those boundaries only.
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |

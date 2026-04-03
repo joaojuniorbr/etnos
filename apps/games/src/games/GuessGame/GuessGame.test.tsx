@@ -32,7 +32,7 @@ const renderWithQueryClient = (ui: React.ReactNode) => {
 	});
 
 	return render(
-		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
 	);
 };
 
@@ -84,7 +84,9 @@ vi.mock('antd', () => {
 			value={value ?? ''}
 			disabled={disabled}
 			onChange={(event) =>
-				onChange?.(formatter ? formatter(event.target.value) : event.target.value)
+				onChange?.(
+					formatter ? formatter(event.target.value) : event.target.value,
+				)
 			}
 		/>
 	);
@@ -93,18 +95,22 @@ vi.mock('antd', () => {
 		Button,
 		Divider: () => <hr />,
 		Input: { OTP: InputOtp },
-		Spin: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+		Spin: ({ children }: { children: React.ReactNode }) => (
+			<div>{children}</div>
+		),
 	};
 });
 
 vi.mock('next/image', () => ({
-	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
+	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => (
+		<img {...props} />
+	),
 }));
 
 vi.mock('../../components', () => ({
 	FinishGame: (props: unknown) => {
 		finishGameMock(props);
-		return <div data-testid='finish-game' />;
+		return <div data-testid="finish-game" />;
 	},
 	ScoreHighlight: ({
 		label,
@@ -196,11 +202,14 @@ describe('GuessGame', () => {
 			fireEvent.change(inputs[1]!, { target: { value: 'x' } });
 		});
 
-		expect(validateAttemptMock).toHaveBeenCalledWith({
-			contentId: 'guess-1',
-			guess: 'X',
-			type: 'letter',
-		}, expect.any(Object));
+		expect(validateAttemptMock).toHaveBeenCalledWith(
+			{
+				contentId: 'guess-1',
+				guess: 'X',
+				type: 'letter',
+			},
+			expect.any(Object),
+		);
 		expect(playSound).toHaveBeenCalledWith('error');
 		expect(screen.getByText('9')).toBeTruthy();
 	});
@@ -257,11 +266,14 @@ describe('GuessGame', () => {
 			fireEvent.click(screen.getByText('VERIFICAR'));
 		});
 
-		expect(validateAttemptMock).toHaveBeenCalledWith({
-			contentId: 'guess-1',
-			guess: 'BOMBA',
-			type: 'word',
-		}, expect.any(Object));
+		expect(validateAttemptMock).toHaveBeenCalledWith(
+			{
+				contentId: 'guess-1',
+				guess: 'BOMBA',
+				type: 'word',
+			},
+			expect.any(Object),
+		);
 		expect(playSound).toHaveBeenCalledWith('finish');
 		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
 		expect(screen.getByText('Descricao final')).toBeTruthy();
@@ -327,7 +339,11 @@ describe('GuessGame', () => {
 			await props.handleSaveScore();
 		});
 
-		expect(saveGameScoreHistory).toHaveBeenCalledWith('guess-game', 'anita', 440);
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			440,
+		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 440);
 	});
 
@@ -389,11 +405,14 @@ describe('GuessGame', () => {
 			fireEvent.change(inputs[1]!, { target: { value: 'a' } });
 		});
 
-		expect(validateAttemptMock).toHaveBeenLastCalledWith({
-			contentId: 'guess-1',
-			guess: 'Bomba',
-			type: 'word',
-		}, expect.any(Object));
+		expect(validateAttemptMock).toHaveBeenLastCalledWith(
+			{
+				contentId: 'guess-1',
+				guess: 'Bomba',
+				type: 'word',
+			},
+			expect.any(Object),
+		);
 		expect(playSound).toHaveBeenCalledWith('finish');
 		expect(screen.getByTestId('finish-game')).toBeTruthy();
 	});
@@ -413,7 +432,9 @@ describe('GuessGame', () => {
 			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
 		});
 
-		expect(screen.getAllByTestId('otp-5')[0]?.getAttribute('value')).toBe('••••');
+		expect(screen.getAllByTestId('otp-5')[0]?.getAttribute('value')).toBe(
+			'••••',
+		);
 	});
 
 	it('trata palavra incorreta e encerra como derrota ao acabar tentativas', async () => {
@@ -478,8 +499,9 @@ describe('GuessGame', () => {
 
 		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
 		expect(
-			screen.getByText('A palavra correta é:').parentElement?.querySelector('span:last-child')
-				?.textContent
+			screen
+				.getByText('A palavra correta é:')
+				.parentElement?.querySelector('span:last-child')?.textContent,
 		).toBe('');
 	});
 
@@ -539,7 +561,9 @@ describe('GuessGame', () => {
 		useGuessGamePlayableContentMock.mockReturnValue({
 			data: { ...playableContent, imageUrl: null },
 			isLoading: false,
-			refetch: vi.fn().mockResolvedValue({ data: { ...playableContent, imageUrl: null } }),
+			refetch: vi
+				.fn()
+				.mockResolvedValue({ data: { ...playableContent, imageUrl: null } }),
 		});
 
 		renderWithQueryClient(<GuessGame />);
@@ -630,11 +654,14 @@ describe('GuessGame', () => {
 		expect(saveGameScoreHistory).toHaveBeenCalledWith(
 			'guess-game',
 			'anita',
-			1000
+			1000,
 		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 		expect(refetchScore).toHaveBeenCalled();
-		expect(useGuessGamePlayableContentMock).toHaveBeenLastCalledWith('anita', 1);
+		expect(useGuessGamePlayableContentMock).toHaveBeenLastCalledWith(
+			'anita',
+			1,
+		);
 	});
 
 	it('não salva recorde quando a pontuação final for menor que o recorde atual', async () => {
@@ -678,7 +705,7 @@ describe('GuessGame', () => {
 		expect(saveGameScoreHistory).toHaveBeenCalledWith(
 			'guess-game',
 			'anita',
-			1000
+			1000,
 		);
 		expect(saveGameScore).not.toHaveBeenCalled();
 	});
@@ -725,7 +752,7 @@ describe('GuessGame', () => {
 		expect(saveGameScoreHistory).toHaveBeenCalledWith(
 			'guess-game',
 			'anita',
-			1000
+			1000,
 		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 		expect(refetchScore).toHaveBeenCalled();
@@ -751,7 +778,7 @@ describe('GuessGame', () => {
 			description: 'Descricao final',
 		});
 
-		renderWithQueryClient(<GuessGame characterSlug='anita' />);
+		renderWithQueryClient(<GuessGame characterSlug="anita" />);
 
 		const inputs = screen.getAllByRole('textbox');
 		await act(async () => {

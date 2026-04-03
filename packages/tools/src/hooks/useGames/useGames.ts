@@ -34,7 +34,7 @@ export const useGames = (userId?: string) => {
 	const saveGameScore = (
 		slug: string,
 		characterSlug: string,
-		score: number
+		score: number,
 	) => {
 		if (!userId) {
 			message.error('Usuário não encontrado!');
@@ -53,13 +53,18 @@ export const useGames = (userId?: string) => {
 	const saveGameScoreHistory = (
 		slug: string,
 		characterSlug: string,
-		score: number
+		score: number,
 	) => {
 		if (!userId) {
 			return;
 		}
 
-		return scoreGamesService.saveScoreHistory(slug, characterSlug, score, userId);
+		return scoreGamesService.saveScoreHistory(
+			slug,
+			characterSlug,
+			score,
+			userId,
+		);
 	};
 
 	const playSound = (sound: keyof typeof sounds) => {

@@ -35,7 +35,7 @@ describe('memory-game utils', () => {
 				{ name: 'chimarrao', image: '/chimarrao.jpg' },
 				{ name: 'churrasco', image: '/churrasco.jpg' },
 			],
-			(items) => items
+			(items) => items,
 		);
 
 		expect(deck).toHaveLength(4);
@@ -50,16 +50,15 @@ describe('memory-game utils', () => {
 
 	it('retorna os niveis disponiveis de acordo com a quantidade de pares', () => {
 		expect(getAvailableMemoryGameLevels(2)).toEqual([]);
-		expect(getAvailableMemoryGameLevels(3).map((level) => level.level)).toEqual([1]);
-		expect(getAvailableMemoryGameLevels(6).map((level) => level.level)).toEqual([
-			1,
-			2,
-		]);
-		expect(getAvailableMemoryGameLevels(9).map((level) => level.level)).toEqual([
-			1,
-			2,
-			3,
-		]);
+		expect(getAvailableMemoryGameLevels(3).map((level) => level.level)).toEqual(
+			[1],
+		);
+		expect(getAvailableMemoryGameLevels(6).map((level) => level.level)).toEqual(
+			[1, 2],
+		);
+		expect(getAvailableMemoryGameLevels(9).map((level) => level.level)).toEqual(
+			[1, 2, 3],
+		);
 	});
 
 	it('retorna configuracao do nivel e limita o conteudo conforme os pares', () => {
@@ -80,7 +79,7 @@ describe('memory-game utils', () => {
 				{ name: '4', image: '/4.jpg' },
 			],
 			1,
-			(items) => items
+			(items) => items,
 		);
 
 		expect(content).toHaveLength(3);
@@ -110,7 +109,7 @@ describe('memory-game utils', () => {
 			[1, 2],
 			0,
 			0,
-			getMemoryGameLevelConfig(1)
+			getMemoryGameLevelConfig(1),
 		);
 
 		expect(result.isMatch).toBe(true);
@@ -150,7 +149,7 @@ describe('memory-game utils', () => {
 			[1, 2],
 			0,
 			0,
-			getMemoryGameLevelConfig(1)
+			getMemoryGameLevelConfig(1),
 		);
 
 		expect(result.cards.find((card) => card.id === 3)?.isMatched).toBe(false);
@@ -179,7 +178,7 @@ describe('memory-game utils', () => {
 			[1, 2],
 			100,
 			1,
-			getMemoryGameLevelConfig(1)
+			getMemoryGameLevelConfig(1),
 		);
 
 		expect(result.score).toBe(250);
@@ -209,7 +208,7 @@ describe('memory-game utils', () => {
 			[1, 2],
 			200,
 			1,
-			getMemoryGameLevelConfig(2)
+			getMemoryGameLevelConfig(2),
 		);
 
 		expect(result.score).toBe(500);
@@ -239,7 +238,7 @@ describe('memory-game utils', () => {
 			[1, 2],
 			0,
 			3,
-			getMemoryGameLevelConfig(1)
+			getMemoryGameLevelConfig(1),
 		);
 
 		expect(result.isMatch).toBe(false);
@@ -247,7 +246,7 @@ describe('memory-game utils', () => {
 		expect(result.isFinished).toBe(false);
 		expect(result.consecutiveMatches).toBe(0);
 		expect(
-			result.cards.every((card) => !card.isFlipped && !card.isMatched)
+			result.cards.every((card) => !card.isFlipped && !card.isMatched),
 		).toBe(true);
 	});
 });

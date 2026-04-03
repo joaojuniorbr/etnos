@@ -23,12 +23,12 @@ export const ContactHome = () => {
 			onSuccess: () => {
 				form.resetFields();
 				message.success(
-					'Contato enviado com sucesso! Entraremos em contato em breve.'
+					'Contato enviado com sucesso! Entraremos em contato em breve.',
 				);
 			},
 			onError: () => {
 				message.error(
-					'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.'
+					'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.',
 				);
 			},
 		});
@@ -36,23 +36,23 @@ export const ContactHome = () => {
 
 	return (
 		<Spin spinning={isPending}>
-			<section className='p-6 py-10 md:py-16 lg:py-20 bg-[#211903] text-white text-center'>
-				<div className='mx-auto max-w-lg'>
-					<h2 className='text-xl font-bold mb-2 md:text-4xl md:mb-4 text-center'>
+			<section className="p-6 py-10 md:py-16 lg:py-20 bg-[#211903] text-white text-center">
+				<div className="mx-auto max-w-lg">
+					<h2 className="text-xl font-bold mb-2 md:text-4xl md:mb-4 text-center">
 						Ficou com alguma dúvida?
 					</h2>
 
-					<p className='font-extralight text-sm mb-8 md:mb-10 md:text-lg'>
+					<p className="font-extralight text-sm mb-8 md:mb-10 md:text-lg">
 						Estamos aqui para ajudar! Deixe seu número e fale com nossa equipe
 						sobre o projeto, os jogos ou como começar a usar o Etnos na sua
 						escola.
 					</p>
 
-					<Form form={form} className='flex' onFinish={handleSubmit}>
-						<div className='flex-1'>
+					<Form form={form} className="flex" onFinish={handleSubmit}>
+						<div className="flex-1">
 							<Form.Item
 								noStyle
-								name='phone'
+								name="phone"
 								rules={[
 									{
 										required: true,
@@ -70,21 +70,21 @@ export const ContactHome = () => {
 											}
 
 											return Promise.reject(
-												new Error('Digite um telefone válido com DDD.')
+												new Error('Digite um telefone válido com DDD.'),
 											);
 										},
 									},
 								]}
 							>
 								<input
-									type='tel'
-									placeholder='Digite seu telefone'
+									type="tel"
+									placeholder="Digite seu telefone"
 									maxLength={15}
-									className='w-full text-white bg-white/5 rounded-tl-lg rounded-bl-lg p-4 text-base lg:text-lg'
+									className="w-full text-white bg-white/5 rounded-tl-lg rounded-bl-lg p-4 text-base lg:text-lg"
 									onChange={(event) => {
 										form.setFieldValue(
 											'phone',
-											formatPhoneBR(event.target.value)
+											formatPhoneBR(event.target.value),
 										);
 									}}
 								/>
@@ -92,9 +92,9 @@ export const ContactHome = () => {
 						</div>
 
 						<button
-							type='submit'
+							type="submit"
 							disabled={isPending}
-							className='bg-secondary text-white py-3 px-6 rounded-br-lg rounded-tr-lg font-normal uppercase cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed'
+							className="bg-secondary text-white py-3 px-6 rounded-br-lg rounded-tr-lg font-normal uppercase cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
 						>
 							{isPending ? 'Enviando...' : 'Enviar'}
 						</button>

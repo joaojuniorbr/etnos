@@ -30,28 +30,28 @@ vi.mock('@tanstack/react-query', () => ({
 		children: React.ReactNode;
 	}) => {
 		queryClientProviderMock(client);
-		return <div data-testid='query-client-provider'>{children}</div>;
+		return <div data-testid="query-client-provider">{children}</div>;
 	},
 }));
 
 vi.mock('@tanstack/react-query-devtools', () => ({
 	ReactQueryDevtools: () => {
 		reactQueryDevtoolsMock();
-		return <div data-testid='react-query-devtools' />;
+		return <div data-testid="react-query-devtools" />;
 	},
 }));
 
 vi.mock('../context', () => ({
 	UserProvider: ({ children }: { children: React.ReactNode }) => {
 		userProviderMock();
-		return <div data-testid='user-provider'>{children}</div>;
+		return <div data-testid="user-provider">{children}</div>;
 	},
 }));
 
 vi.mock('../@templates', () => ({
 	MainLayout: ({ children }: { children: React.ReactNode }) => {
 		mainLayoutMock();
-		return <div data-testid='main-layout'>{children}</div>;
+		return <div data-testid="main-layout">{children}</div>;
 	},
 }));
 
@@ -71,7 +71,9 @@ describe('AppProviders', () => {
 		expect(queryClientProviderMock).toHaveBeenCalledTimes(1);
 		expect(userProviderMock).toHaveBeenCalledTimes(1);
 		expect(mainLayoutMock).toHaveBeenCalledTimes(1);
-		expect(screen.queryByTestId('react-query-devtools')).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId('react-query-devtools'),
+		).not.toBeInTheDocument();
 	});
 
 	it('renderiza React Query Devtools quando solicitado', () => {

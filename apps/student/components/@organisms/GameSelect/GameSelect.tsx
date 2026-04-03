@@ -1,7 +1,7 @@
 'use client';
 
 import { useCharacter, useGames } from '@etnos/tools';
-import { CardGame } from '../../@molecules';
+import { CardGame } from '@/components/@molecules';
 
 export const GameSelect = () => {
 	const { selectedCharacter } = useCharacter({ fetchList: false });
@@ -13,7 +13,7 @@ export const GameSelect = () => {
 	}
 
 	return (
-		<div className='flex flex-col md:flex-row justify-center gap-4'>
+		<div className="flex flex-col md:flex-row justify-center gap-4">
 			{allGames.map((game, index) => (
 				<CardGame
 					key={game.slug}

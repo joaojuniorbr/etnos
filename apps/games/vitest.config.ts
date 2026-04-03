@@ -8,11 +8,7 @@ export default defineConfig({
 		coverage: {
 			reporter: ['text', 'json', 'html', 'lcov'],
 			include: ['src/**/*.{ts,tsx}'],
-			exclude: [
-				'src/**/index.ts',
-				'src/**/*.stories.*',
-				'src/**/*.types.ts',
-			],
+			exclude: ['src/**/index.ts', 'src/**/*.stories.*', 'src/**/*.types.ts'],
 		},
 	},
 });

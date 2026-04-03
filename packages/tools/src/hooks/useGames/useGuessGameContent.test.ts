@@ -63,14 +63,16 @@ describe('useGuessGameContent', () => {
 	});
 
 	it('deve buscar conteúdo jogável do guess game', async () => {
-		vi.mocked(guessGameContentService.getPlayableContent).mockResolvedValueOnce({
-			id: '1',
-			title: 'Chimarrao',
-			tips: ['Dica 1'],
-			imageUrl: null,
-			characterSlug: 'anita',
-			wordLength: 5,
-		});
+		vi.mocked(guessGameContentService.getPlayableContent).mockResolvedValueOnce(
+			{
+				id: '1',
+				title: 'Chimarrao',
+				tips: ['Dica 1'],
+				imageUrl: null,
+				characterSlug: 'anita',
+				wordLength: 5,
+			},
+		);
 
 		const queryClient = new QueryClient({
 			defaultOptions: {

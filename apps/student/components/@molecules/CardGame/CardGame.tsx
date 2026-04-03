@@ -16,7 +16,7 @@ export const CardGame = ({
 }: CardGameProps) => (
 	<Link href={game.url}>
 		<div
-			className='shadow rounded overflow-hidden bg-white md:max-w-3xs w-full'
+			className="shadow rounded overflow-hidden bg-white md:max-w-3xs w-full"
 			{...props}
 		>
 			<Image
@@ -26,11 +26,11 @@ export const CardGame = ({
 				height={256}
 				priority={isAboveTheFold}
 				loading={isAboveTheFold ? 'eager' : 'lazy'}
-				className='aspect-[1/1] object-cover w-full '
+				className="aspect-[1/1] object-cover w-full "
 			/>
-			<dl className='p-4 text-center text-primary'>
-				<dt className='text-lg font-bold'>{game.name}</dt>
-				<dd className='text-xs'>{game.description}</dd>
+			<dl className="p-4 text-center text-primary">
+				<dt className="text-lg font-bold">{game.name}</dt>
+				<dd className="text-xs">{game.description}</dd>
 			</dl>
 		</div>
 	</Link>

@@ -84,7 +84,7 @@ export const useMemoryGame = ({
 			onPlaySound?.('flip');
 
 			const nextCards = cards.map((card) =>
-				card.id === id ? { ...card, isFlipped: true } : card
+				card.id === id ? { ...card, isFlipped: true } : card,
 			);
 			const nextFlippedCards = [...flippedCards, id];
 
@@ -104,7 +104,7 @@ export const useMemoryGame = ({
 					nextFlippedCards as [number, number],
 					score,
 					consecutiveMatches,
-					levelConfig
+					levelConfig,
 				);
 
 				setCards(result.cards);
@@ -136,7 +136,7 @@ export const useMemoryGame = ({
 			matchDelayMs,
 			onPlaySound,
 			score,
-		]
+		],
 	);
 
 	const totalPairs = content.length;

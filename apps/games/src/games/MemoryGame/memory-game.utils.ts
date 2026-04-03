@@ -20,7 +20,7 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 
 	for (let index = shuffled.length - 1; index > 0; index -= 1) {
 		const randomIndex = Math.floor(
-			(randomValues[index]! / (0xffffffff + 1)) * (index + 1)
+			(randomValues[index]! / (0xffffffff + 1)) * (index + 1),
 		);
 		[shuffled[index], shuffled[randomIndex]] = [
 			shuffled[randomIndex]!,
@@ -33,17 +33,17 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 
 export const createMemoryGameDeck = (
 	content: MemoryGameCardContent[],
-	shuffle: <T>(items: T[]) => T[] = shuffleArray
+	shuffle: <T>(items: T[]) => T[] = shuffleArray,
 ): MemoryGameCard[] =>
 	shuffle(
 		content.flatMap((card, index) => [
 			{ ...card, id: index * 2, isFlipped: false, isMatched: false },
 			{ ...card, id: index * 2 + 1, isFlipped: false, isMatched: false },
-		])
+		]),
 	);
 
 export const getMemoryGameLevelConfig = (
-	level: number
+	level: number,
 ): MemoryGameLevelConfig => ({
 	level,
 	label: `Nível ${level}`,
@@ -56,13 +56,13 @@ export const getMemoryGameLevelConfig = (
 export const getAvailableMemoryGameLevels = (contentCount: number) =>
 	Array.from(
 		{ length: Math.floor(contentCount / MEMORY_GAME_LEVEL_PAIR_STEP) },
-		(_, index) => getMemoryGameLevelConfig(index + 1)
+		(_, index) => getMemoryGameLevelConfig(index + 1),
 	);
 
 export const getMemoryGameLevelContent = (
 	content: MemoryGameCardContent[],
 	level: number,
-	shuffle: <T>(items: T[]) => T[] = shuffleArray
+	shuffle: <T>(items: T[]) => T[] = shuffleArray,
 ) => shuffle(content).slice(0, getMemoryGameLevelConfig(level).pairs);
 
 export const resolveMemoryGameTurn = (
@@ -73,7 +73,7 @@ export const resolveMemoryGameTurn = (
 	levelConfig: Pick<
 		MemoryGameLevelConfig,
 		'pointAddition' | 'pointBonus' | 'pointPenalty'
-	>
+	>,
 ) => {
 	const [firstId, secondId] = flippedCardIds;
 	const firstCard = cards.find((card) => card.id === firstId);
@@ -83,7 +83,7 @@ export const resolveMemoryGameTurn = (
 		const matchedCards = cards.map((card) =>
 			card.id === firstId || card.id === secondId
 				? { ...card, isMatched: true }
-				: card
+				: card,
 		);
 		const nextConsecutiveMatches = consecutiveMatches + 1;
 		const pointsEarned =
@@ -102,7 +102,7 @@ export const resolveMemoryGameTurn = (
 		cards: cards.map((card) =>
 			card.id === firstId || card.id === secondId
 				? { ...card, isFlipped: false }
-				: card
+				: card,
 		),
 		score: score - levelConfig.pointPenalty,
 		isFinished: false,

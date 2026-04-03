@@ -19,7 +19,9 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(user?.uid);
+	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(
+		user?.uid,
+	);
 
 	const {
 		data: scoreGame,
@@ -28,11 +30,11 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	} = useGameScore(
 		user?.uid ?? '',
 		GamesEnum.MEMORY_GAME,
-		characterSlug ?? selectedCharacter?.slug ?? ''
+		characterSlug ?? selectedCharacter?.slug ?? '',
 	);
 
 	const { data: cardsData } = useMemoryGameContent(
-		characterSlug ?? selectedCharacter?.slug ?? ''
+		characterSlug ?? selectedCharacter?.slug ?? '',
 	);
 
 	const { data: gamesConfig } = useGamesConfig(GamesEnum.MEMORY_GAME);
@@ -69,7 +71,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		await saveGameScoreHistory(
 			GamesEnum.MEMORY_GAME,
 			activeCharacterSlug,
-			score
+			score,
 		);
 	};
 
@@ -77,7 +79,7 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		if (gamesConfig && selectedCharacter) {
 			return gamesConfig.find(
 				(game: ConfigGamesInterface) =>
-					game.characterSlug === selectedCharacter.slug
+					game.characterSlug === selectedCharacter.slug,
 			)?.imageCoverUrl;
 		}
 

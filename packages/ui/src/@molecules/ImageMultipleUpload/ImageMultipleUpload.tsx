@@ -27,7 +27,7 @@ export const ImageMultipleUpload = ({
 			const uploaded = await midiaService.uploadImage(
 				file.originFileObj as File,
 				folder ?? '',
-				userId
+				userId,
 			);
 
 			file.url = uploaded.url;
@@ -50,7 +50,7 @@ export const ImageMultipleUpload = ({
 	return (
 		<Upload.Dragger
 			multiple
-			listType='picture'
+			listType="picture"
 			fileList={fileList}
 			beforeUpload={(file) => {
 				const uploadFile: UploadFile = {
@@ -72,9 +72,9 @@ export const ImageMultipleUpload = ({
 				setFileList(filtered);
 				onUpload?.(filtered.map((f) => f.url as string));
 			}}
-			key='uid'
+			key="uid"
 		>
-			<Button type='primary' icon={<UploadOutlined />}>
+			<Button type="primary" icon={<UploadOutlined />}>
 				Fazer upload
 			</Button>
 		</Upload.Dragger>

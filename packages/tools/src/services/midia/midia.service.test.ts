@@ -32,7 +32,7 @@ describe('midiaService', () => {
 		const result = await midiaService.uploadImage(
 			new File(['x'], 'test.png'),
 			'folder',
-			'user-1'
+			'user-1',
 		);
 
 		expect(apiMock.post).toHaveBeenCalledWith(
@@ -42,14 +42,14 @@ describe('midiaService', () => {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 				},
-			})
+			}),
 		);
 		expect(result).toEqual({ url: 'http://image' });
 	});
 
 	it('deve falhar upload quando userId não for informado', async () => {
 		await expect(
-			midiaService.uploadImage(new File(['x'], 'test.png'), 'folder', '')
+			midiaService.uploadImage(new File(['x'], 'test.png'), 'folder', ''),
 		).rejects.toThrow('Usuário não encontrado');
 	});
 
@@ -59,10 +59,17 @@ describe('midiaService', () => {
 			.mockResolvedValueOnce({ data: { url: 'http://image-2' } });
 
 		const files = [new File(['x'], 'a.png'), new File(['y'], 'b.png')];
-		const result = await midiaService.uploadMultipleImages(files, 'folder', 'user-1');
+		const result = await midiaService.uploadMultipleImages(
+			files,
+			'folder',
+			'user-1',
+		);
 
 		expect(apiMock.post).toHaveBeenCalledTimes(2);
-		expect(result).toEqual([{ url: 'http://image-1' }, { url: 'http://image-2' }]);
+		expect(result).toEqual([
+			{ url: 'http://image-1' },
+			{ url: 'http://image-2' },
+		]);
 	});
 
 	it('deve listar mídias com paginação', async () => {
@@ -91,7 +98,9 @@ describe('midiaService', () => {
 	});
 
 	it('deve usar página 1 como padrão quando cursor não for enviado', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+		apiMock.get.mockResolvedValueOnce({
+			data: { data: [], nextCursor: undefined },
+		});
 
 		await midiaService.getMidia('user-1', 20);
 
@@ -105,7 +114,9 @@ describe('midiaService', () => {
 	});
 
 	it('deve listar mídias usando endpoint admin quando showAll estiver ativo', async () => {
-		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+		apiMock.get.mockResolvedValueOnce({
+			data: { data: [], nextCursor: undefined },
+		});
 
 		await midiaService.getMidia('user-1', 20, 2, 'library', true);
 
@@ -143,7 +154,7 @@ describe('midiaService', () => {
 
 		await midiaService.deleteMidia(
 			{ id: '1', url: 'u', userId: 'user-1' },
-			true
+			true,
 		);
 
 		expect(apiMock.delete).toHaveBeenCalledWith('/midia/admin/1');

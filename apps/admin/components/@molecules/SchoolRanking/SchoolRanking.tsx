@@ -16,11 +16,11 @@ export const SchoolRanking = ({
 	gameOptions,
 }: SchoolRankingProps) => {
 	return (
-		<div className='border border-slate-200 p-6 rounded bg-white'>
-			<div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4'>
+		<div className="border border-slate-200 p-6 rounded bg-white">
+			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 				<div>
-					<Title className='mb-1'>Ranking por escola</Title>
-					<p className='text-slate-600 text-sm'>
+					<Title className="mb-1">Ranking por escola</Title>
+					<p className="text-slate-600 text-sm">
 						Veja o desempenho acumulado das escolas e filtre por jogo quando
 						quiser.
 					</p>
@@ -30,7 +30,7 @@ export const SchoolRanking = ({
 					value={selectedGame}
 					onChange={onGameChange}
 					options={gameOptions}
-					className='w-full md:max-w-xs'
+					className="w-full md:max-w-xs"
 				/>
 			</div>
 

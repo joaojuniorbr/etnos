@@ -7,10 +7,4 @@ export * from './entities/school-ranking';
 export * from './entities/school-user';
 export * from './entities/user-ranking';
 
-export * from './games/enums';
-export * from './games/game';
-export * from './games/game-config';
-export * from './games/guess-game-content';
-export * from './games/guess-game-play';
-export * from './games/memory-game-content';
-export * from './games/score';
+export * from './games';

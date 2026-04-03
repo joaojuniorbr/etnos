@@ -26,7 +26,7 @@ vi.mock('@etnos/ui', () => ({
 vi.mock('./MemoryGameExperience', () => ({
 	MemoryGameExperience: (props: unknown) => {
 		memoryGameExperienceMock(props);
-		return <div data-testid='memory-game-experience' />;
+		return <div data-testid="memory-game-experience" />;
 	},
 }));
 
@@ -66,17 +66,17 @@ describe('MemoryGame', () => {
 				content: [{ name: 'chimarrao', image: '/a.jpg' }],
 				coverImage: '/cover-config.jpg',
 				selectedCharacter: { slug: 'anita', name: 'Anita' },
-			})
+			}),
 		);
 	});
 
 	it('prioriza o characterSlug recebido por props nas consultas', () => {
-		render(<MemoryGame characterSlug='zeca' />);
+		render(<MemoryGame characterSlug="zeca" />);
 
 		expect(useGameScoreMock).toHaveBeenCalledWith(
 			'user-1',
 			'memory-game',
-			'zeca'
+			'zeca',
 		);
 		expect(useMemoryGameContentMock).toHaveBeenCalledWith('zeca');
 	});
@@ -162,7 +162,7 @@ describe('MemoryGame', () => {
 			isLoading: false,
 		});
 
-		render(<MemoryGame characterSlug='zeca' />);
+		render(<MemoryGame characterSlug="zeca" />);
 
 		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
 			onSaveScore: (score: number) => Promise<void>;
@@ -196,7 +196,7 @@ describe('MemoryGame', () => {
 		expect(saveGameScoreHistory).toHaveBeenCalledWith(
 			'memory-game',
 			'anita',
-			250
+			250,
 		);
 	});
 
@@ -213,7 +213,7 @@ describe('MemoryGame', () => {
 			data: undefined,
 		});
 
-		render(<MemoryGame characterSlug='zeca' />);
+		render(<MemoryGame characterSlug="zeca" />);
 
 		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
 			coverImage: string;
@@ -235,10 +235,10 @@ describe('MemoryGame', () => {
 		});
 
 		expect(
-			useGamesMock.mock.results[0]?.value.saveGameScore
+			useGamesMock.mock.results[0]?.value.saveGameScore,
 		).not.toHaveBeenCalled();
 		expect(
-			useGamesMock.mock.results[0]?.value.saveGameScoreHistory
+			useGamesMock.mock.results[0]?.value.saveGameScoreHistory,
 		).not.toHaveBeenCalled();
 	});
 });

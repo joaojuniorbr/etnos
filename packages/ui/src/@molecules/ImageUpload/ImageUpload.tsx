@@ -56,14 +56,14 @@ export const ImageUpload = ({
 			>
 				<button
 					disabled={loading}
-					className='ui:border-2 ui:border-dotted ui:border-slate-400 ui:rounded ui:flex ui:justify-center ui:items-center ui:overflow-hidden'
+					className="ui:border-2 ui:border-dotted ui:border-slate-400 ui:rounded ui:flex ui:justify-center ui:items-center ui:overflow-hidden"
 				>
 					{imageUrl ? (
 						<Image src={imageUrl} />
 					) : (
-						<div className='ui:p-6 ui:text-4xl ui:text-slate-600 ui:flex ui:flex-col ui:items-center ui:gap-1'>
+						<div className="ui:p-6 ui:text-4xl ui:text-slate-600 ui:flex ui:flex-col ui:items-center ui:gap-1">
 							<RiAddLine />
-							<span className='ui:uppercase ui:text-xs ui:font-bold'>
+							<span className="ui:uppercase ui:text-xs ui:font-bold">
 								Adicionar
 							</span>
 						</div>

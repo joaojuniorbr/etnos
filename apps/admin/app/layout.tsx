@@ -15,7 +15,7 @@ export default function RootLayout({
 		<AppProviders>
 			<AuthProtected
 				allowedRoles={['admin', 'school']}
-				forbiddenRedirectTo='/estudante'
+				forbiddenRedirectTo="/estudante"
 			>
 				{children}
 			</AuthProtected>

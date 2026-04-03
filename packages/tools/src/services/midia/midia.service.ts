@@ -27,7 +27,7 @@ export const midiaService = {
 
 	async uploadMultipleImages(files: File[], folder: string, userId: string) {
 		const promises = files.map((file) =>
-			this.uploadImage(file, folder, userId)
+			this.uploadImage(file, folder, userId),
 		);
 		return Promise.all(promises);
 	},
@@ -37,7 +37,7 @@ export const midiaService = {
 		limitNumber: number,
 		cursor?: number,
 		folder?: string,
-		showAll?: boolean
+		showAll?: boolean,
 	) {
 		if (!userId) {
 			return {

@@ -14,9 +14,9 @@ describe('PublicController', () => {
           provide: PublicService,
           useValue: {
             sendContactEmail: jest.fn().mockResolvedValue({ ok: true }),
-            getSchools: jest.fn().mockResolvedValue([
-              { id: 'school-1', name: 'Escola Teste' },
-            ]),
+            getSchools: jest
+              .fn()
+              .mockResolvedValue([{ id: 'school-1', name: 'Escola Teste' }]),
           },
         },
       ],

@@ -37,14 +37,14 @@ describe('Header Component', () => {
 		expect(link).toHaveAttribute('href', '/');
 		expect(screen.getByAltText('Etnos')).toHaveAttribute(
 			'src',
-			'/images/brand-horizontal.svg'
+			'/images/brand-horizontal.svg',
 		);
 	});
 
 	it('sempre renderiza o HeaderMobile', () => {
 		mockUseUser.mockReturnValue({ user: null });
 		vi.mock('./HeaderMobile', () => ({
-			HeaderMobile: () => <div data-testid='header-mobile-mock' />,
+			HeaderMobile: () => <div data-testid="header-mobile-mock" />,
 		}));
 		render(<Header />);
 		expect(screen.getByTestId('header-mobile-mock')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('Header Component', () => {
 			const defaultImg = screen.getByAltText('aluno-sem-foto@teste.com');
 			expect(defaultImg).toHaveAttribute(
 				'src',
-				`https://robohash.org/${mockUserWithoutPhoto.email}`
+				`https://robohash.org/${mockUserWithoutPhoto.email}`,
 			);
 		});
 

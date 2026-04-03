@@ -74,7 +74,7 @@ describe('useCharacter', () => {
 		};
 
 		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
-			mockCharacter as unknown as CharacterInterface
+			mockCharacter as unknown as CharacterInterface,
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -102,7 +102,7 @@ describe('useCharacter', () => {
 		localStorage.setItem('selectedCharacter', 'zelda');
 
 		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
-			mockCharacter as any
+			mockCharacter as any,
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -120,7 +120,7 @@ describe('useCharacter', () => {
 		localStorage.setItem('selectedCharacter', 'unknown');
 
 		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValueOnce(
-			null as unknown as CharacterInterface
+			null as unknown as CharacterInterface,
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -129,7 +129,7 @@ describe('useCharacter', () => {
 
 		await waitFor(() => {
 			expect(charactersService.getCharacterBySlug).toHaveBeenCalledWith(
-				'unknown'
+				'unknown',
 			);
 		});
 
@@ -159,7 +159,7 @@ describe('useCharacter', () => {
 				}
 
 				return null as unknown as CharacterInterface;
-			}
+			},
 		);
 
 		const firstHook = renderHook(() => useCharacter(), {
@@ -170,8 +170,12 @@ describe('useCharacter', () => {
 		});
 
 		await waitFor(() => {
-			expect(firstHook.result.current.selectedCharacter).toEqual(initialCharacter);
-			expect(secondHook.result.current.selectedCharacter).toEqual(initialCharacter);
+			expect(firstHook.result.current.selectedCharacter).toEqual(
+				initialCharacter,
+			);
+			expect(secondHook.result.current.selectedCharacter).toEqual(
+				initialCharacter,
+			);
 		});
 
 		act(() => {
@@ -179,8 +183,12 @@ describe('useCharacter', () => {
 		});
 
 		await waitFor(() => {
-			expect(firstHook.result.current.selectedCharacter).toEqual(updatedCharacter);
-			expect(secondHook.result.current.selectedCharacter).toEqual(updatedCharacter);
+			expect(firstHook.result.current.selectedCharacter).toEqual(
+				updatedCharacter,
+			);
+			expect(secondHook.result.current.selectedCharacter).toEqual(
+				updatedCharacter,
+			);
 		});
 	});
 
@@ -199,7 +207,7 @@ describe('useCharacter', () => {
 				}
 
 				return null as unknown as CharacterInterface;
-			}
+			},
 		);
 
 		const firstHook = renderHook(() => useCharacter(), {
@@ -211,7 +219,9 @@ describe('useCharacter', () => {
 
 		await waitFor(() => {
 			expect(firstHook.result.current.selectedCharacter).toEqual(mockCharacter);
-			expect(secondHook.result.current.selectedCharacter).toEqual(mockCharacter);
+			expect(secondHook.result.current.selectedCharacter).toEqual(
+				mockCharacter,
+			);
 		});
 
 		act(() => {
@@ -231,7 +241,7 @@ describe('useCharacter', () => {
 		};
 
 		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
-			mockCharacter as CharacterInterface
+			mockCharacter as CharacterInterface,
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -260,7 +270,7 @@ describe('useCharacter', () => {
 		};
 
 		vi.mocked(charactersService.getCharacterBySlug).mockResolvedValue(
-			mockCharacter as CharacterInterface
+			mockCharacter as CharacterInterface,
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -272,11 +282,13 @@ describe('useCharacter', () => {
 				new StorageEvent('storage', {
 					key: 'other-key',
 					newValue: 'zeca',
-				})
+				}),
 			);
 		});
 
-		expect(charactersService.getCharacterBySlug).not.toHaveBeenCalledWith('zeca');
+		expect(charactersService.getCharacterBySlug).not.toHaveBeenCalledWith(
+			'zeca',
+		);
 		expect(result.current.selectedCharacter).toBeUndefined();
 
 		act(() => {
@@ -284,7 +296,7 @@ describe('useCharacter', () => {
 				new StorageEvent('storage', {
 					key: 'selectedCharacter',
 					newValue: 'zeca',
-				})
+				}),
 			);
 		});
 
@@ -312,7 +324,7 @@ describe('useCharacter', () => {
 				}
 
 				return fastRequest.promise as Promise<CharacterInterface>;
-			}
+			},
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -355,7 +367,7 @@ describe('useCharacter', () => {
 				}
 
 				return fastRequest.promise as Promise<CharacterInterface>;
-			}
+			},
 		);
 
 		const { result } = renderHook(() => useCharacter(), {
@@ -388,7 +400,10 @@ describe('useCharacter', () => {
 
 	it('limpa a seleção quando a requisição atual falha', async () => {
 		vi.mocked(charactersService.getCharacterBySlug)
-			.mockResolvedValueOnce({ slug: 'anita', name: 'Anita' } as CharacterInterface)
+			.mockResolvedValueOnce({
+				slug: 'anita',
+				name: 'Anita',
+			} as CharacterInterface)
 			.mockRejectedValueOnce(new Error('current request failed'));
 
 		const { result } = renderHook(() => useCharacter(), {

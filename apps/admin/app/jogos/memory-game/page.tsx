@@ -4,9 +4,12 @@ import { AuthProtected } from '@etnos/ui';
 
 export default function JogoDaMemoriaPage() {
 	return (
-		<AuthProtected allowedRoles={['admin']} forbiddenRedirectTo='/admin/escolas'>
+		<AuthProtected
+			allowedRoles={['admin']}
+			forbiddenRedirectTo="/admin/escolas"
+		>
 			<Spin spinning={false}>
-				<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+				<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 					<Breadcrumb
 						items={[
 							{ title: 'Home', href: '/' },

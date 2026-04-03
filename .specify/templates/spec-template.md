@@ -5,13 +5,13 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -76,7 +76,7 @@
 - How is the experience preserved on smaller screens, keyboard navigation, and
   slower devices or networks when applicable?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
@@ -97,15 +97,18 @@
   including the automated and manual checks required for release confidence.
 - **FR-006**: The feature MUST define how changed code will reach and verify
   100% test coverage for the applicable configured metrics in the touched scope.
+- **FR-007**: New or renamed files introduced by the feature MUST follow the
+  project's naming conventions, including `camelCase` for React hook filenames
+  and `PascalCase` for component filenames.
 
-*Mark uncertain requirements inline when details are genuinely unknown.*
+_Mark uncertain requirements inline when details are genuinely unknown._
 
-- **FR-007**: System MUST authenticate or authorize via
+- **FR-008**: System MUST authenticate or authorize via
   [NEEDS CLARIFICATION: exact auth rule or role matrix].
-- **FR-008**: System MUST meet
+- **FR-009**: System MUST meet
   [NEEDS CLARIFICATION: latency, rendering, or throughput target].
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **User-facing entity**: The domain object the journey revolves around, such
   as a student profile, game session, configurable card deck, or admin-managed
@@ -113,7 +116,7 @@
 - **Supporting contract**: The API payload, shared type, UI component contract,
   or persistence record that coordinates behavior across apps/packages.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 <!--
   ACTION REQUIRED: Define measurable success criteria.

@@ -25,7 +25,7 @@ describe('@atoms/Button', () => {
 	});
 
 	it('aplica estilo secundario e mapeia type para default', () => {
-		render(<Button type='secondary'>Secundario</Button>);
+		render(<Button type="secondary">Secundario</Button>);
 
 		const buttonElement = screen.getByRole('button', { name: /secundario/i });
 
@@ -37,7 +37,7 @@ describe('@atoms/Button', () => {
 	});
 
 	it('aplica estilo xl e mapeia size para large', () => {
-		render(<Button size='xl'>Grande</Button>);
+		render(<Button size="xl">Grande</Button>);
 
 		const buttonElement = screen.getByRole('button', { name: /grande/i });
 

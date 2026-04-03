@@ -45,7 +45,7 @@ export const MemoryGameExperience = ({
 }: MemoryGameExperienceProps) => {
 	const availableLevels = useMemo(
 		() => getAvailableMemoryGameLevels(content.length),
-		[content.length]
+		[content.length],
 	);
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
@@ -151,7 +151,7 @@ export const MemoryGameExperience = ({
 		);
 	} else {
 		contentView = (
-			<div className='grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 lg:grid-cols-8 w-full'>
+			<div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 sm:gap-4 lg:grid-cols-8 w-full">
 				{cards.map((card) => (
 					<button
 						key={card.id}
@@ -172,7 +172,7 @@ export const MemoryGameExperience = ({
 								alt={selectedCharacter?.name ?? 'Carta virada'}
 								width={500}
 								height={500}
-								className='object-cover aspect-square rounded'
+								className="object-cover aspect-square rounded"
 							/>
 						</div>
 
@@ -184,7 +184,7 @@ export const MemoryGameExperience = ({
 								alt={card.name}
 								width={500}
 								height={500}
-								className='object-cover aspect-square rounded'
+								className="object-cover aspect-square rounded"
 							/>
 						</div>
 					</button>
@@ -195,32 +195,32 @@ export const MemoryGameExperience = ({
 
 	return (
 		<Spin spinning={isLoading}>
-			<div className='flex flex-col items-center gap-6'>
-				<div className='fixed bg-white py-2 px-2 shadow-[0px_-4px_4px_0px_rgba(0,_0,_0,_0.05)] md:shadow-none md:p-0 md:bg-transparent md:relative bottom-0 left-0 w-full z-10'>
-					<div className='grid grid-cols-4 gap-1 md:grid-cols-4 sm:gap-4 w-full'>
+			<div className="flex flex-col items-center gap-6">
+				<div className="fixed bg-white py-2 px-2 shadow-[0px_-4px_4px_0px_rgba(0,_0,_0,_0.05)] md:shadow-none md:p-0 md:bg-transparent md:relative bottom-0 left-0 w-full z-10">
+					<div className="grid grid-cols-4 gap-1 md:grid-cols-4 sm:gap-4 w-full">
 						<ScoreHighlight
 							icon={<RiTrophyLine />}
-							label='Pontuação'
+							label="Pontuação"
 							score={score}
-							className='bg-yellow-500 bg-text'
+							className="bg-yellow-500 bg-text"
 						/>
 						<ScoreHighlight
 							icon={<RiArrowLeftRightFill />}
-							label='Movimentos'
+							label="Movimentos"
 							score={moves}
-							className='bg-blue-600 text-white'
+							className="bg-blue-600 text-white"
 						/>
 						<ScoreHighlight
 							icon={<RiCheckDoubleLine />}
-							label='Acertos'
+							label="Acertos"
 							score={`${matchedPairs}/${totalPairs}`}
-							className='bg-emerald-700 text-white'
+							className="bg-emerald-700 text-white"
 						/>
 						<ScoreHighlight
 							icon={<RiStarFill />}
-							label='Recorde'
+							label="Recorde"
 							score={bestScore}
-							className='bg-primary text-white'
+							className="bg-primary text-white"
 						/>
 					</div>
 				</div>

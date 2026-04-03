@@ -23,7 +23,7 @@ export const AvatarPickerDrawer = ({
 }: AvatarPickerDrawerProps) => {
 	const [isSaving, setIsSaving] = useState(false);
 	const [selectedCharacterSlug, setSelectedCharacterSlug] = useState(
-		user.avatarCharacterSlug || ''
+		user.avatarCharacterSlug || '',
 	);
 
 	const {
@@ -64,27 +64,27 @@ export const AvatarPickerDrawer = ({
 
 	return (
 		<Spin spinning={isLoading || isSaving}>
-			<div className='flex flex-col gap-6'>
+			<div className="flex flex-col gap-6">
 				<div>
-					<h3 className='text-lg font-bold text-primary mb-2'>Personagens</h3>
-					<p className='text-sm text-slate-500'>
+					<h3 className="text-lg font-bold text-primary mb-2">Personagens</h3>
+					<p className="text-sm text-slate-500">
 						Escolha um personagem para ver os avatares disponíveis.
 					</p>
 				</div>
 
 				{charactersError ? (
-					<p className='text-sm text-slate-500'>
+					<p className="text-sm text-slate-500">
 						Não foi possível carregar os personagens.
 					</p>
 				) : (
-					<div className='grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8'>
+					<div className="grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8">
 						{characters.map((character) => {
 							const isSelected = selectedCharacterSlug === character.slug;
 
 							return (
 								<button
 									key={character.slug}
-									type='button'
+									type="button"
 									onClick={() => setSelectedCharacterSlug(character.slug)}
 									className={`rounded border p-3 text-left transition ${
 										isSelected
@@ -96,12 +96,12 @@ export const AvatarPickerDrawer = ({
 										src={character.imageUrl}
 										alt={character.name}
 										preview={false}
-										className='aspect-square object-cover rounded mb-3 w-full'
+										className="aspect-square object-cover rounded mb-3 w-full"
 									/>
-									<div className='text-sm font-bold text-primary'>
+									<div className="text-sm font-bold text-primary">
 										{character.name}
 									</div>
-									<div className='text-xs text-slate-500'>
+									<div className="text-xs text-slate-500">
 										{character.region}
 									</div>
 								</button>
@@ -111,21 +111,21 @@ export const AvatarPickerDrawer = ({
 				)}
 
 				<div>
-					<h3 className='text-lg font-bold text-primary mb-2'>Avatares</h3>
-					<p className='text-sm text-slate-500'>
+					<h3 className="text-lg font-bold text-primary mb-2">Avatares</h3>
+					<p className="text-sm text-slate-500">
 						Selecione uma imagem para salvar no seu perfil.
 					</p>
 				</div>
 
 				{selectedCharacterSlug ? (
-					<div className='grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10'>
+					<div className="grid grid-cols-2 gap-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10">
 						{avatars.map((avatar) => {
 							const isSelected = user.photoURL === avatar.url;
 
 							return (
 								<button
 									key={avatar.id || avatar.url}
-									type='button'
+									type="button"
 									onClick={() => handleSelectAvatar(avatar.url)}
 									className={`rounded border overflow-hidden flex w-full ${
 										isSelected ? 'border-primary border-2' : 'border-none'
@@ -133,16 +133,16 @@ export const AvatarPickerDrawer = ({
 								>
 									<Image
 										src={avatar.url}
-										alt='Avatar do personagem'
+										alt="Avatar do personagem"
 										preview={false}
-										className='aspect-square object-cover'
+										className="aspect-square object-cover"
 									/>
 								</button>
 							);
 						})}
 					</div>
 				) : (
-					<p className='text-sm text-slate-500'>
+					<p className="text-sm text-slate-500">
 						Selecione um personagem para visualizar os avatares.
 					</p>
 				)}
@@ -151,7 +151,7 @@ export const AvatarPickerDrawer = ({
 					!avatars.length &&
 					!isLoading &&
 					!avatarsError && (
-						<p className='text-sm text-slate-500'>
+						<p className="text-sm text-slate-500">
 							Ainda não existem avatares cadastrados para este personagem.
 						</p>
 					)}

@@ -11,7 +11,7 @@ export const signOut = async () => true;
 export const signInWithEmailAndPassword = async (
 	_auth: any,
 	email: string,
-	password: string
+	password: string,
 ) => ({
 	user: { uid: 'mock-uid', email, password },
 });
@@ -23,7 +23,7 @@ export const sendPasswordResetEmail = async (_auth: any, email: string) => ({
 
 export const onAuthStateChanged = (
 	_auth: any,
-	callback: (user: any) => void
+	callback: (user: any) => void,
 ) => {
 	callback({
 		uid: 'mock-uid',
@@ -37,7 +37,7 @@ export const onAuthStateChanged = (
 export const createUserWithEmailAndPassword = async (
 	_auth: any,
 	email: string,
-	password: string
+	password: string,
 ) => ({
 	user: { uid: 'new-mock-uid', email, password },
 });

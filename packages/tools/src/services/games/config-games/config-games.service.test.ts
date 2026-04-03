@@ -33,7 +33,9 @@ describe('configGamesService', () => {
 
 		await configGamesService.getByGame('memory-game');
 
-		expect(apiMock.get).toHaveBeenCalledWith('/games/config/by-game/memory-game');
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/games/config/by-game/memory-game',
+		);
 	});
 
 	it('deve buscar configuração por jogo e personagem', async () => {
@@ -50,6 +52,8 @@ describe('configGamesService', () => {
 
 		await configGamesService.remove('memory-game', 'joao');
 
-		expect(apiMock.delete).toHaveBeenCalledWith('/games/config/memory-game/joao');
+		expect(apiMock.delete).toHaveBeenCalledWith(
+			'/games/config/memory-game/joao',
+		);
 	});
 });

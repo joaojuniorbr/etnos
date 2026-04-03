@@ -15,7 +15,7 @@ export const getGuessGameRevealedLettersCount = (currentGuesses: string) =>
 
 export const getGuessGameWordSolvePoints = (
 	wordLength: number,
-	revealedLettersCount: number
+	revealedLettersCount: number,
 ) => {
 	if (wordLength <= 0) {
 		return 0;

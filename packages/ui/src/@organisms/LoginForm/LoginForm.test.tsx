@@ -16,7 +16,6 @@ vi.mock('../../@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,
-		block: _block,
 		...props
 	}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
 		htmlType?: 'button' | 'submit' | 'reset';
@@ -33,10 +32,10 @@ vi.mock('../../@atoms', () => ({
 vi.mock('../../@molecules', () => ({
 	ResetPasswordForm: ({ onSubmit }: { onSubmit: () => void }) => (
 		<div>
-			<button type='button' onClick={onSubmit}>
+			<button type="button" onClick={onSubmit}>
 				Fechar reset
 			</button>
-			<div data-testid='reset-password-form'>Reset Password Form</div>
+			<div data-testid="reset-password-form">Reset Password Form</div>
 		</div>
 	),
 }));
@@ -96,9 +95,9 @@ vi.mock('antd', async () => {
 		),
 		{
 			Password: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-				<input type='password' {...props} />
+				<input type="password" {...props} />
 			),
-		}
+		},
 	);
 
 	return {
@@ -113,8 +112,7 @@ vi.mock('antd', async () => {
 		}: {
 			open?: boolean;
 			children: React.ReactNode;
-		}) =>
-			open ? <div data-testid='modal'>{children}</div> : null,
+		}) => (open ? <div data-testid="modal">{children}</div> : null),
 		Spin: ({
 			spinning,
 			children,
@@ -122,7 +120,7 @@ vi.mock('antd', async () => {
 			spinning?: boolean;
 			children: React.ReactNode;
 		}) => (
-			<div data-testid='spin' data-spinning={String(!!spinning)}>
+			<div data-testid="spin" data-spinning={String(!!spinning)}>
 				{children}
 			</div>
 		),
@@ -181,7 +179,7 @@ describe('LoginForm', () => {
 		await waitFor(() => {
 			expect(onSignInWithEmailAndPassword).toHaveBeenCalledWith(
 				'user@test.com',
-				password
+				password,
 			);
 			expect(onLoginSuccess).toHaveBeenCalledTimes(1);
 		});
@@ -252,7 +250,7 @@ describe('LoginForm', () => {
 		render(<LoginForm onLoginSuccess={onLoginSuccess} />);
 
 		fireEvent.click(
-			screen.getByRole('button', { name: /entrar com conta google/i })
+			screen.getByRole('button', { name: /entrar com conta google/i }),
 		);
 
 		await waitFor(() => {
@@ -275,7 +273,7 @@ describe('LoginForm', () => {
 		render(<LoginForm onLoginSuccess={onLoginSuccess} />);
 
 		fireEvent.click(
-			screen.getByRole('button', { name: /entrar com conta google/i })
+			screen.getByRole('button', { name: /entrar com conta google/i }),
 		);
 
 		await waitFor(() => {
@@ -284,7 +282,7 @@ describe('LoginForm', () => {
 			expect(resetFieldsMock).not.toHaveBeenCalled();
 			expect(screen.getByTestId('spin')).toHaveAttribute(
 				'data-spinning',
-				'false'
+				'false',
 			);
 		});
 	});
@@ -298,7 +296,9 @@ describe('LoginForm', () => {
 
 		render(<LoginForm onLoginSuccess={vi.fn()} />);
 
-		fireEvent.click(screen.getByRole('button', { name: /esqueci minha senha/i }));
+		fireEvent.click(
+			screen.getByRole('button', { name: /esqueci minha senha/i }),
+		);
 
 		await waitFor(() => {
 			expect(screen.getByTestId('modal')).toBeInTheDocument();

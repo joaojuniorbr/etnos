@@ -150,7 +150,9 @@ const createSchoolsServiceMocks = (defaultSchool = createSchool()) => ({
     ]),
   },
   gameScore: {
-    findMany: jest.fn().mockResolvedValue([createUserScore('firebase-user-1', 80)]),
+    findMany: jest
+      .fn()
+      .mockResolvedValue([createUserScore('firebase-user-1', 80)]),
   },
 });
 
@@ -376,30 +378,27 @@ describe('SchoolsService', () => {
         ForbiddenException,
         'getUserRankingFromMySchool',
       ],
-    ])(
-      'lança erro para %s',
-      async (_, profile, expectedError, methodName) => {
-        prismaService.user.findUnique.mockResolvedValueOnce(profile);
+    ])('lança erro para %s', async (_, profile, expectedError, methodName) => {
+      prismaService.user.findUnique.mockResolvedValueOnce(profile);
 
-        let call: Promise<unknown>;
+      let call: Promise<unknown>;
 
-        switch (methodName) {
-          case 'getMySchool':
-            call = service.getMySchool('firebase-user-1');
-            break;
-          case 'getUsersFromMySchool':
-            call = service.getUsersFromMySchool('firebase-user-1', 'Aluno');
-            break;
-          default:
-            call = service.getUserRankingFromMySchool(
-              'firebase-user-1',
-              'memory-game',
-            );
-        }
+      switch (methodName) {
+        case 'getMySchool':
+          call = service.getMySchool('firebase-user-1');
+          break;
+        case 'getUsersFromMySchool':
+          call = service.getUsersFromMySchool('firebase-user-1', 'Aluno');
+          break;
+        default:
+          call = service.getUserRankingFromMySchool(
+            'firebase-user-1',
+            'memory-game',
+          );
+      }
 
-        await expect(call).rejects.toThrow(expectedError);
-      },
-    );
+      await expect(call).rejects.toThrow(expectedError);
+    });
 
     it('lança erro quando a escola do perfil autenticado nao existir', async () => {
       prismaService.school.findUnique.mockResolvedValueOnce(null);
@@ -447,7 +446,10 @@ describe('SchoolsService', () => {
     it.each([
       {
         name: 'agrega ranking por escola com filtro de jogo',
-        schools: [createSchool(), createSchool({ id: '2', name: 'Outra Escola' })],
+        schools: [
+          createSchool(),
+          createSchool({ id: '2', name: 'Outra Escola' }),
+        ],
         users: [
           { firebaseUid: 'firebase-user-1', school: '1' },
           { firebaseUid: 'firebase-user-2', school: '2' },
@@ -552,7 +554,9 @@ describe('SchoolsService', () => {
       prismaService.user.findMany.mockResolvedValueOnce(users);
       prismaService.gameScore.findMany.mockResolvedValueOnce(scores);
 
-      await expect(service.getSchoolRanking(gameSlug)).resolves.toEqual(expected);
+      await expect(service.getSchoolRanking(gameSlug)).resolves.toEqual(
+        expected,
+      );
       expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
         where: gameSlug ? { slug: gameSlug } : undefined,
         select: { userId: true, score: true },
@@ -718,9 +722,9 @@ describe('SchoolsService', () => {
     ])('$name', async ({ users, scores, expected }) => {
       mockUserRankingInputs(users, scores);
 
-      await expect(service.getUserRankingFromMySchool('firebase-user-1')).resolves.toEqual(
-        expected,
-      );
+      await expect(
+        service.getUserRankingFromMySchool('firebase-user-1'),
+      ).resolves.toEqual(expected);
     });
 
     it('retorna ranking da escola autenticada com filtro por jogo', async () => {
@@ -794,7 +798,9 @@ describe('SchoolsService', () => {
         [createUserScore('firebase-user-1', 40)],
       );
 
-      await expect(service.getUserRankingFromMySchool('firebase-user-1')).resolves.toEqual([
+      await expect(
+        service.getUserRankingFromMySchool('firebase-user-1'),
+      ).resolves.toEqual([
         createUserRanking({
           email: 'ana@test.com',
           childName: 'Ana',

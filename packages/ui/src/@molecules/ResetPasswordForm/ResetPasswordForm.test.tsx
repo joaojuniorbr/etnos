@@ -32,8 +32,6 @@ vi.mock('../../@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,
-		block: _block,
-		loading: _loading,
 		...props
 	}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
 		htmlType?: 'button' | 'submit' | 'reset';
@@ -117,7 +115,7 @@ describe('ResetPasswordForm', () => {
 					handlers?: {
 						onSuccess?: () => void;
 						onError?: () => void;
-					}
+					},
 				) => {
 					try {
 						await mutationFn(email);
@@ -125,7 +123,7 @@ describe('ResetPasswordForm', () => {
 					} catch {
 						handlers?.onError?.();
 					}
-				}
+				},
 			),
 		}));
 	});
@@ -147,7 +145,7 @@ describe('ResetPasswordForm', () => {
 		});
 
 		expect(messageSuccessMock).toHaveBeenCalledWith(
-			'E-mail de recuperação enviado!'
+			'E-mail de recuperação enviado!',
 		);
 		expect(onSubmit).toHaveBeenCalledTimes(1);
 		expect(resetFieldsMock).toHaveBeenCalledTimes(1);
@@ -166,7 +164,7 @@ describe('ResetPasswordForm', () => {
 
 		await waitFor(() => {
 			expect(messageErrorMock).toHaveBeenCalledWith(
-				'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.'
+				'Ocorreu um erro ao enviar seu contato. Por favor, tente novamente mais tarde.',
 			);
 		});
 

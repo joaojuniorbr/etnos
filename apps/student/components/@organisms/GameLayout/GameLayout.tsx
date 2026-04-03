@@ -1,5 +1,5 @@
 import { Breadcrumb, BreadcrumbProps } from 'antd';
-import { Games, GameType } from '../../@molecules';
+import { Games, GameType } from '@/components/@molecules';
 
 export type GamePageParams = {
 	searchParams?: Promise<{ [key: string]: string | undefined }>;
@@ -27,10 +27,10 @@ export const GameLayout = async ({
 	];
 
 	return (
-		<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+		<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 			<Breadcrumb items={breadcrumbItems} />
 
-			<div className='md:p-4 md:bg-white md:border md:border-slate-200 md:shadow md:rounded mt-6 mb-10'>
+			<div className="md:p-4 md:bg-white md:border md:border-slate-200 md:shadow md:rounded mt-6 mb-10">
 				<Games type={gameType} characterSlug={character} />
 			</div>
 		</div>

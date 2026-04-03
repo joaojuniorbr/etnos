@@ -138,7 +138,9 @@ export class MidiaController {
 
   @Get('admin/folders')
   @UseGuards(AuthGuard('firebase-auth'), AdminRoleGuard)
-  @ApiOperation({ summary: 'Lista todas as pastas de mídia para administradores' })
+  @ApiOperation({
+    summary: 'Lista todas as pastas de mídia para administradores',
+  })
   @ApiResponse({ status: 200, description: 'Pastas retornadas com sucesso.' })
   async getAllFolders() {
     return this.midiaService.getFolders();
@@ -147,7 +149,10 @@ export class MidiaController {
   @Post()
   @ApiOperation({ summary: 'Cria registro de mídia' })
   @ApiBody({ type: MidiaDto })
-  @ApiResponse({ status: 201, description: 'Registro de mídia criado com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Registro de mídia criado com sucesso.',
+  })
   async saveMidia(@Req() req, @Body() body: MidiaDto) {
     return this.midiaService.saveMidia({
       ...body,
@@ -198,10 +203,7 @@ export class MidiaController {
   @Delete()
   @ApiOperation({ summary: 'Remove mídia enviada no body' })
   @ApiBody({ type: DeleteMidiaDto })
-  async deleteByBody(
-    @Req() req,
-    @Body() body: DeleteMidiaDto,
-  ) {
+  async deleteByBody(@Req() req, @Body() body: DeleteMidiaDto) {
     if (typeof body.id === 'string' && body.id) {
       return this.midiaService.deleteMidiaById(body.id, req.user.uid);
     }

@@ -7,6 +7,7 @@ import type {
   GuessGamePlayItemInterface,
   GuessGameValidationResultInterface,
   MemoryGameContentInterface,
+  ScoreHistory,
   ScoreInterface,
 } from '@etnos/types';
 import { PrismaService } from 'src/prisma';
@@ -43,6 +44,28 @@ export class GamesService {
     return this.prismaService.gameConfig.findFirst({
       where: { gameSlug },
     });
+  }
+
+  async getScoreHistory(
+    userId: string,
+    gameSlug?: string,
+  ): Promise<ScoreHistory[]> {
+    const history = await this.prismaService.gameScoreHistory.findMany({
+      where: {
+        userId,
+        gameSlug: gameSlug || undefined,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return history.map((item) => ({
+      characterName: item.characterSlug,
+      gameName: item.gameSlug,
+      score: item.score,
+      timestamp: item.createdAt.toISOString(),
+    }));
   }
 
   async saveConfig(data: ConfigGamesInterface) {

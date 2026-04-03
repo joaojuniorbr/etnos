@@ -83,9 +83,12 @@ export default function PersonagensPage() {
 	}
 
 	return (
-		<AuthProtected allowedRoles={['admin']} forbiddenRedirectTo='/admin/escolas'>
+		<AuthProtected
+			allowedRoles={['admin']}
+			forbiddenRedirectTo="/admin/escolas"
+		>
 			<Spin spinning={isLoading}>
-				<div className='container mx-auto py-4 px-6 md:py-10 md:px-0'>
+				<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
 					<Breadcrumb
 						items={[
 							{ title: 'Home', href: '/' },
@@ -99,21 +102,21 @@ export default function PersonagensPage() {
 						]}
 					/>
 
-					<Title className='mb-4 mt-6'>Personagens</Title>
+					<Title className="mb-4 mt-6">Personagens</Title>
 
 					<FloatButton
-						icon={<RiAddLine className='text-2xl' />}
+						icon={<RiAddLine className="text-2xl" />}
 						onClick={toggleCharacter}
-						type='primary'
+						type="primary"
 					/>
 
 					<Drawer
 						open={openCharacter}
-						title='Novo Personagem'
+						title="Novo Personagem"
 						footer={null}
 						destroyOnHidden
 						onClose={onCloseModal}
-						size='large'
+						size="large"
 					>
 						<FormCharacter
 							data={characterData}
@@ -123,16 +126,16 @@ export default function PersonagensPage() {
 						/>
 					</Drawer>
 
-					<div className='bg-white rounded shadow'>
+					<div className="bg-white rounded shadow">
 						<Table
-							rowKey='slug'
+							rowKey="slug"
 							dataSource={data}
 							pagination={false}
 							columns={[
 								{
 									title: 'Imagem',
 									render: (item) => (
-										<div className='w-20 md:w-32 border border-slate-200 rounded flex overflow-hidden'>
+										<div className="w-20 md:w-32 border border-slate-200 rounded flex overflow-hidden">
 											<Image src={item.imageUrl} />
 										</div>
 									),

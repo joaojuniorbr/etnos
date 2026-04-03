@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-Version change: 1.0.0 -> 1.1.0
+Version change: 1.1.0 -> 1.2.0
 Modified principles:
 - Principle 1 -> I. Specification Before Implementation
 - Principle 2 -> II. Monorepo Contract Integrity
@@ -10,6 +10,7 @@ Modified principles:
 Added sections:
 - Technical Guardrails
 - Delivery Workflow & Quality Gates
+- Naming & File Conventions
 Removed sections:
 - None
 Templates requiring updates:
@@ -26,12 +27,14 @@ Follow-up TODOs:
 ## Core Principles
 
 ### I. Specification Before Implementation
+
 Every meaningful product change MUST begin with a specification that explains the
 user scenario, the intended outcome, acceptance criteria, and out-of-scope items
 before code implementation starts. Plans and tasks MUST trace back to the spec,
 and implementation MUST not silently expand scope beyond what was approved.
 
 ### II. Monorepo Contract Integrity
+
 Changes MUST preserve explicit contracts between `apps/*` and `packages/*`.
 When a feature touches shared types, API payloads, route behavior, game
 configuration, or UI building blocks, the spec and plan MUST name each affected
@@ -39,6 +42,7 @@ boundary and define compatibility expectations. Cross-app reuse belongs in
 shared packages when it reduces duplication without hiding business rules.
 
 ### III. Test Evidence Is Mandatory
+
 Every behavior change MUST ship with test evidence at the right level: unit
 tests for isolated logic, integration or API tests for contract and flow
 changes, and end-to-end or UI verification for critical user journeys when the
@@ -50,6 +54,7 @@ coverage blocks completion. A feature is not done when it only "works locally
 once".
 
 ### IV. Experience, Accessibility, and Performance Guardrails
+
 Student, admin, web, and game experiences MUST remain understandable,
 responsive, and accessible on supported devices. Specifications for user-facing
 changes MUST state loading, empty, and error states, and MUST preserve keyboard
@@ -58,6 +63,7 @@ performance regressions in game rendering, page transitions, and API-backed
 screens.
 
 ### V. Observable, Secure, and Releasable Changes
+
 Changes MUST be diagnosable, safe, and ready to release through the existing
 monorepo workflow. Features affecting authentication, authorization, personal
 data, scoring, or admin operations MUST document risks and validation steps.
@@ -74,6 +80,7 @@ New tooling or packages SHOULD be introduced only when they solve a recurring
 problem that existing workspace capabilities cannot cover cleanly.
 
 Feature specifications and plans MUST identify:
+
 - the affected apps and packages;
 - the source of truth for data and validation;
 - environment or secret dependencies;
@@ -83,9 +90,24 @@ Implementation SHOULD prefer extending existing packages and conventions over
 creating parallel abstractions. If a new shared module is introduced, its
 ownership, reuse target, and test surface MUST be explicit in the plan.
 
+## Naming & File Conventions
+
+File and symbol names MUST follow repository conventions consistently across new
+work and touched files. React hooks MUST use `camelCase` file names beginning
+with `use`, such as `useScoreHistory.ts`. React components MUST use
+`PascalCase` file names and exported component names. Shared utility modules and
+non-component helpers MUST follow the prevailing convention of their local
+module, but a feature MUST not introduce mixed naming styles within the same
+directory.
+
+When a feature touches code that violates these conventions, the plan SHOULD
+either normalize the touched files in the same change or explicitly justify why
+the inconsistency is being deferred.
+
 ## Delivery Workflow & Quality Gates
 
 The standard delivery flow is:
+
 1. `/speckit.constitution` for project rules when those rules evolve.
 2. `/speckit.specify` to define the feature in user and product terms.
 3. `/speckit.plan` to choose the technical approach, affected paths, and risk
@@ -99,6 +121,7 @@ task list MUST be organized so that the highest-priority user story can be
 implemented and validated independently.
 
 Before merge or release candidate approval, contributors MUST confirm:
+
 - documentation or specs are updated when behavior or contracts changed;
 - `yarn lint` and `yarn check-types` pass;
 - relevant automated tests pass for touched areas;
@@ -119,4 +142,4 @@ or comply with these principles. Complexity that violates a principle requires a
 written justification in the implementation plan, along with the simpler option
 that was rejected and why it was insufficient.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02
+**Version**: 1.2.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02

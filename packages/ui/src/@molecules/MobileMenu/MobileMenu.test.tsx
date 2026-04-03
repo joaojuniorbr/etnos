@@ -18,14 +18,14 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={null}
 				onLogout={() => {}}
-			/>
+			/>,
 		);
 
 		expect(screen.getByAltText('Etnos')).toBeInTheDocument();
 
 		expect(screen.getByRole('link', { name: /Entrar/i })).toBeInTheDocument();
 		expect(
-			screen.getByRole('link', { name: /Cadastrar/i })
+			screen.getByRole('link', { name: /Cadastrar/i }),
 		).toBeInTheDocument();
 	});
 
@@ -43,7 +43,7 @@ describe('MobileMenu', () => {
 					description: 'Teste de Funcionamento',
 					region: 'norte',
 				}}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -62,7 +62,7 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={{ ...mockUser, childName: undefined }}
 				onLogout={() => {}}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -82,7 +82,7 @@ describe('MobileMenu', () => {
 				toggleDrawer={toggleDrawer}
 				user={null}
 				onLogout={() => {}}
-			/>
+			/>,
 		);
 
 		const menuButton = screen.getByRole('button', { name: /menu/i });
@@ -100,7 +100,7 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={mockUser}
 				onLogout={onLogout}
-			/>
+			/>,
 		);
 
 		await userEvent.click(screen.getByRole('button', { name: /SAIR/i }));
@@ -115,7 +115,7 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={{ ...mockUser, role: ['admin'] }}
 				onLogout={() => {}}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {
@@ -131,7 +131,7 @@ describe('MobileMenu', () => {
 				toggleDrawer={() => {}}
 				user={{ ...mockUser, role: ['school'] }}
 				onLogout={() => {}}
-			/>
+			/>,
 		);
 
 		await waitFor(() => {

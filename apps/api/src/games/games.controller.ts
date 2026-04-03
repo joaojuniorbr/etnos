@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { GamesService } from './games.service';
 import type {
   MemoryGameContentInterface,
   GuessGameContentInterface,
+  ScoreHistory,
 } from '@etnos/types';
 import {
   ApiBearerAuth,
@@ -28,6 +30,7 @@ import { SaveScoreDto } from './dto/save-score.dto';
 import { SaveMemoryGameContentDto } from './dto/save-memory-game-content.dto';
 import { SaveGuessGameContentDto } from './dto/save-guess-game-content.dto';
 import { ValidateGuessGameDto } from './dto/validate-guess-game.dto';
+import { ScoreHistoryQueryDto } from './dto/score-history.dto';
 import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Jogos')
@@ -217,6 +220,19 @@ export class GamesController {
       score: data.score,
       userId: req.user.uid,
     });
+  }
+
+  @Get('score/history')
+  @ApiOperation({ summary: 'Retorna o histórico de pontuação do usuário' })
+  @ApiResponse({
+    status: 200,
+    description: 'Histórico retornado com sucesso.',
+  })
+  async getScoreHistory(
+    @Req() req,
+    @Query() query: ScoreHistoryQueryDto,
+  ): Promise<ScoreHistory[]> {
+    return this.gamesService.getScoreHistory(req.user.uid, query.gameSlug);
   }
 
   @Get('score')

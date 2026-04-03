@@ -43,7 +43,7 @@ src/
 import { MemoryGame } from '@etnos/games';
 import '@etnos/games/styles.css';
 
-export const Example = () => <MemoryGame characterSlug='anita' />;
+export const Example = () => <MemoryGame characterSlug="anita" />;
 ```
 
 ## Scripts

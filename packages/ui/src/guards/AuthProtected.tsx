@@ -33,7 +33,7 @@ export const redirectIfUnauthenticated = ({
 
 export const hasAllowedRole = (
 	user: { role?: string[]; roles?: string[] } | null | undefined,
-	allowedRoles?: string[]
+	allowedRoles?: string[],
 ) => {
 	if (!allowedRoles?.length) {
 		return true;
@@ -85,8 +85,8 @@ export const AuthProtected = ({
 
 	if (isProfileLoading) {
 		return (
-			<div className='ui:flex ui:justify-center ui:items-center ui:h-screen ui:w-full ui:fixed ui:left-0 ui:top-0 ui:bg-white/75 ui:z-50'>
-				<Spin size='large' spinning />
+			<div className="ui:flex ui:justify-center ui:items-center ui:h-screen ui:w-full ui:fixed ui:left-0 ui:top-0 ui:bg-white/75 ui:z-50">
+				<Spin size="large" spinning />
 			</div>
 		);
 	}

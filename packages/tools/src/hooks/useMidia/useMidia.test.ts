@@ -44,7 +44,7 @@ describe('useMidia', () => {
 			10,
 			1,
 			undefined,
-			false
+			false,
 		);
 
 		expect(result.current.folders).toEqual(['Folder A', 'Folder B']);
@@ -80,7 +80,7 @@ describe('useMidia', () => {
 			10,
 			cursor,
 			undefined,
-			false
+			false,
 		);
 	});
 
@@ -105,7 +105,7 @@ describe('useMidia', () => {
 
 		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith(
 			'img.png',
-			false
+			false,
 		);
 	});
 
@@ -132,7 +132,7 @@ describe('useMidia', () => {
 			12,
 			1,
 			'library',
-			true
+			true,
 		);
 		expect(midiaService.getFolders).toHaveBeenCalledWith(mockId, true);
 	});
@@ -150,7 +150,7 @@ describe('useMidia', () => {
 		expect(midiaService.deleteMidia).toHaveBeenCalledWith(item, true);
 		expect(midiaService.deleteMidiaFromUrl).toHaveBeenCalledWith(
 			'img.png',
-			true
+			true,
 		);
 	});
 });

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { GameLayout, GamePageParams } from '../../../components/@organisms';
+import { GameLayout, GamePageParams } from '@/components/@organisms';
 
 export const metadata: Metadata = {
 	title: 'Etnos | Jogo da Memória',
@@ -10,8 +10,8 @@ export default async function MemoryGamePage({
 }: Readonly<GamePageParams>) {
 	return (
 		<GameLayout
-			gameType='memory-game'
-			breadcrumbTitle='Jogo da Memória'
+			gameType="memory-game"
+			breadcrumbTitle="Jogo da Memória"
 			params={searchParams}
 		/>
 	);

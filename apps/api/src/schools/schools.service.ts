@@ -15,10 +15,9 @@ import { PrismaService } from 'src/prisma';
 export class SchoolsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  private getUserRankingLabel(user: Pick<
-    UserRankingInterface,
-    'childName' | 'parentName' | 'email'
-  >) {
+  private getUserRankingLabel(
+    user: Pick<UserRankingInterface, 'childName' | 'parentName' | 'email'>,
+  ) {
     if (user.childName) {
       return user.childName;
     }

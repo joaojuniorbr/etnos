@@ -42,13 +42,13 @@ describe('FinishGame', () => {
 					imageUrl: '/games/success/anita.jpg',
 					region: 'Sul',
 				}}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText('Parabéns!')).toBeTruthy();
 		expect(screen.getByText('Você completou o desafio.')).toBeTruthy();
 		expect(screen.getByAltText('Anita').getAttribute('src')).toBe(
-			'/games/success/anita.jpg'
+			'/games/success/anita.jpg',
 		);
 
 		fireEvent.click(screen.getByText('Reiniciar Jogo'));
@@ -73,16 +73,16 @@ describe('FinishGame', () => {
 					region: 'Amazonas',
 					description: 'Amazonense',
 				}}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText('Você perdeu')).toBeTruthy();
 		expect(screen.getByText('Tente novamente')).toBeTruthy();
 		expect(screen.getByAltText('Iara').getAttribute('src')).toBe(
-			'/games/error/iara.jpg'
+			'/games/error/iara.jpg',
 		);
 		expect(
-			(screen.getByText('Salvar Pontuação') as HTMLButtonElement).disabled
+			(screen.getByText('Salvar Pontuação') as HTMLButtonElement).disabled,
 		).toBe(true);
 	});
 });

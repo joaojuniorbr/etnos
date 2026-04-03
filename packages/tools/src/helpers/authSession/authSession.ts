@@ -20,7 +20,7 @@ export const daysToMilliseconds = (days: number) =>
 
 export const AUTH_INACTIVITY_LIMIT_IN_DAYS = 8;
 export const AUTH_INACTIVITY_LIMIT_MS = daysToMilliseconds(
-	AUTH_INACTIVITY_LIMIT_IN_DAYS
+	AUTH_INACTIVITY_LIMIT_IN_DAYS,
 );
 
 const TOKEN_REFRESH_BUFFER_MS = TOKEN_REFRESH_BUFFER_IN_SECONDS * 1000;
@@ -61,13 +61,13 @@ export const getStoredSession = (): StoredSession => {
 	return {
 		token: globalThis.window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY),
 		refreshToken: globalThis.window.localStorage.getItem(
-			AUTH_REFRESH_TOKEN_STORAGE_KEY
+			AUTH_REFRESH_TOKEN_STORAGE_KEY,
 		),
 		expiresAt: parseStoredNumber(
-			globalThis.window.localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY)
+			globalThis.window.localStorage.getItem(AUTH_EXPIRES_AT_STORAGE_KEY),
 		),
 		lastActivityAt: parseStoredNumber(
-			globalThis.window.localStorage.getItem(AUTH_LAST_ACTIVITY_STORAGE_KEY)
+			globalThis.window.localStorage.getItem(AUTH_LAST_ACTIVITY_STORAGE_KEY),
 		),
 	};
 };
@@ -77,7 +77,7 @@ export const updateAuthActivity = (time = Date.now()) => {
 
 	globalThis.window.localStorage.setItem(
 		AUTH_LAST_ACTIVITY_STORAGE_KEY,
-		String(time)
+		String(time),
 	);
 };
 
@@ -101,7 +101,7 @@ export const saveStoredAuthSession = ({
 	if (refreshToken) {
 		globalThis.window.localStorage.setItem(
 			AUTH_REFRESH_TOKEN_STORAGE_KEY,
-			refreshToken
+			refreshToken,
 		);
 	}
 
@@ -111,7 +111,7 @@ export const saveStoredAuthSession = ({
 			const expiresAt = Date.now() + expiresInSeconds * MILLISECONDS_PER_SECOND;
 			globalThis.window.localStorage.setItem(
 				AUTH_EXPIRES_AT_STORAGE_KEY,
-				String(expiresAt)
+				String(expiresAt),
 			);
 		}
 	}
@@ -121,7 +121,7 @@ export const saveStoredAuthSession = ({
 
 export const hasSessionExceededInactivityLimit = (
 	lastActivityAt: number | null,
-	now = Date.now()
+	now = Date.now(),
 ) => {
 	if (!lastActivityAt) return false;
 	return now - lastActivityAt >= AUTH_INACTIVITY_LIMIT_MS;
@@ -130,7 +130,7 @@ export const hasSessionExceededInactivityLimit = (
 let refreshPromise: Promise<string | null> | null = null;
 
 export const refreshStoredAuthToken = async (
-	apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
+	apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
 ) => {
 	const { refreshToken } = getStoredSession();
 
@@ -162,7 +162,7 @@ export const refreshStoredAuthToken = async (
 				},
 				signal: abortController.signal,
 				timeout: TOKEN_REFRESH_TIMEOUT_MS,
-			}
+			},
 		);
 	} catch (error) {
 		if (abortController.signal.aborted) {

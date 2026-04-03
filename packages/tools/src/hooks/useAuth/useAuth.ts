@@ -131,7 +131,7 @@ export const useAuth = () => {
 
 	const onSignInWithEmailAndPassword = async (
 		email: string,
-		password: string
+		password: string,
 	) => {
 		setIsLoading(true);
 		return api
@@ -211,7 +211,7 @@ export const useAuth = () => {
 
 	const onChangePassword = async (
 		currentPassword: string,
-		newPassword: string
+		newPassword: string,
 	) => {
 		setIsLoading(true);
 		try {

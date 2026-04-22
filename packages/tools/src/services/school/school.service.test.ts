@@ -73,6 +73,15 @@ describe('schoolService', () => {
 		expect(result).toEqual({ id: '1', name: 'IFPR' });
 	});
 
+	it('deve buscar as escolas que o perfil pode visualizar', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: '1', name: 'IFPR' }] });
+
+		const result = await schoolService.getManagedSchools();
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/me/managed');
+		expect(result).toEqual([{ id: '1', name: 'IFPR' }]);
+	});
+
 	it('deve buscar usuarios da escola autenticada com filtro', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: [{ uid: 'user-1' }] });
 
@@ -93,6 +102,17 @@ describe('schoolService', () => {
 			params: undefined,
 		});
 		expect(result).toEqual([{ uid: 'user-1' }]);
+	});
+
+	it('deve buscar usuarios de uma escola especifica com filtro', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ uid: 'user-2' }] });
+
+		const result = await schoolService.getUsersBySchool('school-1', 'maria');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/users', {
+			params: { search: 'maria' },
+		});
+		expect(result).toEqual([{ uid: 'user-2' }]);
 	});
 
 	it('deve buscar ranking de escolas com filtro por jogo', async () => {
@@ -176,5 +196,42 @@ describe('schoolService', () => {
 			},
 		);
 		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
+	});
+
+	it('deve listar usuarios school vinculados a uma escola', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ uid: 'user-2' }] });
+
+		const result = await schoolService.getAccessUsersBySchool('school-1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/access-users');
+		expect(result).toEqual([{ uid: 'user-2' }]);
+	});
+
+	it('deve vincular usuario school a uma escola por email', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { uid: 'user-2' } });
+
+		const result = await schoolService.addAccessUserToSchool(
+			'school-1',
+			'escola@teste.com',
+		);
+
+		expect(apiMock.post).toHaveBeenCalledWith('/schools/school-1/access-users', {
+			email: 'escola@teste.com',
+		});
+		expect(result).toEqual({ uid: 'user-2' });
+	});
+
+	it('deve remover o acesso school de um usuario na escola', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: true });
+
+		const result = await schoolService.removeAccessUserFromSchool(
+			'school-1',
+			'user-2',
+		);
+
+		expect(apiMock.delete).toHaveBeenCalledWith(
+			'/schools/school-1/access-users/user-2',
+		);
+		expect(result).toBe(true);
 	});
 });

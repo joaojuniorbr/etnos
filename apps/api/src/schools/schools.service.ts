@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -9,6 +10,8 @@ import type {
   SchoolUserInterface,
   UserRankingInterface,
 } from '@etnos/types';
+import * as admin from 'firebase-admin';
+import { randomBytes } from 'crypto';
 import { PrismaService } from 'src/prisma';
 
 @Injectable()
@@ -126,13 +129,38 @@ export class SchoolsService {
       }));
   }
 
+  private mapSchoolUser(
+    schoolUser: Pick<
+      SchoolUserInterface,
+      'id' | 'email' | 'parentName' | 'childName' | 'school' | 'roles' | 'updatedAt'
+    > & { firebaseUid?: string | null; uid?: string | null },
+  ): SchoolUserInterface {
+    return {
+      id: schoolUser.id,
+      uid: schoolUser.uid ?? schoolUser.firebaseUid ?? '',
+      email: schoolUser.email,
+      parentName: schoolUser.parentName,
+      childName: schoolUser.childName,
+      school: schoolUser.school,
+      roles: schoolUser.roles,
+      updatedAt: schoolUser.updatedAt,
+    };
+  }
+
   private async getAuthenticatedProfile(firebaseUid: string) {
     const user = await this.prismaService.user.findUnique({
       where: { firebaseUid },
       select: {
+        id: true,
         firebaseUid: true,
+        email: true,
         school: true,
         roles: true,
+        schoolAccesses: {
+          select: {
+            schoolId: true,
+          },
+        },
       },
     });
 
@@ -141,6 +169,164 @@ export class SchoolsService {
     }
 
     return user;
+  }
+
+  private getManagedSchoolIds(profile: Awaited<ReturnType<typeof this.getAuthenticatedProfile>>) {
+    return Array.from(
+      new Set([
+        ...profile.schoolAccesses.map((access) => access.schoolId),
+        ...(profile.roles.includes('school') && profile.school
+          ? [profile.school]
+          : []),
+      ]),
+    );
+  }
+
+  private async assertViewerCanAccessSchool(
+    firebaseUid: string,
+    schoolId: string,
+  ) {
+    const user = await this.getAuthenticatedProfile(firebaseUid);
+
+    if (user.roles.includes('admin')) {
+      return user;
+    }
+
+    if (!user.roles.includes('school')) {
+      throw new ForbiddenException(
+        'Acesso restrito a administradores e perfis de escola.',
+      );
+    }
+
+    const managedSchoolIds = this.getManagedSchoolIds(user);
+
+    if (!managedSchoolIds.includes(schoolId)) {
+      throw new ForbiddenException(
+        'O perfil autenticado nao possui acesso a esta escola.',
+      );
+    }
+
+    return user;
+  }
+
+  private async ensureSchoolExists(schoolId: string) {
+    const school = await this.prismaService.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      throw new NotFoundException('Escola nao encontrada.');
+    }
+
+    return school;
+  }
+
+  private buildRolesForSchoolAccess(existingRoles: string[]) {
+    const normalizedRoles = Array.from(new Set(existingRoles));
+
+    if (normalizedRoles.includes('school')) {
+      return normalizedRoles;
+    }
+
+    if (normalizedRoles.length >= 2) {
+      throw new BadRequestException(
+        'O usuário já possui 2 perfis e não pode receber o perfil school.',
+      );
+    }
+
+    return [...normalizedRoles, 'school'];
+  }
+
+  private async findUserByEmail(email: string) {
+    return this.prismaService.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
+
+  private async ensureUserForSchoolAccess(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      throw new BadRequestException('Informe um e-mail valido.');
+    }
+
+    const existingProfile = await this.findUserByEmail(normalizedEmail);
+
+    if (existingProfile) {
+      const roles = this.buildRolesForSchoolAccess(existingProfile.roles ?? []);
+
+      if (roles.join('|') !== (existingProfile.roles ?? []).join('|')) {
+        return this.prismaService.user.update({
+          where: { id: existingProfile.id },
+          data: {
+            email: normalizedEmail,
+            roles,
+          },
+        });
+      }
+
+      return existingProfile;
+    }
+
+    let firebaseUser: admin.auth.UserRecord;
+
+    try {
+      firebaseUser = await admin.auth().getUserByEmail(normalizedEmail);
+    } catch (error) {
+      if (error?.errorInfo?.code !== 'auth/user-not-found') {
+        throw error;
+      }
+
+      firebaseUser = await admin.auth().createUser({
+        email: normalizedEmail,
+        password: randomBytes(18).toString('base64url'),
+      });
+    }
+
+    const profileByFirebaseUid = await this.prismaService.user.findUnique({
+      where: { firebaseUid: firebaseUser.uid },
+    });
+
+    if (profileByFirebaseUid) {
+      const roles = this.buildRolesForSchoolAccess(
+        profileByFirebaseUid.roles ?? [],
+      );
+
+      if (
+        roles.join('|') === (profileByFirebaseUid.roles ?? []).join('|') &&
+        profileByFirebaseUid.email === normalizedEmail
+      ) {
+        return profileByFirebaseUid;
+      }
+
+      return this.prismaService.user.update({
+        where: { id: profileByFirebaseUid.id },
+        data: {
+          email: normalizedEmail,
+          roles,
+        },
+      });
+    }
+
+    return this.prismaService.user.create({
+      data: {
+        firebaseUid: firebaseUser.uid,
+        email: normalizedEmail,
+        parentName: firebaseUser.displayName ?? null,
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: firebaseUser.photoURL ?? null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+      },
+    });
   }
 
   async getAll(): Promise<SchoolInterface[]> {
@@ -294,17 +480,85 @@ export class SchoolsService {
         },
       })
       .then((users) =>
-        users.map((schoolUser) => ({
-          id: schoolUser.id,
-          uid: schoolUser.firebaseUid,
-          email: schoolUser.email,
-          parentName: schoolUser.parentName,
-          childName: schoolUser.childName,
-          school: schoolUser.school,
-          roles: schoolUser.roles,
-          updatedAt: schoolUser.updatedAt,
-        })),
+        users.map((schoolUser) => this.mapSchoolUser(schoolUser)),
       );
+  }
+
+  async getManagedSchools(firebaseUid: string): Promise<SchoolInterface[]> {
+    const user = await this.getAuthenticatedProfile(firebaseUid);
+    const managedSchoolIds = this.getManagedSchoolIds(user);
+
+    if (!managedSchoolIds.length) {
+      return [];
+    }
+
+    return this.prismaService.school.findMany({
+      where: {
+        id: {
+          in: managedSchoolIds,
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  async getUsersBySchool(
+    firebaseUid: string,
+    schoolId: string,
+    search?: string,
+  ): Promise<SchoolUserInterface[]> {
+    await this.assertViewerCanAccessSchool(firebaseUid, schoolId);
+
+    const normalizedSearch = search?.trim();
+
+    return this.prismaService.user
+      .findMany({
+        where: {
+          school: schoolId,
+          ...(normalizedSearch
+            ? {
+                OR: [
+                  {
+                    childName: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    parentName: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    email: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              }
+            : {}),
+        },
+        orderBy: [
+          { childName: 'asc' },
+          { parentName: 'asc' },
+          { email: 'asc' },
+        ],
+        select: {
+          id: true,
+          firebaseUid: true,
+          email: true,
+          parentName: true,
+          childName: true,
+          school: true,
+          roles: true,
+          updatedAt: true,
+        },
+      })
+      .then((users) => users.map((schoolUser) => this.mapSchoolUser(schoolUser)));
   }
 
   async getSchoolRanking(gameSlug?: string): Promise<SchoolRankingInterface[]> {
@@ -424,19 +678,99 @@ export class SchoolsService {
     return this.getUserRankingBySchoolId(user.school, gameSlug);
   }
 
-  async getUserRankingBySchoolForAdmin(
+  async getUserRankingBySchoolForViewer(
+    firebaseUid: string,
     schoolId: string,
     gameSlug?: string,
   ): Promise<UserRankingInterface[]> {
-    const school = await this.prismaService.school.findUnique({
-      where: { id: schoolId },
-      select: { id: true },
-    });
-
-    if (!school) {
-      throw new NotFoundException('Escola nao encontrada.');
-    }
+    await this.assertViewerCanAccessSchool(firebaseUid, schoolId);
+    await this.ensureSchoolExists(schoolId);
 
     return this.getUserRankingBySchoolId(schoolId, gameSlug);
+  }
+
+  async getAccessUsersBySchool(schoolId: string): Promise<SchoolUserInterface[]> {
+    await this.ensureSchoolExists(schoolId);
+
+    const accesses = await this.prismaService.schoolAccess.findMany({
+      where: { schoolId },
+      select: {
+        user: {
+          select: {
+            id: true,
+            firebaseUid: true,
+            email: true,
+            parentName: true,
+            childName: true,
+            school: true,
+            roles: true,
+            updatedAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return accesses.map((access) => this.mapSchoolUser(access.user));
+  }
+
+  async addAccessUserToSchool(schoolId: string, email: string) {
+    await this.ensureSchoolExists(schoolId);
+    const user = await this.ensureUserForSchoolAccess(email);
+
+    await this.prismaService.schoolAccess.upsert({
+      where: {
+        schoolId_userId: {
+          schoolId,
+          userId: user.id,
+        },
+      },
+      update: {},
+      create: {
+        schoolId,
+        userId: user.id,
+      },
+    });
+
+    return this.mapSchoolUser({
+      id: user.id,
+      firebaseUid: user.firebaseUid,
+      email: user.email,
+      parentName: user.parentName,
+      childName: user.childName,
+      school: user.school,
+      roles: user.roles,
+      updatedAt: user.updatedAt,
+    });
+  }
+
+  async removeAccessUserFromSchool(schoolId: string, userId: string) {
+    await this.ensureSchoolExists(schoolId);
+
+    const access = await this.prismaService.schoolAccess.findUnique({
+      where: {
+        schoolId_userId: {
+          schoolId,
+          userId,
+        },
+      },
+    });
+
+    if (!access) {
+      throw new NotFoundException('Vinculo de acesso nao encontrado.');
+    }
+
+    await this.prismaService.schoolAccess.delete({
+      where: {
+        schoolId_userId: {
+          schoolId,
+          userId,
+        },
+      },
+    });
+
+    return true;
   }
 }

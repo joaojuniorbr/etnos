@@ -41,14 +41,20 @@ const createSchool = (
 
 const createAuthenticatedProfile = (
   overrides?: Partial<{
+    id: string;
     firebaseUid: string;
+    email?: string | null;
     school: string | null;
     roles: string[];
+    schoolAccesses: Array<{ schoolId: string }>;
   }>,
 ) => ({
+  id: 'user-1',
   firebaseUid: 'firebase-user-1',
+  email: 'school@test.com',
   school: '1',
   roles: ['school'],
+  schoolAccesses: [],
   ...overrides,
 });
 
@@ -166,9 +172,16 @@ describe('SchoolsService', () => {
     expect(prismaService.user.findUnique).toHaveBeenCalledWith({
       where: { firebaseUid: 'firebase-user-1' },
       select: {
+        id: true,
         firebaseUid: true,
+        email: true,
         school: true,
         roles: true,
+        schoolAccesses: {
+          select: {
+            schoolId: true,
+          },
+        },
       },
     });
   };
@@ -812,6 +825,13 @@ describe('SchoolsService', () => {
     });
 
     it('retorna ranking por usuario de escola especifica para admin', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          roles: ['school'],
+          school: null,
+          schoolAccesses: [{ schoolId: '1' }],
+        }),
+      );
       prismaService.school.findUnique.mockResolvedValueOnce({ id: '1' });
       mockUserRankingInputs(
         [
@@ -824,14 +844,14 @@ describe('SchoolsService', () => {
         [createUserScore('firebase-user-1', 80)],
       );
 
-      const result = await service.getUserRankingBySchoolForAdmin(
+      const result = await service.getUserRankingBySchoolForViewer(
+        'firebase-user-1',
         '1',
         'memory-game',
       );
 
       expect(prismaService.school.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },
-        select: { id: true },
       });
       expectUserRankingLookup('1');
       expect(result).toEqual([
@@ -843,10 +863,21 @@ describe('SchoolsService', () => {
     });
 
     it('lança erro para ranking admin quando escola nao existir', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          roles: ['school'],
+          school: null,
+          schoolAccesses: [{ schoolId: 'missing-school' }],
+        }),
+      );
       prismaService.school.findUnique.mockResolvedValueOnce(null);
 
       await expect(
-        service.getUserRankingBySchoolForAdmin('missing-school', 'memory-game'),
+        service.getUserRankingBySchoolForViewer(
+          'firebase-user-1',
+          'missing-school',
+          'memory-game',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });

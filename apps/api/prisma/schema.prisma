@@ -22,6 +22,7 @@ model User {
   roles          String[]    @default(["student"])
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
+  schoolAccesses SchoolAccess[]
 
   @@map("users")
 }
@@ -33,8 +34,24 @@ model School {
   state     String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  userAccesses SchoolAccess[]
 
   @@map("schools")
+}
+
+model SchoolAccess {
+  id        String   @id @default(cuid())
+  schoolId  String   @map("school_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([schoolId, userId], map: "school_accesses_school_id_user_id_key")
+  @@index([schoolId], map: "school_accesses_school_id_idx")
+  @@index([userId], map: "school_accesses_user_id_idx")
+  @@map("school_accesses")
 }
 
 model Character {

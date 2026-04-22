@@ -31,9 +31,24 @@ export const schoolService = {
 		return api.get('/schools/me').then((res) => res.data);
 	},
 
+	getManagedSchools(): Promise<SchoolInterface[]> {
+		return api.get('/schools/me/managed').then((res) => res.data);
+	},
+
 	getMyUsers(search?: string): Promise<SchoolUserInterface[]> {
 		return api
 			.get('/schools/me/users', {
+				params: search ? { search } : undefined,
+			})
+			.then((res) => res.data);
+	},
+
+	getUsersBySchool(
+		schoolId: string,
+		search?: string,
+	): Promise<SchoolUserInterface[]> {
+		return api
+			.get(`/schools/${schoolId}/users`, {
 				params: search ? { search } : undefined,
 			})
 			.then((res) => res.data);
@@ -63,6 +78,22 @@ export const schoolService = {
 			.get(`/schools/${schoolId}/users/ranking`, {
 				params: gameSlug ? { gameSlug } : undefined,
 			})
+			.then((res) => res.data);
+	},
+
+	getAccessUsersBySchool(schoolId: string): Promise<SchoolUserInterface[]> {
+		return api.get(`/schools/${schoolId}/access-users`).then((res) => res.data);
+	},
+
+	addAccessUserToSchool(schoolId: string, email: string) {
+		return api
+			.post(`/schools/${schoolId}/access-users`, { email })
+			.then((res) => res.data);
+	},
+
+	removeAccessUserFromSchool(schoolId: string, userId: string) {
+		return api
+			.delete(`/schools/${schoolId}/access-users/${userId}`)
 			.then((res) => res.data);
 	},
 };

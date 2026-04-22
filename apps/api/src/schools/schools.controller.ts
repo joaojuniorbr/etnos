@@ -23,6 +23,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { SchoolDto } from './dto/school.dto';
 import { AdminRoleGuard, SchoolRoleGuard } from 'src/common';
+import { ManageSchoolUserDto } from './dto/manage-school-user.dto';
 
 @ApiTags('Escolas')
 @UseGuards(AuthGuard('firebase-auth'))
@@ -49,11 +50,34 @@ export class SchoolsController {
     return this.schoolsService.getMySchool(req.user.uid);
   }
 
+  @Get('me/managed')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary: 'Lista as escolas que o perfil autenticado pode visualizar',
+  })
+  async getManagedSchools(@Req() req) {
+    return this.schoolsService.getManagedSchools(req.user.uid);
+  }
+
   @Get('me/users')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({ summary: 'Lista usuarios vinculados a escola autenticada' })
   async getUsersFromMySchool(@Req() req, @Query('search') search?: string) {
     return this.schoolsService.getUsersFromMySchool(req.user.uid, search);
+  }
+
+  @Get(':id/users')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary:
+      'Lista usuarios de uma escola quando o perfil autenticado possui acesso a ela',
+  })
+  async getUsersBySchool(
+    @Req() req,
+    @Param('id') id: string,
+    @Query('search') search?: string,
+  ) {
+    return this.schoolsService.getUsersBySchool(req.user.uid, id, search);
   }
 
   @Get('me/ranking')
@@ -80,15 +104,56 @@ export class SchoolsController {
   }
 
   @Get(':id/users/ranking')
-  @UseGuards(AdminRoleGuard)
+  @UseGuards(SchoolRoleGuard)
   @ApiOperation({
-    summary: 'Retorna ranking de usuarios de uma escola especifica para admin',
+    summary:
+      'Retorna ranking de usuarios de uma escola especifica quando o perfil possui acesso',
   })
   async getUserRankingBySchoolForAdmin(
+    @Req() req,
     @Param('id') id: string,
     @Query('gameSlug') gameSlug?: string,
   ) {
-    return this.schoolsService.getUserRankingBySchoolForAdmin(id, gameSlug);
+    return this.schoolsService.getUserRankingBySchoolForViewer(
+      req.user.uid,
+      id,
+      gameSlug,
+    );
+  }
+
+  @Get(':id/access-users')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Lista os usuários com perfil school vinculados a uma escola',
+  })
+  async getAccessUsersBySchool(@Param('id') id: string) {
+    return this.schoolsService.getAccessUsersBySchool(id);
+  }
+
+  @Post(':id/access-users')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary:
+      'Vincula um usuário ao perfil school da escola, criando-o se necessário',
+  })
+  @ApiBody({ type: ManageSchoolUserDto })
+  async addAccessUserToSchool(
+    @Param('id') id: string,
+    @Body() body: ManageSchoolUserDto,
+  ) {
+    return this.schoolsService.addAccessUserToSchool(id, body.email);
+  }
+
+  @Delete(':id/access-users/:userId')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Remove o acesso de um usuário school a uma escola',
+  })
+  async removeAccessUserFromSchool(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.schoolsService.removeAccessUserFromSchool(id, userId);
   }
 
   @Get(':id')

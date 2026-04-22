@@ -1,6 +1,6 @@
 import { Select, Table } from 'antd';
 import type { SchoolRankingInterface } from '@etnos/types';
-import { Title } from '@etnos/ui';
+import { Card, Title } from '@etnos/ui';
 
 interface SchoolRankingProps {
 	ranking: SchoolRankingInterface[];
@@ -16,7 +16,7 @@ export const SchoolRanking = ({
 	gameOptions,
 }: SchoolRankingProps) => {
 	return (
-		<div className="border border-slate-200 p-6 rounded bg-white">
+		<Card>
 			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 				<div>
 					<Title className="mb-1">Ranking por escola</Title>
@@ -65,6 +65,6 @@ export const SchoolRanking = ({
 					emptyText: 'Nenhum dado de ranking disponível para este filtro.',
 				}}
 			/>
-		</div>
+		</Card>
 	);
 };

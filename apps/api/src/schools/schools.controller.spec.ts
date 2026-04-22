@@ -29,11 +29,24 @@ describe('SchoolsController', () => {
       .mockResolvedValue([
         { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
       ]),
-    getUserRankingBySchoolForAdmin: jest
+    getUserRankingBySchoolForViewer: jest
       .fn()
       .mockResolvedValue([
         { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
       ]),
+    getManagedSchools: jest.fn().mockResolvedValue([{ id: '1', name: 'IFPR' }]),
+    getUsersBySchool: jest
+      .fn()
+      .mockResolvedValue([
+        { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+      ]),
+    getAccessUsersBySchool: jest
+      .fn()
+      .mockResolvedValue([{ uid: 'user-2', email: 'escola@teste.com' }]),
+    addAccessUserToSchool: jest
+      .fn()
+      .mockResolvedValue({ uid: 'user-2', email: 'escola@teste.com' }),
+    removeAccessUserFromSchool: jest.fn().mockResolvedValue(true),
   };
 
   beforeEach(async () => {
@@ -119,19 +132,79 @@ describe('SchoolsController', () => {
     ]);
   });
 
-  it('deve retornar ranking de usuarios por escola para admin', async () => {
+  it('deve listar escolas gerenciadas pelo perfil autenticado', async () => {
+    const result = await controller.getManagedSchools({
+      user: { uid: 'firebase-user-1' },
+    });
+
+    expect(service.getManagedSchools).toHaveBeenCalledWith('firebase-user-1');
+    expect(result).toEqual([{ id: '1', name: 'IFPR' }]);
+  });
+
+  it('deve listar usuarios de uma escola acessivel ao perfil', async () => {
+    const result = await controller.getUsersBySchool(
+      { user: { uid: 'firebase-user-1' } },
+      'school-1',
+      'Aluno',
+    );
+
+    expect(service.getUsersBySchool).toHaveBeenCalledWith(
+      'firebase-user-1',
+      'school-1',
+      'Aluno',
+    );
+    expect(result).toEqual([
+      { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
+    ]);
+  });
+
+  it('deve retornar ranking de usuarios por escola acessivel ao perfil', async () => {
     const result = await controller.getUserRankingBySchoolForAdmin(
+      { user: { uid: 'firebase-user-1' } },
       'school-1',
       'memory-game',
     );
 
-    expect(service.getUserRankingBySchoolForAdmin).toHaveBeenCalledWith(
+    expect(service.getUserRankingBySchoolForViewer).toHaveBeenCalledWith(
+      'firebase-user-1',
       'school-1',
       'memory-game',
     );
     expect(result).toEqual([
       { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
     ]);
+  });
+
+  it('deve listar os usuarios school vinculados a uma escola', async () => {
+    const result = await controller.getAccessUsersBySchool('school-1');
+
+    expect(service.getAccessUsersBySchool).toHaveBeenCalledWith('school-1');
+    expect(result).toEqual([{ uid: 'user-2', email: 'escola@teste.com' }]);
+  });
+
+  it('deve vincular usuario school por email', async () => {
+    const result = await controller.addAccessUserToSchool('school-1', {
+      email: 'escola@teste.com',
+    });
+
+    expect(service.addAccessUserToSchool).toHaveBeenCalledWith(
+      'school-1',
+      'escola@teste.com',
+    );
+    expect(result).toEqual({ uid: 'user-2', email: 'escola@teste.com' });
+  });
+
+  it('deve remover usuario school da escola', async () => {
+    const result = await controller.removeAccessUserFromSchool(
+      'school-1',
+      'user-2',
+    );
+
+    expect(service.removeAccessUserFromSchool).toHaveBeenCalledWith(
+      'school-1',
+      'user-2',
+    );
+    expect(result).toBe(true);
   });
 
   it('deve criar escola', async () => {

@@ -1,5 +1,5 @@
 import type { SchoolInterface } from '@etnos/types';
-import { Title } from '@etnos/ui';
+import { Card, Title } from '@etnos/ui';
 
 interface SchoolDataProps {
 	school: SchoolInterface | null;
@@ -13,7 +13,7 @@ const infoRows = [
 
 export const SchoolData = ({ school }: SchoolDataProps) => {
 	return (
-		<div className="border border-slate-200 p-6 rounded bg-white">
+		<Card>
 			<Title className="mb-4">Dados da escola</Title>
 
 			<div className="grid gap-4 md:grid-cols-3">
@@ -28,6 +28,6 @@ export const SchoolData = ({ school }: SchoolDataProps) => {
 					</div>
 				))}
 			</div>
-		</div>
+		</Card>
 	);
 };

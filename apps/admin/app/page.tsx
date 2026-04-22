@@ -7,7 +7,7 @@ import {
 	gameHighlights,
 	schoolSections,
 } from './admin-navigation';
-import { Title } from '@etnos/ui';
+import { Card, Title } from '@etnos/ui';
 import { schoolService, useAuth } from '@etnos/tools';
 import { useEffect, useState } from 'react';
 import {
@@ -51,7 +51,7 @@ export default function Page() {
 
 	return (
 		<div className="min-h-screen bg-slate-50">
-			<div className="container mx-auto px-6 py-4 md:px-0 md:py-10">
+			<div className="container mx-auto px-6 py-4 md:py-10">
 				<Breadcrumb
 					items={[
 						{ title: 'Home', href: '/' },
@@ -66,29 +66,25 @@ export default function Page() {
 					<p className="text-sm text-slate-600 mb-6">
 						{isAdmin
 							? 'Atalhos para as areas mais usadas no dia a dia da equipe.'
-							: 'Acesso rapido ao painel da sua escola e aos dados permitidos para esse perfil.'}
+							: 'Acesso rápido ao painel da sua escola.'}
 					</p>
 
 					<div className="grid md:grid-cols-4 gap-4">
 						{sections.map((section) => (
-							<dl
-								className="rounded border border-slate-200 shadow-sm bg-white p-6"
-								key={section.href}
-							>
-								<dl className="text-base font-bold uppercase">
+							<Card key={section.href}>
+								<div className="text-base font-bold uppercase">
 									{section.title}
-								</dl>
-								<dd>
-									<p className="text-slate-600 text-sm mb-4">
-										{section.description}
-									</p>
-									<Link href={section.href}>
-										<span className="font-bold text-xs px-2 py-1 bg-primary text-white rounded">
-											{section.cta}
-										</span>
-									</Link>
-								</dd>
-							</dl>
+								</div>
+
+								<p className="text-slate-600 text-sm mb-4">
+									{section.description}
+								</p>
+								<Link href={section.href}>
+									<span className="font-bold text-xs px-2 py-1 bg-primary text-white rounded">
+										{section.cta}
+									</span>
+								</Link>
+							</Card>
 						))}
 					</div>
 				</section>
@@ -113,19 +109,16 @@ export default function Page() {
 
 							<div className="grid md:grid-cols-2 gap-4">
 								{gameHighlights.map((game) => (
-									<dl
-										className="border border-slate-200 bg-white rounded p-6	shadow"
-										key={game.href}
-									>
-										<dt>
+									<Card key={game.href}>
+										<div>
 											<Tag color="green" className="mb-3">
 												Disponível agora
 											</Tag>
 											<span className="block text-lg font-black uppercase text-primary">
 												{game.name}
 											</span>
-										</dt>
-										<dd>
+										</div>
+										<div>
 											<p className="pt-1 pb-2">{game.description}</p>
 
 											<Link href={game.href}>
@@ -133,8 +126,8 @@ export default function Page() {
 													{game.cta}
 												</span>
 											</Link>
-										</dd>
-									</dl>
+										</div>
+									</Card>
 								))}
 							</div>
 						</section>

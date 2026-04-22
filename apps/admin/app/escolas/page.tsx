@@ -5,12 +5,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	Breadcrumb,
 	Button,
+	Card,
 	Drawer,
 	FloatButton,
 	Form,
 	Input,
 	Select,
 	Spin,
+	Tag,
 	Table,
 	Typography,
 	message,
@@ -44,6 +46,7 @@ export default function EscolasPage() {
 	const [selectedSchoolId, setSelectedSchoolId] = useState<string>();
 	const [userSearch, setUserSearch] = useState('');
 	const [selectedGame, setSelectedGame] = useState<string>('all');
+	const [schoolAccessEmail, setSchoolAccessEmail] = useState('');
 	const [sendingRecoveryEmail, setSendingRecoveryEmail] = useState<
 		string | null
 	>(null);
@@ -75,24 +78,61 @@ export default function EscolasPage() {
 	const { data: mySchool = null, isLoading: isLoadingMySchool } = useQuery({
 		queryKey: ['schools', 'me'],
 		queryFn: () => schoolService.getMySchool(),
-		enabled: isSchoolProfile,
+		enabled: false,
 	});
+
+	const { data: managedSchools = [], isLoading: isLoadingManagedSchools } =
+		useQuery({
+			queryKey: ['schools', 'me', 'managed'],
+			queryFn: () => schoolService.getManagedSchools(),
+			enabled: isSchoolProfile,
+		});
+
+	const effectiveManagedSchoolId =
+		selectedSchoolId &&
+		managedSchools.some((school) => school.id === selectedSchoolId)
+			? selectedSchoolId
+			: managedSchools[0]?.id;
+
+	const selectedManagedSchool =
+		managedSchools.find((school) => school.id === effectiveManagedSchoolId) ??
+		null;
 
 	const { data: schoolUsers = [], isLoading: isLoadingSchoolUsers } = useQuery<
 		SchoolUserInterface[]
 	>({
-		queryKey: ['schools', 'me', 'users', deferredUserSearch],
-		queryFn: () => schoolService.getMyUsers(deferredUserSearch || undefined),
-		enabled: isSchoolProfile,
+		queryKey: [
+			'schools',
+			'viewer',
+			'users',
+			effectiveManagedSchoolId,
+			deferredUserSearch,
+		],
+		queryFn: () =>
+			schoolService.getUsersBySchool(
+				effectiveManagedSchoolId as string,
+				deferredUserSearch || undefined,
+			),
+		enabled: isSchoolProfile && !!effectiveManagedSchoolId,
 	});
 
 	const {
 		data: schoolUserRanking = [],
 		isLoading: isLoadingSchoolUserRanking,
 	} = useQuery<UserRankingInterface[]>({
-		queryKey: ['schools', 'me', 'users-ranking', selectedGameSlug ?? 'all'],
-		queryFn: () => schoolService.getMyUsersRanking(selectedGameSlug),
-		enabled: isSchoolProfile,
+		queryKey: [
+			'schools',
+			'viewer',
+			'users-ranking',
+			effectiveManagedSchoolId,
+			selectedGameSlug ?? 'all',
+		],
+		queryFn: () =>
+			schoolService.getUsersRankingBySchool(
+				effectiveManagedSchoolId as string,
+				selectedGameSlug,
+			),
+		enabled: isSchoolProfile && !!effectiveManagedSchoolId,
 	});
 
 	const { data: adminUserRanking = [], isLoading: isLoadingAdminUserRanking } =
@@ -111,6 +151,16 @@ export default function EscolasPage() {
 				),
 			enabled: isAdmin && !!effectiveSelectedSchoolId,
 		});
+
+	const {
+		data: schoolAccessUsers = [],
+		isLoading: isLoadingSchoolAccessUsers,
+	} = useQuery<SchoolUserInterface[]>({
+		queryKey: ['schools', 'admin', 'access-users', effectiveSelectedSchoolId],
+		queryFn: () =>
+			schoolService.getAccessUsersBySchool(effectiveSelectedSchoolId as string),
+		enabled: isAdmin && !!effectiveSelectedSchoolId,
+	});
 
 	const createSchoolMutation = useMutation({
 		mutationFn: (values: SchoolInterface) => schoolService.create(values),
@@ -164,15 +214,48 @@ export default function EscolasPage() {
 		},
 	});
 
+	const addSchoolAccessMutation = useMutation({
+		mutationFn: ({ schoolId, email }: { schoolId: string; email: string }) =>
+			schoolService.addAccessUserToSchool(schoolId, email),
+		onSuccess: () => {
+			setSchoolAccessEmail('');
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'admin', 'access-users'],
+			});
+			message.success('Usuário vinculado à escola com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao vincular usuário à escola');
+		},
+	});
+
+	const removeSchoolAccessMutation = useMutation({
+		mutationFn: ({ schoolId, userId }: { schoolId: string; userId: string }) =>
+			schoolService.removeAccessUserFromSchool(schoolId, userId),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'admin', 'access-users'],
+			});
+			message.success('Acesso removido com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao remover acesso da escola');
+		},
+	});
+
 	const isLoading =
 		isLoadingSchools ||
 		isLoadingMySchool ||
+		isLoadingManagedSchools ||
 		isLoadingSchoolUsers ||
 		isLoadingSchoolUserRanking ||
 		isLoadingAdminUserRanking ||
+		isLoadingSchoolAccessUsers ||
 		createSchoolMutation.isPending ||
 		deleteSchoolMutation.isPending ||
-		updateSchoolMutation.isPending;
+		updateSchoolMutation.isPending ||
+		addSchoolAccessMutation.isPending ||
+		removeSchoolAccessMutation.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
 		createSchoolMutation.mutate(values);
@@ -200,10 +283,63 @@ export default function EscolasPage() {
 		}
 	};
 
+	const handleAddSchoolAccess = () => {
+		if (!effectiveSelectedSchoolId || !schoolAccessEmail.trim()) {
+			message.error('Selecione uma escola e informe um e-mail válido.');
+			return;
+		}
+
+		addSchoolAccessMutation.mutate({
+			schoolId: effectiveSelectedSchoolId,
+			email: schoolAccessEmail.trim(),
+		});
+	};
+
+	const handleRemoveSchoolAccess = (userId?: string) => {
+		if (!effectiveSelectedSchoolId || !userId) {
+			message.error('Não foi possível identificar o vínculo para remoção.');
+			return;
+		}
+
+		removeSchoolAccessMutation.mutate({
+			schoolId: effectiveSelectedSchoolId,
+			userId,
+		});
+	};
+
 	if (isSchoolProfile) {
+		if (!effectiveManagedSchoolId || !selectedManagedSchool) {
+			return (
+				<Spin spinning={isLoading}>
+					<div className="container mx-auto py-4 px-6 md:py-10">
+						<Breadcrumb
+							items={[
+								{ title: 'Home', href: '/' },
+								{
+									title: 'Área da escola',
+									href: '/admin',
+								},
+								{
+									title: 'Minhas escolas',
+								},
+							]}
+						/>
+
+						<Title className="mb-4 mt-6">Minhas Escolas</Title>
+						<Card>
+							<p className="text-slate-600">
+								Seu perfil school ainda não possui escola vinculada para
+								visualização. Peça para um administrador liberar o acesso.
+							</p>
+						</Card>
+					</div>
+				</Spin>
+			);
+		}
+
 		return (
 			<Spin spinning={isLoading}>
-				<div className="container mx-auto py-4 px-6 md:py-10 md:px-0">
+				<div className="container mx-auto py-4 px-6 md:py-10">
 					<Breadcrumb
 						items={[
 							{ title: 'Home', href: '/' },
@@ -217,14 +353,26 @@ export default function EscolasPage() {
 						]}
 					/>
 
-					<Title className="mb-4 mt-6">Minha Escola</Title>
+					<Title className="mb-4 mt-6">Minhas Escolas</Title>
 					<p className="text-slate-600 mb-6">
-						Consulte os dados da sua escola, veja os usuários vinculados e
-						acompanhe o ranking por jogo.
+						Consulte os dados das escolas liberadas para o seu perfil, veja os
+						usuários vinculados e acompanhe o ranking por jogo.
 					</p>
 
 					<div className="grid gap-6">
-						<SchoolData school={mySchool} />
+						<div className="max-w-md">
+							<Select
+								placeholder="Selecione uma escola"
+								value={effectiveManagedSchoolId}
+								onChange={setSelectedSchoolId}
+								options={managedSchools.map((school) => ({
+									value: school.id,
+									label: school.name,
+								}))}
+								className="w-full"
+							/>
+						</div>
+						<SchoolData school={selectedManagedSchool ?? mySchool} />
 						<SchoolUsers
 							users={schoolUsers}
 							search={userSearch}
@@ -335,6 +483,87 @@ export default function EscolasPage() {
 						selectedGame={selectedGame}
 						onGameChange={setSelectedGame}
 						gameOptions={gameOptions}
+					/>
+				</div>
+
+				<div className="mt-8">
+					<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
+						<div>
+							<Title className="mb-1">Gestão de usuários da escola</Title>
+							<p className="text-slate-600 text-sm">
+								Defina quais perfis com role <code>school</code> podem
+								visualizar a escola selecionada. Se o e-mail ainda não existir,
+								o usuário será cadastrado automaticamente.
+							</p>
+						</div>
+
+						<div className="flex w-full flex-col gap-2 md:max-w-xl md:flex-row">
+							<Input
+								placeholder="email@escola.com"
+								value={schoolAccessEmail}
+								onChange={(event) => setSchoolAccessEmail(event.target.value)}
+							/>
+							<Button
+								type="primary"
+								onClick={handleAddSchoolAccess}
+								loading={addSchoolAccessMutation.isPending}
+								disabled={!effectiveSelectedSchoolId}
+							>
+								Adicionar e-mail
+							</Button>
+						</div>
+					</div>
+
+					<Table
+						rowKey="uid"
+						pagination={{ pageSize: 8 }}
+						dataSource={schoolAccessUsers}
+						columns={[
+							{
+								title: 'Usuário',
+								render: (_, record: SchoolUserInterface) =>
+									record.childName || record.parentName || record.email || '-',
+							},
+							{
+								title: 'E-mail',
+								dataIndex: 'email',
+								render: (value: string | null | undefined) => value || '-',
+							},
+							{
+								title: 'Perfis',
+								dataIndex: 'roles',
+								render: (roles: string[] | undefined) =>
+									roles?.length ? (
+										<div className="flex flex-wrap gap-1">
+											{roles.map((role) => (
+												<Tag key={role}>{role}</Tag>
+											))}
+										</div>
+									) : (
+										'-'
+									),
+							},
+							{
+								title: 'Ações',
+								key: 'action',
+								render: (_, record: SchoolUserInterface) => (
+									<Button
+										danger
+										onClick={() => handleRemoveSchoolAccess(record.id)}
+										loading={
+											removeSchoolAccessMutation.isPending &&
+											removeSchoolAccessMutation.variables?.userId === record.id
+										}
+									>
+										Remover
+									</Button>
+								),
+							},
+						]}
+						locale={{
+							emptyText:
+								'Nenhum perfil school foi vinculado à escola selecionada.',
+						}}
 					/>
 				</div>
 

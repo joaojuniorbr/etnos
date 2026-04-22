@@ -41,8 +41,7 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key:
-            ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
+          key: ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
             'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-22.14.0-modules-
@@ -51,8 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key:
-            ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
+          key: ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
             hashFiles('yarn.lock', 'turbo.json', 'package.json',
             'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
@@ -116,8 +114,7 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key:
-            ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
+          key: ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
             'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-22.14.0-modules-
@@ -126,8 +123,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key:
-            ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
+          key: ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
             hashFiles('yarn.lock', 'turbo.json', 'package.json',
             'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
@@ -176,8 +172,7 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key:
-            ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
+          key: ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
             'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-22.14.0-modules-
@@ -186,8 +181,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key:
-            ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
+          key: ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
             hashFiles('yarn.lock', 'turbo.json', 'package.json',
             'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
@@ -214,6 +208,8 @@ jobs:
       - chromatic
       - sonarcloud
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: release
     permissions:
       contents: write
       issues: write
@@ -242,8 +238,7 @@ jobs:
             node_modules
             apps/*/node_modules
             packages/*/node_modules
-          key:
-            ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
+          key: ${{ runner.os }}-node-22.14.0-modules-${{ hashFiles('yarn.lock',
             'package.json', 'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-22.14.0-modules-
@@ -252,8 +247,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key:
-            ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
+          key: ${{ runner.os }}-node-22.14.0-turbo-${{ github.ref_name }}-${{
             hashFiles('yarn.lock', 'turbo.json', 'package.json',
             'apps/*/package.json', 'packages/*/package.json') }}
           restore-keys: |

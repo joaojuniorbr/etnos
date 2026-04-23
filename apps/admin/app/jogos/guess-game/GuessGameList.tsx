@@ -106,6 +106,10 @@ export const GuessGameList = () => {
 			return;
 		}
 
+		if (saveMutation.isPending) {
+			return;
+		}
+
 		saveMutation.mutate({
 			id: editingItem?.id,
 			title: values.title.trim(),
@@ -399,7 +403,12 @@ export const GuessGameList = () => {
 						>
 							Cancelar
 						</Button>
-						<Button type="primary" htmlType="submit">
+						<Button
+							type="primary"
+							htmlType="submit"
+							loading={saveMutation.isPending}
+							disabled={saveMutation.isPending}
+						>
 							Salvar
 						</Button>
 					</div>

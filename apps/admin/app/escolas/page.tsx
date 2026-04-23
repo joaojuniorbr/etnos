@@ -258,6 +258,10 @@ export default function EscolasPage() {
 		removeSchoolAccessMutation.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
+		if (createSchoolMutation.isPending) {
+			return;
+		}
+
 		createSchoolMutation.mutate(values);
 	};
 
@@ -428,6 +432,12 @@ export default function EscolasPage() {
 							),
 						},
 						{
+							title: 'Código',
+							dataIndex: 'code',
+							key: 'code',
+							render: (value: string | null | undefined) => value || '-',
+						},
+						{
 							title: 'Cidade',
 							dataIndex: 'city',
 							key: 'city',
@@ -584,6 +594,19 @@ export default function EscolasPage() {
 							<Input />
 						</Form.Item>
 
+						<Form.Item
+							name="code"
+							label="Código identificador"
+							rules={[
+								{
+									required: true,
+									message: 'Informe o código identificador da escola.',
+								},
+							]}
+						>
+							<Input placeholder="Ex.: ESCOLA-AURORA" />
+						</Form.Item>
+
 						<Form.Item name="city" label="Cidade">
 							<Input />
 						</Form.Item>
@@ -592,7 +615,13 @@ export default function EscolasPage() {
 							<Input />
 						</Form.Item>
 
-						<Button type="primary" htmlType="submit" block>
+						<Button
+							type="primary"
+							htmlType="submit"
+							block
+							loading={createSchoolMutation.isPending}
+							disabled={createSchoolMutation.isPending}
+						>
 							Salvar
 						</Button>
 					</Form>

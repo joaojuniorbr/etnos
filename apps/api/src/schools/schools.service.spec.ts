@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { SchoolsService } from './schools.service';
 import { PrismaService } from 'src/prisma';
 import * as admin from 'firebase-admin';
@@ -37,12 +39,14 @@ const createSchool = (
   overrides?: Partial<{
     id: string;
     name: string;
+    code?: string | null;
     city?: string | null;
     state?: string | null;
   }>,
 ) => ({
   id: '1',
   name: 'IFPR',
+  code: 'IFPR',
   city: 'Curitiba',
   state: 'PR',
   ...overrides,
@@ -313,16 +317,19 @@ describe('SchoolsService', () => {
     });
 
     it('cria escola quando nao existe duplicata', async () => {
-      prismaService.school.findUnique.mockResolvedValueOnce(null);
+      prismaService.school.findFirst.mockResolvedValueOnce(null);
 
       const result = await service.create(mockSchool);
 
-      expect(prismaService.school.findUnique).toHaveBeenCalledWith({
-        where: { name: mockSchool.name },
+      expect(prismaService.school.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ name: mockSchool.name }, { code: mockSchool.code }],
+        },
       });
       expect(prismaService.school.create).toHaveBeenCalledWith({
         data: {
           name: mockSchool.name,
+          code: mockSchool.code,
           city: mockSchool.city,
           state: mockSchool.state,
         },
@@ -331,10 +338,37 @@ describe('SchoolsService', () => {
     });
 
     it('retorna null ao criar escola duplicada', async () => {
-      prismaService.school.findUnique.mockResolvedValueOnce(mockSchool);
+      prismaService.school.findFirst.mockResolvedValueOnce(mockSchool);
 
       await expect(service.create(mockSchool)).resolves.toBeNull();
       expect(prismaService.school.create).not.toHaveBeenCalled();
+    });
+
+    it('lança erro ao criar escola sem codigo identificador', async () => {
+      await expect(
+        service.create({ ...mockSchool, code: '   ' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('lança conflito quando duas criações simultâneas usam o mesmo codigo', async () => {
+      prismaService.school.findFirst.mockResolvedValueOnce(null);
+      prismaService.school.create.mockRejectedValueOnce(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '6.19.2',
+        }),
+      );
+
+      await expect(service.create(mockSchool)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it('propaga erro inesperado ao criar escola', async () => {
+      prismaService.school.findFirst.mockResolvedValueOnce(null);
+      prismaService.school.create.mockRejectedValueOnce(new Error('database'));
+
+      await expect(service.create(mockSchool)).rejects.toThrow('database');
     });
 
     it('atualiza escola quando nao ha conflito', async () => {
@@ -342,14 +376,14 @@ describe('SchoolsService', () => {
 
       expect(prismaService.school.findFirst).toHaveBeenCalledWith({
         where: {
-          name: 'Novo nome',
-          city: null,
+          OR: [{ name: 'Novo nome' }],
         },
       });
       expect(prismaService.school.update).toHaveBeenCalledWith({
         where: { id: '1' },
         data: {
           name: 'Novo nome',
+          code: undefined,
           city: undefined,
           state: undefined,
         },
@@ -378,11 +412,32 @@ describe('SchoolsService', () => {
         where: { id: '1' },
         data: {
           name: undefined,
+          code: undefined,
           city: 'Pinhais',
           state: undefined,
         },
       });
       expect(result).toEqual({ id: '1', city: 'Pinhais' });
+    });
+
+    it('normaliza codigo ao atualizar escola', async () => {
+      const result = await service.update('1', { code: ' escola-01 ' });
+
+      expect(prismaService.school.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [{ code: 'ESCOLA-01' }],
+        },
+      });
+      expect(prismaService.school.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: {
+          name: undefined,
+          code: 'ESCOLA-01',
+          city: undefined,
+          state: undefined,
+        },
+      });
+      expect(result).toEqual({ id: '1', code: 'ESCOLA-01' });
     });
 
     it('remove escola', async () => {
@@ -608,6 +663,37 @@ describe('SchoolsService', () => {
         orderBy: schoolUsersOrderBy,
         select: schoolUsersListSelect,
       });
+    });
+
+    it('mapeia uid vazio quando usuario listado nao tiver firebaseUid', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          school: null,
+          schoolAccesses: [{ schoolId: '2' }],
+        }),
+      );
+      prismaService.user.findMany.mockResolvedValueOnce([
+        createUserEntity({
+          id: 'user-without-firebase',
+          firebaseUid: undefined as unknown as string,
+          school: '2',
+        }),
+      ]);
+
+      await expect(
+        service.getUsersBySchool('firebase-user-1', '2'),
+      ).resolves.toEqual([
+        {
+          id: 'user-without-firebase',
+          uid: '',
+          childName: 'Aluno 1',
+          parentName: 'Responsavel 1',
+          email: 'aluno1@test.com',
+          school: '2',
+          roles: ['student'],
+          updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+        },
+      ]);
     });
 
     it('permite acesso por escola para perfil admin sem validar vínculo school', async () => {
@@ -1273,6 +1359,47 @@ describe('SchoolsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('adiciona role school quando usuario existente nao possui roles salvas', async () => {
+      prismaService.user.findFirst.mockResolvedValueOnce({
+        id: 'user-23',
+        firebaseUid: 'firebase-user-23',
+        email: 'sem-role@test.com',
+        parentName: 'Sem Role',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: undefined,
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+      prismaService.user.update.mockResolvedValueOnce({
+        id: 'user-23',
+        firebaseUid: 'firebase-user-23',
+        email: 'sem-role@test.com',
+        parentName: 'Sem Role',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+
+      await service.addAccessUserToSchool('1', 'sem-role@test.com');
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-23' },
+        data: {
+          email: 'sem-role@test.com',
+          roles: ['school'],
+        },
+      });
+    });
+
     it('cria perfil local para usuario existente no Firebase mas ainda sem registro na base', async () => {
       mockedAdminAuth.getUserByEmail.mockResolvedValueOnce({
         uid: 'firebase-user-30',
@@ -1395,6 +1522,134 @@ describe('SchoolsService', () => {
           email: 'gestor@test.com',
           roles: ['student', 'school'],
         },
+      });
+    });
+
+    it('atualiza perfil local existente pelo firebaseUid quando roles existem mas email diverge', async () => {
+      mockedAdminAuth.getUserByEmail.mockResolvedValueOnce({
+        uid: 'firebase-user-34',
+        displayName: 'Gestor',
+        photoURL: null,
+      });
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'user-34',
+        firebaseUid: 'firebase-user-34',
+        email: 'antigo@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+      prismaService.user.update.mockResolvedValueOnce({
+        id: 'user-34',
+        firebaseUid: 'firebase-user-34',
+        email: 'novo@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+
+      await service.addAccessUserToSchool('1', 'novo@test.com');
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-34' },
+        data: {
+          email: 'novo@test.com',
+          roles: ['school'],
+        },
+      });
+    });
+
+    it('adiciona role school para perfil local por firebaseUid quando roles nao existirem', async () => {
+      mockedAdminAuth.getUserByEmail.mockResolvedValueOnce({
+        uid: 'firebase-user-35',
+        displayName: 'Gestor',
+        photoURL: null,
+      });
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'user-35',
+        firebaseUid: 'firebase-user-35',
+        email: 'firebase-sem-role@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: undefined,
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+      prismaService.user.update.mockResolvedValueOnce({
+        id: 'user-35',
+        firebaseUid: 'firebase-user-35',
+        email: 'firebase-sem-role@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+
+      await service.addAccessUserToSchool('1', 'firebase-sem-role@test.com');
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-35' },
+        data: {
+          email: 'firebase-sem-role@test.com',
+          roles: ['school'],
+        },
+      });
+    });
+
+    it('reutiliza perfil local existente pelo firebaseUid sem update quando ja estiver normalizado', async () => {
+      mockedAdminAuth.getUserByEmail.mockResolvedValueOnce({
+        uid: 'firebase-user-33',
+        displayName: 'Gestor',
+        photoURL: null,
+      });
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'user-33',
+        firebaseUid: 'firebase-user-33',
+        email: 'gestor@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      });
+
+      const result = await service.addAccessUserToSchool('1', 'gestor@test.com');
+
+      expect(prismaService.user.update).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        id: 'user-33',
+        uid: 'firebase-user-33',
+        email: 'gestor@test.com',
+        parentName: 'Gestor',
+        childName: null,
+        school: null,
+        roles: ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
       });
     });
 

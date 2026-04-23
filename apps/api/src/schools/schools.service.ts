@@ -1,9 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type {
   SchoolInterface,
   SchoolRankingInterface,
@@ -133,11 +135,11 @@ export class SchoolsService {
     schoolUser: Pick<
       SchoolUserInterface,
       'id' | 'email' | 'parentName' | 'childName' | 'school' | 'roles' | 'updatedAt'
-    > & { firebaseUid?: string | null; uid?: string | null },
+    > & { firebaseUid?: string | null },
   ): SchoolUserInterface {
     return {
       id: schoolUser.id,
-      uid: schoolUser.uid ?? schoolUser.firebaseUid ?? '',
+      uid: schoolUser.firebaseUid ?? '',
       email: schoolUser.email,
       parentName: schoolUser.parentName,
       childName: schoolUser.childName,
@@ -219,6 +221,12 @@ export class SchoolsService {
     }
 
     return school;
+  }
+
+  private normalizeSchoolCode(code?: string | null) {
+    const normalizedCode = code?.trim().toUpperCase();
+
+    return normalizedCode || null;
   }
 
   private buildRolesForSchoolAccess(existingRoles: string[]) {
@@ -338,34 +346,65 @@ export class SchoolsService {
   }
 
   async create(school: SchoolInterface) {
-    const exists = await this.prismaService.school.findUnique({
-      where: { name: school.name },
+    const normalizedCode = this.normalizeSchoolCode(school.code);
+
+    if (!normalizedCode) {
+      throw new BadRequestException('Informe o codigo identificador da escola.');
+    }
+
+    const exists = await this.prismaService.school.findFirst({
+      where: {
+        OR: [{ name: school.name }, { code: normalizedCode }],
+      },
     });
 
     if (exists) return null;
 
-    const created = await this.prismaService.school.create({
-      data: {
-        name: school.name,
-        city: school.city,
-        state: school.state,
-      },
-    });
+    try {
+      const created = await this.prismaService.school.create({
+        data: {
+          name: school.name,
+          code: normalizedCode,
+          city: school.city,
+          state: school.state,
+        },
+      });
 
-    return {
-      id: created.id,
-      ...school,
-    };
+      return {
+        id: created.id,
+        ...school,
+        code: normalizedCode,
+      };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'Ja existe uma escola com este codigo identificador.',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async update(id: string, school: Partial<SchoolInterface>) {
+    const normalizedCode =
+      school.code === undefined
+        ? undefined
+        : this.normalizeSchoolCode(school.code);
     const existing =
-      school.name === undefined
+      school.name === undefined && school.code === undefined
         ? null
         : await this.prismaService.school.findFirst({
             where: {
-              name: school.name,
-              city: school.city ?? null,
+              OR: [
+                ...(school.name === undefined ? [] : [{ name: school.name }]),
+                ...(normalizedCode === undefined
+                  ? []
+                  : [{ code: normalizedCode }]),
+              ],
             },
           });
 
@@ -375,6 +414,7 @@ export class SchoolsService {
       where: { id },
       data: {
         name: school.name,
+        code: normalizedCode,
         city: school.city,
         state: school.state,
       },
@@ -383,6 +423,7 @@ export class SchoolsService {
     return {
       id,
       ...school,
+      ...(normalizedCode === undefined ? {} : { code: normalizedCode }),
     };
   }
 

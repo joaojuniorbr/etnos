@@ -140,6 +140,30 @@ describe('AuthService', () => {
         service.loginWithEmailAndPassword('wrong@email.com', 'wrong'),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it('deve bloquear login com e-mail quando a conta estiver desativada', async () => {
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+          expiresIn: '3600',
+          localId: 'user-id',
+        },
+      });
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-id',
+        roles: ['student'],
+        email: TEST_EMAIL,
+        isActive: false,
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T00:00:00.000Z'),
+      });
+
+      await expect(
+        service.loginWithEmailAndPassword(TEST_EMAIL, TEST_PASSWORD),
+      ).rejects.toThrow(UnauthorizedException);
+    });
   });
 
   describe('getProfile', () => {
@@ -690,6 +714,32 @@ describe('AuthService', () => {
 
       await expect(service.loginWithGoogle('invalid-token')).rejects.toThrow(
         'Não foi possível autenticar com Google',
+      );
+    });
+
+    it('deve bloquear login com Google quando a conta estiver desativada', async () => {
+      mockedAdminAuth.mockReturnValueOnce({
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'google-user-id' }),
+        getUser: jest.fn().mockResolvedValue({
+          uid: 'google-user-id',
+          email: 'google@test.com',
+          displayName: 'Google User',
+        }),
+      } as any);
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({ id: 'db-user-id', firebaseUid: 'google-user-id' })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
+          roles: ['student'],
+          email: 'google@test.com',
+          isActive: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      await expect(service.loginWithGoogle('google-id-token')).rejects.toThrow(
+        UnauthorizedException,
       );
     });
   });

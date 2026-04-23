@@ -17,12 +17,18 @@ import {
 	Typography,
 	message,
 } from 'antd';
-import { schoolService, useAuth } from '@etnos/tools';
+import {
+	schoolService,
+	usersService,
+	useAuth,
+	useCharacter,
+} from '@etnos/tools';
 import {
 	GameNameEnum,
 	GamesEnum,
 	type SchoolInterface,
 	type SchoolUserInterface,
+	type UserRole,
 	type UserRankingInterface,
 } from '@etnos/types';
 
@@ -46,6 +52,7 @@ export default function EscolasPage() {
 	const [selectedSchoolId, setSelectedSchoolId] = useState<string>();
 	const [userSearch, setUserSearch] = useState('');
 	const [selectedGame, setSelectedGame] = useState<string>('all');
+	const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
 	const [schoolAccessEmail, setSchoolAccessEmail] = useState('');
 	const [sendingRecoveryEmail, setSendingRecoveryEmail] = useState<
 		string | null
@@ -57,8 +64,25 @@ export default function EscolasPage() {
 	const deferredUserSearch = useDeferredValue(userSearch.trim());
 
 	const isAdmin = user?.role?.includes('admin');
+	const isTeacherProfile = user?.role?.includes('teacher') && !isAdmin;
 	const isSchoolProfile = user?.role?.includes('school') && !isAdmin;
+	const isSchoolViewerProfile = isSchoolProfile || isTeacherProfile;
 	const selectedGameSlug = selectedGame === 'all' ? undefined : selectedGame;
+	const selectedCharacterSlug =
+		selectedCharacter === 'all' ? undefined : selectedCharacter;
+	const { data: characters = [] } = useCharacter({
+		fetchList: Boolean(isAdmin || isSchoolViewerProfile),
+	});
+	const characterOptions = [
+		{
+			value: 'all',
+			label: 'Todos os personagens',
+		},
+		...characters.map((character) => ({
+			value: character.slug,
+			label: character.name,
+		})),
+	];
 
 	const toggleDrawer = () => {
 		setOpen(!open);
@@ -85,7 +109,7 @@ export default function EscolasPage() {
 		useQuery({
 			queryKey: ['schools', 'me', 'managed'],
 			queryFn: () => schoolService.getManagedSchools(),
-			enabled: isSchoolProfile,
+			enabled: isSchoolViewerProfile,
 		});
 
 	const effectiveManagedSchoolId =
@@ -126,13 +150,15 @@ export default function EscolasPage() {
 			'users-ranking',
 			effectiveManagedSchoolId,
 			selectedGameSlug ?? 'all',
+			selectedCharacterSlug ?? 'all',
 		],
 		queryFn: () =>
 			schoolService.getUsersRankingBySchool(
 				effectiveManagedSchoolId as string,
 				selectedGameSlug,
+				selectedCharacterSlug,
 			),
-		enabled: isSchoolProfile && !!effectiveManagedSchoolId,
+		enabled: isSchoolViewerProfile && !!effectiveManagedSchoolId,
 	});
 
 	const { data: adminUserRanking = [], isLoading: isLoadingAdminUserRanking } =
@@ -143,11 +169,13 @@ export default function EscolasPage() {
 				'users-ranking',
 				effectiveSelectedSchoolId,
 				selectedGameSlug ?? 'all',
+				selectedCharacterSlug ?? 'all',
 			],
 			queryFn: () =>
 				schoolService.getUsersRankingBySchool(
 					effectiveSelectedSchoolId as string,
 					selectedGameSlug,
+					selectedCharacterSlug,
 				),
 			enabled: isAdmin && !!effectiveSelectedSchoolId,
 		});
@@ -243,6 +271,23 @@ export default function EscolasPage() {
 		},
 	});
 
+	const updateSchoolUserRolesMutation = useMutation({
+		mutationFn: ({ userId, roles }: { userId: string; roles: UserRole[] }) =>
+			usersService.update(userId, { roles }),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'viewer', 'users'],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: ['users', 'admin'],
+			});
+			message.success('Perfil do usuário atualizado com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao atualizar perfil do usuário');
+		},
+	});
+
 	const isLoading =
 		isLoadingSchools ||
 		isLoadingMySchool ||
@@ -255,7 +300,8 @@ export default function EscolasPage() {
 		deleteSchoolMutation.isPending ||
 		updateSchoolMutation.isPending ||
 		addSchoolAccessMutation.isPending ||
-		removeSchoolAccessMutation.isPending;
+		removeSchoolAccessMutation.isPending ||
+		updateSchoolUserRolesMutation.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
 		if (createSchoolMutation.isPending) {
@@ -311,7 +357,15 @@ export default function EscolasPage() {
 		});
 	};
 
-	if (isSchoolProfile) {
+	const handleUpdateSchoolUserRoles = (userId: string, roles: UserRole[]) => {
+		if (updateSchoolUserRolesMutation.isPending) {
+			return;
+		}
+
+		updateSchoolUserRolesMutation.mutate({ userId, roles });
+	};
+
+	if (isSchoolViewerProfile) {
 		if (!effectiveManagedSchoolId || !selectedManagedSchool) {
 			return (
 				<Spin spinning={isLoading}>
@@ -332,8 +386,8 @@ export default function EscolasPage() {
 						<Title className="mb-4 mt-6">Minhas Escolas</Title>
 						<Card>
 							<p className="text-slate-600">
-								Seu perfil school ainda não possui escola vinculada para
-								visualização. Peça para um administrador liberar o acesso.
+								Seu perfil ainda não possui escola vinculada para visualização.
+								Peça para um administrador liberar o acesso.
 							</p>
 						</Card>
 					</div>
@@ -359,8 +413,8 @@ export default function EscolasPage() {
 
 					<Title className="mb-4 mt-6">Minhas Escolas</Title>
 					<p className="text-slate-600 mb-6">
-						Consulte os dados das escolas liberadas para o seu perfil, veja os
-						usuários vinculados e acompanhe o ranking por jogo.
+						Consulte os dados das escolas liberadas para o seu perfil, acompanhe
+						rankings por jogo e veja os usuários quando seu perfil permitir.
 					</p>
 
 					<div className="grid gap-6">
@@ -377,18 +431,28 @@ export default function EscolasPage() {
 							/>
 						</div>
 						<SchoolData school={selectedManagedSchool ?? mySchool} />
-						<SchoolUsers
-							users={schoolUsers}
-							search={userSearch}
-							onSearchChange={setUserSearch}
-							onSendPassword={handleSendPassword}
-							sendingRecoveryEmail={sendingRecoveryEmail}
-						/>
+						{isSchoolProfile ? (
+							<SchoolUsers
+								users={schoolUsers}
+								search={userSearch}
+								onSearchChange={setUserSearch}
+								onSendPassword={handleSendPassword}
+								sendingRecoveryEmail={sendingRecoveryEmail}
+								currentUserUid={user?.uid}
+								onRolesChange={handleUpdateSchoolUserRoles}
+								updatingRolesUserId={
+									updateSchoolUserRolesMutation.variables?.userId ?? null
+								}
+							/>
+						) : null}
 						<UserRanking
 							ranking={schoolUserRanking}
 							selectedGame={selectedGame}
 							onGameChange={setSelectedGame}
 							gameOptions={gameOptions}
+							selectedCharacter={selectedCharacter}
+							onCharacterChange={setSelectedCharacter}
+							characterOptions={characterOptions}
 						/>
 					</div>
 				</div>
@@ -493,6 +557,9 @@ export default function EscolasPage() {
 						selectedGame={selectedGame}
 						onGameChange={setSelectedGame}
 						gameOptions={gameOptions}
+						selectedCharacter={selectedCharacter}
+						onCharacterChange={setSelectedCharacter}
+						characterOptions={characterOptions}
 					/>
 				</div>
 

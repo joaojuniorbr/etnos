@@ -62,10 +62,19 @@ export const schoolService = {
 			.then((res) => res.data);
 	},
 
-	getMyUsersRanking(gameSlug?: string): Promise<UserRankingInterface[]> {
+	getMyUsersRanking(
+		gameSlug?: string,
+		characterSlug?: string,
+	): Promise<UserRankingInterface[]> {
 		return api
 			.get('/schools/me/users/ranking', {
-				params: gameSlug ? { gameSlug } : undefined,
+				params:
+					gameSlug || characterSlug
+						? {
+								...(gameSlug ? { gameSlug } : {}),
+								...(characterSlug ? { characterSlug } : {}),
+							}
+						: undefined,
 			})
 			.then((res) => res.data);
 	},
@@ -73,10 +82,17 @@ export const schoolService = {
 	getUsersRankingBySchool(
 		schoolId: string,
 		gameSlug?: string,
+		characterSlug?: string,
 	): Promise<UserRankingInterface[]> {
 		return api
 			.get(`/schools/${schoolId}/users/ranking`, {
-				params: gameSlug ? { gameSlug } : undefined,
+				params:
+					gameSlug || characterSlug
+						? {
+								...(gameSlug ? { gameSlug } : {}),
+								...(characterSlug ? { characterSlug } : {}),
+							}
+						: undefined,
 			})
 			.then((res) => res.data);
 	},

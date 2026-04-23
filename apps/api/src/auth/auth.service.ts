@@ -93,7 +93,12 @@ export class AuthService {
       const decoded = await admin.auth().verifyIdToken(response.data.idToken);
       const uid = decoded.uid;
 
-      const user = await this.getProfile(uid);
+      const profile = await this.findProfileByFirebaseUid(uid);
+
+      if (profile?.isActive === false) {
+        throw new UnauthorizedException('Conta desativada.');
+      }
+      const user = this.mapProfile(profile);
 
       return {
         idToken: response.data.idToken,
@@ -132,7 +137,12 @@ export class AuthService {
         });
       }
 
-      const user = await this.getProfile(userRecord.uid);
+      const profile = await this.findProfileByFirebaseUid(userRecord.uid);
+
+      if (profile?.isActive === false) {
+        throw new UnauthorizedException('Conta desativada.');
+      }
+      const user = this.mapProfile(profile);
 
       return {
         idToken,

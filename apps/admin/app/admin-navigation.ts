@@ -9,6 +9,13 @@ export const adminSections = [
 		cta: 'Gerenciar personagens',
 	},
 	{
+		title: 'Usuários',
+		description:
+			'Liste usuarios, filtre por escola e ajuste perfis ou status de acesso.',
+		href: '/admin/usuarios',
+		cta: 'Gerenciar usuarios',
+	},
+	{
 		title: 'Escolas',
 		description:
 			'Acompanhe o cadastro das escolas e mantenha as informacoes administrativas atualizadas.',

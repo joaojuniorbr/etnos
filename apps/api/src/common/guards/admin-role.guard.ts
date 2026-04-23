@@ -20,8 +20,12 @@ export class AdminRoleGuard implements CanActivate {
 
     const user = await this.prismaService.user.findUnique({
       where: { firebaseUid: authenticatedUserId },
-      select: { roles: true, school: true },
+      select: { roles: true, school: true, isActive: true },
     });
+
+    if (!user || user.isActive === false) {
+      throw new ForbiddenException('Conta desativada.');
+    }
 
     if (!user?.roles?.includes('admin')) {
       throw new ForbiddenException(

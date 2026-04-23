@@ -41,7 +41,13 @@ export class SchoolsService {
   private async getUserRankingBySchoolId(
     schoolId: string,
     gameSlug?: string,
+    characterSlug?: string,
   ): Promise<UserRankingInterface[]> {
+    const scoreWhere: Prisma.GameScoreWhereInput = {
+      ...(gameSlug ? { slug: gameSlug } : {}),
+      ...(characterSlug ? { characterSlug } : {}),
+    };
+
     const [users, scores] = await Promise.all([
       this.prismaService.user.findMany({
         where: {
@@ -57,11 +63,7 @@ export class SchoolsService {
         },
       }),
       this.prismaService.gameScore.findMany({
-        where: gameSlug
-          ? {
-              slug: gameSlug,
-            }
-          : undefined,
+        where: Object.keys(scoreWhere).length ? scoreWhere : undefined,
         select: {
           userId: true,
           score: true,
@@ -177,7 +179,8 @@ export class SchoolsService {
     return Array.from(
       new Set([
         ...profile.schoolAccesses.map((access) => access.schoolId),
-        ...(profile.roles.includes('school') && profile.school
+        ...((profile.roles.includes('school') || profile.roles.includes('teacher')) &&
+        profile.school
           ? [profile.school]
           : []),
       ]),
@@ -194,9 +197,9 @@ export class SchoolsService {
       return user;
     }
 
-    if (!user.roles.includes('school')) {
+    if (!user.roles.includes('school') && !user.roles.includes('teacher')) {
       throw new ForbiddenException(
-        'Acesso restrito a administradores e perfis de escola.',
+        'Acesso restrito a administradores, escolas e professores.',
       );
     }
 
@@ -707,6 +710,7 @@ export class SchoolsService {
   async getUserRankingFromMySchool(
     firebaseUid: string,
     gameSlug?: string,
+    characterSlug?: string,
   ): Promise<UserRankingInterface[]> {
     const user = await this.getAuthenticatedProfile(firebaseUid);
 
@@ -716,18 +720,19 @@ export class SchoolsService {
       );
     }
 
-    return this.getUserRankingBySchoolId(user.school, gameSlug);
+    return this.getUserRankingBySchoolId(user.school, gameSlug, characterSlug);
   }
 
   async getUserRankingBySchoolForViewer(
     firebaseUid: string,
     schoolId: string,
     gameSlug?: string,
+    characterSlug?: string,
   ): Promise<UserRankingInterface[]> {
     await this.assertViewerCanAccessSchool(firebaseUid, schoolId);
     await this.ensureSchoolExists(schoolId);
 
-    return this.getUserRankingBySchoolId(schoolId, gameSlug);
+    return this.getUserRankingBySchoolId(schoolId, gameSlug, characterSlug);
   }
 
   async getAccessUsersBySchool(schoolId: string): Promise<SchoolUserInterface[]> {

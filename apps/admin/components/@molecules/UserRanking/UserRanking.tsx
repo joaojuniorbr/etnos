@@ -7,6 +7,9 @@ interface UserRankingProps {
 	selectedGame: string;
 	onGameChange: (game: string) => void;
 	gameOptions: Array<{ value: string; label: string }>;
+	selectedCharacter?: string;
+	onCharacterChange?: (character: string) => void;
+	characterOptions?: Array<{ value: string; label: string }>;
 }
 
 export const UserRanking = ({
@@ -14,24 +17,41 @@ export const UserRanking = ({
 	selectedGame,
 	onGameChange,
 	gameOptions,
+	selectedCharacter,
+	onCharacterChange,
+	characterOptions,
 }: UserRankingProps) => {
+	const shouldShowCharacterFilter = Boolean(
+		selectedCharacter && onCharacterChange && characterOptions?.length,
+	);
+
 	return (
 		<Card>
 			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 				<div>
 					<Title className="mb-1">Ranking por usuário</Title>
 					<p className="text-slate-600 text-sm">
-						Acompanhe a pontuação dos usuários da escola e filtre por jogo
-						quando precisar.
+						Acompanhe a pontuação dos usuários da escola e filtre por jogo ou
+						personagem quando precisar.
 					</p>
 				</div>
 
-				<Select
-					value={selectedGame}
-					onChange={onGameChange}
-					options={gameOptions}
-					className="w-full md:max-w-xs"
-				/>
+				<div className="flex w-full flex-col gap-2 md:max-w-xl md:flex-row">
+					<Select
+						value={selectedGame}
+						onChange={onGameChange}
+						options={gameOptions}
+						className="w-full"
+					/>
+					{shouldShowCharacterFilter ? (
+						<Select
+							value={selectedCharacter}
+							onChange={onCharacterChange}
+							options={characterOptions}
+							className="w-full"
+						/>
+					) : null}
+				</div>
 			</div>
 
 			<div className="block md:hidden">

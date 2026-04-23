@@ -121,11 +121,13 @@ describe('SchoolsController', () => {
     const result = await controller.getUserRankingFromMySchool(
       { user: { uid: 'firebase-user-1' } },
       'memory-game',
+      'anita',
     );
 
     expect(service.getUserRankingFromMySchool).toHaveBeenCalledWith(
       'firebase-user-1',
       'memory-game',
+      'anita',
     );
     expect(result).toEqual([
       { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
@@ -163,12 +165,14 @@ describe('SchoolsController', () => {
       { user: { uid: 'firebase-user-1' } },
       'school-1',
       'memory-game',
+      'anita',
     );
 
     expect(service.getUserRankingBySchoolForViewer).toHaveBeenCalledWith(
       'firebase-user-1',
       'school-1',
       'memory-game',
+      'anita',
     );
     expect(result).toEqual([
       { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },

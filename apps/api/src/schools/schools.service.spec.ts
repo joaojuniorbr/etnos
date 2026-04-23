@@ -267,12 +267,25 @@ describe('SchoolsService', () => {
     });
   };
 
-  const expectUserRankingLookup = (schoolId = '1') => {
+  const expectUserRankingLookup = (
+    schoolId = '1',
+    gameSlug?: string,
+    characterSlug?: string,
+  ) => {
+    const scoreWhere = {
+      ...(gameSlug ? { slug: gameSlug } : {}),
+      ...(characterSlug ? { characterSlug } : {}),
+    };
+
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
         school: schoolId,
       },
       select: schoolUserSelect,
+    });
+    expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
+      where: Object.keys(scoreWhere).length ? scoreWhere : undefined,
+      select: { userId: true, score: true },
     });
   };
 
@@ -586,6 +599,32 @@ describe('SchoolsService', () => {
         mockSchool,
         createSchool({ id: '2', name: 'Outra Escola' }),
       ]);
+    });
+
+    it('lista escola principal gerenciada por perfil teacher', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          roles: ['teacher'],
+          school: '1',
+          schoolAccesses: [],
+        }),
+      );
+      prismaService.school.findMany.mockResolvedValueOnce([mockSchool]);
+
+      await expect(
+        service.getManagedSchools('firebase-user-1'),
+      ).resolves.toEqual([mockSchool]);
+
+      expect(prismaService.school.findMany).toHaveBeenCalledWith({
+        where: {
+          id: {
+            in: ['1'],
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
     });
 
     it('retorna lista vazia quando o perfil nao possui escolas gerenciadas', async () => {
@@ -1069,7 +1108,7 @@ describe('SchoolsService', () => {
         'memory-game',
       );
 
-      expectUserRankingLookup();
+      expectUserRankingLookup('1', 'memory-game');
       expect(result).toEqual([
         createUserRanking({
           gameSlug: 'memory-game',
@@ -1150,12 +1189,13 @@ describe('SchoolsService', () => {
         'firebase-user-1',
         '1',
         'memory-game',
+        'anita',
       );
 
       expect(prismaService.school.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },
       });
-      expectUserRankingLookup('1');
+      expectUserRankingLookup('1', 'memory-game', 'anita');
       expect(result).toEqual([
         createUserRanking({
           gameSlug: 'memory-game',

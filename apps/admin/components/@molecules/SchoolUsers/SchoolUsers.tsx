@@ -1,8 +1,18 @@
 'use client';
 
-import { Button, Input, Table } from 'antd';
-import type { SchoolUserInterface } from '@etnos/types';
+import { Button, Input, Select, Table, Tag } from 'antd';
+import type { SchoolUserInterface, UserRole } from '@etnos/types';
 import { Card, Title } from '@etnos/ui';
+
+const roleLabels: Record<Extract<UserRole, 'student' | 'teacher'>, string> = {
+	student: 'Aluno',
+	teacher: 'Professor',
+};
+
+const roleOptions = Object.entries(roleLabels).map(([value, label]) => ({
+	value,
+	label,
+}));
 
 interface SchoolUsersProps {
 	users: SchoolUserInterface[];
@@ -10,6 +20,9 @@ interface SchoolUsersProps {
 	onSearchChange: (value: string) => void;
 	onSendPassword: (email?: string | null) => Promise<void>;
 	sendingRecoveryEmail: string | null;
+	currentUserUid?: string;
+	onRolesChange?: (userId: string, roles: UserRole[]) => void;
+	updatingRolesUserId?: string | null;
 }
 
 export const SchoolUsers = ({
@@ -18,7 +31,50 @@ export const SchoolUsers = ({
 	onSearchChange,
 	onSendPassword,
 	sendingRecoveryEmail,
+	currentUserUid,
+	onRolesChange,
+	updatingRolesUserId,
 }: SchoolUsersProps) => {
+	const renderRoles = (record: SchoolUserInterface) => {
+		if (!onRolesChange || !record.id) {
+			return record.roles?.length ? (
+				<div className="flex flex-wrap gap-1">
+					{record.roles.map((role) => (
+						<Tag key={role}>{role}</Tag>
+					))}
+				</div>
+			) : (
+				'-'
+			);
+		}
+
+		const userId = record.id;
+		const isCurrentUser = currentUserUid === record.uid;
+		const isUpdatingRoles = updatingRolesUserId === userId;
+
+		return (
+			<Select
+				mode="multiple"
+				value={
+					(record.roles?.length
+						? record.roles.filter((role) => role !== 'admin')
+						: ['student']) as UserRole[]
+				}
+				options={roleOptions}
+				className="w-full min-w-40"
+				loading={isUpdatingRoles}
+				disabled={isUpdatingRoles || isCurrentUser}
+				onChange={(roles) => onRolesChange(userId, roles as UserRole[])}
+				tagRender={(tagProps) => (
+					<Tag closable={tagProps.closable} onClose={tagProps.onClose}>
+						{roleLabels[tagProps.value as 'student' | 'teacher'] ??
+							tagProps.label}
+					</Tag>
+				)}
+			/>
+		);
+	};
+
 	return (
 		<Card>
 			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
@@ -58,6 +114,7 @@ export const SchoolUsers = ({
 									<div className="text-xs truncate overflow-hidden text-ellipsis max-w-50">
 										{record.email}
 									</div>
+									<div className="pt-1">{renderRoles(record)}</div>
 
 									<div className="pt-1">
 										<Button
@@ -99,6 +156,12 @@ export const SchoolUsers = ({
 							title: 'E-mail',
 							dataIndex: 'email',
 							render: (value: string | null | undefined) => value || '-',
+						},
+						{
+							title: 'Perfis',
+							key: 'roles',
+							width: 220,
+							render: (_, record: SchoolUserInterface) => renderRoles(record),
 						},
 						{
 							title: 'Ação',

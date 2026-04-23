@@ -20,12 +20,20 @@ export class SchoolRoleGuard implements CanActivate {
 
     const user = await this.prismaService.user.findUnique({
       where: { firebaseUid: authenticatedUserId },
-      select: { roles: true, school: true },
+      select: { roles: true, school: true, isActive: true },
     });
 
-    if (!user?.roles?.some((role) => role === 'admin' || role === 'school')) {
+    if (!user || user.isActive === false) {
+      throw new ForbiddenException('Conta desativada.');
+    }
+
+    if (
+      !user?.roles?.some(
+        (role) => role === 'admin' || role === 'school' || role === 'teacher',
+      )
+    ) {
       throw new ForbiddenException(
-        'Acesso restrito a administradores e perfis de escola.',
+        'Acesso restrito a administradores, escolas e professores.',
       );
     }
 

@@ -96,10 +96,12 @@ export class SchoolsController {
   async getUserRankingFromMySchool(
     @Req() req,
     @Query('gameSlug') gameSlug?: string,
+    @Query('characterSlug') characterSlug?: string,
   ) {
     return this.schoolsService.getUserRankingFromMySchool(
       req.user.uid,
       gameSlug,
+      characterSlug,
     );
   }
 
@@ -113,11 +115,13 @@ export class SchoolsController {
     @Req() req,
     @Param('id') id: string,
     @Query('gameSlug') gameSlug?: string,
+    @Query('characterSlug') characterSlug?: string,
   ) {
     return this.schoolsService.getUserRankingBySchoolForViewer(
       req.user.uid,
       id,
       gameSlug,
+      characterSlug,
     );
   }
 

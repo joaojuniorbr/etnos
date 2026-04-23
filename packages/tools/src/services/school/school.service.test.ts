@@ -171,14 +171,28 @@ describe('schoolService', () => {
 		const result = await schoolService.getUsersRankingBySchool(
 			'school-1',
 			'memory-game',
+			'anita',
 		);
 
 		expect(apiMock.get).toHaveBeenCalledWith(
 			'/schools/school-1/users/ranking',
 			{
-				params: { gameSlug: 'memory-game' },
+				params: { gameSlug: 'memory-game', characterSlug: 'anita' },
 			},
 		);
+		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
+	});
+
+	it('deve buscar ranking de usuarios da escola filtrando apenas por personagem', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'user-1' }],
+		});
+
+		const result = await schoolService.getMyUsersRanking(undefined, 'anita');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/me/users/ranking', {
+			params: { characterSlug: 'anita' },
+		});
 		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
 	});
 

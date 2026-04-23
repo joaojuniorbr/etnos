@@ -20,6 +20,7 @@ model User {
   photoURL       String?     @map("photo_url")
   avatarCharacterSlug String? @map("avatar_character_slug") @db.VarChar(255)
   roles          String[]    @default(["student"])
+  isActive       Boolean     @default(true) @map("is_active")
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
   schoolAccesses SchoolAccess[]

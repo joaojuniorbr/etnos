@@ -9,6 +9,8 @@ export interface UserProfileInterface {
 	school?: string;
 	updatedAt?: string;
 	role?: string[];
+	roles?: string[];
+	isActive?: boolean;
 	photoURL?: string | null;
 	avatarCharacterSlug?: string | null;
 	displayName?: string | null;

@@ -1,8 +1,10 @@
 import { api } from '../../helpers';
 import type {
 	SchoolInterface,
+	SchoolGameAccessInterface,
 	SchoolRankingInterface,
 	SchoolUserInterface,
+	UpdateSchoolGameAccessPayload,
 	UserRankingInterface,
 } from '@etnos/types';
 
@@ -33,6 +35,23 @@ export const schoolService = {
 
 	getManagedSchools(): Promise<SchoolInterface[]> {
 		return api.get('/schools/me/managed').then((res) => res.data);
+	},
+
+	getMyGameAccess(): Promise<SchoolGameAccessInterface> {
+		return api.get('/schools/me/game-access').then((res) => res.data);
+	},
+
+	getGameAccessBySchool(
+		schoolId: string,
+	): Promise<SchoolGameAccessInterface> {
+		return api.get(`/schools/${schoolId}/game-access`).then((res) => res.data);
+	},
+
+	updateGameAccessBySchool(
+		schoolId: string,
+		payload: UpdateSchoolGameAccessPayload,
+	): Promise<SchoolGameAccessInterface> {
+		return api.patch(`/schools/${schoolId}/game-access`, payload).then((res) => res.data);
 	},
 
 	getMyUsers(search?: string): Promise<SchoolUserInterface[]> {

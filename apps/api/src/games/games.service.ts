@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomInt } from 'node:crypto';
 import type {
@@ -11,6 +11,12 @@ import type {
   ScoreInterface,
 } from '@etnos/types';
 import { PrismaService } from 'src/prisma';
+
+const GAME_SLUGS = ['memory-game', 'guess-game'] as const;
+const GAME_SLUG = {
+  MEMORY_GAME: 'memory-game',
+  GUESS_GAME: 'guess-game',
+} as const;
 
 @Injectable()
 export class GamesService {
@@ -30,10 +36,59 @@ export class GamesService {
       },
       select: {
         school: true,
+        roles: true,
       },
     });
 
-    return user?.school ?? null;
+    return user ?? null;
+  }
+
+  private async getEnabledGameAccessForSchool(schoolId: string) {
+    const [enabledGames, enabledCharacters, allCharacters] = await Promise.all([
+      this.prismaService.schoolEnabledGame.findMany({
+        where: { schoolId },
+        select: { gameSlug: true },
+      }),
+      this.prismaService.schoolEnabledCharacter.findMany({
+        where: { schoolId },
+        select: { characterSlug: true },
+      }),
+      this.prismaService.character.findMany({
+        select: { slug: true },
+      }),
+    ]);
+
+    return {
+      enabledGameSlugs: enabledGames.length
+        ? enabledGames.map((game) => game.gameSlug)
+        : [...GAME_SLUGS],
+      enabledCharacterSlugs: enabledCharacters.length
+        ? enabledCharacters.map((character) => character.characterSlug)
+        : allCharacters.map((character) => character.slug),
+    };
+  }
+
+  private async assertUserCanAccessGameContent(
+    userId: string,
+    gameSlug: string,
+    characterSlug: string,
+  ) {
+    const user = await this.getUserSchoolId(userId);
+
+    if (!user?.school || user.roles?.includes('admin')) {
+      return;
+    }
+
+    const enabledAccess = await this.getEnabledGameAccessForSchool(user.school);
+
+    if (
+      !enabledAccess.enabledGameSlugs.includes(gameSlug) ||
+      !enabledAccess.enabledCharacterSlugs.includes(characterSlug)
+    ) {
+      throw new ForbiddenException(
+        'Este jogo ou personagem nao esta habilitado para a escola do usuario.',
+      );
+    }
   }
 
   async getGames() {
@@ -190,7 +245,14 @@ export class GamesService {
 
   async getGuessGamePlayContent(
     characterSlug: string,
+    userId: string,
   ): Promise<GuessGamePlayItemInterface | null> {
+    await this.assertUserCanAccessGameContent(
+      userId,
+      GAME_SLUG.GUESS_GAME,
+      characterSlug,
+    );
+
     const items = await this.getGuessGameContent(characterSlug);
 
     if (!items.length) {
@@ -218,6 +280,7 @@ export class GamesService {
     guess: string;
     type: 'letter' | 'word';
     currentGuesses?: string;
+    userId: string;
   }): Promise<GuessGameValidationResultInterface> {
     const content = await this.prismaService.guessGameContent.findUnique({
       where: {
@@ -233,6 +296,12 @@ export class GamesService {
         revealedCharacters: [],
       };
     }
+
+    await this.assertUserCanAccessGameContent(
+      data.userId,
+      GAME_SLUG.GUESS_GAME,
+      content.characterSlug,
+    );
 
     const normalize = (value: string) =>
       value
@@ -296,7 +365,13 @@ export class GamesService {
     }
   }
 
-  async getMemoryGameImages(characterSlug: string) {
+  async getMemoryGameImages(characterSlug: string, userId: string) {
+    await this.assertUserCanAccessGameContent(
+      userId,
+      GAME_SLUG.MEMORY_GAME,
+      characterSlug,
+    );
+
     const docs = await this.getMemoryGameContent(characterSlug);
 
     return docs.map((doc, index) => ({
@@ -312,7 +387,14 @@ export class GamesService {
     score: number;
     userId: string;
   }) {
-    const schoolId = await this.getUserSchoolId(data.userId);
+    await this.assertUserCanAccessGameContent(
+      data.userId,
+      data.slug,
+      data.characterSlug,
+    );
+
+    const user = await this.getUserSchoolId(data.userId);
+    const schoolId = user?.school ?? null;
 
     return this.prismaService.gameScoreHistory.create({
       data: {
@@ -331,6 +413,12 @@ export class GamesService {
     score: number;
     userId: string;
   }) {
+    await this.assertUserCanAccessGameContent(
+      data.userId,
+      data.slug,
+      data.characterSlug,
+    );
+
     const where = {
       slug_characterSlug_userId: {
         slug: data.slug,
@@ -371,15 +459,21 @@ export class GamesService {
   }
 
   getScoreGame(data: { slug: string; characterSlug: string; userId: string }) {
-    return this.prismaService.gameScore.findUnique({
-      where: {
-        slug_characterSlug_userId: {
-          slug: data.slug,
-          characterSlug: data.characterSlug,
-          userId: data.userId,
+    return this.assertUserCanAccessGameContent(
+      data.userId,
+      data.slug,
+      data.characterSlug,
+    ).then(() =>
+      this.prismaService.gameScore.findUnique({
+        where: {
+          slug_characterSlug_userId: {
+            slug: data.slug,
+            characterSlug: data.characterSlug,
+            userId: data.userId,
+          },
         },
-      },
-    }) as Promise<ScoreInterface | null>;
+      }),
+    ) as Promise<ScoreInterface | null>;
   }
 
   getScoreByUser(userId: string) {

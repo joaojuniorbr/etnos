@@ -37,6 +37,8 @@ model School {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   userAccesses SchoolAccess[]
+  enabledGames SchoolEnabledGame[]
+  enabledCharacters SchoolEnabledCharacter[]
 
   @@map("schools")
 }
@@ -66,8 +68,38 @@ model Character {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   gameConfigs GameConfig[]
+  enabledBySchools SchoolEnabledCharacter[]
 
   @@map("characters")
+}
+
+model SchoolEnabledGame {
+  id        String   @id @default(cuid())
+  schoolId  String   @map("school_id")
+  gameSlug  String   @map("game_slug") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([schoolId, gameSlug], map: "school_enabled_games_school_id_game_slug_key")
+  @@index([schoolId], map: "school_enabled_games_school_id_idx")
+  @@index([gameSlug], map: "school_enabled_games_game_slug_idx")
+  @@map("school_enabled_games")
+}
+
+model SchoolEnabledCharacter {
+  id            String    @id @default(cuid())
+  schoolId      String    @map("school_id")
+  characterSlug String    @map("character_slug") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  character     Character @relation(fields: [characterSlug], references: [slug], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([schoolId, characterSlug], map: "school_enabled_characters_school_id_character_slug_key")
+  @@index([schoolId], map: "school_enabled_characters_school_id_idx")
+  @@index([characterSlug], map: "school_enabled_characters_character_slug_idx")
+  @@map("school_enabled_characters")
 }
 
 model GameConfig {

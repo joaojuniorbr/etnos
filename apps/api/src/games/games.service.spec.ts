@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'node:crypto';
 import { GamesService } from './games.service';
@@ -9,6 +10,15 @@ describe('GamesService', () => {
   let prismaService: {
     user: {
       findUnique: jest.Mock;
+    };
+    character: {
+      findMany: jest.Mock;
+    };
+    schoolEnabledGame: {
+      findMany: jest.Mock;
+    };
+    schoolEnabledCharacter: {
+      findMany: jest.Mock;
     };
     gameConfig: {
       findMany: jest.Mock;
@@ -99,7 +109,24 @@ describe('GamesService', () => {
 
   const mockPrismaService = {
     user: {
-      findUnique: jest.fn().mockResolvedValue({ school: 'school-1' }),
+      findUnique: jest
+        .fn()
+        .mockResolvedValue({ school: 'school-1', roles: ['student'] }),
+    },
+    character: {
+      findMany: jest
+        .fn()
+        .mockResolvedValue([
+          { slug: 'anita' },
+          { slug: 'joao-silva' },
+          { slug: 'maria' },
+        ]),
+    },
+    schoolEnabledGame: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    schoolEnabledCharacter: {
+      findMany: jest.fn().mockResolvedValue([]),
     },
     gameConfig: {
       findMany: jest.fn().mockResolvedValue([mockGame]),
@@ -264,6 +291,19 @@ describe('GamesService', () => {
     ]);
   });
 
+  it('bloqueia acesso a conteúdo não habilitado para a escola do usuário', async () => {
+    prismaService.schoolEnabledGame.findMany.mockResolvedValueOnce([
+      { gameSlug: 'guess-game' },
+    ]);
+    prismaService.schoolEnabledCharacter.findMany.mockResolvedValueOnce([
+      { characterSlug: 'iara' },
+    ]);
+
+    await expect(
+      service.getMemoryGameImages('anita', 'user-123'),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
   it('deve criar conteúdo do guess game quando não houver id', async () => {
     const payload = makeGuessGameContent({ id: undefined });
 
@@ -310,7 +350,7 @@ describe('GamesService', () => {
 
     jest.spyOn(crypto, 'randomInt').mockImplementationOnce(() => 0 as never);
 
-    await expect(service.getGuessGamePlayContent('anita')).resolves.toEqual({
+    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toEqual({
       id: 'guess-1',
       title: 'Chimarrao',
       tips: ['Dica 1'],
@@ -323,7 +363,7 @@ describe('GamesService', () => {
   it('deve retornar null quando não houver conteúdo jogável', async () => {
     prismaService.guessGameContent.findMany.mockResolvedValueOnce([]);
 
-    await expect(service.getGuessGamePlayContent('anita')).resolves.toBeNull();
+    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toBeNull();
   });
 
   it('deve retornar null quando o item sorteado não existir', async () => {
@@ -331,7 +371,7 @@ describe('GamesService', () => {
       .spyOn(service, 'getGuessGameContent')
       .mockResolvedValueOnce([undefined] as any);
 
-    await expect(service.getGuessGamePlayContent('anita')).resolves.toBeNull();
+    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toBeNull();
   });
 
   it('deve retornar lista vazia quando a tabela do guess game ainda não existir', async () => {
@@ -390,6 +430,7 @@ describe('GamesService', () => {
         contentId: 'guess-1',
         guess: 'bomba',
         type: 'word',
+        userId: 'user-123',
       }),
     ).resolves.toEqual({
       isCorrect: true,
@@ -411,6 +452,7 @@ describe('GamesService', () => {
         contentId: 'guess-1',
         guess: 'cuia',
         type: 'word',
+        userId: 'user-123',
       }),
     ).resolves.toEqual({
       isCorrect: false,
@@ -432,6 +474,7 @@ describe('GamesService', () => {
         contentId: 'guess-1',
         guess: 'b',
         type: 'letter',
+        userId: 'user-123',
       }),
     ).resolves.toEqual({
       isCorrect: true,
@@ -449,6 +492,7 @@ describe('GamesService', () => {
         contentId: 'missing',
         guess: 'b',
         type: 'letter',
+        userId: 'user-123',
       }),
     ).resolves.toEqual({
       isCorrect: false,
@@ -500,7 +544,7 @@ describe('GamesService', () => {
       { id: '2', slug: 'maria', url: 'u2', idCharacter: 'c1' },
     ] as any);
 
-    const result = await service.getMemoryGameImages('maria');
+    const result = await service.getMemoryGameImages('maria', 'user-123');
 
     expect(result).toEqual([
       { id: '1', name: 'maria-1', image: 'u1' },
@@ -523,7 +567,7 @@ describe('GamesService', () => {
 
     const result = await service.saveScoreGame(scoreData);
 
-    expect(prismaService.user.findUnique).not.toHaveBeenCalled();
+    expect(prismaService.user.findUnique).toHaveBeenCalled();
     expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
     expect(prismaService.$transaction).toHaveBeenCalledWith(expect.any(Function));
     expect(prismaService.gameScore.upsert).toHaveBeenCalledWith({
@@ -603,6 +647,7 @@ describe('GamesService', () => {
       },
       select: {
         school: true,
+        roles: true,
       },
     });
     expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
@@ -619,7 +664,14 @@ describe('GamesService', () => {
   it('deve salvar histórico sem escola quando o usuário não estiver vinculado', async () => {
     const scoreData = makeScoreData({ score: 90 });
 
-    prismaService.user.findUnique.mockResolvedValueOnce({ school: null });
+    prismaService.user.findUnique.mockResolvedValueOnce({
+      school: null,
+      roles: ['student'],
+    });
+    prismaService.user.findUnique.mockResolvedValueOnce({
+      school: null,
+      roles: ['student'],
+    });
 
     await service.saveScoreHistory(scoreData);
 

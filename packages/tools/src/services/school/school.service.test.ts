@@ -82,6 +82,59 @@ describe('schoolService', () => {
 		expect(result).toEqual([{ id: '1', name: 'IFPR' }]);
 	});
 
+	it('deve buscar a configuracao de jogos da escola do usuario autenticado', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: { schoolId: '1', enabledGameSlugs: ['memory-game'] },
+		});
+
+		const result = await schoolService.getMyGameAccess();
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/me/game-access');
+		expect(result).toEqual({
+			schoolId: '1',
+			enabledGameSlugs: ['memory-game'],
+		});
+	});
+
+	it('deve buscar a configuracao de jogos de uma escola especifica', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: { schoolId: 'school-1', enabledCharacterSlugs: ['anita'] },
+		});
+
+		const result = await schoolService.getGameAccessBySchool('school-1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/game-access');
+		expect(result).toEqual({
+			schoolId: 'school-1',
+			enabledCharacterSlugs: ['anita'],
+		});
+	});
+
+	it('deve atualizar a configuracao de jogos de uma escola', async () => {
+		apiMock.patch.mockResolvedValueOnce({
+			data: { schoolId: 'school-1', enabledGameSlugs: ['guess-game'] },
+		});
+
+		const payload = {
+			enabledGameSlugs: ['guess-game'],
+			enabledCharacterSlugs: ['iara'],
+		};
+
+		const result = await schoolService.updateGameAccessBySchool(
+			'school-1',
+			payload,
+		);
+
+		expect(apiMock.patch).toHaveBeenCalledWith(
+			'/schools/school-1/game-access',
+			payload,
+		);
+		expect(result).toEqual({
+			schoolId: 'school-1',
+			enabledGameSlugs: ['guess-game'],
+		});
+	});
+
 	it('deve buscar usuarios da escola autenticada com filtro', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: [{ uid: 'user-1' }] });
 

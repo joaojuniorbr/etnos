@@ -24,6 +24,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { SchoolDto } from './dto/school.dto';
 import { AdminRoleGuard, SchoolRoleGuard } from 'src/common';
 import { ManageSchoolUserDto } from './dto/manage-school-user.dto';
+import { UpdateSchoolGameAccessDto } from './dto/school-game-access.dto';
 
 @ApiTags('Escolas')
 @UseGuards(AuthGuard('firebase-auth'))
@@ -59,6 +60,16 @@ export class SchoolsController {
     return this.schoolsService.getManagedSchools(req.user.uid);
   }
 
+  @Get('me/game-access')
+  @UseGuards(AuthGuard('firebase-auth'))
+  @ApiOperation({
+    summary:
+      'Retorna os jogos e personagens habilitados para a escola do usuario autenticado',
+  })
+  async getMyGameAccess(@Req() req) {
+    return this.schoolsService.getMyGameAccess(req.user.uid);
+  }
+
   @Get('me/users')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({ summary: 'Lista usuarios vinculados a escola autenticada' })
@@ -78,6 +89,31 @@ export class SchoolsController {
     @Query('search') search?: string,
   ) {
     return this.schoolsService.getUsersBySchool(req.user.uid, id, search);
+  }
+
+  @Get(':id/game-access')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary:
+      'Retorna os jogos e personagens habilitados para uma escola acessivel ao perfil autenticado',
+  })
+  async getGameAccessBySchool(@Req() req, @Param('id') id: string) {
+    return this.schoolsService.getGameAccessBySchool(req.user.uid, id);
+  }
+
+  @Patch(':id/game-access')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary:
+      'Atualiza os jogos e personagens habilitados para uma escola acessivel ao perfil autenticado',
+  })
+  @ApiBody({ type: UpdateSchoolGameAccessDto })
+  async updateGameAccessBySchool(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() body: UpdateSchoolGameAccessDto,
+  ) {
+    return this.schoolsService.updateGameAccessBySchool(req.user.uid, id, body);
   }
 
   @Get('me/ranking')

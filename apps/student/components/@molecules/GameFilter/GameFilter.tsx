@@ -1,7 +1,8 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Select } from 'antd';
-import { useGames } from '@etnos/tools';
+import { schoolService, useGames } from '@etnos/tools';
 
 interface GameFilterProps {
 	value?: string;
@@ -10,10 +11,17 @@ interface GameFilterProps {
 
 export const GameFilter = ({ value, onChange }: GameFilterProps) => {
 	const { allGames } = useGames();
+	const { data: gameAccess } = useQuery({
+		queryKey: ['schools', 'me', 'game-access'],
+		queryFn: () => schoolService.getMyGameAccess(),
+	});
+	const enabledGames = allGames.filter((game) =>
+		gameAccess?.enabledGameSlugs?.includes(game.slug),
+	);
 
 	const options = [
 		{ label: 'Todos os Jogos', value: '' },
-		...(allGames?.map((game) => ({
+		...(enabledGames?.map((game) => ({
 			label: game.name,
 			value: game.slug,
 		})) || []),

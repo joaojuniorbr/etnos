@@ -14,6 +14,7 @@ import {
 	Spin,
 	Tag,
 	Table,
+	Tabs,
 	Typography,
 	message,
 } from 'antd';
@@ -26,15 +27,22 @@ import {
 import {
 	GameNameEnum,
 	GamesEnum,
+	type SchoolGameAccessInterface,
 	type SchoolInterface,
 	type SchoolUserInterface,
+	type UpdateSchoolGameAccessPayload,
 	type UserRole,
 	type UserRankingInterface,
 } from '@etnos/types';
 
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Title } from '@etnos/ui';
-import { SchoolData, SchoolUsers, UserRanking } from '@etnos/components';
+import {
+	SchoolData,
+	SchoolGameAccess,
+	SchoolUsers,
+	UserRanking,
+} from '@etnos/components';
 
 const gameOptions = [
 	{
@@ -46,6 +54,11 @@ const gameOptions = [
 		label: GameNameEnum[gameSlug],
 	})),
 ];
+
+const manageableGameOptions = Object.values(GamesEnum).map((gameSlug) => ({
+	value: gameSlug,
+	label: GameNameEnum[gameSlug],
+}));
 
 export default function EscolasPage() {
 	const [open, setOpen] = useState(false);
@@ -83,6 +96,10 @@ export default function EscolasPage() {
 			label: character.name,
 		})),
 	];
+	const manageableCharacterOptions = characters.map((character) => ({
+		value: character.slug,
+		label: character.name,
+	}));
 
 	const toggleDrawer = () => {
 		setOpen(!open);
@@ -190,6 +207,20 @@ export default function EscolasPage() {
 		enabled: isAdmin && !!effectiveSelectedSchoolId,
 	});
 
+	const schoolGameAccessTargetId = isSchoolViewerProfile
+		? effectiveManagedSchoolId
+		: effectiveSelectedSchoolId;
+
+	const { data: schoolGameAccess, isLoading: isLoadingSchoolGameAccess } =
+		useQuery<SchoolGameAccessInterface>({
+			queryKey: ['schools', 'game-access', schoolGameAccessTargetId],
+			queryFn: () =>
+				schoolService.getGameAccessBySchool(schoolGameAccessTargetId as string),
+			enabled:
+				Boolean(schoolGameAccessTargetId) &&
+				Boolean(isAdmin || isSchoolViewerProfile),
+		});
+
 	const createSchoolMutation = useMutation({
 		mutationFn: (values: SchoolInterface) => schoolService.create(values),
 		onSuccess: () => {
@@ -288,6 +319,25 @@ export default function EscolasPage() {
 		},
 	});
 
+	const updateSchoolGameAccessMutation = useMutation({
+		mutationFn: ({
+			schoolId,
+			payload,
+		}: {
+			schoolId: string;
+			payload: UpdateSchoolGameAccessPayload;
+		}) => schoolService.updateGameAccessBySchool(schoolId, payload),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'game-access'],
+			});
+			message.success('Configuração da escola atualizada com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao atualizar configuração da escola');
+		},
+	});
+
 	const isLoading =
 		isLoadingSchools ||
 		isLoadingMySchool ||
@@ -296,12 +346,14 @@ export default function EscolasPage() {
 		isLoadingSchoolUserRanking ||
 		isLoadingAdminUserRanking ||
 		isLoadingSchoolAccessUsers ||
+		isLoadingSchoolGameAccess ||
 		createSchoolMutation.isPending ||
 		deleteSchoolMutation.isPending ||
 		updateSchoolMutation.isPending ||
 		addSchoolAccessMutation.isPending ||
 		removeSchoolAccessMutation.isPending ||
-		updateSchoolUserRolesMutation.isPending;
+		updateSchoolUserRolesMutation.isPending ||
+		updateSchoolGameAccessMutation.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
 		if (createSchoolMutation.isPending) {
@@ -365,6 +417,236 @@ export default function EscolasPage() {
 		updateSchoolUserRolesMutation.mutate({ userId, roles });
 	};
 
+	const handleUpdateSchoolGameAccess = (
+		schoolId: string,
+		payload: UpdateSchoolGameAccessPayload,
+	) => {
+		if (updateSchoolGameAccessMutation.isPending) {
+			return;
+		}
+
+		updateSchoolGameAccessMutation.mutate({ schoolId, payload });
+	};
+
+	const handleResetSchoolGameAccess = (schoolId: string) => {
+		handleUpdateSchoolGameAccess(schoolId, {
+			enabledGameSlugs: [],
+			enabledCharacterSlugs: [],
+		});
+	};
+
+	const schoolViewerTabItems = [
+		{
+			key: 'game-access',
+			label: 'Jogos e personagens habilitados',
+			children: schoolGameAccess ? (
+				<SchoolGameAccess
+					schoolName={selectedManagedSchool?.name ?? mySchool?.name}
+					gameOptions={manageableGameOptions}
+					characterOptions={manageableCharacterOptions}
+					enabledGameSlugs={schoolGameAccess.enabledGameSlugs}
+					enabledCharacterSlugs={schoolGameAccess.enabledCharacterSlugs}
+					hasCustomGames={schoolGameAccess.hasCustomGames}
+					hasCustomCharacters={schoolGameAccess.hasCustomCharacters}
+					canEdit={Boolean(schoolGameAccess.canEdit && isSchoolProfile)}
+					isSaving={updateSchoolGameAccessMutation.isPending}
+					onSave={(payload) =>
+						handleUpdateSchoolGameAccess(
+							effectiveManagedSchoolId as string,
+							payload,
+						)
+					}
+					onResetToDefault={() =>
+						handleResetSchoolGameAccess(effectiveManagedSchoolId as string)
+					}
+				/>
+			) : null,
+		},
+		{
+			key: 'school-users',
+			label: 'Usuarios da escola',
+			children: isSchoolProfile ? (
+				<SchoolUsers
+					users={schoolUsers}
+					search={userSearch}
+					onSearchChange={setUserSearch}
+					onSendPassword={handleSendPassword}
+					sendingRecoveryEmail={sendingRecoveryEmail}
+					currentUserUid={user?.uid}
+					onRolesChange={handleUpdateSchoolUserRoles}
+					updatingRolesUserId={
+						updateSchoolUserRolesMutation.variables?.userId ?? null
+					}
+				/>
+			) : (
+				<Card>
+					<p className="text-slate-600">
+						Seu perfil pode acompanhar o ranking, mas nao possui permissao para
+						gerenciar usuarios desta escola.
+					</p>
+				</Card>
+			),
+		},
+		{
+			key: 'user-ranking',
+			label: 'Ranking por usuário',
+			children: (
+				<UserRanking
+					ranking={schoolUserRanking}
+					selectedGame={selectedGame}
+					onGameChange={setSelectedGame}
+					gameOptions={gameOptions}
+					selectedCharacter={selectedCharacter}
+					onCharacterChange={setSelectedCharacter}
+					characterOptions={characterOptions}
+				/>
+			),
+		},
+	];
+
+	const adminTabItems = [
+		{
+			key: 'game-access',
+			label: 'Jogos e personagens habilitados',
+			children: schoolGameAccess ? (
+				<SchoolGameAccess
+					schoolName={
+						schools.find((school) => school.id === effectiveSelectedSchoolId)
+							?.name
+					}
+					gameOptions={manageableGameOptions}
+					characterOptions={manageableCharacterOptions}
+					enabledGameSlugs={schoolGameAccess.enabledGameSlugs}
+					enabledCharacterSlugs={schoolGameAccess.enabledCharacterSlugs}
+					hasCustomGames={schoolGameAccess.hasCustomGames}
+					hasCustomCharacters={schoolGameAccess.hasCustomCharacters}
+					canEdit={schoolGameAccess.canEdit}
+					isSaving={updateSchoolGameAccessMutation.isPending}
+					onSave={(payload) =>
+						handleUpdateSchoolGameAccess(
+							effectiveSelectedSchoolId as string,
+							payload,
+						)
+					}
+					onResetToDefault={() =>
+						handleResetSchoolGameAccess(effectiveSelectedSchoolId as string)
+					}
+				/>
+			) : null,
+		},
+		{
+			key: 'school-users',
+			label: 'Usuarios da escola',
+			children: (
+				<div>
+					<div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+						<div>
+							<Title className="mb-1">Gestão de usuários da escola</Title>
+							<p className="text-slate-600 text-sm">
+								Defina quais perfis com role <code>school</code> podem
+								visualizar a escola selecionada. Se o e-mail ainda não existir,
+								o usuário será cadastrado automaticamente.
+							</p>
+						</div>
+
+						<div className="flex w-full flex-col gap-2 md:max-w-xl md:flex-row">
+							<Input
+								placeholder="email@escola.com"
+								value={schoolAccessEmail}
+								onChange={(event) => setSchoolAccessEmail(event.target.value)}
+							/>
+							<Button
+								type="primary"
+								onClick={handleAddSchoolAccess}
+								loading={addSchoolAccessMutation.isPending}
+								disabled={!effectiveSelectedSchoolId}
+							>
+								Adicionar e-mail
+							</Button>
+						</div>
+					</div>
+
+					<Table
+						rowKey="uid"
+						pagination={{ pageSize: 8 }}
+						dataSource={schoolAccessUsers}
+						columns={[
+							{
+								title: 'Usuário',
+								render: (_, record: SchoolUserInterface) =>
+									record.childName || record.parentName || record.email || '-',
+							},
+							{
+								title: 'E-mail',
+								dataIndex: 'email',
+								render: (value: string | null | undefined) => value || '-',
+							},
+							{
+								title: 'Perfis',
+								dataIndex: 'roles',
+								render: (roles: string[] | undefined) =>
+									roles?.length ? (
+										<div className="flex flex-wrap gap-1">
+											{roles.map((role) => (
+												<Tag key={role}>{role}</Tag>
+											))}
+										</div>
+									) : (
+										'-'
+									),
+							},
+							{
+								title: 'Ações',
+								key: 'action',
+								render: (_, record: SchoolUserInterface) => (
+									<Button
+										danger
+										onClick={() => handleRemoveSchoolAccess(record.id)}
+										loading={
+											removeSchoolAccessMutation.isPending &&
+											removeSchoolAccessMutation.variables?.userId === record.id
+										}
+									>
+										Remover
+									</Button>
+								),
+							},
+						]}
+						locale={{
+							emptyText:
+								'Nenhum perfil school foi vinculado à escola selecionada.',
+						}}
+					/>
+				</div>
+			),
+		},
+		{
+			key: 'user-ranking',
+			label: 'Ranking por usuário',
+			children: (
+				<div>
+					<div className="mb-4">
+						<Title className="mb-1">Ranking de usuários por escola</Title>
+						<p className="text-slate-600 text-sm">
+							Acompanhe a pontuação dos usuários vinculados à escola
+							selecionada.
+						</p>
+					</div>
+
+					<UserRanking
+						ranking={adminUserRanking}
+						selectedGame={selectedGame}
+						onGameChange={setSelectedGame}
+						gameOptions={gameOptions}
+						selectedCharacter={selectedCharacter}
+						onCharacterChange={setSelectedCharacter}
+						characterOptions={characterOptions}
+					/>
+				</div>
+			),
+		},
+	];
+
 	if (isSchoolViewerProfile) {
 		if (!effectiveManagedSchoolId || !selectedManagedSchool) {
 			return (
@@ -412,10 +694,6 @@ export default function EscolasPage() {
 					/>
 
 					<Title className="mb-4 mt-6">Minhas Escolas</Title>
-					<p className="text-slate-600 mb-6">
-						Consulte os dados das escolas liberadas para o seu perfil, acompanhe
-						rankings por jogo e veja os usuários quando seu perfil permitir.
-					</p>
 
 					<div className="grid gap-6">
 						<div className="max-w-md">
@@ -431,29 +709,7 @@ export default function EscolasPage() {
 							/>
 						</div>
 						<SchoolData school={selectedManagedSchool ?? mySchool} />
-						{isSchoolProfile ? (
-							<SchoolUsers
-								users={schoolUsers}
-								search={userSearch}
-								onSearchChange={setUserSearch}
-								onSendPassword={handleSendPassword}
-								sendingRecoveryEmail={sendingRecoveryEmail}
-								currentUserUid={user?.uid}
-								onRolesChange={handleUpdateSchoolUserRoles}
-								updatingRolesUserId={
-									updateSchoolUserRolesMutation.variables?.userId ?? null
-								}
-							/>
-						) : null}
-						<UserRanking
-							ranking={schoolUserRanking}
-							selectedGame={selectedGame}
-							onGameChange={setSelectedGame}
-							gameOptions={gameOptions}
-							selectedCharacter={selectedCharacter}
-							onCharacterChange={setSelectedCharacter}
-							characterOptions={characterOptions}
-						/>
+						<Tabs defaultActiveKey="game-access" items={schoolViewerTabItems} />
 					</div>
 				</div>
 			</Spin>
@@ -533,10 +789,10 @@ export default function EscolasPage() {
 				<div className="mt-8">
 					<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 						<div>
-							<Title className="mb-1">Ranking de usuários por escola</Title>
+							<Title className="mb-1">Gestão da escola selecionada</Title>
 							<p className="text-slate-600 text-sm">
-								Selecione uma escola para acompanhar a pontuação dos usuários
-								vinculados a ela.
+								Selecione uma escola para configurar jogos e personagens
+								habilitados, gerir usuários e acompanhar o ranking.
 							</p>
 						</div>
 
@@ -552,96 +808,7 @@ export default function EscolasPage() {
 						/>
 					</div>
 
-					<UserRanking
-						ranking={adminUserRanking}
-						selectedGame={selectedGame}
-						onGameChange={setSelectedGame}
-						gameOptions={gameOptions}
-						selectedCharacter={selectedCharacter}
-						onCharacterChange={setSelectedCharacter}
-						characterOptions={characterOptions}
-					/>
-				</div>
-
-				<div className="mt-8">
-					<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
-						<div>
-							<Title className="mb-1">Gestão de usuários da escola</Title>
-							<p className="text-slate-600 text-sm">
-								Defina quais perfis com role <code>school</code> podem
-								visualizar a escola selecionada. Se o e-mail ainda não existir,
-								o usuário será cadastrado automaticamente.
-							</p>
-						</div>
-
-						<div className="flex w-full flex-col gap-2 md:max-w-xl md:flex-row">
-							<Input
-								placeholder="email@escola.com"
-								value={schoolAccessEmail}
-								onChange={(event) => setSchoolAccessEmail(event.target.value)}
-							/>
-							<Button
-								type="primary"
-								onClick={handleAddSchoolAccess}
-								loading={addSchoolAccessMutation.isPending}
-								disabled={!effectiveSelectedSchoolId}
-							>
-								Adicionar e-mail
-							</Button>
-						</div>
-					</div>
-
-					<Table
-						rowKey="uid"
-						pagination={{ pageSize: 8 }}
-						dataSource={schoolAccessUsers}
-						columns={[
-							{
-								title: 'Usuário',
-								render: (_, record: SchoolUserInterface) =>
-									record.childName || record.parentName || record.email || '-',
-							},
-							{
-								title: 'E-mail',
-								dataIndex: 'email',
-								render: (value: string | null | undefined) => value || '-',
-							},
-							{
-								title: 'Perfis',
-								dataIndex: 'roles',
-								render: (roles: string[] | undefined) =>
-									roles?.length ? (
-										<div className="flex flex-wrap gap-1">
-											{roles.map((role) => (
-												<Tag key={role}>{role}</Tag>
-											))}
-										</div>
-									) : (
-										'-'
-									),
-							},
-							{
-								title: 'Ações',
-								key: 'action',
-								render: (_, record: SchoolUserInterface) => (
-									<Button
-										danger
-										onClick={() => handleRemoveSchoolAccess(record.id)}
-										loading={
-											removeSchoolAccessMutation.isPending &&
-											removeSchoolAccessMutation.variables?.userId === record.id
-										}
-									>
-										Remover
-									</Button>
-								),
-							},
-						]}
-						locale={{
-							emptyText:
-								'Nenhum perfil school foi vinculado à escola selecionada.',
-						}}
-					/>
+					<Tabs defaultActiveKey="game-access" items={adminTabItems} />
 				</div>
 
 				<FloatButton

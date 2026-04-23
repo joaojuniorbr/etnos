@@ -7,18 +7,27 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
+  SchoolGameAccessInterface,
   SchoolInterface,
   SchoolRankingInterface,
   SchoolUserInterface,
+  UpdateSchoolGameAccessPayload,
   UserRankingInterface,
+  UserRole,
 } from '@etnos/types';
 import * as admin from 'firebase-admin';
 import { randomBytes } from 'crypto';
 import { PrismaService } from 'src/prisma';
 
+const AVAILABLE_GAME_SLUGS = ['memory-game', 'guess-game'] as const;
+
 @Injectable()
 export class SchoolsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private getAvailableGameSlugs() {
+    return [...AVAILABLE_GAME_SLUGS];
+  }
 
   private getUserRankingLabel(
     user: Pick<UserRankingInterface, 'childName' | 'parentName' | 'email'>,
@@ -136,7 +145,13 @@ export class SchoolsService {
   private mapSchoolUser(
     schoolUser: Pick<
       SchoolUserInterface,
-      'id' | 'email' | 'parentName' | 'childName' | 'school' | 'roles' | 'updatedAt'
+      | 'id'
+      | 'email'
+      | 'parentName'
+      | 'childName'
+      | 'school'
+      | 'roles'
+      | 'updatedAt'
     > & { firebaseUid?: string | null },
   ): SchoolUserInterface {
     return {
@@ -175,11 +190,14 @@ export class SchoolsService {
     return user;
   }
 
-  private getManagedSchoolIds(profile: Awaited<ReturnType<typeof this.getAuthenticatedProfile>>) {
+  private getManagedSchoolIds(
+    profile: Awaited<ReturnType<typeof this.getAuthenticatedProfile>>,
+  ) {
     return Array.from(
       new Set([
         ...profile.schoolAccesses.map((access) => access.schoolId),
-        ...((profile.roles.includes('school') || profile.roles.includes('teacher')) &&
+        ...((profile.roles.includes('school') ||
+          profile.roles.includes('teacher')) &&
         profile.school
           ? [profile.school]
           : []),
@@ -224,6 +242,103 @@ export class SchoolsService {
     }
 
     return school;
+  }
+
+  private canEditSchoolGameAccess(userRoles: string[]) {
+    return userRoles.includes('admin') || userRoles.includes('school');
+  }
+
+  private async getAvailableCharacterSlugs() {
+    const characters = await this.prismaService.character.findMany({
+      select: {
+        slug: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    return characters.map((character) => character.slug);
+  }
+
+  private normalizeUniqueValues(values: string[]) {
+    return Array.from(
+      new Set(values.map((value) => value.trim()).filter(Boolean)),
+    );
+  }
+
+  private async buildSchoolGameAccess(
+    schoolId: string,
+    viewerRoles: string[],
+  ): Promise<SchoolGameAccessInterface> {
+    const [enabledGames, enabledCharacters, availableCharacterSlugs] =
+      await Promise.all([
+        this.prismaService.schoolEnabledGame.findMany({
+          where: { schoolId },
+          select: { gameSlug: true },
+          orderBy: { gameSlug: 'asc' },
+        }),
+        this.prismaService.schoolEnabledCharacter.findMany({
+          where: { schoolId },
+          select: { characterSlug: true },
+          orderBy: { characterSlug: 'asc' },
+        }),
+        this.getAvailableCharacterSlugs(),
+      ]);
+
+    const availableGameSlugs = this.getAvailableGameSlugs();
+    const hasCustomGames = enabledGames.length > 0;
+    const hasCustomCharacters = enabledCharacters.length > 0;
+
+    return {
+      schoolId,
+      enabledGameSlugs: hasCustomGames
+        ? enabledGames.map((game) => game.gameSlug)
+        : availableGameSlugs,
+      enabledCharacterSlugs: hasCustomCharacters
+        ? enabledCharacters.map((character) => character.characterSlug)
+        : availableCharacterSlugs,
+      hasCustomGames,
+      hasCustomCharacters,
+      canEdit: this.canEditSchoolGameAccess(viewerRoles),
+      viewerRoles: viewerRoles as UserRole[],
+    };
+  }
+
+  private async validateSchoolGameAccessPayload(
+    payload: UpdateSchoolGameAccessPayload,
+  ) {
+    const enabledGameSlugs = this.normalizeUniqueValues(
+      payload.enabledGameSlugs,
+    );
+    const enabledCharacterSlugs = this.normalizeUniqueValues(
+      payload.enabledCharacterSlugs,
+    );
+
+    const availableGameSlugs = this.getAvailableGameSlugs();
+    const invalidGameSlug = enabledGameSlugs.find(
+      (gameSlug) => !availableGameSlugs.includes(gameSlug as (typeof AVAILABLE_GAME_SLUGS)[number]),
+    );
+
+    if (invalidGameSlug) {
+      throw new BadRequestException(`Jogo invalido: ${invalidGameSlug}.`);
+    }
+
+    const availableCharacterSlugs = await this.getAvailableCharacterSlugs();
+    const invalidCharacterSlug = enabledCharacterSlugs.find(
+      (characterSlug) => !availableCharacterSlugs.includes(characterSlug),
+    );
+
+    if (invalidCharacterSlug) {
+      throw new BadRequestException(
+        `Personagem invalido: ${invalidCharacterSlug}.`,
+      );
+    }
+
+    return {
+      enabledGameSlugs,
+      enabledCharacterSlugs,
+    };
   }
 
   private normalizeSchoolCode(code?: string | null) {
@@ -352,7 +467,9 @@ export class SchoolsService {
     const normalizedCode = this.normalizeSchoolCode(school.code);
 
     if (!normalizedCode) {
-      throw new BadRequestException('Informe o codigo identificador da escola.');
+      throw new BadRequestException(
+        'Informe o codigo identificador da escola.',
+      );
     }
 
     const exists = await this.prismaService.school.findFirst({
@@ -548,6 +665,84 @@ export class SchoolsService {
     });
   }
 
+  async getMyGameAccess(
+    firebaseUid: string,
+  ): Promise<SchoolGameAccessInterface> {
+    const profile = await this.getAuthenticatedProfile(firebaseUid);
+
+    if (!profile.school) {
+      return this.buildSchoolGameAccess('', profile.roles);
+    }
+
+    await this.ensureSchoolExists(profile.school);
+
+    return this.buildSchoolGameAccess(profile.school, profile.roles);
+  }
+
+  async getGameAccessBySchool(
+    firebaseUid: string,
+    schoolId: string,
+  ): Promise<SchoolGameAccessInterface> {
+    const profile = await this.assertViewerCanAccessSchool(
+      firebaseUid,
+      schoolId,
+    );
+    await this.ensureSchoolExists(schoolId);
+    return this.buildSchoolGameAccess(schoolId, profile.roles);
+  }
+
+  async updateGameAccessBySchool(
+    firebaseUid: string,
+    schoolId: string,
+    payload: UpdateSchoolGameAccessPayload,
+  ): Promise<SchoolGameAccessInterface> {
+    const profile = await this.assertViewerCanAccessSchool(
+      firebaseUid,
+      schoolId,
+    );
+
+    if (!this.canEditSchoolGameAccess(profile.roles)) {
+      throw new ForbiddenException(
+        'Somente administradores e gestores de escola podem alterar essa configuracao.',
+      );
+    }
+
+    await this.ensureSchoolExists(schoolId);
+
+    const validatedPayload = await this.validateSchoolGameAccessPayload(
+      payload,
+    );
+
+    await this.prismaService.$transaction(async (transaction) => {
+      await transaction.schoolEnabledGame.deleteMany({
+        where: { schoolId },
+      });
+      await transaction.schoolEnabledCharacter.deleteMany({
+        where: { schoolId },
+      });
+
+      if (validatedPayload.enabledGameSlugs.length) {
+        await transaction.schoolEnabledGame.createMany({
+          data: validatedPayload.enabledGameSlugs.map((gameSlug) => ({
+            schoolId,
+            gameSlug,
+          })),
+        });
+      }
+
+      if (validatedPayload.enabledCharacterSlugs.length) {
+        await transaction.schoolEnabledCharacter.createMany({
+          data: validatedPayload.enabledCharacterSlugs.map((characterSlug) => ({
+            schoolId,
+            characterSlug,
+          })),
+        });
+      }
+    });
+
+    return this.buildSchoolGameAccess(schoolId, profile.roles);
+  }
+
   async getUsersBySchool(
     firebaseUid: string,
     schoolId: string,
@@ -602,7 +797,9 @@ export class SchoolsService {
           updatedAt: true,
         },
       })
-      .then((users) => users.map((schoolUser) => this.mapSchoolUser(schoolUser)));
+      .then((users) =>
+        users.map((schoolUser) => this.mapSchoolUser(schoolUser)),
+      );
   }
 
   async getSchoolRanking(gameSlug?: string): Promise<SchoolRankingInterface[]> {
@@ -735,7 +932,9 @@ export class SchoolsService {
     return this.getUserRankingBySchoolId(schoolId, gameSlug, characterSlug);
   }
 
-  async getAccessUsersBySchool(schoolId: string): Promise<SchoolUserInterface[]> {
+  async getAccessUsersBySchool(
+    schoolId: string,
+  ): Promise<SchoolUserInterface[]> {
     await this.ensureSchoolExists(schoolId);
 
     const accesses = await this.prismaService.schoolAccess.findMany({

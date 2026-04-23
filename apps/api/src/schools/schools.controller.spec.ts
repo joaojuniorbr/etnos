@@ -35,11 +35,38 @@ describe('SchoolsController', () => {
         { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
       ]),
     getManagedSchools: jest.fn().mockResolvedValue([{ id: '1', name: 'IFPR' }]),
+    getMyGameAccess: jest.fn().mockResolvedValue({
+      schoolId: '1',
+      enabledGameSlugs: ['memory-game'],
+      enabledCharacterSlugs: ['anita'],
+      hasCustomGames: true,
+      hasCustomCharacters: true,
+      canEdit: true,
+      viewerRoles: ['school'],
+    }),
     getUsersBySchool: jest
       .fn()
       .mockResolvedValue([
         { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
       ]),
+    getGameAccessBySchool: jest.fn().mockResolvedValue({
+      schoolId: '1',
+      enabledGameSlugs: ['memory-game'],
+      enabledCharacterSlugs: ['anita'],
+      hasCustomGames: true,
+      hasCustomCharacters: true,
+      canEdit: true,
+      viewerRoles: ['school'],
+    }),
+    updateGameAccessBySchool: jest.fn().mockResolvedValue({
+      schoolId: '1',
+      enabledGameSlugs: ['guess-game'],
+      enabledCharacterSlugs: ['iara'],
+      hasCustomGames: true,
+      hasCustomCharacters: true,
+      canEdit: true,
+      viewerRoles: ['school'],
+    }),
     getAccessUsersBySchool: jest
       .fn()
       .mockResolvedValue([{ uid: 'user-2', email: 'escola@teste.com' }]),
@@ -143,6 +170,15 @@ describe('SchoolsController', () => {
     expect(result).toEqual([{ id: '1', name: 'IFPR' }]);
   });
 
+  it('deve retornar o acesso de jogos da escola do usuario autenticado', async () => {
+    const result = await controller.getMyGameAccess({
+      user: { uid: 'firebase-user-1' },
+    });
+
+    expect(service.getMyGameAccess).toHaveBeenCalledWith('firebase-user-1');
+    expect(result.enabledGameSlugs).toEqual(['memory-game']);
+  });
+
   it('deve listar usuarios de uma escola acessivel ao perfil', async () => {
     const result = await controller.getUsersBySchool(
       { user: { uid: 'firebase-user-1' } },
@@ -158,6 +194,40 @@ describe('SchoolsController', () => {
     expect(result).toEqual([
       { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
     ]);
+  });
+
+  it('deve retornar o acesso de jogos por escola', async () => {
+    const result = await controller.getGameAccessBySchool(
+      { user: { uid: 'firebase-user-1' } },
+      'school-1',
+    );
+
+    expect(service.getGameAccessBySchool).toHaveBeenCalledWith(
+      'firebase-user-1',
+      'school-1',
+    );
+    expect(result.enabledCharacterSlugs).toEqual(['anita']);
+  });
+
+  it('deve atualizar o acesso de jogos por escola', async () => {
+    const result = await controller.updateGameAccessBySchool(
+      { user: { uid: 'firebase-user-1' } },
+      'school-1',
+      {
+        enabledGameSlugs: ['guess-game'],
+        enabledCharacterSlugs: ['iara'],
+      },
+    );
+
+    expect(service.updateGameAccessBySchool).toHaveBeenCalledWith(
+      'firebase-user-1',
+      'school-1',
+      {
+        enabledGameSlugs: ['guess-game'],
+        enabledCharacterSlugs: ['iara'],
+      },
+    );
+    expect(result.enabledGameSlugs).toEqual(['guess-game']);
   });
 
   it('deve retornar ranking de usuarios por escola acessivel ao perfil', async () => {

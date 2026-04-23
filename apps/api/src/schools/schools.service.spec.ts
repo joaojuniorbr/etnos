@@ -145,65 +145,88 @@ const createSchoolRanking = (
   ...overrides,
 });
 
-const createSchoolsServiceMocks = (defaultSchool = createSchool()) => ({
-  school: {
-    findMany: jest.fn().mockResolvedValue([defaultSchool]),
-    findUnique: jest.fn().mockResolvedValue(defaultSchool),
-    findFirst: jest.fn().mockResolvedValue(null),
-    create: jest.fn().mockResolvedValue(defaultSchool),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
-  },
-  user: {
-    findUnique: jest.fn().mockResolvedValue(createAuthenticatedProfile()),
-    findFirst: jest.fn().mockResolvedValue(null),
-    findMany: jest.fn().mockResolvedValue([
-      createUserEntity(),
-      createUserEntity({
-        id: undefined,
-        childName: undefined,
-        parentName: undefined,
-        email: undefined,
-        roles: undefined,
-        updatedAt: undefined,
+const createSchoolsServiceMocks = (defaultSchool = createSchool()) => {
+  const mocks = {
+    school: {
+      findMany: jest.fn().mockResolvedValue([defaultSchool]),
+      findUnique: jest.fn().mockResolvedValue(defaultSchool),
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue(defaultSchool),
+      update: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+    },
+    character: {
+      findMany: jest.fn().mockResolvedValue([
+        { slug: 'anita', name: 'Anita' },
+        { slug: 'iara', name: 'Iara' },
+      ]),
+    },
+    user: {
+      findUnique: jest.fn().mockResolvedValue(createAuthenticatedProfile()),
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([
+        createUserEntity(),
+        createUserEntity({
+          id: undefined,
+          childName: undefined,
+          parentName: undefined,
+          email: undefined,
+          roles: undefined,
+          updatedAt: undefined,
+        }),
+      ]),
+      update: jest.fn().mockImplementation(({ where, data }) => ({
+        id: where.id ?? 'user-1',
+        firebaseUid: 'firebase-user-1',
+        email: data.email ?? 'school@test.com',
+        parentName: 'Responsavel',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        roles: data.roles ?? ['school'],
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      })),
+      create: jest.fn().mockImplementation(({ data }) => ({
+        id: 'created-user',
+        ...data,
+        updatedAt: new Date('2026-03-01T00:00:00.000Z'),
+      })),
+    },
+    schoolAccess: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'access-1',
+        schoolId: '1',
+        userId: 'user-1',
       }),
-    ]),
-    update: jest.fn().mockImplementation(({ where, data }) => ({
-      id: where.id ?? 'user-1',
-      firebaseUid: 'firebase-user-1',
-      email: data.email ?? 'school@test.com',
-      parentName: 'Responsavel',
-      childName: null,
-      childBirthDate: null,
-      parentPhone: null,
-      school: null,
-      photoURL: null,
-      avatarCharacterSlug: null,
-      roles: data.roles ?? ['school'],
-      updatedAt: new Date('2026-03-01T00:00:00.000Z'),
-    })),
-    create: jest.fn().mockImplementation(({ data }) => ({
-      id: 'created-user',
-      ...data,
-      updatedAt: new Date('2026-03-01T00:00:00.000Z'),
-    })),
-  },
-  schoolAccess: {
-    findMany: jest.fn().mockResolvedValue([]),
-    findUnique: jest.fn().mockResolvedValue({
-      id: 'access-1',
-      schoolId: '1',
-      userId: 'user-1',
-    }),
-    upsert: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
-  },
-  gameScore: {
-    findMany: jest
-      .fn()
-      .mockResolvedValue([createUserScore('firebase-user-1', 80)]),
-  },
-});
+      upsert: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+    },
+    schoolEnabledGame: {
+      findMany: jest.fn().mockResolvedValue([]),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      createMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    schoolEnabledCharacter: {
+      findMany: jest.fn().mockResolvedValue([]),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      createMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    gameScore: {
+      findMany: jest
+        .fn()
+        .mockResolvedValue([createUserScore('firebase-user-1', 80)]),
+    },
+    $transaction: jest.fn(),
+  };
+
+  mocks.$transaction.mockImplementation(async (callback) => callback(mocks));
+
+  return mocks;
+};
 
 describe('SchoolsService', () => {
   let service: SchoolsService;
@@ -467,6 +490,110 @@ describe('SchoolsService', () => {
       expect(prismaService.school.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },
       });
+    });
+  });
+
+  describe('configuracao de jogos por escola', () => {
+    it('retorna todos os jogos e personagens quando a escola ainda nao possui configuracao customizada', async () => {
+      const result = await service.getGameAccessBySchool('firebase-user-1', '1');
+
+      expectAuthenticatedProfileLookup();
+      expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+        select: { gameSlug: true },
+        orderBy: { gameSlug: 'asc' },
+      });
+      expect(prismaService.schoolEnabledCharacter.findMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+        select: { characterSlug: true },
+        orderBy: { characterSlug: 'asc' },
+      });
+      expect(result.enabledGameSlugs).toEqual(['memory-game', 'guess-game']);
+      expect(result.enabledCharacterSlugs).toEqual(['anita', 'iara']);
+      expect(result.hasCustomGames).toBe(false);
+      expect(result.hasCustomCharacters).toBe(false);
+      expect(result.canEdit).toBe(true);
+    });
+
+    it('retorna configuracao customizada de jogos e personagens da escola', async () => {
+      prismaService.schoolEnabledGame.findMany.mockResolvedValueOnce([
+        { gameSlug: 'guess-game' },
+      ]);
+      prismaService.schoolEnabledCharacter.findMany.mockResolvedValueOnce([
+        { characterSlug: 'iara' },
+      ]);
+
+      const result = await service.getGameAccessBySchool('firebase-user-1', '1');
+
+      expect(result.enabledGameSlugs).toEqual(['guess-game']);
+      expect(result.enabledCharacterSlugs).toEqual(['iara']);
+      expect(result.hasCustomGames).toBe(true);
+      expect(result.hasCustomCharacters).toBe(true);
+    });
+
+    it('atualiza a configuracao de jogos e personagens da escola', async () => {
+      await service.updateGameAccessBySchool('firebase-user-1', '1', {
+        enabledGameSlugs: ['guess-game', 'memory-game'],
+        enabledCharacterSlugs: ['iara'],
+      });
+
+      expect(prismaService.$transaction).toHaveBeenCalled();
+      expect(prismaService.schoolEnabledGame.deleteMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+      });
+      expect(prismaService.schoolEnabledCharacter.deleteMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+      });
+      expect(prismaService.schoolEnabledGame.createMany).toHaveBeenCalledWith({
+        data: [
+          { schoolId: '1', gameSlug: 'guess-game' },
+          { schoolId: '1', gameSlug: 'memory-game' },
+        ],
+      });
+      expect(prismaService.schoolEnabledCharacter.createMany).toHaveBeenCalledWith({
+        data: [{ schoolId: '1', characterSlug: 'iara' }],
+      });
+    });
+
+    it('permite limpar a configuracao customizada da escola', async () => {
+      const result = await service.updateGameAccessBySchool('firebase-user-1', '1', {
+        enabledGameSlugs: [],
+        enabledCharacterSlugs: [],
+      });
+
+      expect(prismaService.schoolEnabledGame.createMany).not.toHaveBeenCalled();
+      expect(prismaService.schoolEnabledCharacter.createMany).not.toHaveBeenCalled();
+      expect(result.hasCustomGames).toBe(false);
+      expect(result.hasCustomCharacters).toBe(false);
+    });
+
+    it('bloqueia professor alterando a configuracao da escola', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ roles: ['teacher'] }),
+      );
+
+      await expect(
+        service.updateGameAccessBySchool('firebase-user-1', '1', {
+          enabledGameSlugs: ['memory-game'],
+          enabledCharacterSlugs: ['anita'],
+        }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('valida slugs invalidos de jogos e personagens', async () => {
+      await expect(
+        service.updateGameAccessBySchool('firebase-user-1', '1', {
+          enabledGameSlugs: ['invalid-game'],
+          enabledCharacterSlugs: ['anita'],
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.updateGameAccessBySchool('firebase-user-1', '1', {
+          enabledGameSlugs: ['memory-game'],
+          enabledCharacterSlugs: ['invalid-character'],
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

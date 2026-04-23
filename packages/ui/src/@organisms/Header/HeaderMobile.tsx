@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MobileMenu } from '../../@molecules';
 import { useUser } from '../../context';
-import { useAuth, useCharacter } from '@etnos/tools';
+import { schoolService, useAuth, useCharacter } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
 import { Image, Modal } from 'antd';
 
@@ -22,6 +23,23 @@ export const HeaderMobile = () => {
 	const { selectedCharacter, data, selectCharacter } = useCharacter({
 		fetchList: openCharacter,
 	});
+	const { data: gameAccess } = useQuery({
+		queryKey: ['schools', 'me', 'game-access'],
+		queryFn: () => schoolService.getMyGameAccess(),
+	});
+	const enabledCharacters = data?.filter((character) =>
+		gameAccess?.enabledCharacterSlugs?.includes(character.slug),
+	);
+
+	useEffect(() => {
+		if (
+			selectedCharacter?.slug &&
+			gameAccess &&
+			!gameAccess.enabledCharacterSlugs.includes(selectedCharacter.slug)
+		) {
+			selectCharacter('');
+		}
+	}, [gameAccess, selectCharacter, selectedCharacter?.slug]);
 
 	const handleCharacter = (slug: string) => {
 		selectCharacter(slug);
@@ -51,7 +69,7 @@ export const HeaderMobile = () => {
 				onCancel={toggleCharacter}
 			>
 				<div className="ui:flex ui:flex-col ui:gap-2">
-					{data?.map((character: CharacterInterface) => (
+					{enabledCharacters?.map((character: CharacterInterface) => (
 						<button
 							key={character.slug}
 							className={`

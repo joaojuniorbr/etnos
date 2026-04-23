@@ -118,9 +118,9 @@ describe('GamesController', () => {
   });
 
   it('deve listar imagens de memory game', async () => {
-    await controller.getMemoryGameImages('char-1');
+    await controller.getMemoryGameImages({ user: { uid: 'user-1' } }, 'char-1');
 
-    expect(service.getMemoryGameImages).toHaveBeenCalledWith('char-1');
+    expect(service.getMemoryGameImages).toHaveBeenCalledWith('char-1', 'user-1');
   });
 
   it('deve listar conteúdo de guess game', async () => {
@@ -130,9 +130,15 @@ describe('GamesController', () => {
   });
 
   it('deve listar conteúdo jogável de guess game', async () => {
-    await controller.getGuessGamePlayContent('char-1');
+    await controller.getGuessGamePlayContent(
+      { user: { uid: 'user-1' } },
+      'char-1',
+    );
 
-    expect(service.getGuessGamePlayContent).toHaveBeenCalledWith('char-1');
+    expect(service.getGuessGamePlayContent).toHaveBeenCalledWith(
+      'char-1',
+      'user-1',
+    );
   });
 
   it('deve salvar conteúdo do memory game', async () => {
@@ -183,9 +189,15 @@ describe('GamesController', () => {
       type: 'letter' as const,
     };
 
-    await controller.validateGuessGameAttempt(payload);
+    await controller.validateGuessGameAttempt(
+      { user: { uid: 'user-1' } },
+      payload,
+    );
 
-    expect(service.validateGuessGameAttempt).toHaveBeenCalledWith(payload);
+    expect(service.validateGuessGameAttempt).toHaveBeenCalledWith({
+      ...payload,
+      userId: 'user-1',
+    });
   });
 
   it('deve salvar score do jogo', async () => {

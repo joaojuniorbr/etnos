@@ -111,8 +111,11 @@ export class GamesController {
     required: true,
     description: 'Slug do personagem',
   })
-  async getMemoryGameImages(@Param('characterSlug') characterSlug: string) {
-    return this.gamesService.getMemoryGameImages(characterSlug);
+  async getMemoryGameImages(
+    @Req() req,
+    @Param('characterSlug') characterSlug: string,
+  ) {
+    return this.gamesService.getMemoryGameImages(characterSlug, req.user.uid);
   }
 
   @Get('guess/:characterSlug')
@@ -136,8 +139,11 @@ export class GamesController {
     required: true,
     description: 'Slug do personagem',
   })
-  async getGuessGamePlayContent(@Param('characterSlug') characterSlug: string) {
-    return this.gamesService.getGuessGamePlayContent(characterSlug);
+  async getGuessGamePlayContent(
+    @Req() req,
+    @Param('characterSlug') characterSlug: string,
+  ) {
+    return this.gamesService.getGuessGamePlayContent(characterSlug, req.user.uid);
   }
 
   @Post('memory')
@@ -187,8 +193,11 @@ export class GamesController {
   @Post('guess/validate')
   @ApiOperation({ summary: 'Valida tentativa do jogo adivinhe' })
   @ApiBody({ type: ValidateGuessGameDto })
-  async validateGuessGameAttempt(@Body() data: ValidateGuessGameDto) {
-    return this.gamesService.validateGuessGameAttempt(data);
+  async validateGuessGameAttempt(@Req() req, @Body() data: ValidateGuessGameDto) {
+    return this.gamesService.validateGuessGameAttempt({
+      ...data,
+      userId: req.user.uid,
+    });
   }
 
   @Post('score')

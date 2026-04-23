@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-	transpilePackages: ['@etnos/ui', '@etnos/tools'],
+	transpilePackages: ['@etnos/ui', '@etnos/tools', '@etnos/types'],
 	images: {
 		remotePatterns: [
 			{

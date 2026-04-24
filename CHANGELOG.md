@@ -1,3 +1,17 @@
+# [1.6.0](https://github.com/joaojuniorbr/etnos/compare/v1.5.0...v1.6.0) (2026-04-22)
+
+### admin
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq05jq] - Configurar Estrutura Base do Painel Admin (RF026) ([64d0351](https://github.com/joaojuniorbr/etnos/commit/64d03511ccf4430309c988011405df7f8b665f67))
+
+### workflow
+
+#### 🧪 CI/CD
+
+* adjuste no worflow ([fa82ed5](https://github.com/joaojuniorbr/etnos/commit/fa82ed59be0a29d4d415bbb853d61e615edf88e2))
+
 # [1.5.0](https://github.com/joaojuniorbr/etnos/compare/v1.4.2...v1.5.0) (2026-04-03)
 
 ### 404

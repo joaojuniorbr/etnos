@@ -1,0 +1,22 @@
+{
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"strict": true,
+		"paths": {
+			"@/*": ["./*"],
+			"@/components": ["./components/index.ts"],
+			"@/components/*": ["./components/*"],
+			"@/contexts": ["./contexts/index.ts"],
+			"@/contexts/*": ["./contexts/*"],
+			"@/providers": ["./providers/index.ts"],
+			"@/providers/*": ["./providers/*"],
+			"@/constants": ["./constants/index.ts"],
+			"@/constants/*": ["./constants/*"],
+			"@/utils": ["./utils/index.ts"],
+			"@/utils/*": ["./utils/*"],
+			"@etnos/core": ["../../packages/core/src/index.ts"],
+			"@etnos/types": ["../../packages/types/src/index.ts"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx", "expo-env.d.ts", ".expo/types/**/*.ts"]
+}

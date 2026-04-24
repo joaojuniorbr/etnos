@@ -1,5 +1,5 @@
-import { api } from '../../helpers';
 import type { CharacterInterface } from '@etnos/types';
+import { api } from '../../helpers';
 
 export const charactersService = {
 	save(character: CharacterInterface) {

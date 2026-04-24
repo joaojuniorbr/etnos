@@ -1,0 +1,16 @@
+{
+	"expo": {
+		"name": "Etnos",
+		"slug": "etnos-student-mobile",
+		"scheme": "etnos-student-mobile",
+		"orientation": "portrait",
+		"userInterfaceStyle": "automatic",
+		"android": {
+			"softwareKeyboardLayoutMode": "adjustResize"
+		},
+		"experiments": {
+			"typedRoutes": true
+		},
+		"plugins": ["expo-router"]
+	}
+}

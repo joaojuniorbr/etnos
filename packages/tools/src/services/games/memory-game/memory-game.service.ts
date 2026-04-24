@@ -1,5 +1,5 @@
-import { api } from '../../../helpers';
 import type { MemoryGameContentInterface } from '@etnos/types';
+import { api } from '../../../helpers';
 
 export const memoryGameContentService = {
 	saveContent(props: Partial<MemoryGameContentInterface>) {

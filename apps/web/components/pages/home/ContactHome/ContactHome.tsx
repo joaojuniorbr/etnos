@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { Form, message, Spin } from 'antd';
-import { api } from 'common/api';
+import { api } from '@etnos/common';
 import { formatPhoneBR, normalizePhone } from '@etnos/tools';
 
 type ContactForm = {

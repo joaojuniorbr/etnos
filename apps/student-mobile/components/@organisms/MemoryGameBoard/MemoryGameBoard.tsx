@@ -13,6 +13,7 @@ import {
 } from '@etnos/core';
 import { PrimaryButton, SectionCard, StatCard } from '@/components';
 import { tw } from '@/utils';
+import { FontAwesome } from '@expo/vector-icons';
 
 type MemoryGameBoardProps = {
 	bestScore?: ScoreInterface | null;
@@ -22,7 +23,7 @@ type MemoryGameBoardProps = {
 	onSaveScoreHistory: (score: number) => Promise<void>;
 };
 
-const MATCH_DELAY_MS = 1000;
+const MATCH_DELAY_MS = 3000;
 
 export const MemoryGameBoard = ({
 	bestScore,
@@ -153,64 +154,67 @@ export const MemoryGameBoard = ({
 
 	const totalPairs = levelContent.length;
 	const bestValue = bestScore?.score ?? 0;
-	const backImage =
-		character?.imageUrl ||
-		'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80';
+	const backImage = character?.slug
+		? `https://etnos.online/games/memory-game/cover/${character?.slug}.jpg`
+		: character?.imageUrl;
 
 	return (
 		<View>
-			<View style={tw`mb-5 flex-row flex-wrap`}>
-				<View style={tw`mb-3 w-1/2 pr-2`}>
-					<StatCard label="Pontuação" value={score} tone="gold" />
-				</View>
-				<View style={tw`mb-3 w-1/2 pl-2`}>
-					<StatCard label="Movimentos" value={moves} tone="blue" />
-				</View>
-				<View style={tw`w-1/2 pr-2`}>
-					<StatCard
-						label="Acertos"
-						value={`${matchedPairs}/${totalPairs}`}
-						tone="teal"
-					/>
-				</View>
-				<View style={tw`w-1/2 pl-2`}>
-					<StatCard label="Recorde" value={bestValue} tone="dark" />
-				</View>
-			</View>
-
 			{selectedLevel === null ? (
 				<SectionCard>
-					<Text style={tw`text-2xl font-black text-primary`}>
-						Escolha o nível para começar
-					</Text>
-					<Text style={tw`mt-3 text-base leading-6 text-stone-700`}>
-						Cada nível aumenta a quantidade de pares e deixa a pontuação mais alta.
-					</Text>
-					<View style={tw`mt-6`}>
+					<View style={tw`items-center`}>
+						<Image
+							source={{ uri: character?.imageUrl }}
+							style={tw`w-full max-w-54 aspect-square mx-auto`}
+						/>
+						<Text style={tw`text-lg font-black text-primary text-center`}>
+							Escolha o nível para começar
+						</Text>
+						<Text style={tw`text-xs text-center`}>
+							Cada nível aumenta a quantidade de pares e deixa a pontuação mais
+							alta.
+						</Text>
+					</View>
+					<View style={tw`mt-6 flex-row flex-wrap -mx-1`}>
 						{availableLevels.map((level) => (
-							<Pressable
-								key={level.level}
-								onPress={() => setSelectedLevel(level.level)}
-								style={({ pressed }) => [
-									tw`mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-4`,
-									pressed ? tw`opacity-90` : null,
-								]}
-							>
-								<Text style={tw`text-lg font-black text-primary`}>
-									{level.label}
-								</Text>
-								<Text style={tw`mt-1 text-sm text-stone-600`}>
-									{level.pairs * 2} cartas
-								</Text>
-							</Pressable>
+							<View key={`level-${level.level}`} style={tw`p-1 w-1/2`}>
+								<Pressable
+									onPress={() => setSelectedLevel(level.level)}
+									style={({ pressed }) => [
+										tw`rounded border border-stone-200 bg-white p-4`,
+										pressed ? tw`opacity-90` : null,
+									]}
+								>
+									<View style={tw`flex-row items-center gap-1`}>
+										{Array.from(
+											{ length: availableLevels.length },
+											(_, index) =>
+												index < level.level ? (
+													<FontAwesome
+														name="star"
+														key={`filled-${level.level}-${index}`}
+														color={tw.color('secondary')}
+													/>
+												) : (
+													<FontAwesome
+														name="star-o"
+														key={`outline-${level.level}-${index}`}
+														color={tw.color('secondary')}
+													/>
+												),
+										)}
+									</View>
+									<Text style={tw`text-xl font-black text-primary`}>
+										{level.label}
+									</Text>
+								</Pressable>
+							</View>
 						))}
 					</View>
 				</SectionCard>
 			) : isFinished ? (
 				<SectionCard>
-					<Text style={tw`text-3xl font-black text-primary`}>
-						Parabéns!
-					</Text>
+					<Text style={tw`text-3xl font-black text-primary`}>Parabéns!</Text>
 					<Text style={tw`mt-3 text-base leading-6 text-stone-700`}>
 						Você concluiu o desafio e pode salvar sua melhor pontuação.
 					</Text>
@@ -229,36 +233,58 @@ export const MemoryGameBoard = ({
 					</View>
 				</SectionCard>
 			) : (
-				<View style={tw`flex-row flex-wrap justify-between`}>
-					{cards.map((card) => {
-						const showFront = card.isFlipped || card.isMatched;
+				<>
+					<View style={tw`mb-5 flex-row flex-wrap`}>
+						<View style={tw`w-1/2 pr-2`}>
+							<StatCard label="Pontuação" value={score} tone="gold" />
+						</View>
+						<View style={tw`w-1/2 pl-2`}>
+							<StatCard label="Recorde" value={bestValue} tone="dark" />
+						</View>
+					</View>
 
-						return (
-							<Pressable
-								key={card.id}
-								onPress={() => handleCardPress(card.id)}
-								style={[
-									tw`mb-3 w-[31%] overflow-hidden rounded-2xl border border-stone-200 bg-white`,
-									card.isMatched ? tw`opacity-60` : null,
-								]}
-							>
-								<Image
-									source={{ uri: showFront ? card.image : backImage }}
-									contentFit="cover"
-									style={tw`aspect-square w-full bg-stone-100`}
-								/>
-								<View style={tw`px-2 py-2`}>
-									<Text
-										numberOfLines={1}
-										style={tw`text-center text-xs font-bold uppercase text-primary`}
+					<View style={tw`flex-row flex-wrap justify-center -ml-1 pb-20`}>
+						{cards.map((card) => {
+							const showFront = card.isFlipped || card.isMatched;
+
+							return (
+								<View key={card.id} style={tw`w-1/3 pl-1 pb-1`}>
+									<Pressable
+										onPress={() => handleCardPress(card.id)}
+										style={[
+											tw`overflow-hidden rounded border border-slate-200 bg-white`,
+											card.isMatched ? tw`opacity-40` : null,
+										]}
 									>
-										{showFront ? card.name : character?.name ?? 'Etnos'}
-									</Text>
+										<Image
+											source={{ uri: showFront ? card.image : backImage }}
+											contentFit="cover"
+											style={tw`aspect-square w-full`}
+										/>
+									</Pressable>
 								</View>
-							</Pressable>
-						);
-					})}
-				</View>
+							);
+						})}
+					</View>
+
+					<View
+						style={[
+							tw`top-0 left-0 h-1 w-full bg-slate-200`,
+							{
+								position: 'fixed',
+							},
+						]}
+					>
+						<View
+							style={[
+								tw`h-full bg-secondary`,
+								{
+									width: `${(matchedPairs / totalPairs) * 100}%`,
+								},
+							]}
+						/>
+					</View>
+				</>
 			)}
 		</View>
 	);

@@ -21,8 +21,8 @@ export const StatCard = ({
 
 	return (
 		<View style={[tw`flex-1 rounded p-4 gap-2`, styles]}>
-			<Text style={[tw`text-xs font-bold uppercase`, textColor]}>{label}</Text>
-			<Text style={[tw`text-2xl font-black`, textColor]}>{value}</Text>
+			<Text style={[tw`text-xs uppercase leading-1`, textColor]}>{label}</Text>
+			<Text style={[tw`text-xl font-black leading-1`, textColor]}>{value}</Text>
 		</View>
 	);
 };

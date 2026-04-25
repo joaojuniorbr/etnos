@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+
 import {
 	AvatarSelector,
 	InputField,
@@ -14,10 +16,15 @@ import { useAuth } from '@/contexts';
 import { scoreGamesService, tw } from '@/utils';
 import { GameNameEnum } from '@etnos/types';
 
+import { useCharacter } from '@etnos/tools';
+import { get } from 'react-native/Libraries/NativeComponent/NativeComponentRegistry';
+
 export default function ProfilePage() {
 	const { isLoading, signOut, updateProfile, user } = useAuth();
 	const [childName, setChildName] = useState(user?.childName ?? '');
 	const [parentName, setParentName] = useState(user?.parentName ?? '');
+
+	const { data } = useCharacter();
 
 	useEffect(() => {
 		setChildName(user?.childName ?? '');
@@ -34,10 +41,12 @@ export default function ProfilePage() {
 		return <LoadingState label="Carregando perfil..." />;
 	}
 
-	const totalScore = scoresQuery.data?.reduce(
-		(sum, item) => sum + item.score,
-		0,
-	) ?? 0;
+	const totalScore =
+		scoresQuery.data?.reduce((sum, item) => sum + item.score, 0) ?? 0;
+
+	const getCharacterBySlug = (slug: string) => {
+		return data?.find((item) => item.slug === slug);
+	};
 
 	const handleSaveProfile = async () => {
 		try {
@@ -45,9 +54,17 @@ export default function ProfilePage() {
 				childName,
 				parentName,
 			});
-			Alert.alert('Perfil atualizado', 'Seus dados foram salvos com sucesso.');
+			Toast.show({
+				type: 'success',
+				text1: 'Perfil atualizado',
+				text2: 'Seus dados foram salvos com sucesso.',
+			});
 		} catch {
-			Alert.alert('Erro', 'Não foi possível atualizar o perfil agora.');
+			Toast.show({
+				type: 'error',
+				text1: 'Erro',
+				text2: 'Não foi possível atualizar o perfil agora.',
+			});
 		}
 	};
 
@@ -64,106 +81,111 @@ export default function ProfilePage() {
 
 	return (
 		<Screen>
-			<SectionCard style={tw`mb-4 items-center`}>
-				<Image
-					source={{
-						uri:
-							user.photoURL ||
-							`https://robohash.org/${encodeURIComponent(user.email ?? user.uid)}`,
-					}}
-					contentFit="cover"
-					style={tw`h-28 w-28 rounded-full bg-stone-200`}
-				/>
-				<Text style={tw`mt-4 text-2xl font-black text-primary`}>
-					{user.childName || user.email}
-				</Text>
-				<Text style={tw`mt-1 text-sm uppercase text-stone-500`}>
-					{user.email}
-				</Text>
+			<View style={tw`gap-4`}>
+				<SectionCard style={tw`items-center`}>
+					<Image
+						source={{
+							uri:
+								user.photoURL ||
+								`https://robohash.org/${encodeURIComponent(user.email ?? user.uid)}`,
+						}}
+						contentFit="cover"
+						style={tw`h-40 w-40 rounded-full border border-slate-200`}
+					/>
+					<Text style={tw`mt-4 text-lg font-black text-primary`}>
+						{user.childName || user.email}
+					</Text>
+					<Text style={tw`text-xs text-stone-500`} numberOfLines={1}>
+						{user.email}
+					</Text>
 
-				<View style={tw`mt-5 w-full flex-row`}>
-					<View style={tw`mr-2 flex-1 rounded-2xl bg-secondary px-4 py-4`}>
-						<Text style={tw`text-xs font-black uppercase text-primary`}>
-							Pontuação total
-						</Text>
-						<Text style={tw`mt-2 text-3xl font-black text-primary`}>
-							{totalScore}
-						</Text>
+					<View style={tw`w-full flex-row gap-4 mt-4`}>
+						<View style={tw`flex-1 rounded p-3 bg-secondary`}>
+							<Text style={tw`text-xs uppercase text-primary`}>Pontuação</Text>
+							<Text style={tw`text-lg font-black text-primary`}>
+								{totalScore}
+							</Text>
+						</View>
+						<View style={tw`flex-1 rounded p-3 bg-primary`}>
+							<Text style={tw`text-xs uppercase text-white`}>Jogos</Text>
+							<Text style={tw`text-xl font-black text-white`}>
+								{scoresQuery.data?.length ?? 0}
+							</Text>
+						</View>
 					</View>
-					<View style={tw`ml-2 flex-1 rounded-2xl bg-primary px-4 py-4`}>
-						<Text style={tw`text-xs font-black uppercase text-white`}>
-							Jogos registrados
-						</Text>
-						<Text style={tw`mt-2 text-3xl font-black text-white`}>
-							{scoresQuery.data?.length ?? 0}
-						</Text>
-					</View>
-				</View>
-			</SectionCard>
+				</SectionCard>
 
-			<SectionCard style={tw`mb-4`}>
-				<Text style={tw`mb-4 text-2xl font-black text-primary`}>
-					Editar perfil
-				</Text>
-				<InputField
-					label="Nome do estudante"
-					onChangeText={setChildName}
-					value={childName}
-				/>
-				<InputField
-					label="Nome do responsável"
-					onChangeText={setParentName}
-					value={parentName}
-				/>
-				<InputField editable={false} label="E-mail" value={user.email ?? ''} />
+				<SectionCard style={tw`gap-6`}>
+					<InputField
+						label="Nome do estudante"
+						onChangeText={setChildName}
+						value={childName}
+					/>
+					<InputField
+						label="Nome do responsável"
+						onChangeText={setParentName}
+						value={parentName}
+					/>
+					<InputField disabled label="E-mail" value={user.email ?? ''} />
+					<PrimaryButton
+						label="Salvar alterações"
+						loading={isLoading}
+						onPress={() => void handleSaveProfile()}
+					/>
+				</SectionCard>
+
+				<SectionCard>
+					<AvatarSelector
+						currentAvatarUrl={user.photoURL}
+						currentCharacterSlug={user.avatarCharacterSlug}
+						onPick={handlePickAvatar}
+					/>
+				</SectionCard>
+
+				<SectionCard>
+					<Text style={tw`text-lg font-black text-primary`}>Pontuação</Text>
+					<View style={tw`mt-4 gap-2`}>
+						{scoresQuery.data?.length ? (
+							scoresQuery.data.map((game) => (
+								<View
+									key={`${game.slug}-${game.characterSlug}`}
+									style={tw`rounded border border-slate-200 bg-white flex-row items-center`}
+								>
+									<View>
+										<Image
+											source={{
+												uri: getCharacterBySlug(game.characterSlug)?.imageUrl,
+											}}
+											style={tw`aspect-square w-16`}
+											contentFit="contain"
+										/>
+									</View>
+									<View style={tw`flex-1 p-2`}>
+										<Text
+											style={tw`text-xs font-bold uppercase text-stone-500`}
+										>
+											{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
+										</Text>
+										<Text style={tw`text-xl font-black text-primary`}>
+											{game.score}
+										</Text>
+									</View>
+								</View>
+							))
+						) : (
+							<Text style={tw`text-base text-stone-600`}>
+								Você ainda não possui pontuações salvas.
+							</Text>
+						)}
+					</View>
+				</SectionCard>
+
 				<PrimaryButton
-					label="Salvar alterações"
-					loading={isLoading}
-					onPress={() => void handleSaveProfile()}
+					label="Sair"
+					variant="ghost"
+					onPress={() => void signOut()}
 				/>
-			</SectionCard>
-
-			<SectionCard style={tw`mb-4`}>
-				<AvatarSelector
-					currentAvatarUrl={user.photoURL}
-					currentCharacterSlug={user.avatarCharacterSlug}
-				onPick={handlePickAvatar}
-			/>
-			</SectionCard>
-
-			<SectionCard style={tw`mb-4`}>
-				<Text style={tw`text-2xl font-black text-primary`}>Jogos e pontuação</Text>
-				<View style={tw`mt-4`}>
-					{scoresQuery.data?.length ? (
-						scoresQuery.data.map((game) => (
-							<View
-								key={`${game.slug}-${game.characterSlug}`}
-								style={tw`mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-4`}
-							>
-								<Text style={tw`text-xs font-bold uppercase text-stone-500`}>
-									{GameNameEnum[game.slug as keyof typeof GameNameEnum]}
-								</Text>
-								<Text style={tw`mt-2 text-2xl font-black text-primary`}>
-									{game.score}
-								</Text>
-								<Text style={tw`mt-1 text-sm text-stone-600`}>
-									Personagem: {game.characterSlug}
-								</Text>
-							</View>
-						))
-					) : (
-						<Text style={tw`text-base leading-7 text-stone-600`}>
-							Você ainda não possui pontuações salvas.
-						</Text>
-					)}
-				</View>
-			</SectionCard>
-
-			<PrimaryButton
-				label="Sair"
-				variant="ghost"
-				onPress={() => void signOut()}
-			/>
+			</View>
 		</Screen>
 	);
 }

@@ -37,22 +37,12 @@ export const Screen = ({
 	);
 
 	return (
-		<SafeAreaView style={tw`flex-1 bg-cream`}>
+		<SafeAreaView style={tw`flex-1 bg-slate-50`}>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 				style={tw`flex-1`}
 			>
-				<View
-					style={[
-						tw`flex-1 bg-cream`,
-						{
-							backgroundColor: '#f8f3eb',
-						},
-						style,
-					]}
-				>
-					{content}
-				</View>
+				{content}
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);

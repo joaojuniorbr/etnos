@@ -30,58 +30,58 @@ export const AvatarSelector = ({
 	});
 
 	const effectiveCharacterSlug =
-		selectedCharacterSlug || currentCharacterSlug || charactersQuery.data?.[0]?.slug || '';
+		selectedCharacterSlug ||
+		currentCharacterSlug ||
+		charactersQuery.data?.[0]?.slug ||
+		'';
 
 	const avatarsQuery = useQuery({
 		queryKey: ['profile-avatars', effectiveCharacterSlug],
 		enabled: Boolean(effectiveCharacterSlug),
-		queryFn: () => charactersService.getCharacterAvatars(effectiveCharacterSlug),
+		queryFn: () =>
+			charactersService.getCharacterAvatars(effectiveCharacterSlug),
 	});
 
 	if (charactersQuery.isLoading) {
 		return (
 			<View style={tw`items-center justify-center py-8`}>
-				<ActivityIndicator color="#371f12" />
+				<ActivityIndicator color={tw.color('primary')} />
 			</View>
 		);
 	}
 
 	return (
 		<View>
-			<Text style={tw`mb-3 text-base font-black uppercase text-primary`}>
+			<Text style={tw`text-lg font-black uppercase text-primary`}>
 				Trocar avatar
 			</Text>
-			<Text style={tw`mb-4 text-sm leading-6 text-stone-600`}>
-				Escolha um personagem e depois selecione a imagem que vai aparecer no seu perfil.
+			<Text style={tw`mb-4 text-xs`}>
+				Escolha um personagem e depois selecione a imagem que vai aparecer no
+				seu perfil.
 			</Text>
 
-			<View style={tw`mb-5 flex-row flex-wrap justify-between`}>
+			<View style={tw`mb-5 flex-row flex-wrap justify-center -mx-1`}>
 				{charactersQuery.data?.map((character: CharacterInterface) => {
 					const isSelected = effectiveCharacterSlug === character.slug;
 
 					return (
-						<Pressable
-							key={character.slug}
-							onPress={() => setSelectedCharacterSlug(character.slug)}
-							style={[
-								tw`mb-3 w-[48%] rounded-2xl border bg-white p-3`,
-								isSelected ? tw`border-primary` : tw`border-stone-200`,
-							]}
-						>
-							{character.imageUrl ? (
-								<Image
-									source={{ uri: character.imageUrl }}
-									contentFit="cover"
-									style={tw`mb-3 h-24 w-full rounded-xl bg-stone-100`}
-								/>
-							) : null}
-							<Text style={tw`text-sm font-black text-primary`}>
-								{character.name}
-							</Text>
-							<Text style={tw`mt-1 text-xs uppercase text-stone-500`}>
-								{character.region}
-							</Text>
-						</Pressable>
+						<View key={character.slug} style={tw`w-1/3 p-1`}>
+							<Pressable
+								onPress={() => setSelectedCharacterSlug(character.slug)}
+								style={[
+									tw`rounded border-2 bg-white`,
+									isSelected ? tw`border-primary` : tw`border-stone-200`,
+								]}
+							>
+								{character.imageUrl ? (
+									<Image
+										source={{ uri: character.imageUrl }}
+										contentFit="cover"
+										style={tw`aspect-square w-full rounded-xl bg-stone-100`}
+									/>
+								) : null}
+							</Pressable>
+						</View>
 					);
 				})}
 			</View>
@@ -91,25 +91,28 @@ export const AvatarSelector = ({
 					<ActivityIndicator color="#371f12" />
 				</View>
 			) : (
-				<View style={tw`flex-row flex-wrap justify-between`}>
+				<View style={tw`flex-row flex-wrap -ml-1`}>
 					{avatarsQuery.data?.map((avatar: MidiaInterface) => {
 						const isSelected = currentAvatarUrl === avatar.url;
 
 						return (
-							<Pressable
-								key={avatar.id ?? avatar.url}
-								onPress={() => void onPick(avatar.url, effectiveCharacterSlug)}
-								style={[
-									tw`mb-3 w-[31%] overflow-hidden rounded-2xl border bg-white`,
-									isSelected ? tw`border-primary` : tw`border-stone-200`,
-								]}
-							>
-								<Image
-									source={{ uri: avatar.url }}
-									contentFit="cover"
-									style={tw`aspect-square w-full bg-stone-100`}
-								/>
-							</Pressable>
+							<View key={avatar.id ?? avatar.url} style={tw`w-1/5 pl-1 pb-1`}>
+								<Pressable
+									onPress={() =>
+										void onPick(avatar.url, effectiveCharacterSlug)
+									}
+									style={[
+										tw`overflow-hidden rounded border bg-white`,
+										isSelected ? tw`border-primary` : tw`border-slate-200`,
+									]}
+								>
+									<Image
+										source={{ uri: avatar.url }}
+										contentFit="cover"
+										style={tw`aspect-square w-full`}
+									/>
+								</Pressable>
+							</View>
 						);
 					})}
 				</View>

@@ -26,7 +26,7 @@ const addAuthToken = async (config: InternalAxiosRequestConfig) => {
 };
 
 export const createApiClient = (
-	baseURL = process.env.NEXT_PUBLIC_API_URL,
+	baseURL = process.env.NEXT_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_URL,
 ): AxiosInstance => {
 	const instance = axios.create({ baseURL });
 	instance.interceptors.request.use(addAuthToken);

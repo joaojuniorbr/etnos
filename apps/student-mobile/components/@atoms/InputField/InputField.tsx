@@ -10,6 +10,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
 
 type InputFieldProps = TextInputProps & {
+	disabled?: boolean;
 	label: string;
 	error?: string;
 };
@@ -32,8 +33,9 @@ export const InputField = ({
 			<View style={tw`relative`}>
 				<TextInput
 					placeholderTextColor={tw.color('slate-400')}
-					style={tw`rounded border border-slate-300 bg-white p-4 text-base text-slate-900`}
+					style={tw`rounded border border-slate-300 bg-white p-4 text-base ${props.disabled ? 'text-slate-400' : 'text-slate-900'}`}
 					secureTextEntry={hiddenPassword}
+					editable={!props.disabled}
 					{...props}
 				/>
 

@@ -9,7 +9,8 @@
 			"softwareKeyboardLayoutMode": "adjustResize"
 		},
 		"experiments": {
-			"typedRoutes": true
+			"typedRoutes": true,
+			"autolinkingModuleResolution": true
 		},
 		"plugins": ["expo-router"]
 	}

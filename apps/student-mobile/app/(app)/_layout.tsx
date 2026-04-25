@@ -49,8 +49,8 @@ export default function AppLayout() {
 				tabBarInactiveTintColor: tw.color('stone-600'),
 				tabBarHideOnKeyboard: true,
 				tabBarStyle: {
-					backgroundColor: '#fffdf9',
-					borderTopColor: '#e7e5e4',
+					backgroundColor: tw.color('white'),
+					borderTopColor: tw.color('slate-200'),
 					paddingTop: 10,
 					height: 72,
 				},

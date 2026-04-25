@@ -1,7 +1,12 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Text } from 'react-native';
-import { LoadingState, MemoryGameBoard, Screen, SectionCard } from '@/components';
+import { Text } from 'react-native';
+import {
+	LoadingState,
+	MemoryGameBoard,
+	Screen,
+	SectionCard,
+} from '@/components';
 import { useAuth, useCharacterSelection } from '@/contexts';
 import {
 	charactersService,
@@ -10,6 +15,8 @@ import {
 	tw,
 } from '@/utils';
 import { GamesEnum, type ScoreInterface } from '@etnos/types';
+
+import Toast from 'react-native-toast-message';
 
 export default function MemoryGamePage() {
 	const { user } = useAuth();
@@ -23,7 +30,8 @@ export default function MemoryGamePage() {
 	const memoryContentQuery = useQuery({
 		queryKey: ['memory-game', selectedCharacterSlug],
 		enabled: Boolean(selectedCharacterSlug),
-		queryFn: () => memoryGameService.getMemoryGameImages(selectedCharacterSlug ?? ''),
+		queryFn: () =>
+			memoryGameService.getMemoryGameImages(selectedCharacterSlug ?? ''),
 	});
 
 	const scoreQuery = useQuery({
@@ -58,28 +66,24 @@ export default function MemoryGamePage() {
 						Escolha um personagem antes de jogar
 					</Text>
 					<Text style={tw`mt-3 text-base leading-7 text-stone-700`}>
-						A seleção do personagem define o conteúdo cultural que vai aparecer no desafio.
+						A seleção do personagem define o conteúdo cultural que vai aparecer
+						no desafio.
 					</Text>
 				</SectionCard>
 			</Screen>
 		);
 	}
 
-	if (charactersQuery.isLoading || memoryContentQuery.isLoading || scoreQuery.isLoading) {
+	if (
+		charactersQuery.isLoading ||
+		memoryContentQuery.isLoading ||
+		scoreQuery.isLoading
+	) {
 		return <LoadingState label="Montando o jogo da memória..." />;
 	}
 
 	return (
 		<Screen>
-			<SectionCard style={tw`mb-4`}>
-				<Text style={tw`text-3xl font-black text-primary`}>
-					Jogo da Memória
-				</Text>
-				<Text style={tw`mt-3 text-base leading-7 text-stone-700`}>
-					Encontre os pares e descubra símbolos culturais do Brasil com o personagem escolhido.
-				</Text>
-			</SectionCard>
-
 			<MemoryGameBoard
 				bestScore={bestScore}
 				character={selectedCharacter}
@@ -90,10 +94,12 @@ export default function MemoryGamePage() {
 					}
 
 					if (score <= (bestScore?.score ?? 0)) {
-						Alert.alert(
-							'Pontuação registrada',
-							'Seu recorde atual continua valendo porque é maior ou igual a este resultado.',
-						);
+						Toast.show({
+							type: 'success',
+							text1: 'Pontuação registrada',
+							text2:
+								'Seu recorde atual continua valendo porque é maior ou igual a este resultado.',
+						});
 						return;
 					}
 
@@ -105,7 +111,11 @@ export default function MemoryGamePage() {
 					);
 
 					await scoreQuery.refetch();
-					Alert.alert('Recorde salvo', 'Sua nova melhor pontuação foi registrada.');
+					Toast.show({
+						type: 'success',
+						text1: 'Recorde salvo',
+						text2: 'Sua nova melhor pontuação foi registrada.',
+					});
 				}}
 				onSaveScoreHistory={async (score) => {
 					if (!user?.uid || !selectedCharacterSlug) {

@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 import type { CharacterInterface } from '@etnos/types';
+import { FontAwesome } from '@expo/vector-icons';
 import { tw } from '@/utils';
 
 type CharacterCardProps = {
@@ -17,8 +18,8 @@ export const CharacterCard = ({
 	<Pressable
 		onPress={onPress}
 		style={({ pressed }) => [
-			tw`mb-4 overflow-hidden rounded-3xl border bg-white`,
-			selected ? tw`border-primary` : tw`border-stone-200`,
+			tw`overflow-hidden rounded border bg-white relative`,
+			selected ? tw`border-secondary` : tw`border-slate-200`,
 			pressed ? tw`opacity-90` : null,
 		]}
 	>
@@ -26,31 +27,26 @@ export const CharacterCard = ({
 			<Image
 				source={{ uri: character.imageUrl }}
 				contentFit="cover"
-				style={tw`h-48 w-full bg-stone-100`}
+				style={tw`aspect-square w-full`}
 			/>
 		) : (
-			<View style={tw`h-48 w-full items-center justify-center bg-stone-200`}>
+			<View
+				style={tw`aspect-square w-full items-center justify-center bg-stone-200`}
+			>
 				<Text style={tw`text-lg font-black text-primary`}>
 					{character.name}
 				</Text>
 			</View>
 		)}
-		<View style={tw`p-4`}>
-			<View style={tw`flex-row items-center justify-between`}>
-				<Text style={tw`text-xl font-black text-primary`}>{character.name}</Text>
-				{selected ? (
-					<View style={tw`rounded-full bg-secondary px-3 py-1`}>
-						<Text style={tw`text-xs font-black uppercase text-primary`}>
-							Selecionado
-						</Text>
-					</View>
-				) : null}
+		{selected ? (
+			<View style={tw`rounded-full bg-secondary p-1 absolute top-1 right-1`}>
+				<FontAwesome name="check" size={14} color={tw.color('white')} />
 			</View>
-			<Text style={tw`mt-2 text-xs font-bold uppercase text-stone-500`}>
-				{character.region}
-			</Text>
-			<Text style={tw`mt-3 text-sm leading-6 text-stone-700`}>
-				{character.description}
+		) : null}
+
+		<View style={tw`p-4 border-t border-slate-200`}>
+			<Text style={tw`text-xs font-black text-primary text-center`}>
+				{character.name}
 			</Text>
 		</View>
 	</Pressable>

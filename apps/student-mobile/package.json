@@ -24,6 +24,7 @@
 		"axios": "^1.11.0",
 		"babel-preset-expo": "~55.0.18",
 		"expo": "~55.0.17",
+		"expo-dev-client": "~55.0.28",
 		"expo-font": "~55.0.6",
 		"expo-image": "~55.0.9",
 		"expo-linking": "~55.0.14",

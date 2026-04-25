@@ -304,6 +304,19 @@ describe('GamesService', () => {
     ).rejects.toThrow(ForbiddenException);
   });
 
+  it('permite acesso ao conteúdo quando o usuário não possui escola vinculada', async () => {
+    prismaService.user.findUnique.mockResolvedValueOnce(null);
+    prismaService.memoryGameContent.findMany.mockResolvedValueOnce([
+      { id: '1', slug: 'anita', url: 'imagem-1', characterId: 'char-1' },
+    ]);
+
+    const result = await service.getMemoryGameImages('anita', 'user-123');
+
+    expect(result).toEqual([{ id: '1', name: 'anita-1', image: 'imagem-1' }]);
+    expect(prismaService.schoolEnabledGame.findMany).not.toHaveBeenCalled();
+    expect(prismaService.schoolEnabledCharacter.findMany).not.toHaveBeenCalled();
+  });
+
   it('deve criar conteúdo do guess game quando não houver id', async () => {
     const payload = makeGuessGameContent({ id: undefined });
 

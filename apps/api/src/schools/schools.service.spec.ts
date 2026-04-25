@@ -494,6 +494,52 @@ describe('SchoolsService', () => {
   });
 
   describe('configuracao de jogos por escola', () => {
+    it('retorna acesso padrão quando o perfil não possui escola vinculada', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          school: null,
+          roles: ['teacher'],
+        }),
+      );
+
+      const result = await service.getMyGameAccess('firebase-user-1');
+
+      expect(result.schoolId).toBe('');
+      expect(result.enabledGameSlugs).toEqual(['memory-game', 'guess-game']);
+      expect(result.enabledCharacterSlugs).toEqual(['anita', 'iara']);
+      expect(result.canEdit).toBe(false);
+    });
+
+    it('retorna acesso da escola vinculada no meu perfil quando a escola existe', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          school: '1',
+          roles: ['school'],
+        }),
+      );
+
+      const result = await service.getMyGameAccess('firebase-user-1');
+
+      expectAuthenticatedProfileLookup();
+      expect(prismaService.school.findUnique).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+      expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+        select: { gameSlug: true },
+        orderBy: { gameSlug: 'asc' },
+      });
+      expect(prismaService.schoolEnabledCharacter.findMany).toHaveBeenCalledWith({
+        where: { schoolId: '1' },
+        select: { characterSlug: true },
+        orderBy: { characterSlug: 'asc' },
+      });
+      expect(result.schoolId).toBe('1');
+      expect(result.enabledGameSlugs).toEqual(['memory-game', 'guess-game']);
+      expect(result.enabledCharacterSlugs).toEqual(['anita', 'iara']);
+      expect(result.canEdit).toBe(true);
+    });
+
     it('retorna todos os jogos e personagens quando a escola ainda nao possui configuracao customizada', async () => {
       const result = await service.getGameAccessBySchool('firebase-user-1', '1');
 

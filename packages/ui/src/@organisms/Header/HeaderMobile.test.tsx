@@ -1,40 +1,79 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { HeaderMobile } from './HeaderMobile';
+import { createWrapper } from '../../test/setup';
 
-const mockUser = { uid: '123', email: 'user@teste.com' };
-const mockSelectedCharacter = {
-	slug: 'anita',
-	name: 'Anita',
-	description: 'Gaúcha',
-};
-const mockCharacters = [
+const {
+	mockUser,
 	mockSelectedCharacter,
-	{
-		slug: 'iara',
-		name: 'Iara',
-		description: 'Amazonia',
-	},
-	{
-		slug: 'zeca',
-		name: 'Zeca',
-		description: 'Brasil',
-	},
-];
+	mockCharacters,
+	mockUseAuth,
+	mockUseUser,
+	mockHandleSelectedCharacter,
+	mockGetMyGameAccess,
+	mockUseCharacter,
+} = vi.hoisted(() => {
+	const selectedCharacter = {
+		slug: 'anita',
+		name: 'Anita',
+		description: 'Gaúcha',
+	};
 
-const mockUseAuth = { onSignOut: vi.fn() };
-const mockUseUser = { user: mockUser };
-const mockHandleSelectedCharacter = vi.fn();
+	return {
+		mockUser: { uid: '123', email: 'user@teste.com' },
+		mockSelectedCharacter: selectedCharacter,
+		mockCharacters: [
+			selectedCharacter,
+			{
+				slug: 'iara',
+				name: 'Iara',
+				description: 'Amazonia',
+			},
+			{
+				slug: 'zeca',
+				name: 'Zeca',
+				description: 'Brasil',
+			},
+		],
+		mockUseAuth: { onSignOut: vi.fn() },
+		mockUseUser: { user: { uid: '123', email: 'user@teste.com' } },
+		mockHandleSelectedCharacter: vi.fn(),
+		mockGetMyGameAccess: vi.fn(() =>
+			Promise.resolve({
+				enabledCharacterSlugs: ['anita', 'zeca'],
+			}),
+		),
+		mockUseCharacter: {
+			selectedCharacter,
+			data: [
+				selectedCharacter,
+				{
+					slug: 'iara',
+					name: 'Iara',
+					description: 'Amazonia',
+				},
+				{
+					slug: 'zeca',
+					name: 'Zeca',
+					description: 'Brasil',
+				},
+			],
+			selectCharacter: vi.fn(),
+		},
+	};
+});
 
-const mockUseCharacter = {
-	selectedCharacter: mockSelectedCharacter,
-	data: mockCharacters,
-	selectCharacter: mockHandleSelectedCharacter,
-};
+mockUseUser.user = mockUser;
+mockUseCharacter.selectedCharacter = mockSelectedCharacter;
+mockUseCharacter.data = mockCharacters;
+mockUseCharacter.selectCharacter = mockHandleSelectedCharacter;
 
 vi.mock('@etnos/tools', () => ({
 	useAuth: () => mockUseAuth,
 	useCharacter: () => mockUseCharacter,
+	schoolService: {
+		getMyGameAccess: mockGetMyGameAccess,
+	},
 }));
 
 vi.mock('../../context', () => ({
@@ -47,7 +86,7 @@ describe('HeaderMobile', () => {
 	});
 
 	it('abre menu, abre modal e seleciona personagem', async () => {
-		render(<HeaderMobile />);
+		render(<HeaderMobile />, { wrapper: createWrapper() });
 
 		const menuButton = screen.getByRole('button', { name: /menu/i });
 
@@ -63,7 +102,7 @@ describe('HeaderMobile', () => {
 			fireEvent.click(changeCharacterButton);
 		});
 
-		const selectCharacterButton = screen.getByRole('button', {
+		const selectCharacterButton = await screen.findByRole('button', {
 			name: /Selecionar Personagem: Zeca/i,
 		});
 
@@ -75,7 +114,7 @@ describe('HeaderMobile', () => {
 	});
 
 	it('abre menu e faz logout', async () => {
-		render(<HeaderMobile />);
+		render(<HeaderMobile />, { wrapper: createWrapper() });
 
 		const menuButton = screen.getByRole('button', { name: /menu/i });
 
@@ -91,5 +130,17 @@ describe('HeaderMobile', () => {
 
 		expect(mockUseAuth.onSignOut).toHaveBeenCalled();
 		expect(window.open).toHaveBeenCalledWith('/login', '_self');
+	});
+
+	it('limpa o personagem selecionado quando ele nao esta habilitado para a escola', async () => {
+		mockGetMyGameAccess.mockResolvedValueOnce({
+			enabledCharacterSlugs: ['zeca'],
+		});
+
+		render(<HeaderMobile />, { wrapper: createWrapper() });
+
+		await waitFor(() => {
+			expect(mockHandleSelectedCharacter).toHaveBeenCalledWith('');
+		});
 	});
 });

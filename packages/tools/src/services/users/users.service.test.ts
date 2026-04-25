@@ -35,6 +35,47 @@ describe('usersService', () => {
 		expect(result).toEqual([{ id: 'user-1' }]);
 	});
 
+	it('lista usuarios sem filtros', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: 'user-1' }] });
+
+		const result = await usersService.getAll();
+
+		expect(apiMock.get).toHaveBeenCalledWith('/users', {
+			params: {},
+		});
+		expect(result).toEqual([{ id: 'user-1' }]);
+	});
+
+	it('lista usuarios filtrando apenas por escola', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: 'user-2' }] });
+
+		const result = await usersService.getAll({
+			schoolId: 'school-1',
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/users', {
+			params: {
+				schoolId: 'school-1',
+			},
+		});
+		expect(result).toEqual([{ id: 'user-2' }]);
+	});
+
+	it('lista usuarios filtrando apenas por busca', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: 'user-3' }] });
+
+		const result = await usersService.getAll({
+			search: 'maria',
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/users', {
+			params: {
+				search: 'maria',
+			},
+		});
+		expect(result).toEqual([{ id: 'user-3' }]);
+	});
+
 	it('atualiza usuario', async () => {
 		apiMock.patch.mockResolvedValueOnce({ data: { id: 'user-1' } });
 

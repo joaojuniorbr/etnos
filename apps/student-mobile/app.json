@@ -1,17 +1,42 @@
 {
-	"expo": {
-		"name": "Etnos",
-		"slug": "etnos-student-mobile",
-		"scheme": "etnos-student-mobile",
-		"orientation": "portrait",
-		"userInterfaceStyle": "automatic",
-		"android": {
-			"softwareKeyboardLayoutMode": "adjustResize"
-		},
-		"experiments": {
-			"typedRoutes": true,
-			"autolinkingModuleResolution": true
-		},
-		"plugins": ["expo-router"]
-	}
+  "expo": {
+    "name": "Etnos",
+    "slug": "etnos-student-mobile",
+    "scheme": "etnos-student-mobile",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "softwareKeyboardLayoutMode": "adjustResize"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "experiments": {
+      "typedRoutes": true,
+      "autolinkingModuleResolution": true
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5fd7137a-f828-488c-9520-3fcd2483b9cf"
+      }
+    },
+    "owner": "joaojunior"
+  }
 }

@@ -2,7 +2,7 @@ import type {
 	MemoryGameCard,
 	MemoryGameCardContent,
 	MemoryGameLevelConfig,
-} from './types';
+} from './types.js';
 
 const MEMORY_GAME_LEVEL_PAIR_STEP = 3;
 const MEMORY_GAME_LEVEL_BONUS_STEP = 50;

@@ -304,4 +304,31 @@ describe('UsersService', () => {
       service.updateUser('school', 'user-1', { roles: ['admin'] }),
     ).rejects.toThrow(ForbiddenException);
   });
+
+  it('bloqueia school admin promovendo usuário para perfil school', async () => {
+    prismaService.user.findUnique
+      .mockResolvedValueOnce(
+        createRequester({ roles: ['school'], school: 'school-1' }),
+      )
+      .mockResolvedValueOnce(createUser({ school: 'school-1' }));
+
+    await expect(
+      service.updateUser('school', 'user-1', { roles: ['school'] }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('bloqueia school admin alterando status mesmo com escola válida', async () => {
+    prismaService.user.findUnique
+      .mockResolvedValueOnce(
+        createRequester({ roles: ['school'], school: 'school-1' }),
+      )
+      .mockResolvedValueOnce(createUser({ school: 'school-1' }));
+
+    await expect(
+      service.updateUser('school', 'user-1', {
+        roles: ['teacher'],
+        isActive: false,
+      }),
+    ).rejects.toThrow(ForbiddenException);
+  });
 });

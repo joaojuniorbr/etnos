@@ -7,7 +7,9 @@
 	"types": "src/index.ts",
 	"scripts": {
 		"build": "tsc -p tsconfig.json --noEmit false",
-		"check-types": "tsc --noEmit"
+		"check-types": "tsc --noEmit",
+		"test": "vitest --coverage --watch=false",
+		"test:dev": "vitest --coverage"
 	},
 	"dependencies": {
 		"@etnos/types": "*",
@@ -15,6 +17,8 @@
 	},
 	"devDependencies": {
 		"@etnos/typescript-config": "*",
-		"typescript": "5.9.2"
+		"@vitest/coverage-v8": "^4.0.16",
+		"typescript": "5.9.2",
+		"vitest": "^4.0.16"
 	}
 }

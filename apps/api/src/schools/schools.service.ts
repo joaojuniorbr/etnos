@@ -16,7 +16,7 @@ import type {
   UserRole,
 } from '@etnos/types';
 import * as admin from 'firebase-admin';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 import { PrismaService } from 'src/prisma';
 
 const AVAILABLE_GAME_SLUGS = ['memory-game', 'guess-game'] as const;
@@ -317,7 +317,10 @@ export class SchoolsService {
 
     const availableGameSlugs = this.getAvailableGameSlugs();
     const invalidGameSlug = enabledGameSlugs.find(
-      (gameSlug) => !availableGameSlugs.includes(gameSlug as (typeof AVAILABLE_GAME_SLUGS)[number]),
+      (gameSlug) =>
+        !availableGameSlugs.includes(
+          gameSlug as (typeof AVAILABLE_GAME_SLUGS)[number],
+        ),
     );
 
     if (invalidGameSlug) {

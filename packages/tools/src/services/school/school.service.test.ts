@@ -168,6 +168,17 @@ describe('schoolService', () => {
 		expect(result).toEqual([{ uid: 'user-2' }]);
 	});
 
+	it('deve buscar usuarios de uma escola especifica sem filtro', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ uid: 'user-2' }] });
+
+		const result = await schoolService.getUsersBySchool('school-1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/school-1/users', {
+			params: undefined,
+		});
+		expect(result).toEqual([{ uid: 'user-2' }]);
+	});
+
 	it('deve buscar ranking de escolas com filtro por jogo', async () => {
 		apiMock.get.mockResolvedValueOnce({ data: [{ position: 1 }] });
 
@@ -263,6 +274,45 @@ describe('schoolService', () => {
 			},
 		);
 		expect(result).toEqual([{ position: 1, uid: 'user-1' }]);
+	});
+
+	it('deve buscar ranking de usuarios por escola filtrando apenas por personagem', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 2, uid: 'user-2' }],
+		});
+
+		const result = await schoolService.getUsersRankingBySchool(
+			'school-1',
+			undefined,
+			'anita',
+		);
+
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/school-1/users/ranking',
+			{
+				params: { characterSlug: 'anita' },
+			},
+		);
+		expect(result).toEqual([{ position: 2, uid: 'user-2' }]);
+	});
+
+	it('deve buscar ranking de usuarios por escola filtrando apenas por jogo', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 3, uid: 'user-3' }],
+		});
+
+		const result = await schoolService.getUsersRankingBySchool(
+			'school-1',
+			'memory-game',
+		);
+
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/school-1/users/ranking',
+			{
+				params: { gameSlug: 'memory-game' },
+			},
+		);
+		expect(result).toEqual([{ position: 3, uid: 'user-3' }]);
 	});
 
 	it('deve listar usuarios school vinculados a uma escola', async () => {

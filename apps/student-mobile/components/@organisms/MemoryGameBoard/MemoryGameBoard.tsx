@@ -11,7 +11,9 @@ import {
 	type MemoryGameCard,
 	type MemoryGameCardContent,
 } from '@etnos/core';
-import { PrimaryButton, SectionCard, StatCard } from '@/components';
+import { PrimaryButton } from '@/components/@atoms/PrimaryButton';
+import { SectionCard } from '@/components/@atoms/SectionCard';
+import { StatCard } from '@/components/@atoms/StatCard';
 import { tw } from '@/utils';
 import { FontAwesome } from '@expo/vector-icons';
 

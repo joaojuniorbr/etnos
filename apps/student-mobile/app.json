@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "softwareKeyboardLayoutMode": "adjustResize",
+      "softwareKeyboardLayoutMode": "resize",
       "package": "com.joaojunior.etnosstudentmobile"
     },
     "web": {
@@ -38,6 +38,12 @@
         "projectId": "5fd7137a-f828-488c-9520-3fcd2483b9cf"
       }
     },
-    "owner": "joaojunior"
+    "owner": "joaojunior",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5fd7137a-f828-488c-9520-3fcd2483b9cf"
+    }
   }
 }

@@ -5,6 +5,7 @@ import { InputField, PrimaryButton, Screen, SectionCard } from '@/components';
 import { useAuth } from '@/contexts';
 import { tw } from '@/utils';
 import { Image } from 'expo-image';
+import Toast from 'react-native-toast-message';
 
 export default function LoginPage() {
 	const { isLoading, signIn } = useAuth();
@@ -16,16 +17,17 @@ export default function LoginPage() {
 			await signIn(email.trim(), password);
 			router.replace('/(app)');
 		} catch {
-			Alert.alert(
-				'Não foi possível entrar',
-				'Confira seu e-mail e senha e tente novamente.',
-			);
+			Toast.show({
+				type: 'error',
+				text1: 'Não foi possível entrar',
+				text2: 'Confira seu e-mail e senha e tente novamente.',
+			});
 		}
 	};
 
 	return (
 		<Screen contentContainerStyle={{ justifyContent: 'center' }}>
-			<SectionCard style={tw`mx-auto mb-4 w-full max-w-sm gap-4`}>
+			<SectionCard style={tw`mx-auto w-full max-w-sm gap-4`}>
 				<View style={[tw`mx-auto`]}>
 					<Image
 						source={require('@/assets/images/brand-horizontal.png')}
@@ -56,6 +58,12 @@ export default function LoginPage() {
 					loading={isLoading}
 					onPress={handleLogin}
 				/>
+
+				<View style={tw`mt-4`}>
+					<Text style={tw`text-center text-xs text-gray-400`}>
+						Version 1.0.0
+					</Text>
+				</View>
 			</SectionCard>
 		</Screen>
 	);

@@ -81,21 +81,6 @@ export default function CharactersPage() {
 						</View>
 					))}
 				</View>
-
-				<PrimaryButton
-					label="Continuar"
-					onPress={() => {
-						if (!selectedCharacterSlug) {
-							Alert.alert(
-								'Escolha um personagem',
-								'Selecione um personagem antes de continuar.',
-							);
-							return;
-						}
-
-						router.push('/(app)/games');
-					}}
-				/>
 			</View>
 		</Screen>
 	);

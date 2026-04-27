@@ -50,4 +50,6 @@ storybook-static
 .gemini/
 
 
+*.apk
+
 cloudbuild.yaml

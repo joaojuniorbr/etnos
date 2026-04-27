@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ComponentProps } from 'react';
 import { tw } from '@/utils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface IconProps extends ComponentProps<typeof FontAwesome> {
 	focused: boolean;
@@ -32,6 +33,7 @@ const Icon = (props: IconProps) => (
 
 export default function AppLayout() {
 	const { isAuthenticated, isHydrated } = useAuth();
+	const insets = useSafeAreaInsets();
 
 	if (!isHydrated) {
 		return <LoadingState label="Carregando a área do estudante..." />;
@@ -52,7 +54,8 @@ export default function AppLayout() {
 					backgroundColor: tw.color('white'),
 					borderTopColor: tw.color('slate-200'),
 					paddingTop: 10,
-					height: 72,
+					paddingBottom: insets.bottom,
+					height: 72 + insets.bottom,
 				},
 				tabBarLabelStyle: {
 					fontSize: 8,

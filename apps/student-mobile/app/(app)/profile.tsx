@@ -16,15 +16,17 @@ import { useAuth } from '@/contexts';
 import { scoreGamesService, tw } from '@/utils';
 import { GameNameEnum } from '@etnos/types';
 
-import { useCharacter } from '@etnos/tools';
-import { get } from 'react-native/Libraries/NativeComponent/NativeComponentRegistry';
+import { charactersService } from '@etnos/tools';
 
 export default function ProfilePage() {
 	const { isLoading, signOut, updateProfile, user } = useAuth();
 	const [childName, setChildName] = useState(user?.childName ?? '');
 	const [parentName, setParentName] = useState(user?.parentName ?? '');
 
-	const { data } = useCharacter();
+	const { data: characters } = useQuery({
+		queryKey: ['character', 'all'],
+		queryFn: () => charactersService.getCharacters(),
+	});
 
 	useEffect(() => {
 		setChildName(user?.childName ?? '');
@@ -45,7 +47,7 @@ export default function ProfilePage() {
 		scoresQuery.data?.reduce((sum, item) => sum + item.score, 0) ?? 0;
 
 	const getCharacterBySlug = (slug: string) => {
-		return data?.find((item) => item.slug === slug);
+		return characters?.find((item) => item.slug === slug);
 	};
 
 	const handleSaveProfile = async () => {

@@ -10104,6 +10104,11 @@ expo-dev-menu@55.0.24:
   dependencies:
     expo-dev-menu-interface "55.0.2"
 
+expo-eas-client@~55.0.5:
+  version "55.0.5"
+  resolved "https://registry.yarnpkg.com/expo-eas-client/-/expo-eas-client-55.0.5.tgz#36e09e6c9e161eb72c17ce1657af210f6a9e4389"
+  integrity sha512-wRagCeSbSnSGVXgP7V+qiGfXzZ9hTVKWvKIOP7lwrX3MIEenNmNlO4D3RVC3aNU2GhmO3ZCZIIEre80KZoUUHA==
+
 expo-file-system@~55.0.17:
   version "55.0.17"
   resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-55.0.17.tgz#81e4bc15773ed0c0098edd26a8c2d31f3844219d"
@@ -10214,6 +10219,11 @@ expo-status-bar@~55.0.5:
   dependencies:
     react-native-is-edge-to-edge "^1.2.1"
 
+expo-structured-headers@~55.0.2:
+  version "55.0.2"
+  resolved "https://registry.yarnpkg.com/expo-structured-headers/-/expo-structured-headers-55.0.2.tgz#02705fae72add7bb91859d4c91ef38b07eefa676"
+  integrity sha512-KITovrWigTOtsII5hRQ9/3ydaNcxCux5g6O+eTPLyjnye9dpkDKl5GmCLVPVKIL/d7253OtbGtWMD4m0gha5pw==
+
 expo-symbols@^55.0.7:
   version "55.0.7"
   resolved "https://registry.yarnpkg.com/expo-symbols/-/expo-symbols-55.0.7.tgz#fafbd0dcf781272254e2c4abf7343d91d61889e7"
@@ -10226,6 +10236,26 @@ expo-updates-interface@~55.1.6:
   version "55.1.6"
   resolved "https://registry.yarnpkg.com/expo-updates-interface/-/expo-updates-interface-55.1.6.tgz#18a806d65a28229ed4a7f920fceb9dda678c5c09"
   integrity sha512-evxNpagCkjT3lE6bGV570TFzRtKuIuLY8I37RYHoriXCJ+ZKCN1hbmklK29uAixya+BxGpeTI2K4FqYeJLvfrw==
+
+expo-updates@~55.0.21:
+  version "55.0.21"
+  resolved "https://registry.yarnpkg.com/expo-updates/-/expo-updates-55.0.21.tgz#d2a9c05bb16752949db411487952c21b8c7c2bb7"
+  integrity sha512-wpWQAqNeBw1LLjqSK85/P9aHB+2R0nuuFPHb8ZRPRMJLhRUIk7IF0FaOdEy2NbiRJvrnGfRW3SK4NVQqrT8ULQ==
+  dependencies:
+    "@expo/code-signing-certificates" "^0.0.6"
+    "@expo/plist" "^0.5.2"
+    "@expo/spawn-async" "^1.7.2"
+    arg "^4.1.0"
+    chalk "^4.1.2"
+    debug "^4.3.4"
+    expo-eas-client "~55.0.5"
+    expo-manifests "~55.0.16"
+    expo-structured-headers "~55.0.2"
+    expo-updates-interface "~55.1.6"
+    getenv "^2.0.0"
+    glob "^13.0.0"
+    ignore "^5.3.1"
+    resolve-from "^5.0.0"
 
 expo@~55.0.17:
   version "55.0.17"

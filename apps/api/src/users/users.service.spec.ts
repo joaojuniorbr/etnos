@@ -113,6 +113,19 @@ describe('UsersService', () => {
     ]);
   });
 
+  it('filtra usuarios com push token ativo', async () => {
+    prismaService.user.findMany.mockResolvedValueOnce([
+      createUser({ school: null }),
+    ]);
+
+    await service.findAll({ hasPushToken: true });
+
+    expect(prismaService.user.findMany).toHaveBeenCalledWith({
+      where: { pushTokens: { some: {} } },
+      orderBy: [{ createdAt: 'desc' }, { email: 'asc' }],
+    });
+  });
+
   it('lista usuarios sem escola vinculada sem consultar escolas', async () => {
     prismaService.user.findMany.mockResolvedValueOnce([
       createUser({ school: null }),

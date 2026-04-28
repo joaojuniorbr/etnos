@@ -2,6 +2,7 @@ export * from './entities/profile';
 export * from './entities/admin-user';
 export * from './entities/character';
 export * from './entities/midia';
+export * from './entities/notification';
 export * from './entities/school';
 export * from './entities/school-game-access';
 export * from './entities/school-ranking';

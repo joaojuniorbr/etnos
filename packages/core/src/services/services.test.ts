@@ -4,6 +4,7 @@ import {
 	createAuthService,
 	createCharactersService,
 	createMemoryGameService,
+	createNotificationsService,
 	createSchoolService,
 	createScoreGamesService,
 } from './index.js';
@@ -122,6 +123,20 @@ describe('core services', () => {
 		});
 		expect(api.get).toHaveBeenCalledWith('/games/score/history', {
 			params: undefined,
+		});
+	});
+
+	it('notifications service usa os endpoints esperados', async () => {
+		const api = createApiMock();
+		api.post.mockResolvedValue({ data: { ok: true } });
+		const service = createNotificationsService(api);
+
+		await expect(
+			service.registerPushToken({ token: 'push-token-123' }),
+		).resolves.toEqual({ ok: true });
+
+		expect(api.post).toHaveBeenCalledWith('/notifications/push-token', {
+			token: 'push-token-123',
 		});
 	});
 });

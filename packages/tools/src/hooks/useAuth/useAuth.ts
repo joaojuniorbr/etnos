@@ -274,11 +274,14 @@ export const useAuth = () => {
 
 	const isLoggedIn = !!user;
 
+	const isAdmin = user?.role?.includes('admin');
+
 	return {
 		isLoading,
 		isProfileLoading,
 		user,
 		isLoggedIn,
+		isAdmin,
 		updateUserProfile,
 		onRegister,
 		onSignOut,

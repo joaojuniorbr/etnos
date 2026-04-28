@@ -32,6 +32,7 @@ describe('UserContext', () => {
 			isLoading: false,
 			isProfileLoading: false,
 			isLoggedIn: true,
+			isAdmin: false,
 			updateUserProfile: vi.fn(),
 			onRegister: vi.fn(),
 			onSignOut: vi.fn(),

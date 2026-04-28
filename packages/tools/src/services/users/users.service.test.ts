@@ -76,6 +76,21 @@ describe('usersService', () => {
 		expect(result).toEqual([{ id: 'user-3' }]);
 	});
 
+	it('lista usuarios filtrando apenas por hasPushToken', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [{ id: 'user-4' }] });
+
+		const result = await usersService.getAll({
+			hasPushToken: true,
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/users', {
+			params: {
+				hasPushToken: 'true',
+			},
+		});
+		expect(result).toEqual([{ id: 'user-4' }]);
+	});
+
 	it('atualiza usuario', async () => {
 		apiMock.patch.mockResolvedValueOnce({ data: { id: 'user-1' } });
 

@@ -101,12 +101,14 @@ export class UsersService {
   async findAll(filters?: {
     schoolId?: string;
     search?: string;
+    hasPushToken?: boolean;
   }): Promise<AdminUserInterface[]> {
     const normalizedSearch = filters?.search?.trim();
 
     const users = await this.prismaService.user.findMany({
       where: {
         ...(filters?.schoolId ? { school: filters.schoolId } : {}),
+        ...(filters?.hasPushToken ? { pushTokens: { some: {} } } : {}),
         ...(normalizedSearch
           ? {
               OR: [

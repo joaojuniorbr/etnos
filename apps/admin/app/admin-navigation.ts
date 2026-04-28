@@ -36,6 +36,13 @@ export const adminSections = [
 		href: '/admin/jogos',
 		cta: 'Gerenciar jogos',
 	},
+	{
+		title: 'Notificações',
+		description:
+			'Envie notificações push para estudantes por escola ou para toda a plataforma, gerencie templates e acompanhe o histórico.',
+		href: '/admin/notificacoes',
+		cta: 'Gerenciar notificações',
+	},
 ];
 
 export const schoolSections = [
@@ -45,6 +52,13 @@ export const schoolSections = [
 			'Consulte os dados da escola vinculada ao seu perfil, veja os usuários e acompanhe o ranking por jogo.',
 		href: '/admin/escolas',
 		cta: 'Abrir painel da escola',
+	},
+	{
+		title: 'Notificações',
+		description:
+			'Envie notificações push para os estudantes da sua escola e acompanhe o histórico de envios.',
+		href: '/admin/notificacoes',
+		cta: 'Enviar notificação',
 	},
 ];
 

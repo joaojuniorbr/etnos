@@ -24,6 +24,7 @@ model User {
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
   schoolAccesses SchoolAccess[]
+  pushTokens     UserPushToken[]
 
   @@map("users")
 }
@@ -183,4 +184,44 @@ model Midia {
   @@index([userId], map: "midia_user_id_idx")
   @@index([folder], map: "midia_folder_idx")
   @@map("midia")
+}
+
+model UserPushToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  platform  String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "user_push_tokens_user_id_idx")
+  @@map("user_push_tokens")
+}
+
+model NotificationTemplate {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(255)
+  message   String
+  createdBy String   @map("created_by") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
+}
+
+model NotificationLog {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(255)
+  message     String
+  targetType  String   @map("target_type") @db.VarChar(50)
+  schoolId    String?  @map("school_id") @db.VarChar(255)
+  schoolName  String?  @map("school_name") @db.VarChar(255)
+  sentBy      String   @map("sent_by") @db.VarChar(255)
+  sentByEmail String?  @map("sent_by_email") @db.VarChar(255)
+  sentAt      DateTime @default(now()) @map("sent_at")
+  tokenCount  Int      @default(0) @map("token_count")
+
+  @@index([sentAt(sort: Desc)], map: "notification_logs_sent_at_idx")
+  @@map("notification_logs")
 }

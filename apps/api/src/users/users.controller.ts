@@ -15,8 +15,16 @@ export class UsersController {
   @Get()
   @UseGuards(AdminRoleGuard)
   @ApiOperation({ summary: 'Lista usuarios com filtros administrativos' })
-  findAll(@Query('schoolId') schoolId?: string, @Query('search') search?: string) {
-    return this.usersService.findAll({ schoolId, search });
+  findAll(
+    @Query('schoolId') schoolId?: string,
+    @Query('search') search?: string,
+    @Query('hasPushToken') hasPushToken?: string,
+  ) {
+    return this.usersService.findAll({
+      schoolId,
+      search,
+      hasPushToken: hasPushToken === 'true',
+    });
   }
 
   @Patch(':id')

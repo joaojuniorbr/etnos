@@ -10,6 +10,7 @@ import { EmailModule } from './email/email.module';
 import { SchoolsModule } from './schools/schools.module';
 import { MidiaModule } from './midia/midia.module';
 import { UsersModule } from './users';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma';
 import { APP_FILTER } from '@nestjs/core';
 
@@ -28,6 +29,7 @@ import { APP_FILTER } from '@nestjs/core';
     EmailModule,
     MidiaModule,
     UsersModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [

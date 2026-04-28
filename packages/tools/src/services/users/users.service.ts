@@ -5,12 +5,14 @@ export const usersService = {
 	getAll(filters?: {
 		schoolId?: string;
 		search?: string;
+		hasPushToken?: boolean;
 	}): Promise<AdminUserInterface[]> {
 		return api
 			.get('/users', {
 				params: {
 					...(filters?.schoolId ? { schoolId: filters.schoolId } : {}),
 					...(filters?.search ? { search: filters.search } : {}),
+					...(filters?.hasPushToken ? { hasPushToken: 'true' } : {}),
 				},
 			})
 			.then((res) => res.data);

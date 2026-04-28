@@ -37,6 +37,18 @@ describe('UsersController', () => {
     expect(service.findAll).toHaveBeenCalledWith({
       schoolId: 'school-1',
       search: 'ana',
+      hasPushToken: false,
+    });
+    expect(result).toEqual([{ id: 'user-1' }]);
+  });
+
+  it('lista usuarios filtrando por token push', async () => {
+    const result = await controller.findAll('school-1', 'ana', 'true');
+
+    expect(service.findAll).toHaveBeenCalledWith({
+      schoolId: 'school-1',
+      search: 'ana',
+      hasPushToken: true,
     });
     expect(result).toEqual([{ id: 'user-1' }]);
   });

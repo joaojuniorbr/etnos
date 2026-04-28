@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 import { authService, sessionStorage } from '@/utils';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 type AuthContextValue = {
 	isAuthenticated: boolean;
@@ -23,6 +24,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [user, setUser] = useState<UserProfileInterface | null>(null);
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+
+	usePushNotifications(Boolean(user));
 
 	useEffect(() => {
 		let isMounted = true;

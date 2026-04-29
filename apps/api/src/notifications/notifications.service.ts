@@ -8,10 +8,8 @@ import * as Sentry from '@sentry/nestjs';
 import { logger } from '@sentry/nestjs';
 import { PrismaService } from 'src/prisma';
 import { ExpoPushService } from './expo-push.service';
-import {
-  NotificationTargetType,
-  SendNotificationDto,
-} from './dto/send-notification.dto';
+import { NotificationTargetType } from './dto/send-notification.dto';
+import { SendNotificationWithDeeplinkDto } from './dto/send-notification-with-deeplink.dto';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { RegisterPushTokenDto } from './dto/register-push-token.dto';
@@ -47,7 +45,7 @@ export class NotificationsService {
     return { ok: true };
   }
 
-  async send(firebaseUid: string, dto: SendNotificationDto) {
+  async send(firebaseUid: string, dto: SendNotificationWithDeeplinkDto) {
     const sender = await this.prismaService.user.findUnique({
       where: { firebaseUid },
       select: { id: true, email: true, roles: true, school: true },
@@ -127,12 +125,18 @@ export class NotificationsService {
       });
     }
 
+    const notifData: Record<string, unknown> = { ...dto.data };
+    if (dto.deeplink) {
+      notifData.deeplink = dto.deeplink;
+    }
+
     let successCount = 0;
     try {
       successCount = await this.expoPushService.sendToTokens(
         tokens,
         dto.title,
         dto.message,
+        Object.keys(notifData).length ? notifData : undefined,
       );
     } catch (error) {
       Sentry.withScope((scope) => {
@@ -181,7 +185,9 @@ export class NotificationsService {
     return { ok: true, sent: successCount };
   }
 
-  private async resolveTokens(dto: SendNotificationDto): Promise<string[]> {
+  private async resolveTokens(
+    dto: SendNotificationWithDeeplinkDto,
+  ): Promise<string[]> {
     if (dto.targetType === NotificationTargetType.GLOBAL) {
       const tokens = await this.prismaService.userPushToken.findMany({
         select: { token: true },

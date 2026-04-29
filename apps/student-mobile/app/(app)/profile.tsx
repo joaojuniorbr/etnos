@@ -14,7 +14,11 @@ import {
 } from '@/components';
 import { useAuth } from '@/contexts';
 import { scoreGamesService, tw } from '@/utils';
-import { GameNameEnum } from '@etnos/types';
+import {
+	GameNameEnum,
+	type CharacterInterface,
+	type ScoreInterface,
+} from '@etnos/types';
 
 import { charactersService } from '@etnos/tools';
 
@@ -44,10 +48,13 @@ export default function ProfilePage() {
 	}
 
 	const totalScore =
-		scoresQuery.data?.reduce((sum, item) => sum + item.score, 0) ?? 0;
+		scoresQuery.data?.reduce(
+			(sum: number, item: ScoreInterface) => sum + item.score,
+			0,
+		) ?? 0;
 
 	const getCharacterBySlug = (slug: string) => {
-		return characters?.find((item) => item.slug === slug);
+		return characters?.find((item: CharacterInterface) => item.slug === slug);
 	};
 
 	const handleSaveProfile = async () => {

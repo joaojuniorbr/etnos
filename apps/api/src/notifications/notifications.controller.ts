@@ -19,7 +19,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { AdminRoleGuard, SchoolRoleGuard } from 'src/common';
 import { NotificationsService } from './notifications.service';
-import { SendNotificationDto } from './dto/send-notification.dto';
+import { SendNotificationWithDeeplinkDto } from './dto/send-notification-with-deeplink.dto';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { RegisterPushTokenDto } from './dto/register-push-token.dto';
@@ -41,8 +41,8 @@ export class NotificationsController {
   @Post('send')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({ summary: 'Envia notificação push para usuários' })
-  @ApiBody({ type: SendNotificationDto })
-  async send(@Req() req, @Body() dto: SendNotificationDto) {
+  @ApiBody({ type: SendNotificationWithDeeplinkDto })
+  async send(@Req() req, @Body() dto: SendNotificationWithDeeplinkDto) {
     return this.notificationsService.send(req.user.uid, dto);
   }
 

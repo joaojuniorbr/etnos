@@ -234,6 +234,7 @@ describe('NotificationsService', () => {
       ['ExponentPushToken[1]', 'ExponentPushToken[2]'],
       'Aviso',
       'Mensagem',
+      undefined,
     );
     expect(prismaService.notificationLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
@@ -299,6 +300,7 @@ describe('NotificationsService', () => {
       [],
       'Aviso',
       'Mensagem',
+      undefined,
     );
     expect(prismaService.notificationLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ tokenCount: 0 }),
@@ -502,6 +504,7 @@ describe('NotificationsService', () => {
       [],
       'Aviso',
       'Mensagem',
+      undefined,
     );
     expect(prismaService.notificationLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ schoolName: null }),
@@ -533,6 +536,7 @@ describe('NotificationsService', () => {
       [],
       'Aviso',
       'Mensagem',
+      undefined,
     );
     expect(prismaService.userPushToken.findMany).not.toHaveBeenCalled();
   });

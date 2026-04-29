@@ -28,6 +28,8 @@ export interface SendNotificationPayload {
   targetType: NotificationTargetType;
   schoolId?: string;
   userId?: string;
+  deeplink?: string;
+  data?: Record<string, unknown>;
 }
 
 export interface CreateNotificationTemplatePayload {

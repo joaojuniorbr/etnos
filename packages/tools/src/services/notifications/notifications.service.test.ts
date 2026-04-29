@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { apiMock } = vi.hoisted(() => ({
 	apiMock: {
+		delete: vi.fn(),
 		get: vi.fn(),
 		post: vi.fn(),
 		put: vi.fn(),
-		delete: vi.fn(),
 	},
 }));
 
@@ -20,97 +20,85 @@ describe('notificationsService', () => {
 		vi.clearAllMocks();
 	});
 
-	it('registra push token', async () => {
+	it('registra token push', async () => {
 		apiMock.post.mockResolvedValueOnce({ data: { ok: true } });
 
 		const result = await notificationsService.registerPushToken({
-			token: 'push-token-123',
+			token: 'ExponentPushToken[token]',
+			platform: 'android',
 		});
 
 		expect(apiMock.post).toHaveBeenCalledWith('/notifications/push-token', {
-			token: 'push-token-123',
+			token: 'ExponentPushToken[token]',
+			platform: 'android',
 		});
 		expect(result).toEqual({ ok: true });
 	});
 
 	it('envia notificação', async () => {
-		apiMock.post.mockResolvedValueOnce({ data: { ok: true, sent: 5 } });
+		const payload = {
+			title: 'Aviso',
+			message: 'Mensagem',
+			targetType: 'GLOBAL' as const,
+		};
+		apiMock.post.mockResolvedValueOnce({ data: { ok: true, sent: 2 } });
 
-		const result = await notificationsService.send({
-			title: 'Teste',
-			body: 'Mensagem de teste',
-		});
+		const result = await notificationsService.send(payload);
 
-		expect(apiMock.post).toHaveBeenCalledWith('/notifications/send', {
-			title: 'Teste',
-			body: 'Mensagem de teste',
-		});
-		expect(result).toEqual({ ok: true, sent: 5 });
+		expect(apiMock.post).toHaveBeenCalledWith('/notifications/send', payload);
+		expect(result).toEqual({ ok: true, sent: 2 });
 	});
 
-	it('obtém histórico de notificações', async () => {
-		const mockHistory = [
-			{ id: '1', title: 'Notificação 1', read: true },
-			{ id: '2', title: 'Notificação 2', read: false },
-		];
-		apiMock.get.mockResolvedValueOnce({ data: mockHistory });
+	it('lista histórico e templates', async () => {
+		apiMock.get
+			.mockResolvedValueOnce({ data: [{ id: 'log-1' }] })
+			.mockResolvedValueOnce({ data: [{ id: 'template-1' }] });
 
-		const result = await notificationsService.getHistory();
+		await expect(notificationsService.getHistory()).resolves.toEqual([
+			{ id: 'log-1' },
+		]);
+		await expect(notificationsService.getTemplates()).resolves.toEqual([
+			{ id: 'template-1' },
+		]);
 
 		expect(apiMock.get).toHaveBeenCalledWith('/notifications/history');
-		expect(result).toEqual(mockHistory);
-	});
-
-	it('obtém templates de notificações', async () => {
-		const mockTemplates = [
-			{ id: '1', name: 'Template 1', content: 'Conteúdo' },
-		];
-		apiMock.get.mockResolvedValueOnce({ data: mockTemplates });
-
-		const result = await notificationsService.getTemplates();
-
 		expect(apiMock.get).toHaveBeenCalledWith('/notifications/templates');
-		expect(result).toEqual(mockTemplates);
 	});
 
-	it('cria template de notificação', async () => {
-		const mockTemplate = { id: '1', name: 'Novo Template', content: 'Conteúdo' };
-		apiMock.post.mockResolvedValueOnce({ data: mockTemplate });
+	it('cria, atualiza e remove template', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { id: 'template-1' } });
+		apiMock.put.mockResolvedValueOnce({ data: { id: 'template-1' } });
+		apiMock.delete.mockResolvedValueOnce({ data: { ok: true } });
 
-		const result = await notificationsService.createTemplate({
-			name: 'Novo Template',
-			content: 'Conteúdo',
+		await expect(
+			notificationsService.createTemplate({
+				title: 'Título',
+				message: 'Mensagem',
+			}),
+		).resolves.toEqual({ id: 'template-1' });
+		await expect(
+			notificationsService.updateTemplate('template-1', {
+				title: 'Novo título',
+			}),
+		).resolves.toEqual({ id: 'template-1' });
+		await expect(
+			notificationsService.deleteTemplate('template-1'),
+		).resolves.toEqual({
+			ok: true,
 		});
 
 		expect(apiMock.post).toHaveBeenCalledWith('/notifications/templates', {
-			name: 'Novo Template',
-			content: 'Conteúdo',
+			title: 'Título',
+			message: 'Mensagem',
 		});
-		expect(result).toEqual(mockTemplate);
-	});
-
-	it('atualiza template de notificação', async () => {
-		const mockTemplate = { id: '1', name: 'Template Atualizado', content: 'Novo Conteúdo' };
-		apiMock.put.mockResolvedValueOnce({ data: mockTemplate });
-
-		const result = await notificationsService.updateTemplate('1', {
-			name: 'Template Atualizado',
-			content: 'Novo Conteúdo',
-		});
-
-		expect(apiMock.put).toHaveBeenCalledWith('/notifications/templates/1', {
-			name: 'Template Atualizado',
-			content: 'Novo Conteúdo',
-		});
-		expect(result).toEqual(mockTemplate);
-	});
-
-	it('deleta template de notificação', async () => {
-		apiMock.delete.mockResolvedValueOnce({ data: { ok: true } });
-
-		const result = await notificationsService.deleteTemplate('1');
-
-		expect(apiMock.delete).toHaveBeenCalledWith('/notifications/templates/1');
-		expect(result).toEqual({ ok: true });
+		expect(apiMock.put).toHaveBeenCalledWith(
+			'/notifications/templates/template-1',
+			{
+				title: 'Novo título',
+			},
+		);
+		expect(apiMock.delete).toHaveBeenCalledWith(
+			'/notifications/templates/template-1',
+		);
 	});
 });

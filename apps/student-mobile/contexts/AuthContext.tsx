@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 import { authService, sessionStorage } from '@/utils';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { getExpoPushTokenAsync } from 'expo-notifications';
 
 type AuthContextValue = {
 	isAuthenticated: boolean;
@@ -25,10 +25,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
-	usePushNotifications(Boolean(user));
+	const registerForPushNotifications = async () => {
+		console.log({
+			projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+		});
+		try {
+			const token = await getExpoPushTokenAsync({
+				projectId: process.env.EXPO_PUBLIC_PROJECT_ID!,
+			});
+			console.log(token.data);
+		} catch (error) {
+			console.error('Failed to register for push notifications:', error);
+		}
+	};
 
 	useEffect(() => {
 		let isMounted = true;
+
+		registerForPushNotifications();
 
 		const bootstrap = async () => {
 			try {

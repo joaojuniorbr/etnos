@@ -48,6 +48,18 @@ describe('notificationsService', () => {
 		expect(result).toEqual({ ok: true });
 	});
 
+	it('remove todos os tokens push quando payload não é informado', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: { ok: true } });
+
+		const result = await notificationsService.unregisterPushToken();
+
+		expect(apiMock.delete).toHaveBeenCalledWith(
+			'/notifications/push-token',
+			undefined,
+		);
+		expect(result).toEqual({ ok: true });
+	});
+
 	it('envia notificação', async () => {
 		const payload = {
 			title: 'Aviso',

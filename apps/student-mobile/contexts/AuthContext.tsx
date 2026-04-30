@@ -12,6 +12,7 @@ type AuthContextValue = {
 	isUpdatingNotifications: boolean;
 	notificationsEnabled: boolean;
 	user: UserProfileInterface | null;
+	recoverPassword: (email: string) => Promise<void>;
 	setNotificationsEnabled: (enabled: boolean) => Promise<void>;
 	syncPushToken: () => Promise<void>;
 	signIn: (email: string, password: string) => Promise<UserProfileInterface>;
@@ -131,6 +132,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const recoverPassword = async (email: string) => {
+		setIsLoading(true);
+
+		try {
+			await authService.recovery(email);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const setNotificationsEnabled = async (enabled: boolean) => {
 		setIsUpdatingNotifications(true);
 
@@ -178,6 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		isSyncingPushToken,
 		isUpdatingNotifications,
 		notificationsEnabled: user?.notificationsEnabled !== false,
+		recoverPassword,
 		refreshProfile,
 		setNotificationsEnabled,
 		signIn,

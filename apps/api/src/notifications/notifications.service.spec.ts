@@ -326,6 +326,36 @@ describe('NotificationsService', () => {
     });
   });
 
+  it('envia deeplink junto com os dados da notificação', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@test.com',
+      roles: ['admin'],
+      school: null,
+    });
+    prismaService.userPushToken.findMany.mockResolvedValue([
+      { token: 'ExponentPushToken[1]' },
+    ]);
+    expoPushService.sendToTokens.mockResolvedValue(1);
+
+    await expect(
+      service.send('firebase-admin', {
+        title: 'Aviso',
+        message: 'Mensagem',
+        targetType: NotificationTargetType.GLOBAL,
+        deeplink: '/games/memory',
+        data: { screen: 'memory' },
+      }),
+    ).resolves.toEqual({ ok: true, sent: 1 });
+
+    expect(expoPushService.sendToTokens).toHaveBeenCalledWith(
+      ['ExponentPushToken[1]'],
+      'Aviso',
+      'Mensagem',
+      { screen: 'memory', deeplink: '/games/memory' },
+    );
+  });
+
   it('exige usuário para notificação individual', async () => {
     prismaService.user.findUnique.mockResolvedValue({
       id: 'admin-1',
@@ -366,6 +396,31 @@ describe('NotificationsService', () => {
     });
   });
 
+  it('conta usuário apto para notificação individual', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: null,
+      roles: ['admin'],
+      school: null,
+    });
+    prismaService.user.count.mockResolvedValue(1);
+
+    await expect(
+      service.countRecipients('firebase-admin', {
+        targetType: NotificationTargetType.INDIVIDUAL,
+        userId: 'user-1',
+      }),
+    ).resolves.toEqual({ count: 1 });
+
+    expect(prismaService.user.count).toHaveBeenCalledWith({
+      where: {
+        id: 'user-1',
+        notificationsEnabled: true,
+        pushTokens: { some: {} },
+      },
+    });
+  });
+
   it('conta usuários aptos para notificação por escola gerenciada', async () => {
     prismaService.user.findUnique.mockResolvedValue({
       id: 'school-admin-1',
@@ -392,6 +447,54 @@ describe('NotificationsService', () => {
         notificationsEnabled: true,
         pushTokens: { some: {} },
         OR: [{ school: 'school-1' }, { school: 'ESCOLA' }],
+      },
+    });
+  });
+
+  it('retorna zero ao contar destinatários de escola inexistente', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: null,
+      roles: ['admin'],
+      school: null,
+    });
+    prismaService.school.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.countRecipients('firebase-admin', {
+        targetType: NotificationTargetType.SCHOOL,
+        schoolId: 'school-x',
+      }),
+    ).resolves.toEqual({ count: 0 });
+
+    expect(prismaService.user.count).not.toHaveBeenCalled();
+  });
+
+  it('conta destinatários por escola sem code usando apenas o id', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: null,
+      roles: ['admin'],
+      school: null,
+    });
+    prismaService.school.findUnique.mockResolvedValue({
+      id: 'school-1',
+      code: null,
+    });
+    prismaService.user.count.mockResolvedValue(3);
+
+    await expect(
+      service.countRecipients('firebase-admin', {
+        targetType: NotificationTargetType.SCHOOL,
+        schoolId: 'school-1',
+      }),
+    ).resolves.toEqual({ count: 3 });
+
+    expect(prismaService.user.count).toHaveBeenCalledWith({
+      where: {
+        notificationsEnabled: true,
+        pushTokens: { some: {} },
+        OR: [{ school: 'school-1' }],
       },
     });
   });
@@ -657,6 +760,18 @@ describe('NotificationsService', () => {
       undefined,
     );
     expect(prismaService.userPushToken.findMany).not.toHaveBeenCalled();
+  });
+
+  it('retorna lista vazia para alvo não reconhecido ao resolver tokens', async () => {
+    await expect(
+      (service as any).resolveTokens({ targetType: 'UNKNOWN' }),
+    ).resolves.toEqual([]);
+  });
+
+  it('retorna zero para alvo não reconhecido ao contar destinatários', async () => {
+    await expect(
+      (service as any).resolveRecipientUserCount({ targetType: 'UNKNOWN' }),
+    ).resolves.toBe(0);
   });
 
   it('envia notificação para escola sem code e busca apenas por id', async () => {

@@ -8,6 +8,12 @@ const MEMORY_GAME_LEVEL_PAIR_STEP = 3;
 const MEMORY_GAME_LEVEL_BONUS_STEP = 50;
 const MEMORY_GAME_LEVEL_SCORE_STEP = 100;
 
+const getSecureRandomIndex = (maxInclusive: number): number => {
+	const random = new Uint32Array(1);
+	crypto.getRandomValues(random);
+	return Math.floor((random[0]! / (0xffffffff + 1)) * (maxInclusive + 1));
+};
+
 export const shuffleArray = <T>(array: T[]): T[] => {
 	const shuffled = [...array];
 
@@ -16,7 +22,7 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 	}
 
 	for (let index = shuffled.length - 1; index > 0; index -= 1) {
-		const randomIndex = Math.floor(Math.random() * (index + 1));
+		const randomIndex = getSecureRandomIndex(index);
 
 		[shuffled[index], shuffled[randomIndex]] = [
 			shuffled[randomIndex]!,

@@ -12,6 +12,7 @@ import {
 	Tag,
 	message,
 } from 'antd';
+import type { SelectProps } from 'antd';
 import type {
 	AdminUserInterface,
 	UpdateAdminUserPayload,
@@ -37,6 +38,16 @@ const formatDate = (value: string | Date) =>
 		dateStyle: 'short',
 		timeStyle: 'short',
 	}).format(new Date(value));
+
+type RoleTagRenderProps = Parameters<
+	NonNullable<SelectProps<UserRole[]>['tagRender']>
+>[0];
+
+const renderRoleTag = (tagProps: RoleTagRenderProps) => (
+	<Tag closable={tagProps.closable} onClose={tagProps.onClose}>
+		{roleLabels[tagProps.value as UserRole] ?? tagProps.label}
+	</Tag>
+);
 
 export default function UsuariosPage() {
 	const [selectedSchoolId, setSelectedSchoolId] = useState<string>('all');
@@ -92,7 +103,8 @@ export default function UsuariosPage() {
 		updateUserMutation.mutate({ id, payload });
 	};
 
-	const isCurrentUser = (record: AdminUserInterface) => record.uid === user?.uid;
+	const isCurrentUser = (record: AdminUserInterface) =>
+		record.uid === user?.uid;
 
 	const schoolOptions = [
 		{ value: 'all', label: 'Todas as escolas' },
@@ -180,7 +192,8 @@ export default function UsuariosPage() {
 								width: 320,
 								render: (_, record: AdminUserInterface) => {
 									const canReceive =
-										record.notificationsEnabled !== false && record.hasPushToken;
+										record.notificationsEnabled !== false &&
+										record.hasPushToken;
 
 									return (
 										<div>
@@ -238,14 +251,10 @@ export default function UsuariosPage() {
 										disabled={isCurrentUser(record)}
 										onChange={(roles) =>
 											updateUser(record.id, {
-												roles: roles as UserRole[],
+												roles,
 											})
 										}
-										tagRender={(tagProps) => (
-											<Tag closable={tagProps.closable} onClose={tagProps.onClose}>
-												{roleLabels[tagProps.value as UserRole] ?? tagProps.label}
-											</Tag>
-										)}
+										tagRender={renderRoleTag}
 									/>
 								),
 							},
@@ -258,9 +267,7 @@ export default function UsuariosPage() {
 										checkedChildren="Ativo"
 										unCheckedChildren="Inativo"
 										disabled={isCurrentUser(record)}
-										onChange={(isActive) =>
-											updateUser(record.id, { isActive })
-										}
+										onChange={(isActive) => updateUser(record.id, { isActive })}
 									/>
 								),
 							},

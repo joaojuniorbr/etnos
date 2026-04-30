@@ -11,7 +11,12 @@ import type {
 } from '@etnos/types';
 import { PrismaService } from 'src/prisma';
 
-const VALID_ROLES: UserRole[] = ['admin', 'school', 'student', 'teacher'];
+const VALID_ROLES = new Set<UserRole>([
+  'admin',
+  'school',
+  'student',
+  'teacher',
+]);
 
 @Injectable()
 export class UsersService {
@@ -58,12 +63,12 @@ export class UsersService {
     const normalizedRoles = Array.from(new Set(roles));
 
     if (!normalizedRoles.length) {
-      throw new BadRequestException('O usuario precisa ter ao menos um perfil.');
+      throw new BadRequestException(
+        'O usuario precisa ter ao menos um perfil.',
+      );
     }
 
-    const invalidRole = normalizedRoles.find(
-      (role) => !VALID_ROLES.includes(role),
-    );
+    const invalidRole = normalizedRoles.find((role) => !VALID_ROLES.has(role));
 
     if (invalidRole) {
       throw new BadRequestException(`Perfil invalido: ${invalidRole}.`);
@@ -94,7 +99,9 @@ export class UsersService {
     return requester;
   }
 
-  private getManagedSchoolIds(requester: Awaited<ReturnType<UsersService['getRequester']>>) {
+  private getManagedSchoolIds(
+    requester: Awaited<ReturnType<UsersService['getRequester']>>,
+  ) {
     return Array.from(
       new Set([
         ...(requester.school ? [requester.school] : []),
@@ -168,7 +175,9 @@ export class UsersService {
     return users.map((user) =>
       this.mapUser({
         ...user,
-        schoolName: user.school ? schoolNameById.get(user.school) ?? null : null,
+        schoolName: user.school
+          ? schoolNameById.get(user.school) ?? null
+          : null,
       }),
     );
   }
@@ -196,7 +205,9 @@ export class UsersService {
 
     if (!isAdmin) {
       if (!requester.roles.includes('school')) {
-        throw new ForbiddenException('Perfil sem permissao para editar usuarios.');
+        throw new ForbiddenException(
+          'Perfil sem permissao para editar usuarios.',
+        );
       }
 
       const managedSchoolIds = this.getManagedSchoolIds(requester);
@@ -225,10 +236,10 @@ export class UsersService {
       where: { id: userId },
       data: {
         ...(roles ? { roles } : {}),
-        ...(payload.school !== undefined ? { school: payload.school } : {}),
-        ...(payload.isActive !== undefined
-          ? { isActive: payload.isActive }
-          : {}),
+        ...(payload.school === undefined ? {} : { school: payload.school }),
+        ...(payload.isActive === undefined
+          ? {}
+          : { isActive: payload.isActive }),
       },
     });
 

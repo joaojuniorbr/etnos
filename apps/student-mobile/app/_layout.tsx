@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	Nunito_400Regular,
 	Nunito_600SemiBold,
@@ -14,7 +14,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useDeviceContext } from 'twrnc';
-import { useState } from 'react';
 
 import { AppProviders } from '@/providers';
 import { tw } from '@/utils';

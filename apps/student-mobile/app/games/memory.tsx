@@ -58,6 +58,11 @@ export default function MemoryGamePage() {
 		[scoreQuery.data, selectedCharacterSlug],
 	);
 
+	const isLoading =
+		charactersQuery.isLoading ||
+		memoryContentQuery.isLoading ||
+		scoreQuery.isLoading;
+
 	if (!selectedCharacterSlug) {
 		return (
 			<Screen>
@@ -74,16 +79,12 @@ export default function MemoryGamePage() {
 		);
 	}
 
-	if (
-		charactersQuery.isLoading ||
-		memoryContentQuery.isLoading ||
-		scoreQuery.isLoading
-	) {
+	if (isLoading) {
 		return <LoadingState label="Montando o jogo da memória..." />;
 	}
 
 	return (
-		<Screen>
+		<Screen disableSafeArea>
 			<MemoryGameBoard
 				bestScore={bestScore}
 				character={selectedCharacter}

@@ -1,6 +1,9 @@
 'use client';
 
-import { Button, Input, Select, Table, Tag } from 'antd';
+import { type ReactNode, useDeferredValue, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, Input, Select, Table, Tag, TagProps, message } from 'antd';
+import { schoolService, usersService, useAuth } from '@etnos/tools';
 import type { SchoolUserInterface, UserRole } from '@etnos/types';
 import { Card, Title } from '@etnos/ui';
 
@@ -9,34 +12,94 @@ const roleLabels: Record<Extract<UserRole, 'student' | 'teacher'>, string> = {
 	teacher: 'Professor',
 };
 
+interface RoleTagProps extends TagProps {
+	value: string;
+	label?: ReactNode;
+}
+
+const RoleTag = ({ value, label, closable, onClose }: RoleTagProps) => (
+	<Tag closable={closable} onClose={onClose}>
+		{roleLabels[value as 'student' | 'teacher'] ?? label}
+	</Tag>
+);
+
 const roleOptions = Object.entries(roleLabels).map(([value, label]) => ({
 	value,
 	label,
 }));
 
 interface SchoolUsersProps {
-	users: SchoolUserInterface[];
-	search: string;
-	onSearchChange: (value: string) => void;
-	onSendPassword: (email?: string | null) => Promise<void>;
-	sendingRecoveryEmail: string | null;
-	currentUserUid?: string;
-	onRolesChange?: (userId: string, roles: UserRole[]) => void;
-	updatingRolesUserId?: string | null;
+	schoolId: string;
 }
 
-export const SchoolUsers = ({
-	users,
-	search,
-	onSearchChange,
-	onSendPassword,
-	sendingRecoveryEmail,
-	currentUserUid,
-	onRolesChange,
-	updatingRolesUserId,
-}: SchoolUsersProps) => {
+export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
+	const { user, onRecoveryPass } = useAuth();
+	const queryClient = useQueryClient();
+	const [userSearch, setUserSearch] = useState('');
+	const [sendingRecoveryEmail, setSendingRecoveryEmail] = useState<
+		string | null
+	>(null);
+	const deferredUserSearch = useDeferredValue(userSearch.trim());
+
+	const isAdmin = user?.role?.includes('admin');
+	const isSchoolProfile = user?.role?.includes('school') && !isAdmin;
+	const isTeacherProfile = user?.role?.includes('teacher') && !isAdmin;
+
+	const { data: users = [], isLoading } = useQuery<SchoolUserInterface[]>({
+		queryKey: ['schools', 'viewer', 'users', schoolId, deferredUserSearch],
+		queryFn: () =>
+			schoolService.getUsersBySchool(schoolId, deferredUserSearch || undefined),
+		enabled: isSchoolProfile && Boolean(schoolId),
+	});
+
+	const updateRolesMutation = useMutation({
+		mutationFn: ({ userId, roles }: { userId: string; roles: UserRole[] }) =>
+			usersService.update(userId, { roles }),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'viewer', 'users'],
+			});
+			void queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
+			message.success('Perfil do usuário atualizado com sucesso');
+		},
+		onError: () => {
+			message.error('Erro ao atualizar perfil do usuário');
+		},
+	});
+
+	const handleSendPassword = async (email?: string | null) => {
+		if (!email) {
+			message.error('Usuário sem e-mail para recuperação.');
+			return;
+		}
+		setSendingRecoveryEmail(email);
+		try {
+			await onRecoveryPass(email);
+		} finally {
+			setSendingRecoveryEmail(null);
+		}
+	};
+
+	const handleRolesChange = (userId: string, roles: UserRole[]) => {
+		if (updateRolesMutation.isPending) return;
+		updateRolesMutation.mutate({ userId, roles });
+	};
+
+	if (isTeacherProfile) {
+		return (
+			<Card>
+				<p className="text-slate-600">
+					Seu perfil pode acompanhar o ranking, mas nao possui permissao para
+					gerenciar usuarios desta escola.
+				</p>
+			</Card>
+		);
+	}
+
 	const renderRoles = (record: SchoolUserInterface) => {
-		if (!onRolesChange || !record.id) {
+		const userId = record.id;
+
+		if (!userId) {
 			return record.roles?.length ? (
 				<div className="flex flex-wrap gap-1">
 					{record.roles.map((role) => (
@@ -48,9 +111,10 @@ export const SchoolUsers = ({
 			);
 		}
 
-		const userId = record.id;
-		const isCurrentUser = currentUserUid === record.uid;
-		const isUpdatingRoles = updatingRolesUserId === userId;
+		const isCurrentUser = user?.uid === record.uid;
+		const isUpdatingRoles =
+			updateRolesMutation.isPending &&
+			updateRolesMutation.variables?.userId === userId;
 
 		return (
 			<Select
@@ -64,13 +128,8 @@ export const SchoolUsers = ({
 				className="w-full min-w-40"
 				loading={isUpdatingRoles}
 				disabled={isUpdatingRoles || isCurrentUser}
-				onChange={(roles) => onRolesChange(userId, roles as UserRole[])}
-				tagRender={(tagProps) => (
-					<Tag closable={tagProps.closable} onClose={tagProps.onClose}>
-						{roleLabels[tagProps.value as 'student' | 'teacher'] ??
-							tagProps.label}
-					</Tag>
-				)}
+				onChange={(roles) => handleRolesChange(userId, roles)}
+				tagRender={RoleTag}
 			/>
 		);
 	};
@@ -89,8 +148,8 @@ export const SchoolUsers = ({
 				<Input.Search
 					allowClear
 					placeholder="Buscar por aluno, responsável ou e-mail"
-					value={search}
-					onChange={(event) => onSearchChange(event.target.value)}
+					value={userSearch}
+					onChange={(e) => setUserSearch(e.target.value)}
 					className="w-full md:max-w-md"
 				/>
 			</div>
@@ -98,12 +157,13 @@ export const SchoolUsers = ({
 			<div className="block md:hidden">
 				<Table
 					rowKey="uid"
+					loading={isLoading}
 					pagination={{ pageSize: 8 }}
 					dataSource={users}
 					columns={[
 						{
 							title: 'Dados',
-							render: (record) => (
+							render: (record: SchoolUserInterface) => (
 								<div className="flex flex-col gap-1">
 									<div className="font-bold text-slate-600 text-sm">
 										{record.childName}
@@ -115,10 +175,9 @@ export const SchoolUsers = ({
 										{record.email}
 									</div>
 									<div className="pt-1">{renderRoles(record)}</div>
-
 									<div className="pt-1">
 										<Button
-											onClick={() => onSendPassword(record.email)}
+											onClick={() => handleSendPassword(record.email)}
 											loading={sendingRecoveryEmail === record.email}
 											disabled={!record.email}
 											size="small"
@@ -131,7 +190,7 @@ export const SchoolUsers = ({
 						},
 					]}
 					locale={{
-						emptyText: 'Nenhum dado de ranking disponível para este filtro.',
+						emptyText: 'Nenhum usuário encontrado para os filtros atuais.',
 					}}
 				/>
 			</div>
@@ -139,6 +198,7 @@ export const SchoolUsers = ({
 			<div className="hidden md:block">
 				<Table
 					rowKey="uid"
+					loading={isLoading}
 					pagination={{ pageSize: 8 }}
 					dataSource={users}
 					columns={[
@@ -161,14 +221,15 @@ export const SchoolUsers = ({
 							title: 'Perfis',
 							key: 'roles',
 							width: 220,
-							render: (_, record: SchoolUserInterface) => renderRoles(record),
+							render: (_: unknown, record: SchoolUserInterface) =>
+								renderRoles(record),
 						},
 						{
 							title: 'Ação',
 							key: 'action',
-							render: (_, record: SchoolUserInterface) => (
+							render: (_: unknown, record: SchoolUserInterface) => (
 								<Button
-									onClick={() => onSendPassword(record.email)}
+									onClick={() => handleSendPassword(record.email)}
 									loading={sendingRecoveryEmail === record.email}
 									disabled={!record.email}
 								>

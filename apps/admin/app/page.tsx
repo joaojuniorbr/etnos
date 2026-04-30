@@ -15,7 +15,7 @@ import {
 	GamesEnum,
 	type SchoolRankingInterface,
 } from '@etnos/types';
-import { SchoolRanking } from '@etnos/components';
+import { SchoolsRanking } from '@etnos/components';
 
 const gameOptions = [
 	{
@@ -92,7 +92,7 @@ export default function Page() {
 				{isAdmin ? (
 					<>
 						<section className="pt-12">
-							<SchoolRanking
+							<SchoolsRanking
 								ranking={schoolRanking}
 								selectedGame={selectedGame}
 								onGameChange={setSelectedGame}

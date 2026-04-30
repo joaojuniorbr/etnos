@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Checkbox, Empty, Tag } from 'antd';
+import { Button, Checkbox, Empty, Tag, Image } from 'antd';
 import { Card, Title } from '@etnos/ui';
+import { useCharacter } from '@etnos/tools';
 
 interface Option {
 	value: string;
@@ -12,7 +13,6 @@ interface Option {
 interface SchoolGameAccessProps {
 	schoolName?: string | null;
 	gameOptions: Option[];
-	characterOptions: Option[];
 	enabledGameSlugs: string[];
 	enabledCharacterSlugs: string[];
 	hasCustomGames: boolean;
@@ -29,7 +29,6 @@ interface SchoolGameAccessProps {
 export const SchoolGameAccess = ({
 	schoolName,
 	gameOptions,
-	characterOptions,
 	enabledGameSlugs,
 	enabledCharacterSlugs,
 	hasCustomGames,
@@ -41,8 +40,11 @@ export const SchoolGameAccess = ({
 }: SchoolGameAccessProps) => {
 	const [selectedGameSlugs, setSelectedGameSlugs] =
 		useState<string[]>(enabledGameSlugs);
-	const [selectedCharacterSlugs, setSelectedCharacterSlugs] =
-		useState<string[]>(enabledCharacterSlugs);
+	const [selectedCharacterSlugs, setSelectedCharacterSlugs] = useState<
+		string[]
+	>(enabledCharacterSlugs);
+
+	const { data: characters } = useCharacter();
 
 	useEffect(() => {
 		setSelectedGameSlugs(enabledGameSlugs);
@@ -61,14 +63,16 @@ export const SchoolGameAccess = ({
 			<div className="mb-4 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
 				<div>
 					<Title className="mb-1">Jogos e personagens habilitados</Title>
-					<p className="text-sm text-slate-600">
+					<p className="text-sm">
 						Escolha o que fica disponível para {schoolName || 'esta escola'} no
 						app do estudante.
 					</p>
 				</div>
 
 				<div className="flex flex-wrap gap-2">
-					<Tag color={hasCustomGames || hasCustomCharacters ? 'blue' : 'default'}>
+					<Tag
+						color={hasCustomGames || hasCustomCharacters ? 'blue' : 'default'}
+					>
 						{hasCustomGames || hasCustomCharacters
 							? 'Configuração personalizada'
 							: 'Usando padrão da plataforma'}
@@ -86,7 +90,7 @@ export const SchoolGameAccess = ({
 					{gameOptions.length ? (
 						<Checkbox.Group
 							value={selectedGameSlugs}
-							onChange={(values) => setSelectedGameSlugs(values as string[])}
+							onChange={(values) => setSelectedGameSlugs(values)}
 							disabled={!canEdit || isSaving}
 							className="flex w-full flex-col gap-3"
 						>
@@ -96,7 +100,9 @@ export const SchoolGameAccess = ({
 									className="flex items-center gap-3 rounded border border-slate-200 px-4 py-3"
 								>
 									<Checkbox value={option.value} />
-									<span className="font-medium text-slate-800">{option.label}</span>
+									<span className="font-medium text-slate-800">
+										{option.label}
+									</span>
 								</label>
 							))}
 						</Checkbox.Group>
@@ -109,22 +115,33 @@ export const SchoolGameAccess = ({
 					<h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
 						Personagens
 					</h3>
-					{characterOptions.length ? (
+					{characters?.length ? (
 						<Checkbox.Group
 							value={selectedCharacterSlugs}
-							onChange={(values) =>
-								setSelectedCharacterSlugs(values as string[])
-							}
+							onChange={(values) => setSelectedCharacterSlugs(values)}
 							disabled={!canEdit || isSaving}
-							className="grid grid-cols-1 gap-3 md:grid-cols-2"
 						>
-							{characterOptions.map((option) => (
+							{characters.map((option) => (
 								<label
-									key={option.value}
-									className="flex items-center gap-3 rounded border border-slate-200 px-4 py-3"
+									key={option.slug}
+									className="flex flex-col gap-2 rounded border border-slate-200 mb-2"
 								>
-									<Checkbox value={option.value} />
-									<span className="font-medium text-slate-800">{option.label}</span>
+									<div className="w-32">
+										{option.avatarUrls && (
+											<Image
+												src={option.imageUrl}
+												alt={option.name}
+												className="aspect-square w-full"
+												preview={false}
+											/>
+										)}
+									</div>
+									<div className="flex items-center gap-1 p-2">
+										<Checkbox value={option.slug} />
+										<span className="font-medium text-slate-800 text-xs">
+											{option.name}
+										</span>
+									</div>
 								</label>
 							))}
 						</Checkbox.Group>
@@ -138,9 +155,7 @@ export const SchoolGameAccess = ({
 				<Button
 					onClick={onResetToDefault}
 					disabled={
-						!canEdit ||
-						isSaving ||
-						(!hasCustomGames && !hasCustomCharacters)
+						!canEdit || isSaving || (!hasCustomGames && !hasCustomCharacters)
 					}
 				>
 					Usar padrão da plataforma

@@ -9,18 +9,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { tw } from '@/utils';
 
-type ScreenProps = {
+interface ScreenProps extends ScrollViewProps {
 	children: React.ReactNode;
 	scroll?: boolean;
 	contentContainerStyle?: ScrollViewProps['contentContainerStyle'];
 	style?: ViewProps['style'];
-} & ScrollViewProps;
+	disableSafeArea?: boolean;
+}
 
 export const Screen = ({
 	children,
 	scroll = true,
 	contentContainerStyle,
 	style,
+	disableSafeArea,
 	...props
 }: ScreenProps) => {
 	const content = scroll ? (
@@ -40,9 +42,13 @@ export const Screen = ({
 
 	return (
 		<KeyboardAvoidingView behavior="padding" style={tw`flex-1`}>
-			<SafeAreaView edges={['top']} style={tw`flex-1 bg-slate-50`}>
-				{content}
-			</SafeAreaView>
+			{disableSafeArea ? (
+				content
+			) : (
+				<SafeAreaView edges={['top']} style={tw`flex-1 bg-slate-50`}>
+					{content}
+				</SafeAreaView>
+			)}
 		</KeyboardAvoidingView>
 	);
 };

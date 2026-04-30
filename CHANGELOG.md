@@ -1,3 +1,64 @@
+# [1.7.0](https://github.com/joaojuniorbr/etnos/compare/v1.6.0...v1.7.0) (2026-04-30)
+
+### admin
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq066q] Implementar Gestão de Usuários no Admin (UC007) ([aab8135](https://github.com/joaojuniorbr/etnos/commit/aab813542acb3804da13d63811f4d0458ee3f254))
+* [CU-86afq066q] Gestão de Usuários ([91ebf62](https://github.com/joaojuniorbr/etnos/commit/91ebf6256565fc4f5c71b1798a34288530f5818d))
+
+### app
+
+#### ✨ Features (Novidades)
+
+* [CU-86ah444d8] Fluxo de recuperar senha ([e2d4fc8](https://github.com/joaojuniorbr/etnos/commit/e2d4fc8133a3431b8a3e1627df272bfa70d42c8a))
+* [CU-86ah444d8] Criação de um App Nativo para os estudantes ([2628ebf](https://github.com/joaojuniorbr/etnos/commit/2628ebfb3dce1c7a6aad652beed2cf39db992f5b))
+* notificação de push no app do estudante ([8fede6f](https://github.com/joaojuniorbr/etnos/commit/8fede6f6c41be8a02a3e3f9237212e4089267ebe))
+
+#### 🔨 Refatoração
+
+* finalização da primeira versão do app ([264a94c](https://github.com/joaojuniorbr/etnos/commit/264a94c7f8e2d6169ad2fa3958478214fc4f6655))
+
+#### ✅ Testes
+
+* ajuste de testes e tipagem ([880cc8b](https://github.com/joaojuniorbr/etnos/commit/880cc8b7ebe583ad31d931d963c838ad2dd7a19a))
+
+### documentação
+
+#### 📝 Documentação
+
+* atualização da documentação incluindo o app no readme ([5583df9](https://github.com/joaojuniorbr/etnos/commit/5583df9685bea3b2580b170a8bce17bc49628068))
+
+### geral
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq06b5] Controle de Concorrência e Integridade de Uso (RNF002) ([c547170](https://github.com/joaojuniorbr/etnos/commit/c547170504eb41340c12c54a899bc9caee5d7288))
+
+### manutencao
+
+#### ⚙️ Manutenção
+
+* remoção dos arquivos da node modules ([06c5cd1](https://github.com/joaojuniorbr/etnos/commit/06c5cd103b3e87d42ccf4dc67b27b4f5cdf4a9a5))
+
+### mobile
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajuste no resize da tela quando é usado o input de texto ([55983cc](https://github.com/joaojuniorbr/etnos/commit/55983ccbf1501332380d2fcd8553165283006fe9))
+
+### notificacoes
+
+#### 🔨 Refatoração
+
+* [CU-86ah44djp] Implementar Sistema de Notificações para o App de Estudantes ([e48adbd](https://github.com/joaojuniorbr/etnos/commit/e48adbd361999543ab60a5f2466eedf9fc60b12c))
+
+### notificações
+
+#### ✨ Features (Novidades)
+
+* [CU-86ah453ht] Implementar Envio de Notificações via Painel Administrativo ([8594f77](https://github.com/joaojuniorbr/etnos/commit/8594f77bb77e0d8ade5ff043a4dbf7e9697403b5))
+
 # [1.6.0](https://github.com/joaojuniorbr/etnos/compare/v1.5.0...v1.6.0) (2026-04-22)
 
 ### admin

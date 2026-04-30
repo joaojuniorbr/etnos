@@ -8,10 +8,10 @@ O **Etnos** é uma plataforma educacional pensada para estudantes do ensino
 fundamental. A proposta é usar jogos interativos para apresentar a diversidade
 cultural brasileira de um jeito lúdico, visual e acessível.
 
-O projeto está organizado como um monorepo com aplicações web, painel
-administrativo, portal do estudante, API e pacotes compartilhados. Isso ajuda a
-reaproveitar componentes, contratos e serviços sem espalhar lógica pelo
-projeto.
+O projeto está organizado como um monorepo com aplicações web, app nativo iOS e
+Android, painel administrativo, portal do estudante, API e pacotes
+compartilhados. Isso ajuda a reaproveitar componentes, contratos e serviços sem
+espalhar lógica pelo projeto.
 
 ## Objetivo pedagógico
 
@@ -56,15 +56,18 @@ camada de dados.
 
 ### Guias disponíveis
 
-- **Monorepo**: explica como `web`, `student`, `admin`, `api` e os
-  pacotes compartilhados se conectam.
-- **Autenticação**: detalha login, cadastro, refresh de token, proteção
-  de rotas e perfil autenticado.
-- **Mídia**: descreve upload, storage, catalogação de assets e
-  integração com o admin.
+- **Monorepo**: explica como `web`, `student`, `student-mobile`, `admin`, `api`
+  e os pacotes compartilhados se conectam.
+- **Autenticação**: detalha login, cadastro, refresh de token, proteção de rotas
+  e perfil autenticado, tanto na web quanto no app nativo.
+- **App Mobile**: descreve a arquitetura do app Expo para iOS e Android, com
+  Expo Router, contextos de autenticação e seleção de personagem, e o pacote
+  `packages/core` que serve de base para o cliente de API mobile.
+- **Mídia**: descreve upload, storage, catalogação de assets e integração com o
+  admin.
 - **Swagger**: mostra onde acessar a documentação interativa da API e como
   testar rotas públicas e autenticadas.
-- **Jogos**: panorama da integração entre `student`, `admin`,
+- **Jogos**: panorama da integração entre `student`, `student-mobile`, `admin`,
   `apps/games`, `packages/tools`, `packages/types` e `api`, com foco especial no
   jogo da memória.
 - **Banco de Dados**: organização de persistência da plataforma.
@@ -74,6 +77,7 @@ camada de dados.
 
 - `Monorepo` mostra como os apps e pacotes se conectam.
 - `Autenticação` reúne o fluxo de login, sessão e proteção de rotas.
+- `App Mobile` descreve o app nativo e o pacote `core` que o sustenta.
 - `Mídia` mostra upload, armazenamento e biblioteca de imagens.
 - `Swagger` centraliza a documentação interativa da API.
 - `Banco de Dados` e `Modelagem` descrevem persistência, relações e regras do

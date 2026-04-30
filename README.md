@@ -3,8 +3,9 @@
 # Etnos
 
 Uma plataforma educacional com jogos culturais para estudantes do ensino
-fundamental. Por trás da parte divertida, existe um monorepo com apps web, API,
-biblioteca de jogos e pacotes compartilhados fazendo a mágica acontecer.
+fundamental. Por trás da parte divertida, existe um monorepo com apps web, app
+nativo, API, biblioteca de jogos e pacotes compartilhados fazendo a mágica
+acontecer.
 
 [![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](./CHANGELOG.md)
 ![Node](https://img.shields.io/badge/Node-%3E%3D20-green)
@@ -19,11 +20,13 @@ biblioteca de jogos e pacotes compartilhados fazendo a mágica acontecer.
 O repositório reúne tudo o que faz o Etnos sair da ideia e virar produto:
 
 - `apps/web`: o site institucional, que faz as apresentações.
-- `apps/student`: a área do estudante, onde a brincadeira começa.
+- `apps/student`: a área do estudante na web, onde a brincadeira começa.
+- `apps/student-mobile`: o app nativo para iOS e Android, feito com Expo.
 - `apps/admin`: o painel administrativo, que organiza os bastidores.
 - `apps/api`: a API REST com NestJS, que cuida da parte séria.
 - `apps/games`: a biblioteca React onde os jogos moram.
 - `apps/docs`: o Storybook com componentes e padrões visuais.
+- `packages/core`: utilitários e cliente de API compartilhados pelo app mobile.
 - `docs-site`: a documentação em MkDocs, para quando bater a curiosidade
   técnica.
 
@@ -42,7 +45,8 @@ O jogo da memória, por exemplo, passeia por quatro camadas do monorepo:
 
 ## Stack principal
 
-- Frontend: Next.js, React 19, TypeScript, Tailwind CSS e Ant Design.
+- Frontend web: Next.js, React 19, TypeScript, Tailwind CSS e Ant Design.
+- Mobile: React Native, Expo, Expo Router e twrnc.
 - Backend: NestJS, Firebase Auth e Prisma.
 - Monorepo: Turborepo e Yarn Workspaces.
 - Testes: Vitest, Testing Library, Jest e Playwright.
@@ -111,12 +115,16 @@ etnos/
     docs/
     games/
     student/
+    student-mobile/
     web/
   docs-site/
   packages/
+    core/
     eslint-config/
+    tailwind-config/
     tools/
     types/
+    typescript-config/
     ui/
 ```
 

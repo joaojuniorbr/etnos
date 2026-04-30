@@ -61,7 +61,7 @@ export default function LoginPage() {
 
 				<View style={tw`mt-4`}>
 					<Text style={tw`text-center text-xs text-gray-400`}>
-						Version 1.0.0
+						Version 1.0.0 - {process.env.EXPO_PUBLIC_API_URL}
 					</Text>
 				</View>
 			</SectionCard>

@@ -39,8 +39,10 @@ describe('NotificationsService', () => {
       user: {
         findUnique: jest.fn(),
         findMany: jest.fn(),
+        count: jest.fn(),
       },
       userPushToken: {
+        deleteMany: jest.fn(),
         upsert: jest.fn(),
         findMany: jest.fn(),
       },
@@ -116,6 +118,49 @@ describe('NotificationsService', () => {
     expect(Sentry.logger.info).toHaveBeenCalledWith(
       'notifications.push_token.registered',
       expect.objectContaining({ platform: 'unknown' }),
+    );
+  });
+
+  it('remove token push do usuário existente', async () => {
+    prismaService.user.findUnique.mockResolvedValue({ id: 'user-1' });
+    prismaService.userPushToken.deleteMany.mockResolvedValue({ count: 1 });
+
+    await expect(
+      service.unregisterPushToken('firebase-1', {
+        token: 'ExponentPushToken[token]',
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(prismaService.userPushToken.deleteMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        token: 'ExponentPushToken[token]',
+      },
+    });
+    expect(Sentry.logger.info).toHaveBeenCalledWith(
+      'notifications.push_token.removed',
+      { userId: 'user-1', count: 1 },
+    );
+  });
+
+  it('remove todos os tokens push do usuário quando token não é informado', async () => {
+    prismaService.user.findUnique.mockResolvedValue({ id: 'user-1' });
+    prismaService.userPushToken.deleteMany.mockResolvedValue({ count: 2 });
+
+    await expect(service.unregisterPushToken('firebase-1')).resolves.toEqual({
+      ok: true,
+    });
+
+    expect(prismaService.userPushToken.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+    });
+  });
+
+  it('lança erro ao remover token de usuário inexistente', async () => {
+    prismaService.user.findUnique.mockResolvedValue(null);
+
+    await expect(service.unregisterPushToken('firebase-1')).rejects.toThrow(
+      NotFoundException,
     );
   });
 
@@ -273,8 +318,81 @@ describe('NotificationsService', () => {
     ).resolves.toEqual({ ok: true, sent: 1 });
 
     expect(prismaService.userPushToken.findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1' },
+      where: {
+        userId: 'user-1',
+        user: { notificationsEnabled: true },
+      },
       select: { token: true },
+    });
+  });
+
+  it('exige usuário para notificação individual', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: null,
+      roles: ['admin'],
+      school: null,
+    });
+
+    await expect(
+      service.send('firebase-admin', {
+        title: 'Aviso',
+        message: 'Mensagem',
+        targetType: NotificationTargetType.INDIVIDUAL,
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('conta usuários aptos para notificação global', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: null,
+      roles: ['admin'],
+      school: null,
+    });
+    prismaService.user.count.mockResolvedValue(4);
+
+    await expect(
+      service.countRecipients('firebase-admin', {
+        targetType: NotificationTargetType.GLOBAL,
+      }),
+    ).resolves.toEqual({ count: 4 });
+
+    expect(prismaService.user.count).toHaveBeenCalledWith({
+      where: {
+        notificationsEnabled: true,
+        pushTokens: { some: {} },
+      },
+    });
+  });
+
+  it('conta usuários aptos para notificação por escola gerenciada', async () => {
+    prismaService.user.findUnique.mockResolvedValue({
+      id: 'school-admin-1',
+      email: null,
+      roles: ['school'],
+      school: null,
+    });
+    prismaService.schoolAccess.findFirst.mockResolvedValue({ id: 'access-1' });
+    prismaService.school.findUnique.mockResolvedValue({
+      id: 'school-1',
+      code: 'ESCOLA',
+    });
+    prismaService.user.count.mockResolvedValue(2);
+
+    await expect(
+      service.countRecipients('firebase-school', {
+        targetType: NotificationTargetType.SCHOOL,
+        schoolId: 'school-1',
+      }),
+    ).resolves.toEqual({ count: 2 });
+
+    expect(prismaService.user.count).toHaveBeenCalledWith({
+      where: {
+        notificationsEnabled: true,
+        pushTokens: { some: {} },
+        OR: [{ school: 'school-1' }, { school: 'ESCOLA' }],
+      },
     });
   });
 
@@ -307,7 +425,7 @@ describe('NotificationsService', () => {
     });
   });
 
-  it('envia zero quando alvo individual não informa userId', async () => {
+  it('bloqueia alvo individual sem userId', async () => {
     prismaService.user.findUnique.mockResolvedValue({
       id: 'admin-1',
       email: null,
@@ -322,7 +440,7 @@ describe('NotificationsService', () => {
         message: 'Mensagem',
         targetType: NotificationTargetType.INDIVIDUAL,
       }),
-    ).resolves.toEqual({ ok: true, sent: 0 });
+    ).rejects.toThrow(BadRequestException);
 
     expect(prismaService.userPushToken.findMany).not.toHaveBeenCalled();
   });
@@ -572,6 +690,7 @@ describe('NotificationsService', () => {
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
         OR: [{ school: 'school-1' }],
+        notificationsEnabled: true,
       },
       select: { id: true },
     });

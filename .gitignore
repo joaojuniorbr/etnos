@@ -53,3 +53,5 @@ storybook-static
 *.apk
 
 cloudbuild.yaml
+
+.claude

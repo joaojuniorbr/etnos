@@ -11,6 +11,7 @@ import {
 	RiStarLine,
 	RiImageLine,
 	RiSchoolLine,
+	RiNotificationLine,
 } from 'react-icons/ri';
 import type { CharacterInterface, UserProfileInterface } from '@etnos/types';
 
@@ -126,7 +127,7 @@ export const MobileMenu = ({
 											key: 'games',
 											label: <a href="/estudante/jogos">Jogos</a>,
 											icon: <RiGameLine />,
-										}
+									  }
 									: null,
 
 								hasAdminAccess
@@ -139,6 +140,11 @@ export const MobileMenu = ({
 													key: 'schools',
 													label: <a href="/admin/escolas">Escolas</a>,
 													icon: <RiSchoolLine />,
+												},
+												{
+													key: 'notifications',
+													label: <a href="/admin/notificacoes">Notificações</a>,
+													icon: <RiNotificationLine />,
 												},
 												...(isAdmin
 													? [
@@ -154,10 +160,10 @@ export const MobileMenu = ({
 																label: <a href="/admin/midia">Midia</a>,
 																icon: <RiImageLine />,
 															},
-														]
+													  ]
 													: []),
 											],
-										}
+									  }
 									: null,
 								{
 									key: 'profile',

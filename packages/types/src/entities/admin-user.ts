@@ -10,6 +10,9 @@ export interface AdminUserInterface {
 	schoolName?: string | null;
 	roles: UserRole[];
 	isActive: boolean;
+	hasPushToken?: boolean;
+	expoPushToken?: string | null;
+	notificationsEnabled?: boolean;
 	createdAt: string | Date;
 	updatedAt: string | Date;
 }

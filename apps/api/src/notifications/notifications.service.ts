@@ -13,6 +13,8 @@ import { SendNotificationWithDeeplinkDto } from './dto/send-notification-with-de
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { RegisterPushTokenDto } from './dto/register-push-token.dto';
+import { UnregisterPushTokenDto } from './dto/unregister-push-token.dto';
+import { CountNotificationRecipientsDto } from './dto/count-notification-recipients.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -45,61 +47,34 @@ export class NotificationsService {
     return { ok: true };
   }
 
-  async send(firebaseUid: string, dto: SendNotificationWithDeeplinkDto) {
-    const sender = await this.prismaService.user.findUnique({
+  async unregisterPushToken(firebaseUid: string, dto?: UnregisterPushTokenDto) {
+    const user = await this.prismaService.user.findUnique({
       where: { firebaseUid },
-      select: { id: true, email: true, roles: true, school: true },
+      select: { id: true },
     });
 
-    if (!sender) {
+    if (!user) {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    const isAdmin = sender.roles.includes('admin');
-    const isSchoolRole = sender.roles.some(
-      (r) => r === 'school' || r === 'teacher',
-    );
+    const { count } = await this.prismaService.userPushToken.deleteMany({
+      where: {
+        userId: user.id,
+        ...(dto?.token ? { token: dto.token } : {}),
+      },
+    });
 
-    if (
-      dto.targetType === NotificationTargetType.GLOBAL ||
-      (dto.targetType === NotificationTargetType.INDIVIDUAL && dto.userId)
-    ) {
-      if (!isAdmin) {
-        logger.warn('notifications.send.forbidden', {
-          senderId: sender.id,
-          targetType: dto.targetType,
-          reason: 'non_admin_global_or_individual',
-        });
-        throw new ForbiddenException(
-          'Apenas administradores podem enviar notificações globais ou individuais.',
-        );
-      }
-    }
+    logger.info('notifications.push_token.removed', {
+      userId: user.id,
+      count,
+    });
 
-    if (dto.targetType === NotificationTargetType.SCHOOL) {
-      if (!dto.schoolId) {
-        throw new BadRequestException(
-          'schoolId é obrigatório para notificações por escola.',
-        );
-      }
+    return { ok: true };
+  }
 
-      if (!isAdmin && isSchoolRole) {
-        const hasAccess = await this.prismaService.schoolAccess.findFirst({
-          where: { userId: sender.id, schoolId: dto.schoolId },
-        });
-
-        if (!hasAccess) {
-          logger.warn('notifications.send.forbidden', {
-            senderId: sender.id,
-            schoolId: dto.schoolId,
-            reason: 'school_access_denied',
-          });
-          throw new ForbiddenException('Sem acesso à escola informada.');
-        }
-      } else if (!isAdmin) {
-        throw new ForbiddenException('Sem permissão para enviar notificações.');
-      }
-    }
+  async send(firebaseUid: string, dto: SendNotificationWithDeeplinkDto) {
+    const sender = await this.findSenderOrFail(firebaseUid);
+    await this.assertCanTarget(sender, dto);
 
     logger.info('notifications.send.started', {
       senderId: sender.id,
@@ -185,11 +160,97 @@ export class NotificationsService {
     return { ok: true, sent: successCount };
   }
 
+  async countRecipients(
+    firebaseUid: string,
+    dto: CountNotificationRecipientsDto,
+  ) {
+    const sender = await this.findSenderOrFail(firebaseUid);
+    await this.assertCanTarget(sender, dto);
+
+    const count = await this.resolveRecipientUserCount(dto);
+
+    return { count };
+  }
+
+  private async findSenderOrFail(firebaseUid: string) {
+    const sender = await this.prismaService.user.findUnique({
+      where: { firebaseUid },
+      select: { id: true, email: true, roles: true, school: true },
+    });
+
+    if (!sender) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    return sender;
+  }
+
+  private async assertCanTarget(
+    sender: Awaited<ReturnType<NotificationsService['findSenderOrFail']>>,
+    dto: Pick<
+      SendNotificationWithDeeplinkDto,
+      'targetType' | 'schoolId' | 'userId'
+    >,
+  ) {
+    const isAdmin = sender.roles.includes('admin');
+    const isSchoolRole = sender.roles.some(
+      (r) => r === 'school' || r === 'teacher',
+    );
+
+    if (dto.targetType === NotificationTargetType.INDIVIDUAL && !dto.userId) {
+      throw new BadRequestException(
+        'userId é obrigatório para notificações individuais.',
+      );
+    }
+
+    if (
+      dto.targetType === NotificationTargetType.GLOBAL ||
+      dto.targetType === NotificationTargetType.INDIVIDUAL
+    ) {
+      if (!isAdmin) {
+        logger.warn('notifications.send.forbidden', {
+          senderId: sender.id,
+          targetType: dto.targetType,
+          reason: 'non_admin_global_or_individual',
+        });
+        throw new ForbiddenException(
+          'Apenas administradores podem enviar notificações globais ou individuais.',
+        );
+      }
+    }
+
+    if (dto.targetType === NotificationTargetType.SCHOOL) {
+      if (!dto.schoolId) {
+        throw new BadRequestException(
+          'schoolId é obrigatório para notificações por escola.',
+        );
+      }
+
+      if (!isAdmin && isSchoolRole) {
+        const hasAccess = await this.prismaService.schoolAccess.findFirst({
+          where: { userId: sender.id, schoolId: dto.schoolId },
+        });
+
+        if (!hasAccess) {
+          logger.warn('notifications.send.forbidden', {
+            senderId: sender.id,
+            schoolId: dto.schoolId,
+            reason: 'school_access_denied',
+          });
+          throw new ForbiddenException('Sem acesso à escola informada.');
+        }
+      } else if (!isAdmin) {
+        throw new ForbiddenException('Sem permissão para enviar notificações.');
+      }
+    }
+  }
+
   private async resolveTokens(
     dto: SendNotificationWithDeeplinkDto,
   ): Promise<string[]> {
     if (dto.targetType === NotificationTargetType.GLOBAL) {
       const tokens = await this.prismaService.userPushToken.findMany({
+        where: { user: { notificationsEnabled: true } },
         select: { token: true },
       });
       return tokens.map((t) => t.token);
@@ -197,7 +258,10 @@ export class NotificationsService {
 
     if (dto.targetType === NotificationTargetType.INDIVIDUAL && dto.userId) {
       const tokens = await this.prismaService.userPushToken.findMany({
-        where: { userId: dto.userId },
+        where: {
+          userId: dto.userId,
+          user: { notificationsEnabled: true },
+        },
         select: { token: true },
       });
       return tokens.map((t) => t.token);
@@ -217,6 +281,7 @@ export class NotificationsService {
             { school: school.id },
             ...(school.code ? [{ school: school.code }] : []),
           ],
+          notificationsEnabled: true,
         },
         select: { id: true },
       });
@@ -233,6 +298,51 @@ export class NotificationsService {
     }
 
     return [];
+  }
+
+  private async resolveRecipientUserCount(
+    dto: CountNotificationRecipientsDto,
+  ): Promise<number> {
+    const enabledWithToken = {
+      notificationsEnabled: true,
+      pushTokens: { some: {} },
+    };
+
+    if (dto.targetType === NotificationTargetType.GLOBAL) {
+      return this.prismaService.user.count({
+        where: enabledWithToken,
+      });
+    }
+
+    if (dto.targetType === NotificationTargetType.INDIVIDUAL && dto.userId) {
+      return this.prismaService.user.count({
+        where: {
+          id: dto.userId,
+          ...enabledWithToken,
+        },
+      });
+    }
+
+    if (dto.targetType === NotificationTargetType.SCHOOL && dto.schoolId) {
+      const school = await this.prismaService.school.findUnique({
+        where: { id: dto.schoolId },
+        select: { id: true, code: true },
+      });
+
+      if (!school) return 0;
+
+      return this.prismaService.user.count({
+        where: {
+          ...enabledWithToken,
+          OR: [
+            { school: school.id },
+            ...(school.code ? [{ school: school.code }] : []),
+          ],
+        },
+      });
+    }
+
+    return 0;
   }
 
   async getHistory(firebaseUid: string) {

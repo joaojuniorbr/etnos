@@ -6,10 +6,43 @@ import {
 } from 'react-native';
 import { tw } from '@/utils';
 
+const variantStyles = {
+	primary: {
+		container: tw`bg-primary`,
+		text: tw`text-white`,
+		spinner: tw.color('white'),
+	},
+	secondary: {
+		container: tw`bg-secondary`,
+		text: tw`text-primary`,
+		spinner: tw.color('primary'),
+	},
+	ghost: {
+		container: tw`bg-stone-100`,
+		text: tw`text-primary`,
+		spinner: tw.color('primary'),
+	},
+	danger: {
+		container: tw`bg-red-600`,
+		text: tw`text-white`,
+		spinner: tw.color('white'),
+	},
+	outline: {
+		container: tw`border border-primary`,
+		text: tw`text-primary`,
+		spinner: tw.color('primary'),
+	},
+	outlineDanger: {
+		container: tw`border border-red-600`,
+		text: tw`text-red-600`,
+		spinner: tw.color('red-600'),
+	},
+};
+
 type PrimaryButtonProps = PressableProps & {
 	label: string;
 	loading?: boolean;
-	variant?: 'primary' | 'secondary' | 'ghost';
+	variant?: keyof typeof variantStyles;
 };
 
 export const PrimaryButton = ({
@@ -21,23 +54,7 @@ export const PrimaryButton = ({
 }: PrimaryButtonProps) => {
 	const isDisabled = disabled || loading;
 
-	const variantStyles = {
-		primary: {
-			container: tw`bg-primary`,
-			text: tw`text-white`,
-			spinner: tw.color('white'),
-		},
-		secondary: {
-			container: tw`bg-secondary`,
-			text: tw`text-primary`,
-			spinner: tw.color('primary'),
-		},
-		ghost: {
-			container: tw`bg-stone-100`,
-			text: tw`text-primary`,
-			spinner: tw.color('primary'),
-		},
-	}[variant];
+	const variantStyle = variantStyles[variant];
 
 	return (
 		<Pressable
@@ -45,17 +62,17 @@ export const PrimaryButton = ({
 			disabled={isDisabled}
 			style={({ pressed }) => [
 				tw`items-center justify-center rounded p-4`,
-				variantStyles.container,
+				variantStyle.container,
 				isDisabled ? tw`opacity-60` : null,
 				pressed && !isDisabled ? tw`opacity-85` : null,
 			]}
 			{...props}
 		>
 			{loading ? (
-				<ActivityIndicator color={variantStyles.spinner} />
+				<ActivityIndicator color={variantStyle.spinner} />
 			) : (
 				<Text
-					style={[tw`text-base font-extrabold uppercase`, variantStyles.text]}
+					style={[tw`text-base font-extrabold uppercase`, variantStyle.text]}
 				>
 					{label}
 				</Text>

@@ -98,8 +98,10 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        schoolName: null,
         photoURL: null,
         avatarCharacterSlug: null,
+        notificationsEnabled: true,
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
         updatedAt: new Date('2026-03-15T00:00:00.000Z'),
       });
@@ -123,8 +125,12 @@ describe('AuthService', () => {
           childBirthDate: null,
           parentPhone: null,
           school: null,
+          schoolName: null,
           photoURL: null,
           avatarCharacterSlug: null,
+          notificationsEnabled: true,
+          hasPushToken: false,
+          expoPushToken: null,
           roles: ['student'],
           role: ['student'],
           createdAt: new Date('2026-03-15T00:00:00.000Z'),
@@ -177,8 +183,10 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        schoolName: null,
         photoURL: null,
         avatarCharacterSlug: null,
+        notificationsEnabled: true,
         roles: ['student'],
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
         updatedAt: new Date('2026-03-15T01:00:00.000Z'),
@@ -188,6 +196,18 @@ describe('AuthService', () => {
 
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { firebaseUid: 'user-123' },
+        include: {
+          schoolAccesses: {
+            include: {
+              school: true,
+            },
+          },
+          pushTokens: {
+            orderBy: { updatedAt: 'desc' },
+            select: { token: true },
+            take: 1,
+          },
+        },
       });
       expect(result).toEqual({
         id: 'db-user-id',
@@ -198,8 +218,12 @@ describe('AuthService', () => {
         childBirthDate: null,
         parentPhone: null,
         school: null,
+        schoolName: null,
         photoURL: null,
         avatarCharacterSlug: null,
+        notificationsEnabled: true,
+        hasPushToken: false,
+        expoPushToken: null,
         roles: ['student'],
         role: ['student'],
         createdAt: new Date('2026-03-15T00:00:00.000Z'),
@@ -404,6 +428,43 @@ describe('AuthService', () => {
           avatarCharacterSlug: 'anita',
         },
       });
+    });
+
+    it('deve permitir atualizar preferência de notificações', async () => {
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+        })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          school: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
+          notificationsEnabled: false,
+          roles: ['student'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({} as never);
+
+      const result = await service.updateProfile('user-123', {
+        notificationsEnabled: false,
+      } as any);
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { notificationsEnabled: false },
+      });
+      expect(result).toEqual(
+        expect.objectContaining({ notificationsEnabled: false }),
+      );
     });
 
     it('deve lançar NotFoundException quando perfil não existir', async () => {

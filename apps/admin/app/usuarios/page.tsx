@@ -40,6 +40,7 @@ const formatDate = (value: string | Date) =>
 
 export default function UsuariosPage() {
 	const [selectedSchoolId, setSelectedSchoolId] = useState<string>('all');
+	const [onlyPushEnabled, setOnlyPushEnabled] = useState(false);
 	const [search, setSearch] = useState('');
 	const deferredSearch = useDeferredValue(search.trim());
 	const queryClient = useQueryClient();
@@ -55,12 +56,14 @@ export default function UsuariosPage() {
 			'users',
 			'admin',
 			selectedSchoolId,
+			onlyPushEnabled,
 			deferredSearch || 'all',
 		],
 		queryFn: () =>
 			usersService.getAll({
 				schoolId: selectedSchoolId === 'all' ? undefined : selectedSchoolId,
 				search: deferredSearch || undefined,
+				hasPushToken: onlyPushEnabled,
 			}),
 	});
 
@@ -121,11 +124,19 @@ export default function UsuariosPage() {
 						escola e ajuste perfil, vínculo ou status de acesso.
 					</p>
 
-					<div className="mb-6 grid gap-3 md:grid-cols-[minmax(220px,320px)_1fr]">
+					<div className="mb-6 grid gap-3 md:grid-cols-[minmax(220px,320px)_minmax(220px,260px)_1fr]">
 						<Select
 							value={selectedSchoolId}
 							options={schoolOptions}
 							onChange={setSelectedSchoolId}
+						/>
+						<Select
+							value={onlyPushEnabled ? 'push' : 'all'}
+							options={[
+								{ value: 'all', label: 'Todos os usuários' },
+								{ value: 'push', label: 'Aptos para notificação' },
+							]}
+							onChange={(value) => setOnlyPushEnabled(value === 'push')}
 						/>
 						<Input.Search
 							allowClear
@@ -163,6 +174,31 @@ export default function UsuariosPage() {
 								render: (uid: string) => (
 									<code className="break-all text-xs">{uid}</code>
 								),
+							},
+							{
+								title: 'Notificações',
+								width: 320,
+								render: (_, record: AdminUserInterface) => {
+									const canReceive =
+										record.notificationsEnabled !== false && record.hasPushToken;
+
+									return (
+										<div>
+											<Tag color={canReceive ? 'green' : 'default'}>
+												{canReceive ? 'Apto' : 'Não recebe'}
+											</Tag>
+											{record.expoPushToken ? (
+												<code className="mt-1 block break-all text-xs text-slate-500">
+													{record.expoPushToken}
+												</code>
+											) : (
+												<div className="mt-1 text-xs text-slate-400">
+													Sem Expo token
+												</div>
+											)}
+										</div>
+									);
+								},
 							},
 							{
 								title: 'Criado em',

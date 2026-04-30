@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,8 @@ import { SendNotificationWithDeeplinkDto } from './dto/send-notification-with-de
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { RegisterPushTokenDto } from './dto/register-push-token.dto';
+import { UnregisterPushTokenDto } from './dto/unregister-push-token.dto';
+import { CountNotificationRecipientsDto } from './dto/count-notification-recipients.dto';
 
 @ApiTags('Notificações')
 @UseGuards(AuthGuard('firebase-auth'))
@@ -38,12 +41,31 @@ export class NotificationsController {
     return this.notificationsService.registerPushToken(req.user.uid, dto);
   }
 
+  @Delete('push-token')
+  @ApiOperation({ summary: 'Remove push token do usuário autenticado' })
+  @ApiBody({ type: UnregisterPushTokenDto, required: false })
+  async unregisterPushToken(@Req() req, @Body() dto?: UnregisterPushTokenDto) {
+    return this.notificationsService.unregisterPushToken(req.user.uid, dto);
+  }
+
   @Post('send')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({ summary: 'Envia notificação push para usuários' })
   @ApiBody({ type: SendNotificationWithDeeplinkDto })
   async send(@Req() req, @Body() dto: SendNotificationWithDeeplinkDto) {
     return this.notificationsService.send(req.user.uid, dto);
+  }
+
+  @Get('recipients-count')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary: 'Conta usuários habilitados para receber notificação push',
+  })
+  async countRecipients(
+    @Req() req,
+    @Query() query: CountNotificationRecipientsDto,
+  ) {
+    return this.notificationsService.countRecipients(req.user.uid, query);
   }
 
   @Get('history')

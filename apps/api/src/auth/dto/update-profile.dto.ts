@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -66,4 +66,13 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   avatarCharacterSlug?: string | null;
+
+  @ApiProperty({
+    example: true,
+    required: false,
+    description: 'Indica se o usuário aceita receber notificações push no app.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  notificationsEnabled?: boolean;
 }

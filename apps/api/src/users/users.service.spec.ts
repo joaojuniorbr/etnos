@@ -22,6 +22,8 @@ const createUser = (overrides: Record<string, unknown> = {}) => ({
   avatarCharacterSlug: null,
   roles: ['student'],
   isActive: true,
+  notificationsEnabled: true,
+  pushTokens: [],
   createdAt: now,
   updatedAt: now,
   ...overrides,
@@ -90,6 +92,13 @@ describe('UsersService', () => {
           { firebaseUid: { contains: 'ana', mode: 'insensitive' } },
         ],
       },
+      include: {
+        pushTokens: {
+          orderBy: { updatedAt: 'desc' },
+          select: { token: true },
+          take: 1,
+        },
+      },
       orderBy: [{ createdAt: 'desc' }, { email: 'asc' }],
     });
     expect(prismaService.school.findMany).toHaveBeenCalledWith({
@@ -107,6 +116,9 @@ describe('UsersService', () => {
         schoolName: 'Escola 1',
         roles: ['student'],
         isActive: true,
+        hasPushToken: false,
+        expoPushToken: null,
+        notificationsEnabled: true,
         createdAt: now,
         updatedAt: now,
       },
@@ -121,7 +133,14 @@ describe('UsersService', () => {
     await service.findAll({ hasPushToken: true });
 
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
-      where: { pushTokens: { some: {} } },
+      where: { notificationsEnabled: true, pushTokens: { some: {} } },
+      include: {
+        pushTokens: {
+          orderBy: { updatedAt: 'desc' },
+          select: { token: true },
+          take: 1,
+        },
+      },
       orderBy: [{ createdAt: 'desc' }, { email: 'asc' }],
     });
   });

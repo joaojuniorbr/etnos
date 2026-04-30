@@ -21,7 +21,7 @@ export default function JogosPage() {
 						items={[
 							{ title: 'Home', href: '/' },
 							{
-								title: 'Area do administrador',
+								title: 'Área do administrador',
 								href: '/admin',
 							},
 							{

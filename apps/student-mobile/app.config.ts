@@ -1,12 +1,3 @@
-import fs from 'fs';
-
-if (process.env.EXPO_PUBLIC_GOOGLE_SERVICE) {
-	fs.writeFileSync(
-		'./google-services.json',
-		process.env.EXPO_PUBLIC_GOOGLE_SERVICE,
-	);
-}
-
 export default {
 	expo: {
 		name: 'Etnos',
@@ -44,8 +35,8 @@ export default {
 			[
 				'expo-notifications',
 				{
-					icon: './assets/images/icon.png',
-					color: '#ffffff',
+					icon: './assets/images/notification-icon.png',
+					color: '#f59e0b',
 					sounds: [],
 				},
 			],

@@ -32,6 +32,12 @@ export interface SendNotificationPayload {
   data?: Record<string, unknown>;
 }
 
+export interface CountNotificationRecipientsPayload {
+  targetType: NotificationTargetType;
+  schoolId?: string;
+  userId?: string;
+}
+
 export interface CreateNotificationTemplatePayload {
   title: string;
   message: string;
@@ -45,4 +51,8 @@ export interface UpdateNotificationTemplatePayload {
 export interface RegisterPushTokenPayload {
   token: string;
   platform?: string;
+}
+
+export interface UnregisterPushTokenPayload {
+  token?: string;
 }

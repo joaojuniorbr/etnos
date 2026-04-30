@@ -129,14 +129,20 @@ describe('core services', () => {
 	it('notifications service usa os endpoints esperados', async () => {
 		const api = createApiMock();
 		api.post.mockResolvedValue({ data: { ok: true } });
+		api.delete.mockResolvedValue({ data: { ok: true } });
 		const service = createNotificationsService(api);
 
 		await expect(
 			service.registerPushToken({ token: 'push-token-123' }),
 		).resolves.toEqual({ ok: true });
+		await expect(service.unregisterPushToken()).resolves.toEqual({ ok: true });
 
 		expect(api.post).toHaveBeenCalledWith('/notifications/push-token', {
 			token: 'push-token-123',
 		});
+		expect(api.delete).toHaveBeenCalledWith(
+			'/notifications/push-token',
+			undefined,
+		);
 	});
 });

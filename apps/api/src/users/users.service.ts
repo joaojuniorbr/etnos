@@ -26,9 +26,11 @@ export class UsersService {
     school?: string | null;
     roles: string[];
     isActive: boolean;
+    notificationsEnabled: boolean;
     createdAt: Date;
     updatedAt: Date;
     schoolName?: string | null;
+    pushTokens?: { token: string }[];
   }): AdminUserInterface {
     return {
       id: user.id,
@@ -40,6 +42,9 @@ export class UsersService {
       schoolName: user.schoolName ?? null,
       roles: user.roles as UserRole[],
       isActive: user.isActive,
+      hasPushToken: Boolean(user.pushTokens?.length),
+      expoPushToken: user.pushTokens?.[0]?.token ?? null,
+      notificationsEnabled: user.notificationsEnabled,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -108,7 +113,9 @@ export class UsersService {
     const users = await this.prismaService.user.findMany({
       where: {
         ...(filters?.schoolId ? { school: filters.schoolId } : {}),
-        ...(filters?.hasPushToken ? { pushTokens: { some: {} } } : {}),
+        ...(filters?.hasPushToken
+          ? { notificationsEnabled: true, pushTokens: { some: {} } }
+          : {}),
         ...(normalizedSearch
           ? {
               OR: [
@@ -134,6 +141,13 @@ export class UsersService {
               ],
             }
           : {}),
+      },
+      include: {
+        pushTokens: {
+          orderBy: { updatedAt: 'desc' },
+          select: { token: true },
+          take: 1,
+        },
       },
       orderBy: [{ createdAt: 'desc' }, { email: 'asc' }],
     });

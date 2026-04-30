@@ -35,6 +35,19 @@ describe('notificationsService', () => {
 		expect(result).toEqual({ ok: true });
 	});
 
+	it('remove token push', async () => {
+		apiMock.delete.mockResolvedValueOnce({ data: { ok: true } });
+
+		const result = await notificationsService.unregisterPushToken({
+			token: 'ExponentPushToken[token]',
+		});
+
+		expect(apiMock.delete).toHaveBeenCalledWith('/notifications/push-token', {
+			data: { token: 'ExponentPushToken[token]' },
+		});
+		expect(result).toEqual({ ok: true });
+	});
+
 	it('envia notificação', async () => {
 		const payload = {
 			title: 'Aviso',
@@ -47,6 +60,20 @@ describe('notificationsService', () => {
 
 		expect(apiMock.post).toHaveBeenCalledWith('/notifications/send', payload);
 		expect(result).toEqual({ ok: true, sent: 2 });
+	});
+
+	it('conta destinatários habilitados para notificação', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { count: 3 } });
+
+		const result = await notificationsService.countRecipients({
+			targetType: 'SCHOOL',
+			schoolId: 'school-1',
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/notifications/recipients-count', {
+			params: { targetType: 'SCHOOL', schoolId: 'school-1' },
+		});
+		expect(result).toEqual({ count: 3 });
 	});
 
 	it('lista histórico e templates', async () => {

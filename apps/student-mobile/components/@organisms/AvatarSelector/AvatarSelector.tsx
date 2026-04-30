@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { CharacterInterface, MidiaInterface } from '@etnos/types';
 import { charactersService, tw } from '@/utils';
+import { LoadingState } from '@/components/@atoms';
 
 type AvatarSelectorProps = {
 	currentAvatarUrl?: string | null;
@@ -45,7 +46,7 @@ export const AvatarSelector = ({
 	if (charactersQuery.isLoading) {
 		return (
 			<View style={tw`items-center justify-center py-8`}>
-				<ActivityIndicator color={tw.color('primary')} />
+				<LoadingState />
 			</View>
 		);
 	}
@@ -65,7 +66,7 @@ export const AvatarSelector = ({
 					const isSelected = effectiveCharacterSlug === character.slug;
 
 					return (
-						<View key={character.slug} style={tw`w-1/3 p-1`}>
+						<View key={character.slug} style={tw`w-1/5 p-0.5`}>
 							<Pressable
 								onPress={() => setSelectedCharacterSlug(character.slug)}
 								style={[
@@ -88,7 +89,7 @@ export const AvatarSelector = ({
 
 			{avatarsQuery.isLoading ? (
 				<View style={tw`items-center justify-center py-8`}>
-					<ActivityIndicator color="#371f12" />
+					<LoadingState />
 				</View>
 			) : (
 				<View style={tw`flex-row flex-wrap -ml-1`}>

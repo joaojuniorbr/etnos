@@ -56,7 +56,7 @@ export default function Page() {
 					items={[
 						{ title: 'Home', href: '/' },
 						{
-							title: 'Area do administrador',
+							title: 'Área do administrador',
 						},
 					]}
 				/>

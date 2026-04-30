@@ -16,7 +16,9 @@ describe('NotificationsController', () => {
 
   const mockNotificationsService = {
     registerPushToken: jest.fn().mockResolvedValue({ ok: true }),
+    unregisterPushToken: jest.fn().mockResolvedValue({ ok: true }),
     send: jest.fn().mockResolvedValue({ ok: true, sent: 2 }),
+    countRecipients: jest.fn().mockResolvedValue({ count: 3 }),
     getHistory: jest.fn().mockResolvedValue([{ id: 'log-1' }]),
     getTemplates: jest.fn().mockResolvedValue([{ id: 'template-1' }]),
     createTemplate: jest.fn().mockResolvedValue({ id: 'template-1' }),
@@ -55,6 +57,17 @@ describe('NotificationsController', () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it('remove token push do usuário autenticado', async () => {
+    const dto = { token: 'ExponentPushToken[token]' };
+    const result = await controller.unregisterPushToken(
+      { user: { uid: 'firebase-1' } },
+      dto,
+    );
+
+    expect(service.unregisterPushToken).toHaveBeenCalledWith('firebase-1', dto);
+    expect(result).toEqual({ ok: true });
+  });
+
   it('envia notificação usando uid autenticado', async () => {
     const dto = {
       title: 'Aviso',
@@ -67,6 +80,21 @@ describe('NotificationsController', () => {
 
     expect(service.send).toHaveBeenCalledWith('firebase-1', dto);
     expect(result).toEqual({ ok: true, sent: 2 });
+  });
+
+  it('conta destinatários usando uid autenticado', async () => {
+    const query = {
+      targetType: NotificationTargetType.SCHOOL,
+      schoolId: 'school-1',
+    };
+
+    const result = await controller.countRecipients(
+      { user: { uid: 'firebase-1' } },
+      query,
+    );
+
+    expect(service.countRecipients).toHaveBeenCalledWith('firebase-1', query);
+    expect(result).toEqual({ count: 3 });
   });
 
   it('lista histórico do usuário autenticado', async () => {

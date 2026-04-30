@@ -71,7 +71,9 @@ export const NotificacoesProvider = ({
 			notificationsService.send(payload),
 		onSuccess: (data) => {
 			sendForm.resetFields();
-			setSelectedTargetType('GLOBAL');
+			const nextTargetType = isAdmin ? 'GLOBAL' : 'SCHOOL';
+			setSelectedTargetType(nextTargetType);
+			sendForm.setFieldValue('targetType', nextTargetType);
 			void queryClient.invalidateQueries({
 				queryKey: ['notifications', 'history'],
 			});
@@ -103,6 +105,8 @@ export const NotificacoesProvider = ({
 export const useNotificacoes = () => {
 	const context = useContext(NotificacoesContext);
 	if (!context)
-		throw new Error('useNotificacoes must be used inside NotificacoesProvider');
+		throw new Error(
+			'useNotificacoes deve ser usado dentro de um NotificacoesProvider',
+		);
 	return context;
 };

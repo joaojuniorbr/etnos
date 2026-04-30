@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "496963560523",
+    "project_id": "etnos-br",
+    "storage_bucket": "etnos-br.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496963560523:android:20608d31e518a1245a19ce",
+        "android_client_info": {
+          "package_name": "com.joaojunior.etnosstudentmobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496963560523-kfl8tc6raua2gp71p0hdkcde4p8r7120.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCExXQMS8T4oPHaZLGexy75iVdy9rijAXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496963560523-kfl8tc6raua2gp71p0hdkcde4p8r7120.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -26,13 +26,27 @@ export class AuthService {
     'childBirthDate',
     'parentPhone',
     'school',
+    'schoolName',
     'photoURL',
     'avatarCharacterSlug',
+    'notificationsEnabled',
   ]);
 
   private async findProfileByFirebaseUid(firebaseUid: string) {
     return this.prismaService.user.findUnique({
       where: { firebaseUid },
+      include: {
+        schoolAccesses: {
+          include: {
+            school: true,
+          },
+        },
+        pushTokens: {
+          orderBy: { updatedAt: 'desc' },
+          select: { token: true },
+          take: 1,
+        },
+      },
     });
   }
 
@@ -51,11 +65,15 @@ export class AuthService {
       childName: profile.childName,
       childBirthDate: profile.childBirthDate,
       parentPhone: profile.parentPhone,
-      school: profile.school,
+      school: profile.schoolAccesses?.[0]?.school?.id ?? null,
+      schoolName: profile.schoolAccesses?.[0]?.school?.name ?? null,
       photoURL: profile.photoURL,
       avatarCharacterSlug: profile.avatarCharacterSlug,
       roles: profile.roles,
       role: profile.roles,
+      notificationsEnabled: profile.notificationsEnabled ?? true,
+      hasPushToken: Boolean(profile.pushTokens?.length),
+      expoPushToken: profile.pushTokens?.[0]?.token ?? null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };
@@ -307,6 +325,7 @@ export class AuthService {
       school: unknown;
       photoURL: unknown;
       avatarCharacterSlug: unknown;
+      notificationsEnabled: unknown;
     }>,
   ) {
     const user = await this.findProfileByFirebaseUid(id);

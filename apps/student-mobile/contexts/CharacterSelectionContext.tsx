@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storageAdapter } from '@/utils';
 import {
 	createContext,
 	useContext,
@@ -31,7 +31,7 @@ export const CharacterSelectionProvider = ({
 		let isMounted = true;
 
 		const loadSelection = async () => {
-			const slug = await AsyncStorage.getItem(STORAGE_KEY);
+			const slug = await storageAdapter.getItem(STORAGE_KEY);
 
 			if (isMounted) {
 				setSelectedCharacterSlug(slug);
@@ -48,9 +48,9 @@ export const CharacterSelectionProvider = ({
 
 	const selectCharacter = async (slug: string | null) => {
 		if (slug) {
-			await AsyncStorage.setItem(STORAGE_KEY, slug);
+			await storageAdapter.setItem(STORAGE_KEY, slug);
 		} else {
-			await AsyncStorage.removeItem(STORAGE_KEY);
+			await storageAdapter.removeItem(STORAGE_KEY);
 		}
 
 		setSelectedCharacterSlug(slug);

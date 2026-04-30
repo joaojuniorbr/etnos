@@ -14,13 +14,14 @@ type ScreenProps = {
 	scroll?: boolean;
 	contentContainerStyle?: ScrollViewProps['contentContainerStyle'];
 	style?: ViewProps['style'];
-};
+} & ScrollViewProps;
 
 export const Screen = ({
 	children,
 	scroll = true,
 	contentContainerStyle,
 	style,
+	...props
 }: ScreenProps) => {
 	const content = scroll ? (
 		<ScrollView
@@ -29,6 +30,7 @@ export const Screen = ({
 			keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
 			keyboardShouldPersistTaps="handled"
 			showsVerticalScrollIndicator={false}
+			{...props}
 		>
 			{children}
 		</ScrollView>

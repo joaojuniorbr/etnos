@@ -2,13 +2,18 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 import { authService, sessionStorage } from '@/utils';
-import { getExpoPushTokenAsync } from 'expo-notifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 type AuthContextValue = {
 	isAuthenticated: boolean;
 	isHydrated: boolean;
 	isLoading: boolean;
+	isSyncingPushToken: boolean;
+	isUpdatingNotifications: boolean;
+	notificationsEnabled: boolean;
 	user: UserProfileInterface | null;
+	setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+	syncPushToken: () => Promise<void>;
 	signIn: (email: string, password: string) => Promise<UserProfileInterface>;
 	signOut: () => Promise<void>;
 	refreshProfile: () => Promise<UserProfileInterface | null>;
@@ -24,25 +29,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [user, setUser] = useState<UserProfileInterface | null>(null);
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isSyncingPushToken, setIsSyncingPushToken] = useState(false);
+	const [isUpdatingNotifications, setIsUpdatingNotifications] = useState(false);
 
-	const registerForPushNotifications = async () => {
-		console.log({
-			projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-		});
-		try {
-			const token = await getExpoPushTokenAsync({
-				projectId: process.env.EXPO_PUBLIC_PROJECT_ID!,
-			});
-			console.log(token.data);
-		} catch (error) {
-			console.error('Failed to register for push notifications:', error);
-		}
-	};
+	const { ensurePushTokenRegistered, ensurePushTokenUnregistered } =
+		usePushNotifications(user);
 
 	useEffect(() => {
 		let isMounted = true;
-
-		registerForPushNotifications();
 
 		const bootstrap = async () => {
 			try {
@@ -137,13 +131,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const setNotificationsEnabled = async (enabled: boolean) => {
+		setIsUpdatingNotifications(true);
+
+		try {
+			if (enabled) {
+				await ensurePushTokenRegistered();
+			}
+
+			const profile = await authService.updateProfile({
+				notificationsEnabled: enabled,
+			});
+			setUser(profile);
+
+			if (!enabled) {
+				await ensurePushTokenUnregistered();
+				setUser({
+					...profile,
+					expoPushToken: null,
+					hasPushToken: false,
+				});
+			}
+			await queryClient.invalidateQueries();
+		} finally {
+			setIsUpdatingNotifications(false);
+		}
+	};
+
+	const syncPushToken = async () => {
+		setIsSyncingPushToken(true);
+
+		try {
+			await ensurePushTokenRegistered();
+			const profile = await authService.getProfile();
+			setUser(profile);
+			await queryClient.invalidateQueries();
+		} finally {
+			setIsSyncingPushToken(false);
+		}
+	};
+
 	const value: AuthContextValue = {
 		isAuthenticated: Boolean(user),
 		isHydrated,
 		isLoading,
+		isSyncingPushToken,
+		isUpdatingNotifications,
+		notificationsEnabled: user?.notificationsEnabled !== false,
 		refreshProfile,
+		setNotificationsEnabled,
 		signIn,
 		signOut,
+		syncPushToken,
 		updateProfile,
 		user,
 	};

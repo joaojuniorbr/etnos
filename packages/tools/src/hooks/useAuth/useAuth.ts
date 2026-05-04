@@ -140,6 +140,7 @@ export const useAuth = () => {
 				const { idToken, refreshToken, expiresIn } = res.data;
 
 				saveStoredAuthSession({ idToken, refreshToken, expiresIn });
+				void queryClient.invalidateQueries({ queryKey: userQueryKey });
 
 				setIsLoading(false);
 
@@ -174,6 +175,8 @@ export const useAuth = () => {
 				refreshToken: result.user.refreshToken,
 				expiresIn,
 			});
+
+			void queryClient.invalidateQueries({ queryKey: userQueryKey });
 
 			return user;
 		} catch {
@@ -229,16 +232,21 @@ export const useAuth = () => {
 		}
 	};
 
-	const updateUserProfile = async (profile: Partial<UserProfileInterface>) => {
+	const updateUserProfile = async (
+		profile: Partial<UserProfileInterface>,
+	): Promise<UserProfileInterface | null> => {
 		try {
 			const dataToSave = normalizeProfilePayload(profile);
 
-			await api.post('/auth/profile', dataToSave);
-
-			refetchProfile();
+			const response = await api
+				.post('/auth/profile', dataToSave)
+				.then((res) => res.data);
+			await refetchProfile();
 			message.success('Perfil atualizado!');
+			return response;
 		} catch (error) {
 			message.error(errorMessage(error, 'Erro ao salvar perfil.'));
+			return null;
 		}
 	};
 
@@ -262,6 +270,8 @@ export const useAuth = () => {
 				refreshToken: response.data.refreshToken,
 				expiresIn: response.data.expiresIn,
 			});
+
+			void queryClient.invalidateQueries({ queryKey: userQueryKey });
 
 			return user;
 		} catch (error) {

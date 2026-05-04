@@ -231,6 +231,32 @@ describe('AuthService', () => {
       });
     });
 
+    it('deve usar school da coluna users.school quando nao houver schoolAccess', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-456',
+        email: 'maria@email.com',
+        parentName: 'Maria',
+        childName: 'Lia',
+        childBirthDate: null,
+        parentPhone: null,
+        school: 'school-col-1',
+        photoURL: null,
+        avatarCharacterSlug: null,
+        notificationsEnabled: true,
+        roles: ['student'],
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+        schoolAccesses: [],
+        pushTokens: [],
+      });
+
+      const result = await service.getProfile('user-456');
+
+      expect(result?.school).toBe('school-col-1');
+      expect(result?.schoolName).toBeNull();
+    });
+
     it('deve retornar null quando perfil não existir', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(null);
 

@@ -459,13 +459,17 @@ describe('useAuth', () => {
 
 		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
 
+		let updated: Awaited<
+			ReturnType<typeof result.current.updateUserProfile>
+		>;
 		await act(async () => {
-			await result.current.updateUserProfile({
+			updated = await result.current.updateUserProfile({
 				childName: undefined,
 				parentName: 'Joao Silva',
 			});
 		});
 
+		expect(updated).toEqual({ ok: true });
 		expect(mockApiPost).toHaveBeenCalledWith('/auth/profile', {
 			childName: null,
 			parentName: 'Joao Silva',
@@ -480,10 +484,14 @@ describe('useAuth', () => {
 		mockErrorMessage.mockReturnValueOnce('Erro ao salvar perfil.');
 		const { result } = renderUseAuth();
 
+		let updated: Awaited<
+			ReturnType<typeof result.current.updateUserProfile>
+		>;
 		await act(async () => {
-			await result.current.updateUserProfile({ parentName: 'Novo nome' });
+			updated = await result.current.updateUserProfile({ parentName: 'Novo nome' });
 		});
 
+		expect(updated).toBeNull();
 		expect(mockApiPost).toHaveBeenCalledWith('/auth/profile', {
 			parentName: 'Novo nome',
 		});

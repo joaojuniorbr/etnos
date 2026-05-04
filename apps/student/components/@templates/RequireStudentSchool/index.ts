@@ -1,0 +1,1 @@
+export { RequireStudentSchool } from './RequireStudentSchool';

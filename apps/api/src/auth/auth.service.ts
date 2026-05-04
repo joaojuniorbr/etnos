@@ -57,6 +57,8 @@ export class AuthService {
       return null;
     }
 
+    const accessSchool = profile.schoolAccesses?.[0]?.school;
+
     return {
       id: profile.id,
       uid: profile.firebaseUid,
@@ -65,8 +67,8 @@ export class AuthService {
       childName: profile.childName,
       childBirthDate: profile.childBirthDate,
       parentPhone: profile.parentPhone,
-      school: profile.schoolAccesses?.[0]?.school?.id ?? null,
-      schoolName: profile.schoolAccesses?.[0]?.school?.name ?? null,
+      school: accessSchool?.id ?? profile.school ?? null,
+      schoolName: accessSchool?.name ?? null,
       photoURL: profile.photoURL,
       avatarCharacterSlug: profile.avatarCharacterSlug,
       roles: profile.roles,

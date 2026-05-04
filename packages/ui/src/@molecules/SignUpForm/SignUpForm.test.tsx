@@ -48,6 +48,7 @@ vi.mock('antd', async () => {
 	type FormProps = {
 		children: React.ReactNode;
 		onFinish?: (values: RegisterValues) => void;
+		initialValues?: Record<string, unknown>;
 	};
 
 	type ItemProps = {
@@ -57,15 +58,22 @@ vi.mock('antd', async () => {
 		rules?: unknown[];
 	};
 
-	const FormComponent = ({ children, onFinish }: FormProps) => {
+	const FormComponent = ({ children, onFinish, initialValues }: FormProps) => {
 		return (
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
 					const formData = new FormData(event.currentTarget);
+					const simplified = !event.currentTarget.querySelector(
+						'[name="parentName"]',
+					);
 
 					const values: RegisterValues = {
-						school: String(formData.get('school') ?? ''),
+						school: String(
+							formData.get('school') ??
+								(initialValues?.school as string | undefined) ??
+								'',
+						),
 						parentName: String(formData.get('parentName') ?? ''),
 						parentEmail: String(formData.get('parentEmail') ?? ''),
 						parentPhone: String(formData.get('parentPhone') ?? ''),
@@ -76,6 +84,20 @@ vi.mock('antd', async () => {
 						password: String(formData.get('password') ?? ''),
 						confirmPassword: String(formData.get('confirmPassword') ?? ''),
 					};
+
+					if (simplified) {
+						if (
+							!values.parentEmail ||
+							!values.childName ||
+							!values.password ||
+							!values.confirmPassword
+						) {
+							return;
+						}
+
+						onFinish?.(values);
+						return;
+					}
 
 					if (
 						!values.parentName ||
@@ -97,7 +119,14 @@ vi.mock('antd', async () => {
 	};
 
 	const FormItem = ({ children, label, name, rules }: ItemProps) => {
-		if (!name) return <>{children}</>;
+		if (!name) {
+			return (
+				<label>
+					{label}
+					{children}
+				</label>
+			);
+		}
 		if (name === 'confirmPassword') {
 			confirmPasswordRulesMock = rules ?? [];
 		}
@@ -177,6 +206,7 @@ vi.mock('antd', async () => {
 
 describe('SignUpForm', () => {
 	beforeEach(() => {
+		vi.useRealTimers();
 		vi.clearAllMocks();
 		resetFieldsMock.mockClear();
 		setFieldValueMock.mockClear();
@@ -331,5 +361,112 @@ describe('SignUpForm', () => {
 		await expect(invalidValidator(null, '654321')).rejects.toThrow(
 			'As senhas não coincidem',
 		);
+	});
+
+	it('modo simplificado envia Responsavel, escola pre-selecionada e data fixa via dayjs', async () => {
+		const onRegisterSuccess = vi.fn();
+		const onRegister = vi.fn().mockResolvedValue({ uid: 'user-1' });
+
+		useAuthMock.mockReturnValue({
+			onRegister,
+			isLoading: false,
+		});
+
+		render(
+			<SignUpForm
+				isSimplified
+				preselectedSchool={{ id: 'school-pre', name: 'Escola Convite' }}
+				onRegisterSuccess={onRegisterSuccess}
+			/>,
+		);
+
+		expect(screen.getByLabelText('Email')).toBeInTheDocument();
+		expect(screen.queryByLabelText('Email Pai/Mãe')).not.toBeInTheDocument();
+		const escolaInput = screen.getByLabelText('Escola');
+		expect(escolaInput).toBeDisabled();
+		expect(escolaInput).toHaveValue('Escola Convite');
+
+		fireEvent.change(screen.getByPlaceholderText('Digite o email'), {
+			target: { value: 'pai@email.com' },
+		});
+		fireEvent.change(screen.getByPlaceholderText('Digite o nome da criança'), {
+			target: { value: 'Ana' },
+		});
+
+		const passwordInputs = screen.getAllByPlaceholderText('Digite sua senha');
+		fireEvent.change(passwordInputs[0]!, {
+			target: { value: 'abcdef' },
+		});
+		fireEvent.change(passwordInputs[1]!, {
+			target: { value: 'abcdef' },
+		});
+
+		fireEvent.click(screen.getByRole('button', { name: 'CADASTRAR' }));
+
+		await waitFor(() => {
+			expect(onRegister).toHaveBeenCalledWith(
+				expect.objectContaining({
+					school: 'school-pre',
+					parentName: 'Responsável',
+					parentEmail: 'pai@email.com',
+					childName: 'Ana',
+					password: 'abcdef',
+					confirmPassword: 'abcdef',
+					childBirthDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+				}),
+			);
+			expect(onRegisterSuccess).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	it('modo completo com escola pre-selecionada prioriza o id da escola do convite', async () => {
+		const onRegister = vi.fn().mockResolvedValue({ uid: 'user-1' });
+
+		useAuthMock.mockReturnValue({
+			onRegister,
+			isLoading: false,
+		});
+
+		render(
+			<SignUpForm
+				schools={[
+					{ id: 'school-pre', name: 'Escola Convite' },
+					{ id: 'school-outra', name: 'Outra' },
+				]}
+				preselectedSchool={{ id: 'school-pre', name: 'Escola Convite' }}
+				onRegisterSuccess={vi.fn()}
+			/>,
+		);
+
+		fireEvent.change(screen.getByLabelText('Escola'), {
+			target: { value: 'school-outra' },
+		});
+		fireEvent.change(screen.getByPlaceholderText('Digite o nome completo'), {
+			target: { value: 'Carlos' },
+		});
+		fireEvent.change(screen.getByPlaceholderText('Digite o email'), {
+			target: { value: 'carlos@email.com' },
+		});
+		fireEvent.change(screen.getByPlaceholderText('Digite o nome da criança'), {
+			target: { value: 'Beto' },
+		});
+		fireEvent.change(screen.getByLabelText('Data de Nascimento da Criança'), {
+			target: { value: '2019-03-01' },
+		});
+
+		const passwordInputs = screen.getAllByPlaceholderText('Digite sua senha');
+		fireEvent.change(passwordInputs[0]!, { target: { value: 'senha12' } });
+		fireEvent.change(passwordInputs[1]!, { target: { value: 'senha12' } });
+
+		fireEvent.click(screen.getByRole('button', { name: 'CADASTRAR' }));
+
+		await waitFor(() => {
+			expect(onRegister).toHaveBeenCalledWith(
+				expect.objectContaining({
+					school: 'school-pre',
+					parentName: 'Carlos',
+				}),
+			);
+		});
 	});
 });

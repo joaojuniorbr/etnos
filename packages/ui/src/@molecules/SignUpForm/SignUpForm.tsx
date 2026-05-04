@@ -1,6 +1,7 @@
 import { formatPhoneBR, useAuth } from '@etnos/tools';
 import { DatePicker, Divider, Form, Input, message, Select, Spin } from 'antd';
 import { Button } from '../../@atoms';
+import dayjs from 'dayjs';
 
 interface SchoolOption {
 	id: string;
@@ -22,12 +23,16 @@ interface SignUpFormProps {
 	schools?: SchoolOption[];
 	isLoadingSchools?: boolean;
 	onRegisterSuccess: () => void;
+	preselectedSchool?: SchoolOption;
+	isSimplified?: boolean;
 }
 
 export const SignUpForm = ({
 	schools,
 	isLoadingSchools = false,
 	onRegisterSuccess,
+	preselectedSchool,
+	isSimplified = false,
 }: SignUpFormProps) => {
 	const [form] = Form.useForm<RegisterFormValues>();
 	const { onRegister, isLoading } = useAuth();
@@ -35,7 +40,11 @@ export const SignUpForm = ({
 	const onFinish = async (values: RegisterFormValues) => {
 		const user = await onRegister({
 			...values,
-			childBirthDate: values.childBirthDate.format('YYYY-MM-DD'),
+			parentName: isSimplified ? 'Responsável' : values.parentName,
+			school: preselectedSchool?.id ?? values.school,
+			childBirthDate: isSimplified
+				? dayjs().format('YYYY-MM-DD')
+				: values.childBirthDate.format('YYYY-MM-DD'),
 		});
 
 		if (user) {
@@ -61,49 +70,62 @@ export const SignUpForm = ({
 					form={form}
 					layout="vertical"
 					onFinish={onFinish}
+					initialValues={{
+						...(preselectedSchool ? { school: preselectedSchool.id } : {}),
+					}}
 					disabled={isLoading || isLoadingSchools}
 				>
-					<Form.Item name="school" label="Escola">
-						<Select
-							placeholder="Selecione a escola"
-							options={schools?.map((school) => ({
-								value: school.id,
-								label: school.name,
-							}))}
-						/>
-					</Form.Item>
+					{isSimplified ? (
+						<Form.Item label="Escola">
+							<Input value={preselectedSchool?.name} disabled />
+						</Form.Item>
+					) : (
+						<Form.Item name="school" label="Escola">
+							<Select
+								placeholder="Selecione a escola"
+								options={schools?.map((school) => ({
+									value: school.id,
+									label: school.name,
+								}))}
+							/>
+						</Form.Item>
+					)}
 
 					<Divider />
 
 					<Form.Item
-						name="parentName"
-						rules={[{ required: true }]}
-						label="Nome Pai/Mãe"
-					>
-						<Input placeholder="Digite o nome completo" />
-					</Form.Item>
-
-					<Form.Item
 						name="parentEmail"
 						rules={[{ required: true }]}
-						label="Email Pai/Mãe"
+						label={isSimplified ? 'Email' : 'Email Pai/Mãe'}
 					>
 						<Input placeholder="Digite o email" />
 					</Form.Item>
 
-					<Form.Item name="parentPhone" label="Telefone Pai/Mãe">
-						<Input
-							type="tel"
-							maxLength={15}
-							placeholder="Digite o telefone"
-							onChange={(event) => {
-								form.setFieldValue(
-									'parentPhone',
-									formatPhoneBR(event.target.value),
-								);
-							}}
-						/>
-					</Form.Item>
+					{!isSimplified && (
+						<>
+							<Form.Item
+								name="parentName"
+								rules={[{ required: true }]}
+								label="Nome Pai/Mãe"
+							>
+								<Input placeholder="Digite o nome completo" />
+							</Form.Item>
+
+							<Form.Item name="parentPhone" label="Telefone Pai/Mãe">
+								<Input
+									type="tel"
+									maxLength={15}
+									placeholder="Digite o telefone"
+									onChange={(event) => {
+										form.setFieldValue(
+											'parentPhone',
+											formatPhoneBR(event.target.value),
+										);
+									}}
+								/>
+							</Form.Item>
+						</>
+					)}
 
 					<Divider />
 
@@ -115,13 +137,15 @@ export const SignUpForm = ({
 						<Input placeholder="Digite o nome da criança" />
 					</Form.Item>
 
-					<Form.Item
-						name="childBirthDate"
-						label="Data de Nascimento da Criança"
-						rules={[{ required: true }]}
-					>
-						<DatePicker format="DD/MM/YYYY" className="ui:w-full" />
-					</Form.Item>
+					{!isSimplified && (
+						<Form.Item
+							name="childBirthDate"
+							label="Data de Nascimento da Criança"
+							rules={[{ required: true }]}
+						>
+							<DatePicker format="DD/MM/YYYY" className="ui:w-full" />
+						</Form.Item>
+					)}
 
 					<Divider />
 
@@ -130,7 +154,6 @@ export const SignUpForm = ({
 							name="password"
 							rules={[{ required: true }]}
 							label="Senha"
-							className="ui:w-full"
 						>
 							<Input.Password placeholder="Digite sua senha" />
 						</Form.Item>

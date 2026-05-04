@@ -18,12 +18,9 @@ import {
 	message,
 } from 'antd';
 import { schoolService, useAuth } from '@etnos/tools';
-import {
-	type SchoolInterface,
-	type SchoolUserInterface,
-} from '@etnos/types';
+import { type SchoolInterface, type SchoolUserInterface } from '@etnos/types';
 
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, CopyOutlined } from '@ant-design/icons';
 import { Title } from '@etnos/ui';
 import {
 	SchoolData,
@@ -193,6 +190,13 @@ export default function EscolasPage() {
 			schoolId: effectiveSelectedSchoolId,
 			userId,
 		});
+	};
+
+	const handleCopySchoolCode = (schoolCode: string) => {
+		navigator.clipboard.writeText(
+			`${globalThis.window.location.origin}/cadastro/escola/${schoolCode}`,
+		);
+		message.success('Código da escola copiado para a área de transferência');
 	};
 
 	const schoolViewerTabItems = [
@@ -426,9 +430,21 @@ export default function EscolasPage() {
 						},
 						{
 							title: 'Código',
-							dataIndex: 'code',
-							key: 'code',
-							render: (value: string | null | undefined) => value || '-',
+							dataIndex: 'id',
+							key: 'id',
+							render: (id: string) => (
+								<div className="flex flex-col gap-2">
+									<button
+										onClick={() => handleCopySchoolCode(id)}
+										className="flex items-center gap-2 text-slate-600 text-xs py-1 rounded border border-slate-200 w-36 justify-center"
+									>
+										<CopyOutlined />
+										Link para cadastro
+									</button>
+
+									<div className="text-sm text-slate-800 font-medium">{id}</div>
+								</div>
+							),
 						},
 						{
 							title: 'Cidade',

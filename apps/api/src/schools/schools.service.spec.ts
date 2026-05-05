@@ -978,6 +978,64 @@ describe('SchoolsService', () => {
     });
   });
 
+  describe('Histórico de partidas do aluno (gestor)', () => {
+    it('delega ao GamesService quando o aluno existe na escola', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ roles: ['admin'], school: null }),
+      );
+      prismaService.user.findFirst.mockResolvedValueOnce({ id: 'student-row-id' });
+      const rows = [
+        {
+          id: 'h1',
+          characterName: 'anita',
+          gameName: 'memory-game',
+          score: 10,
+          timestamp: new Date().toISOString(),
+          startedAt: new Date().toISOString(),
+          endedAt: new Date().toISOString(),
+          status: 'completed',
+        },
+      ];
+      gamesService.getScoreHistoryForSchoolUser.mockResolvedValueOnce(rows);
+
+      const result = await service.getSchoolUserGameScoreHistory(
+        'firebase-user-1',
+        '1',
+        'student-firebase',
+      );
+
+      expect(prismaService.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          firebaseUid: 'student-firebase',
+          school: '1',
+        },
+        select: { id: true },
+      });
+      expect(gamesService.getScoreHistoryForSchoolUser).toHaveBeenCalledWith(
+        'student-firebase',
+        '1',
+      );
+      expect(result).toEqual(rows);
+    });
+
+    it('lança NotFound quando o aluno não pertence à escola', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ roles: ['admin'], school: null }),
+      );
+      prismaService.user.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        service.getSchoolUserGameScoreHistory(
+          'firebase-user-1',
+          '1',
+          'inexistente',
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(gamesService.getScoreHistoryForSchoolUser).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Ranking por escola', () => {
     it.each([
       {

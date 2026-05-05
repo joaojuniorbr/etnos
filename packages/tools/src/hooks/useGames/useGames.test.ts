@@ -122,9 +122,88 @@ describe('useGames hook', () => {
 			'iara',
 			200,
 			'user123',
+			undefined,
 		);
 		expect(message.success).not.toHaveBeenCalledWith(
 			'Pontuação salva com sucesso!',
+		);
+	});
+
+	it('deve iniciar sessão do jogo quando houver userId', async () => {
+		(scoreGamesService.saveScoreHistory as any).mockResolvedValueOnce({
+			id: 'session-1',
+		});
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await expect(
+			result.current.startGameSession('memory-game', 'iara'),
+		).resolves.toEqual({
+			id: 'session-1',
+		});
+
+		expect(scoreGamesService.saveScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'iara',
+			0,
+			'user123',
+			{ phase: 'start' },
+		);
+	});
+
+	it('deve retornar null ao iniciar sessão sem userId', async () => {
+		const { result } = renderHook(() => useGames());
+
+		await expect(
+			result.current.startGameSession('memory-game', 'iara'),
+		).resolves.toBeNull();
+
+		expect(scoreGamesService.saveScoreHistory).not.toHaveBeenCalled();
+	});
+
+	it('deve salvar histórico de fim com sessionId quando informado', async () => {
+		(scoreGamesService.saveScoreHistory as any).mockResolvedValueOnce('ok');
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await act(async () => {
+			await result.current.saveGameScoreHistory(
+				'memory-game',
+				'iara',
+				200,
+				'session-1',
+			);
+		});
+
+		expect(scoreGamesService.saveScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'iara',
+			200,
+			'user123',
+			{ phase: 'end', sessionId: 'session-1' },
+		);
+	});
+
+	it('deve salvar histórico sem metadados quando sessionId for vazio', async () => {
+		(scoreGamesService.saveScoreHistory as any).mockResolvedValueOnce('ok');
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await act(async () => {
+			await result.current.saveGameScoreHistory(
+				'memory-game',
+				'iara',
+				200,
+				'',
+			);
+		});
+
+		expect(scoreGamesService.saveScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'iara',
+			200,
+			'user123',
+			undefined,
 		);
 	});
 

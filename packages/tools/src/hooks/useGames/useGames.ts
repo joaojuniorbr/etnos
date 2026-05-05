@@ -79,9 +79,7 @@ export const useGames = (userId?: string) => {
 			characterSlug,
 			score,
 			userId,
-			sessionId
-				? { phase: 'end', sessionId: sessionId ?? undefined }
-				: undefined,
+			sessionId ? { phase: 'end', sessionId } : undefined,
 		);
 	};
 

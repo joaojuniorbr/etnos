@@ -237,6 +237,54 @@ describe('GamesController', () => {
       characterSlug: 'char-1',
       score: 100,
       userId: 'user-1',
+      phase: undefined,
+      sessionId: undefined,
+    });
+  });
+
+  it('deve usar pontuação zero quando score não for enviado no histórico', async () => {
+    await controller.saveScoreHistory(
+      {
+        user: { uid: 'user-1' },
+      },
+      {
+        slug: 'memory-game',
+        characterSlug: 'char-1',
+        score: undefined as unknown as number,
+      },
+    );
+
+    expect(service.saveScoreHistory).toHaveBeenCalledWith({
+      slug: 'memory-game',
+      characterSlug: 'char-1',
+      score: 0,
+      userId: 'user-1',
+      phase: undefined,
+      sessionId: undefined,
+    });
+  });
+
+  it('deve repassar phase e sessionId ao salvar histórico', async () => {
+    await controller.saveScoreHistory(
+      {
+        user: { uid: 'user-1' },
+      },
+      {
+        slug: 'guess-game',
+        characterSlug: 'anita',
+        score: 50,
+        phase: 'end',
+        sessionId: 'sess-abc',
+      },
+    );
+
+    expect(service.saveScoreHistory).toHaveBeenCalledWith({
+      slug: 'guess-game',
+      characterSlug: 'anita',
+      score: 50,
+      userId: 'user-1',
+      phase: 'end',
+      sessionId: 'sess-abc',
     });
   });
 

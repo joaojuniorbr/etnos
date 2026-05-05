@@ -752,12 +752,149 @@ describe('GamesService', () => {
     ]);
   });
 
+  it('deve mapear histórico com sessão em andamento (endedAt nulo)', async () => {
+    const startedAt = new Date('2026-05-01T10:00:00.000Z');
+    const createdAt = new Date('2026-05-01T10:00:01.000Z');
+    prismaService.gameScoreHistory.findMany.mockResolvedValueOnce([
+      {
+        id: 'hist-progress',
+        gameSlug: 'memory-game',
+        characterSlug: 'joao-silva',
+        score: 0,
+        startedAt,
+        endedAt: null,
+        status: 'in_progress',
+        createdAt,
+      },
+    ]);
+
+    const result = await service.getScoreHistory('user-1');
+
+    expect(result[0]).toEqual({
+      id: 'hist-progress',
+      characterName: 'joao-silva',
+      gameName: 'memory-game',
+      score: 0,
+      timestamp: startedAt.toISOString(),
+      startedAt: startedAt.toISOString(),
+      endedAt: null,
+      status: 'in_progress',
+    });
+  });
+
   it('deve listar histórico de score filtrado por jogo', async () => {
     await service.getScoreHistory('user-1', 'guess-game');
 
     expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', gameSlug: 'guess-game' },
       orderBy: { startedAt: 'desc' },
+    });
+  });
+
+  it('deve listar histórico por aluno e escola', async () => {
+    const createdAt = new Date();
+    prismaService.gameScoreHistory.findMany.mockResolvedValueOnce([
+      {
+        id: 'hist-2',
+        gameSlug: 'guess-game',
+        characterSlug: 'anita',
+        score: 40,
+        startedAt: createdAt,
+        endedAt: createdAt,
+        status: 'completed',
+        createdAt,
+      },
+    ]);
+
+    const result = await service.getScoreHistoryForSchoolUser(
+      'student-uid',
+      'school-1',
+    );
+
+    expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
+      where: { userId: 'student-uid', schoolId: 'school-1' },
+      orderBy: { startedAt: 'desc' },
+    });
+    expect(result[0]).toMatchObject({
+      id: 'hist-2',
+      gameName: 'guess-game',
+      characterName: 'anita',
+      score: 40,
+      status: 'completed',
+    });
+  });
+
+  it('deve iniciar sessão de histórico com phase start', async () => {
+    prismaService.gameScoreHistory.create.mockResolvedValueOnce({
+      id: 'sess-new',
+    });
+
+    await service.saveScoreHistory({
+      ...makeScoreData({ score: 0 }),
+      phase: 'start',
+    });
+
+    expect(prismaService.gameScoreHistory.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'user-123', status: 'in_progress' },
+      }),
+    );
+    expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        gameSlug: 'memory-game',
+        characterSlug: 'joao-silva',
+        score: 0,
+        userId: 'user-123',
+        schoolId: 'school-1',
+        status: 'in_progress',
+        endedAt: null,
+      }),
+    });
+  });
+
+  it('deve finalizar sessão existente com phase end e sessionId', async () => {
+    prismaService.gameScoreHistory.findFirst.mockResolvedValueOnce({
+      id: 'sess-1',
+      userId: 'user-123',
+      status: 'in_progress',
+    });
+    prismaService.gameScoreHistory.update.mockResolvedValueOnce({
+      id: 'sess-1',
+      score: 88,
+    });
+
+    await service.saveScoreHistory({
+      ...makeScoreData({ score: 88 }),
+      phase: 'end',
+      sessionId: 'sess-1',
+    });
+
+    expect(prismaService.gameScoreHistory.update).toHaveBeenCalledWith({
+      where: { id: 'sess-1' },
+      data: expect.objectContaining({
+        score: 88,
+        status: 'completed',
+      }),
+    });
+    expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
+  });
+
+  it('deve criar histórico completo quando sessionId do fim não existir', async () => {
+    prismaService.gameScoreHistory.findFirst.mockResolvedValueOnce(null);
+
+    await service.saveScoreHistory({
+      ...makeScoreData({ score: 42 }),
+      phase: 'end',
+      sessionId: 'sess-invalido',
+    });
+
+    expect(prismaService.gameScoreHistory.updateMany).toHaveBeenCalled();
+    expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        score: 42,
+        status: 'completed',
+        gameSlug: 'memory-game',
+      }),
     });
   });
 });

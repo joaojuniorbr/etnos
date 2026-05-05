@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GuessGame } from './GuessGame';
 
@@ -726,6 +726,50 @@ describe('GuessGame', () => {
 			null,
 		);
 		expect(saveGameScore).not.toHaveBeenCalled();
+	});
+
+	it('usa o id da sessão iniciada ao salvar histórico', async () => {
+		const saveGameScore = vi.fn().mockResolvedValue(undefined);
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		const startGameSession = vi
+			.fn()
+			.mockResolvedValue({ id: 'guess-session-1' });
+		useGamesMock.mockReturnValue({
+			saveGameScore,
+			saveGameScoreHistory,
+			startGameSession,
+			playSound: vi.fn(),
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		await waitFor(() =>
+			expect(startGameSession).toHaveBeenCalledWith('guess-game', 'anita'),
+		);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		await waitFor(() =>
+			expect(saveGameScoreHistory).toHaveBeenCalledWith(
+				'guess-game',
+				'anita',
+				1000,
+				'guess-session-1',
+			),
+		);
+		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 	});
 
 	it('salva recorde usando zero como fallback quando ainda não existir score anterior', async () => {

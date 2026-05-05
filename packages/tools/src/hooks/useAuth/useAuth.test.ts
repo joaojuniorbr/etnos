@@ -459,9 +459,9 @@ describe('useAuth', () => {
 
 		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
 
-		let updated: Awaited<
-			ReturnType<typeof result.current.updateUserProfile>
-		>;
+			let updated:
+				| Awaited<ReturnType<typeof result.current.updateUserProfile>>
+				| undefined;
 		await act(async () => {
 			updated = await result.current.updateUserProfile({
 				childName: undefined,
@@ -484,9 +484,9 @@ describe('useAuth', () => {
 		mockErrorMessage.mockReturnValueOnce('Erro ao salvar perfil.');
 		const { result } = renderUseAuth();
 
-		let updated: Awaited<
-			ReturnType<typeof result.current.updateUserProfile>
-		>;
+			let updated:
+				| Awaited<ReturnType<typeof result.current.updateUserProfile>>
+				| undefined;
 		await act(async () => {
 			updated = await result.current.updateUserProfile({ parentName: 'Novo nome' });
 		});

@@ -206,6 +206,127 @@ describe('MemoryGame', () => {
 		);
 	});
 
+	it('inicia sessão e usa o id retornado ao salvar histórico', async () => {
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		const startGameSession = vi
+			.fn()
+			.mockResolvedValue({ id: 'memory-session-1' });
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory,
+			startGameSession,
+			playSound: vi.fn(),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameSessionStart: () => Promise<void>;
+			onSaveScoreHistory: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onGameSessionStart();
+			await props.onSaveScoreHistory(250);
+		});
+
+		expect(startGameSession).toHaveBeenCalledWith('memory-game', 'anita');
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'anita',
+			250,
+			'memory-session-1',
+		);
+	});
+
+	it('reseta a sessão antes de salvar histórico novamente', async () => {
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		const startGameSession = vi
+			.fn()
+			.mockResolvedValue({ id: 'memory-session-1' });
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory,
+			startGameSession,
+			playSound: vi.fn(),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameSessionStart: () => Promise<void>;
+			onSaveScoreHistory: (score: number) => Promise<void>;
+			onSessionReset: () => void;
+		};
+
+		await act(async () => {
+			await props.onGameSessionStart();
+			props.onSessionReset();
+			await props.onSaveScoreHistory(180);
+		});
+
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'anita',
+			180,
+			null,
+		);
+	});
+
+	it('ignora retorno de sessão sem id ao salvar histórico', async () => {
+		const saveGameScoreHistory = vi.fn().mockResolvedValue(undefined);
+		const startGameSession = vi.fn().mockResolvedValue({ ok: true });
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory,
+			startGameSession,
+			playSound: vi.fn(),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameSessionStart: () => Promise<void>;
+			onSaveScoreHistory: (score: number) => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onGameSessionStart();
+			await props.onSaveScoreHistory(210);
+		});
+
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'memory-game',
+			'anita',
+			210,
+			null,
+		);
+	});
+
+	it('não inicia sessão quando não houver usuário ou personagem', async () => {
+		const startGameSession = vi.fn().mockResolvedValue({ id: 'memory-session-1' });
+		useCharacterMock.mockReturnValue({ selectedCharacter: undefined });
+		useUserMock.mockReturnValue({ user: null });
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession,
+			playSound: vi.fn(),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameSessionStart: () => Promise<void>;
+		};
+
+		await act(async () => {
+			await props.onGameSessionStart();
+		});
+
+		expect(startGameSession).not.toHaveBeenCalled();
+	});
+
 	it('usa cover fallback e não salva score sem usuário ou personagem', async () => {
 		useCharacterMock.mockReturnValue({ selectedCharacter: undefined });
 		useUserMock.mockReturnValue({ user: null });

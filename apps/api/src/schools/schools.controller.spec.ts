@@ -74,6 +74,7 @@ describe('SchoolsController', () => {
       .fn()
       .mockResolvedValue({ uid: 'user-2', email: 'escola@teste.com' }),
     removeAccessUserFromSchool: jest.fn().mockResolvedValue(true),
+    getSchoolUserGameScoreHistory: jest.fn().mockResolvedValue([]),
   };
 
   beforeEach(async () => {
@@ -194,6 +195,33 @@ describe('SchoolsController', () => {
     expect(result).toEqual([
       { position: 1, uid: 'user-1', childName: 'Aluno 1', totalScore: 120 },
     ]);
+  });
+
+  it('deve retornar histórico de partidas de um aluno da escola', async () => {
+    const history = [
+      {
+        gameName: 'memory-game',
+        characterName: 'anita',
+        score: 100,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+    mockSchoolsService.getSchoolUserGameScoreHistory.mockResolvedValueOnce(
+      history,
+    );
+
+    const result = await controller.getSchoolUserGameScoreHistory(
+      { user: { uid: 'firebase-viewer' } },
+      'school-1',
+      'student-firebase-uid',
+    );
+
+    expect(service.getSchoolUserGameScoreHistory).toHaveBeenCalledWith(
+      'firebase-viewer',
+      'school-1',
+      'student-firebase-uid',
+    );
+    expect(result).toEqual(history);
   });
 
   it('deve retornar o acesso de jogos por escola', async () => {

@@ -351,4 +351,20 @@ describe('schoolService', () => {
 		);
 		expect(result).toBe(true);
 	});
+
+	it('deve buscar histórico de pontuação de um estudante por escola', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ id: 'history-1', score: 120 }],
+		});
+
+		const result = await schoolService.getUserGameScoreHistory(
+			'school-1',
+			'student-1',
+		);
+
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/school-1/users/student-1/game-score-history',
+		);
+		expect(result).toEqual([{ id: 'history-1', score: 120 }]);
+	});
 });

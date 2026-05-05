@@ -405,8 +405,8 @@ export class NotificationsService {
     const template = await this.prismaService.notificationTemplate.update({
       where: { id },
       data: {
-        ...(dto.title !== undefined ? { title: dto.title } : {}),
-        ...(dto.message !== undefined ? { message: dto.message } : {}),
+        ...(dto.title === undefined ? {} : { title: dto.title }),
+        ...(dto.message === undefined ? {} : { message: dto.message }),
       },
     });
 

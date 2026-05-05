@@ -1,14 +1,7 @@
 import { useEffect, useMemo } from 'react';
-import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Text, View } from 'react-native';
-import {
-	CharacterCard,
-	LoadingState,
-	PrimaryButton,
-	Screen,
-	SectionCard,
-} from '@/components';
+import { Text, View } from 'react-native';
+import { CharacterCard, LoadingState, Screen, SectionCard } from '@/components';
 import { useCharacterSelection } from '@/contexts';
 import { charactersService, schoolService, tw } from '@/utils';
 
@@ -49,7 +42,7 @@ export default function CharactersPage() {
 				selectedCharacterSlug,
 			)
 		) {
-			void selectCharacter(null);
+			selectCharacter(null);
 		}
 	}, [gameAccessQuery.data, selectCharacter, selectedCharacterSlug]);
 
@@ -76,7 +69,7 @@ export default function CharactersPage() {
 							<CharacterCard
 								character={character}
 								selected={selectedCharacterSlug === character.slug}
-								onPress={() => void selectCharacter(character.slug)}
+								onPress={() => selectCharacter(character.slug)}
 							/>
 						</View>
 					))}

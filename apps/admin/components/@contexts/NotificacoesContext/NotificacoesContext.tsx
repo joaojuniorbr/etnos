@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
 import type { FormInstance } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -84,19 +84,31 @@ export const NotificacoesProvider = ({
 		},
 	});
 
+	const value = useMemo(
+		() => ({
+			sendForm,
+			schoolOptions,
+			selectedTargetType,
+			setSelectedTargetType,
+			previewModalOpen,
+			setPreviewModalOpen,
+			isSending: sendMutation.isPending,
+			onSend: sendMutation.mutate,
+		}),
+		[
+			sendForm,
+			schoolOptions,
+			selectedTargetType,
+			setSelectedTargetType,
+			previewModalOpen,
+			setPreviewModalOpen,
+			sendMutation.isPending,
+			sendMutation.mutate,
+		],
+	);
+
 	return (
-		<NotificacoesContext.Provider
-			value={{
-				sendForm,
-				schoolOptions,
-				selectedTargetType,
-				setSelectedTargetType,
-				previewModalOpen,
-				setPreviewModalOpen,
-				isSending: sendMutation.isPending,
-				onSend: sendMutation.mutate,
-			}}
-		>
+		<NotificacoesContext.Provider value={value}>
 			{children}
 		</NotificacoesContext.Provider>
 	);

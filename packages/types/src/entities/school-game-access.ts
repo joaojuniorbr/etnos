@@ -1,5 +1,3 @@
-// import { UserRole } from './admin-user';
-
 export interface SchoolGameAccessInterface {
 	schoolId: string;
 	enabledGameSlugs: string[];

@@ -11,7 +11,7 @@ export const LoadingState = ({
 	isLoading = false,
 	...props
 }: LoadingStateProps) =>
-	Boolean(props.children) ? (
+	props.children ? (
 		<View style={tw`relative`} {...props}>
 			{isLoading && (
 				<View

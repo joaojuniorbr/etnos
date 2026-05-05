@@ -1,10 +1,5 @@
 import { storageAdapter } from '@/utils';
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useState,
-} from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'etnos_selected_character';
 
@@ -22,9 +17,9 @@ export const CharacterSelectionProvider = ({
 }: {
 	children: React.ReactNode;
 }) => {
-	const [selectedCharacterSlug, setSelectedCharacterSlug] = useState<string | null>(
-		null,
-	);
+	const [selectedCharacterSlug, setSelectedCharacterSlug] = useState<
+		string | null
+	>(null);
 	const [isHydrated, setIsHydrated] = useState(false);
 
 	useEffect(() => {
@@ -56,11 +51,14 @@ export const CharacterSelectionProvider = ({
 		setSelectedCharacterSlug(slug);
 	};
 
-	const value: CharacterSelectionContextValue = {
-		isHydrated,
-		selectedCharacterSlug,
-		selectCharacter,
-	};
+	const value: CharacterSelectionContextValue = useMemo(
+		() => ({
+			isHydrated,
+			selectedCharacterSlug,
+			selectCharacter,
+		}),
+		[isHydrated, selectedCharacterSlug, selectCharacter],
+	);
 
 	return (
 		<CharacterSelectionContext.Provider value={value}>

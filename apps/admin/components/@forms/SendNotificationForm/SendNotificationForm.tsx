@@ -109,6 +109,26 @@ export const SendNotificationForm = () => {
 		setPreviewModalOpen(true);
 	};
 
+	let userSelectNotFoundContent: string;
+	if (userSearch.length < 2) {
+		userSelectNotFoundContent = 'Digite pelo menos 2 caracteres';
+	} else if (isFetchingUsers) {
+		userSelectNotFoundContent = 'Buscando...';
+	} else {
+		userSelectNotFoundContent = 'Nenhum usuário encontrado';
+	}
+
+	let recipientsAlertDescription: string;
+	if (!canFetchRecipientsCount) {
+		recipientsAlertDescription =
+			'Selecione o público para calcular quantas pessoas podem receber a notificação.';
+	} else if (isFetchingRecipientsCount) {
+		recipientsAlertDescription =
+			'Calculando... pessoa(s) habilitada(s) para receber esta notificação.';
+	} else {
+		recipientsAlertDescription = `${recipientsCount?.count ?? 0} pessoa(s) habilitada(s) para receber esta notificação.`;
+	}
+
 	return (
 		<Card title="Compor notificação">
 			<Form
@@ -161,12 +181,12 @@ export const SendNotificationForm = () => {
 						<Select
 							placeholder="Selecione a escola"
 							options={schoolOptions}
-							showSearch
-							filterOption={(input, option) =>
-								String(option?.label ?? '')
-									.toLowerCase()
-									.includes(input.toLowerCase())
-							}
+							showSearch={{
+								filterOption: (input, option) =>
+									String(option?.label ?? '')
+										.toLowerCase()
+										.includes(input.toLowerCase()),
+							}}
 						/>
 					</Form.Item>
 				)}
@@ -180,17 +200,12 @@ export const SendNotificationForm = () => {
 						<Select
 							placeholder="Digite o nome ou e-mail para buscar"
 							options={userOptions}
-							showSearch
-							filterOption={false}
-							onSearch={setUserSearch}
+							showSearch={{
+								filterOption: false,
+								onSearch: setUserSearch,
+							}}
 							loading={isFetchingUsers}
-							notFoundContent={
-								userSearch.length < 2
-									? 'Digite pelo menos 2 caracteres'
-									: isFetchingUsers
-									? 'Buscando...'
-									: 'Nenhum usuário encontrado'
-							}
+							notFoundContent={userSelectNotFoundContent}
 						/>
 					</Form.Item>
 				)}
@@ -199,15 +214,7 @@ export const SendNotificationForm = () => {
 					<Alert
 						showIcon
 						type={canFetchRecipientsCount ? 'info' : 'warning'}
-						description={
-							canFetchRecipientsCount
-								? `${
-										isFetchingRecipientsCount
-											? 'Calculando...'
-											: recipientsCount?.count ?? 0
-								  } pessoa(s) habilitada(s) para receber esta notificação.`
-								: 'Selecione o público para calcular quantas pessoas podem receber a notificação.'
-						}
+						description={recipientsAlertDescription}
 					/>
 				</div>
 

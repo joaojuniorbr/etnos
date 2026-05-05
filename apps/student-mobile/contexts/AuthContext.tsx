@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 import { authService, sessionStorage } from '@/utils';
@@ -182,22 +182,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
-	const value: AuthContextValue = {
-		isAuthenticated: Boolean(user),
-		isHydrated,
-		isLoading,
-		isSyncingPushToken,
-		isUpdatingNotifications,
-		notificationsEnabled: user?.notificationsEnabled !== false,
-		recoverPassword,
-		refreshProfile,
-		setNotificationsEnabled,
-		signIn,
-		signOut,
-		syncPushToken,
-		updateProfile,
-		user,
-	};
+	const value: AuthContextValue = useMemo(
+		() => ({
+			isAuthenticated: Boolean(user),
+			isHydrated,
+			isLoading,
+			isSyncingPushToken,
+			isUpdatingNotifications,
+			notificationsEnabled: user?.notificationsEnabled !== false,
+			recoverPassword,
+			refreshProfile,
+			setNotificationsEnabled,
+			signIn,
+			signOut,
+			syncPushToken,
+			updateProfile,
+			user,
+		}),
+		[
+			user,
+			isHydrated,
+			isLoading,
+			isSyncingPushToken,
+			isUpdatingNotifications,
+			recoverPassword,
+			refreshProfile,
+			setNotificationsEnabled,
+			signIn,
+			signOut,
+			syncPushToken,
+			updateProfile,
+			user,
+		],
+	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

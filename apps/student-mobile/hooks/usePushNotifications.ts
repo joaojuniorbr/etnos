@@ -101,9 +101,7 @@ export const usePushNotifications = (user: UserProfileInterface | null) => {
 			handleNotificationResponse,
 		);
 
-		void Notifications.getLastNotificationResponseAsync().then(
-			handleNotificationResponse,
-		);
+		handleNotificationResponse(Notifications.getLastNotificationResponse());
 
 		return () => {
 			subscription.remove();

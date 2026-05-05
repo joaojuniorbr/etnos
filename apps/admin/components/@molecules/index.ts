@@ -4,6 +4,7 @@ export * from './SchoolGames';
 export * from './SchoolRanking';
 export * from './SchoolsRanking';
 export * from './SchoolUsers';
+export * from './SchoolViewerEscolasSection';
 export * from './UserRanking';
 export * from './NotificationHistory';
 export * from './NotificationPreviewModal';

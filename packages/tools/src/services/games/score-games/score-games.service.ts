@@ -23,6 +23,7 @@ export const scoreGamesService = {
 		characterSlug: string,
 		score: number,
 		userId: string,
+		options?: { phase?: 'start' | 'end'; sessionId?: string },
 	) {
 		if (!userId) return Promise.resolve(null);
 
@@ -31,6 +32,7 @@ export const scoreGamesService = {
 				slug,
 				characterSlug,
 				score,
+				...options,
 			})
 			.then((res) => res.data);
 	},

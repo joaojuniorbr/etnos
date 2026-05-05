@@ -9,7 +9,7 @@ import {
 } from '@etnos/tools';
 import { ConfigGamesInterface, GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MemoryGameExperience } from './MemoryGameExperience';
 
 const GAME_SLUG = GamesEnum.MEMORY_GAME;
@@ -19,9 +19,10 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(
-		user?.uid,
-	);
+	const { saveGameScore, saveGameScoreHistory, startGameSession, playSound } =
+		useGames(user?.uid);
+
+	const gameSessionIdRef = useRef<string | null>(null);
 
 	const {
 		data: scoreGame,
@@ -72,7 +73,26 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 			GamesEnum.MEMORY_GAME,
 			activeCharacterSlug,
 			score,
+			gameSessionIdRef.current,
 		);
+		gameSessionIdRef.current = null;
+	};
+
+	const handleGameSessionStart = async () => {
+		const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug;
+
+		if (!user?.uid || !activeCharacterSlug) {
+			return;
+		}
+
+		const row = await startGameSession(
+			GamesEnum.MEMORY_GAME,
+			activeCharacterSlug,
+		);
+
+		if (row && typeof row === 'object' && row !== null && 'id' in row) {
+			gameSessionIdRef.current = (row as { id: string }).id;
+		}
 	};
 
 	const imageCover = () => {
@@ -95,6 +115,10 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onPlaySound={playSound}
 			onSaveScoreHistory={handleSaveScoreHistory}
 			onSaveScore={handleSaveScore}
+			onGameSessionStart={handleGameSessionStart}
+			onSessionReset={() => {
+				gameSessionIdRef.current = null;
+			}}
 			selectedCharacter={selectedCharacter}
 		/>
 	);

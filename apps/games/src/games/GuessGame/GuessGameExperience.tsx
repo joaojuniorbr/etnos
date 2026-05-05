@@ -42,6 +42,9 @@ type GuessGameExperienceProps = {
 	onNextRound?: () => void;
 	onSaveScore?: (score: number) => Promise<void> | void;
 	onSaveScoreHistory?: (score: number) => Promise<void> | void;
+	/** Nova rodada / conteúdo — início da partida neste nível */
+	onRoundSessionStart?: () => Promise<void> | void;
+	onSessionReset?: () => void;
 	onValidateAttempt: (
 		payload: GuessGameValidationPayloadInterface,
 	) => Promise<GuessGameValidationResultInterface>;
@@ -57,6 +60,8 @@ export const GuessGameExperience = ({
 	onNextRound,
 	onSaveScore,
 	onSaveScoreHistory,
+	onRoundSessionStart,
+	onSessionReset,
 	onValidateAttempt,
 }: GuessGameExperienceProps) => {
 	const [isSavingScore, setIsSavingScore] = useState(false);
@@ -82,6 +87,7 @@ export const GuessGameExperience = ({
 		setSolvedDescription(undefined);
 		setGuesses('');
 		autoSavedScoreRef.current = null;
+		onSessionReset?.();
 	};
 
 	const displayedGuesses = guesses || getMaskedWord(content?.wordLength);
@@ -197,6 +203,14 @@ export const GuessGameExperience = ({
 	};
 
 	useEffect(() => {
+		if (!content?.id) {
+			return;
+		}
+
+		void onRoundSessionStart?.();
+	}, [content?.id, onRoundSessionStart]);
+
+	useEffect(() => {
 		if (!isFinished) {
 			autoSavedScoreRef.current = null;
 			return;
@@ -207,8 +221,11 @@ export const GuessGameExperience = ({
 		}
 
 		autoSavedScoreRef.current = score;
-		void onSaveScoreHistory?.(score);
-	}, [isFinished, onSaveScoreHistory, score]);
+		void (async () => {
+			await onSaveScore?.(score);
+			await onSaveScoreHistory?.(score);
+		})();
+	}, [isFinished, onSaveScore, onSaveScoreHistory, score]);
 
 	return (
 		<Spin spinning={isLoading || isValidating || isSavingScore}>

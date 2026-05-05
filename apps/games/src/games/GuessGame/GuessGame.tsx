@@ -10,16 +10,16 @@ import {
 } from '@etnos/tools';
 import { GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { GuessGameExperience } from './GuessGameExperience';
 
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, playSound } = useGames(
-		user?.uid,
-	);
+	const { saveGameScore, saveGameScoreHistory, startGameSession, playSound } =
+		useGames(user?.uid);
 	const [round, setRound] = useState(0);
+	const gameSessionIdRef = useRef<string | null>(null);
 
 	const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug ?? '';
 
@@ -56,7 +56,24 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			GamesEnum.GUESS_GAME,
 			activeCharacterSlug,
 			score,
+			gameSessionIdRef.current,
 		);
+		gameSessionIdRef.current = null;
+	};
+
+	const handleRoundSessionStart = async () => {
+		if (!user?.uid || !activeCharacterSlug) {
+			return;
+		}
+
+		const row = await startGameSession(
+			GamesEnum.GUESS_GAME,
+			activeCharacterSlug,
+		);
+
+		if (row && typeof row === 'object' && row !== null && 'id' in row) {
+			gameSessionIdRef.current = (row as { id: string }).id;
+		}
 	};
 
 	return (
@@ -72,6 +89,10 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onPlaySound={playSound}
 			onSaveScore={handleSaveScore}
 			onSaveScoreHistory={handleSaveScoreHistory}
+			onRoundSessionStart={handleRoundSessionStart}
+			onSessionReset={() => {
+				gameSessionIdRef.current = null;
+			}}
 			onValidateAttempt={(payload) =>
 				validateGuessMutation.mutateAsync(payload)
 			}

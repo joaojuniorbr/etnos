@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { SchoolsService } from './schools.service';
+import { GamesService } from 'src/games/games.service';
 import { PrismaService } from 'src/prisma';
 import * as admin from 'firebase-admin';
 
@@ -231,6 +232,7 @@ const createSchoolsServiceMocks = (defaultSchool = createSchool()) => {
 describe('SchoolsService', () => {
   let service: SchoolsService;
   let prismaService: ReturnType<typeof createSchoolsServiceMocks>;
+  let gamesService: { getScoreHistoryForSchoolUser: jest.Mock };
   let mockedAdminAuth: {
     getUserByEmail: jest.Mock;
     createUser: jest.Mock;
@@ -322,6 +324,9 @@ describe('SchoolsService', () => {
 
   beforeEach(async () => {
     prismaService = createSchoolsServiceMocks();
+    gamesService = {
+      getScoreHistoryForSchoolUser: jest.fn().mockResolvedValue([]),
+    };
     mockedAdminAuth = {
       getUserByEmail: jest.fn(),
       createUser: jest.fn(),
@@ -334,6 +339,10 @@ describe('SchoolsService', () => {
         {
           provide: PrismaService,
           useValue: prismaService,
+        },
+        {
+          provide: GamesService,
+          useValue: gamesService,
         },
       ],
     }).compile();

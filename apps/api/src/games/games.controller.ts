@@ -226,8 +226,10 @@ export class GamesController {
     return this.gamesService.saveScoreHistory({
       slug: data.slug,
       characterSlug: data.characterSlug,
-      score: data.score,
+      score: data.score ?? 0,
       userId: req.user.uid,
+      phase: data.phase,
+      sessionId: data.sessionId,
     });
   }
 

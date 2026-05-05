@@ -17,13 +17,17 @@ import type {
 } from '@etnos/types';
 import * as admin from 'firebase-admin';
 import { randomBytes } from 'node:crypto';
+import { GamesService } from 'src/games/games.service';
 import { PrismaService } from 'src/prisma';
 
 const AVAILABLE_GAME_SLUGS = ['memory-game', 'guess-game'] as const;
 
 @Injectable()
 export class SchoolsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly gamesService: GamesService,
+  ) {}
 
   private getAvailableGameSlugs() {
     return [...AVAILABLE_GAME_SLUGS];
@@ -803,6 +807,31 @@ export class SchoolsService {
       .then((users) =>
         users.map((schoolUser) => this.mapSchoolUser(schoolUser)),
       );
+  }
+
+  async getSchoolUserGameScoreHistory(
+    viewerFirebaseUid: string,
+    schoolId: string,
+    studentFirebaseUid: string,
+  ) {
+    await this.assertViewerCanAccessSchool(viewerFirebaseUid, schoolId);
+
+    const student = await this.prismaService.user.findFirst({
+      where: {
+        firebaseUid: studentFirebaseUid,
+        school: schoolId,
+      },
+      select: { id: true },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Usuario nao encontrado nesta escola.');
+    }
+
+    return this.gamesService.getScoreHistoryForSchoolUser(
+      studentFirebaseUid,
+      schoolId,
+    );
   }
 
   async getSchoolRanking(gameSlug?: string): Promise<SchoolRankingInterface[]> {

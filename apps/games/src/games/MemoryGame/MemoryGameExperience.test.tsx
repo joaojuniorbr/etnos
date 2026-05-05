@@ -185,7 +185,7 @@ describe('MemoryGameExperience', () => {
 			screen.getByText('Escolha o nível para começar'),
 		).toBeTruthy();
 		expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
-		expect(onSaveScore).toHaveBeenCalledTimes(1);
+		expect(onSaveScore).toHaveBeenCalledTimes(2);
 	});
 
 	it('salva automaticamente só uma vez por finalização enquanto o score não muda', async () => {

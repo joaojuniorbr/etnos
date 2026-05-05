@@ -159,13 +159,16 @@ model GameScore {
 }
 
 model GameScoreHistory {
-  id            String   @id @default(cuid())
-  gameSlug      String   @map("game_slug") @db.VarChar(255)
-  characterSlug String   @map("character_slug") @db.VarChar(255)
+  id            String    @id @default(cuid())
+  gameSlug      String    @map("game_slug") @db.VarChar(255)
+  characterSlug String    @map("character_slug") @db.VarChar(255)
   score         Int
-  userId        String   @map("user_id") @db.VarChar(255)
-  schoolId      String?  @map("school_id") @db.VarChar(255)
-  createdAt     DateTime @default(now()) @map("created_at")
+  userId        String    @map("user_id") @db.VarChar(255)
+  schoolId      String?   @map("school_id") @db.VarChar(255)
+  startedAt     DateTime  @default(now()) @map("started_at")
+  endedAt       DateTime? @map("ended_at")
+  status        String    @default("completed") @db.VarChar(32)
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   @@index([userId], map: "game_score_histories_user_id_idx")
   @@index([schoolId], map: "game_score_histories_school_id_idx")

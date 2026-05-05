@@ -29,6 +29,10 @@ type MemoryGameExperienceProps = {
 	onPlaySound?: (sound: MemoryGameSound) => void;
 	onSaveScoreHistory?: (score: number) => Promise<void> | void;
 	onSaveScore?: (score: number) => Promise<void> | void;
+	/** Chamado ao escolher o nível (início da partida) — API registra auto-save de início */
+	onGameSessionStart?: () => Promise<void> | void;
+	/** Chamado ao voltar ao seletor de nível (reinício) */
+	onSessionReset?: () => void;
 	selectedCharacter?: CharacterInterface;
 };
 
@@ -41,6 +45,8 @@ export const MemoryGameExperience = ({
 	onPlaySound,
 	onSaveScoreHistory,
 	onSaveScore,
+	onGameSessionStart,
+	onSessionReset,
 	selectedCharacter,
 }: MemoryGameExperienceProps) => {
 	const availableLevels = useMemo(
@@ -96,15 +102,17 @@ export const MemoryGameExperience = ({
 		onPlaySound,
 	});
 
-	const handleSelectLevel = (level: number) => {
+	const handleSelectLevel = async (level: number) => {
 		setSelectedLevel(level);
 		setLevelContent(getMemoryGameLevelContent(content, level));
+		await onGameSessionStart?.();
 	};
 
 	const handleRestart = () => {
 		autoSavedScoreRef.current = null;
 		setSelectedLevel(null);
 		setLevelContent([]);
+		onSessionReset?.();
 	};
 
 	const handleSaveScore = async () => {
@@ -122,8 +130,11 @@ export const MemoryGameExperience = ({
 		}
 
 		autoSavedScoreRef.current = score;
-		void onSaveScoreHistory?.(score);
-	}, [isFinished, onSaveScoreHistory, score]);
+		void (async () => {
+			await onSaveScore?.(score);
+			await onSaveScoreHistory?.(score);
+		})();
+	}, [isFinished, onSaveScore, onSaveScoreHistory, score]);
 
 	let contentView: React.ReactNode;
 

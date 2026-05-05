@@ -1,8 +1,13 @@
 export interface ScoreHistory {
+	id?: string;
 	characterName: string;
 	gameName: string;
 	score: number;
-	timestamp: string; // ISO 8601 string
+	/** Momento de referência da partida (fim ou único instante em registros antigos) */
+	timestamp: string;
+	startedAt?: string;
+	endedAt?: string | null;
+	status?: string;
 }
 
 export interface ScoreHistoryResponse {

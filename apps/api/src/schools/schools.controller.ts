@@ -91,6 +91,26 @@ export class SchoolsController {
     return this.schoolsService.getUsersBySchool(req.user.uid, id, search);
   }
 
+  @Get(':id/users/:studentUid/game-score-history')
+  @UseGuards(SchoolRoleGuard)
+  @ApiOperation({
+    summary:
+      'Historico de partidas (pontuacao) de um aluno da escola, mais recente primeiro',
+  })
+  @ApiParam({ name: 'id', description: 'ID da escola' })
+  @ApiParam({ name: 'studentUid', description: 'Firebase UID do aluno' })
+  async getSchoolUserGameScoreHistory(
+    @Req() req,
+    @Param('id') schoolId: string,
+    @Param('studentUid') studentUid: string,
+  ) {
+    return this.schoolsService.getSchoolUserGameScoreHistory(
+      req.user.uid,
+      schoolId,
+      studentUid,
+    );
+  }
+
   @Get(':id/game-access')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({

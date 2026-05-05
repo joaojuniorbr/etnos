@@ -42,6 +42,7 @@ describe('MemoryGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -98,6 +99,7 @@ describe('MemoryGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -126,6 +128,7 @@ describe('MemoryGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -154,6 +157,7 @@ describe('MemoryGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -180,6 +184,7 @@ describe('MemoryGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 
@@ -197,6 +202,7 @@ describe('MemoryGame', () => {
 			'memory-game',
 			'anita',
 			250,
+			null,
 		);
 	});
 

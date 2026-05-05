@@ -1,5 +1,6 @@
 import { api } from '../../helpers';
 import type {
+	ScoreHistory,
 	SchoolInterface,
 	SchoolGameAccessInterface,
 	SchoolRankingInterface,
@@ -129,6 +130,15 @@ export const schoolService = {
 	removeAccessUserFromSchool(schoolId: string, userId: string) {
 		return api
 			.delete(`/schools/${schoolId}/access-users/${userId}`)
+			.then((res) => res.data);
+	},
+
+	getUserGameScoreHistory(
+		schoolId: string,
+		studentUid: string,
+	): Promise<ScoreHistory[]> {
+		return api
+			.get(`/schools/${schoolId}/users/${studentUid}/game-score-history`)
 			.then((res) => res.data);
 	},
 };

@@ -138,6 +138,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -186,6 +187,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValueOnce({
@@ -247,6 +249,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValueOnce({
@@ -285,6 +288,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -343,6 +347,7 @@ describe('GuessGame', () => {
 			'guess-game',
 			'anita',
 			440,
+			null,
 		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 440);
 	});
@@ -352,6 +357,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound,
 		});
 		validateAttemptMock
@@ -442,6 +448,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound,
 		});
 		validateAttemptMock.mockResolvedValue({
@@ -511,6 +518,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -546,7 +554,12 @@ describe('GuessGame', () => {
 			await props.handleSaveScore();
 		});
 
-		expect(saveGameScoreHistory).toHaveBeenCalledWith('guess-game', 'anita', 0);
+		expect(saveGameScoreHistory).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			0,
+			null,
+		);
 		expect(saveGameScore).not.toHaveBeenCalled();
 	});
 
@@ -584,6 +597,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore: vi.fn().mockResolvedValue(undefined),
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound,
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
@@ -606,6 +620,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -655,6 +670,7 @@ describe('GuessGame', () => {
 			'guess-game',
 			'anita',
 			1000,
+			null,
 		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 		expect(refetchScore).toHaveBeenCalled();
@@ -670,6 +686,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -706,6 +723,7 @@ describe('GuessGame', () => {
 			'guess-game',
 			'anita',
 			1000,
+			null,
 		);
 		expect(saveGameScore).not.toHaveBeenCalled();
 	});
@@ -717,6 +735,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		useGameScoreMock.mockReturnValue({
@@ -753,6 +772,7 @@ describe('GuessGame', () => {
 			'guess-game',
 			'anita',
 			1000,
+			null,
 		);
 		expect(saveGameScore).toHaveBeenCalledWith('guess-game', 'anita', 1000);
 		expect(refetchScore).toHaveBeenCalled();
@@ -767,6 +787,7 @@ describe('GuessGame', () => {
 		useGamesMock.mockReturnValue({
 			saveGameScore,
 			saveGameScoreHistory,
+			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
 		});
 		validateAttemptMock.mockResolvedValueOnce({

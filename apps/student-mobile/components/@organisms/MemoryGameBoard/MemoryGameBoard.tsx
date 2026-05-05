@@ -130,8 +130,11 @@ export const MemoryGameBoard = ({
 		}
 
 		savedHistoryRef.current = score;
-		void onSaveScoreHistory(score);
-	}, [isFinished, onSaveScoreHistory, score]);
+		void (async () => {
+			await onSaveBestScore(score);
+			await onSaveScoreHistory(score);
+		})();
+	}, [isFinished, onSaveBestScore, onSaveScoreHistory, score]);
 
 	const handleCardPress = (id: number) => {
 		if (!levelConfig || isChecking || isFinished) {

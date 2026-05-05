@@ -2,9 +2,23 @@
 
 import { type ReactNode, useDeferredValue, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Input, Select, Table, Tag, TagProps, message } from 'antd';
+import {
+	Button,
+	Input,
+	Modal,
+	Select,
+	Table,
+	Tag,
+	TagProps,
+	message,
+} from 'antd';
 import { schoolService, usersService, useAuth } from '@etnos/tools';
-import type { SchoolUserInterface, UserRole } from '@etnos/types';
+import {
+	GameNameEnum,
+	type ScoreHistory,
+	type SchoolUserInterface,
+	type UserRole,
+} from '@etnos/types';
 import { Card, Title } from '@etnos/ui';
 
 const roleLabels: Record<Extract<UserRole, 'student' | 'teacher'>, string> = {
@@ -28,6 +42,37 @@ const roleOptions = Object.entries(roleLabels).map(([value, label]) => ({
 	label,
 }));
 
+const formatDateTimePtBr = (iso?: string | null) => {
+	if (!iso) {
+		return '—';
+	}
+
+	try {
+		return new Intl.DateTimeFormat('pt-BR', {
+			dateStyle: 'short',
+			timeStyle: 'medium',
+		}).format(new Date(iso));
+	} catch {
+		return '—';
+	}
+};
+
+const gameDisplayName = (slug: string) =>
+	GameNameEnum[slug as keyof typeof GameNameEnum] ?? slug;
+
+const sessionStatusLabel = (status?: string) => {
+	switch (status) {
+		case 'completed':
+			return 'Concluída';
+		case 'in_progress':
+			return 'Em andamento';
+		case 'abandoned':
+			return 'Encerrada (sem conclusão)';
+		default:
+			return status ?? '—';
+	}
+};
+
 interface SchoolUsersProps {
 	schoolId: string;
 }
@@ -39,17 +84,36 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 	const [sendingRecoveryEmail, setSendingRecoveryEmail] = useState<
 		string | null
 	>(null);
+	const [historyUser, setHistoryUser] = useState<SchoolUserInterface | null>(
+		null,
+	);
 	const deferredUserSearch = useDeferredValue(userSearch.trim());
 
 	const isAdmin = user?.role?.includes('admin');
 	const isSchoolProfile = user?.role?.includes('school') && !isAdmin;
 	const isTeacherProfile = user?.role?.includes('teacher') && !isAdmin;
 
+	const canLoadSchoolUsers = (isSchoolProfile || isAdmin) && Boolean(schoolId);
+
 	const { data: users = [], isLoading } = useQuery<SchoolUserInterface[]>({
 		queryKey: ['schools', 'viewer', 'users', schoolId, deferredUserSearch],
 		queryFn: () =>
 			schoolService.getUsersBySchool(schoolId, deferredUserSearch || undefined),
-		enabled: isSchoolProfile && Boolean(schoolId),
+		enabled: canLoadSchoolUsers,
+	});
+
+	const { data: gameHistory = [], isLoading: historyLoading } = useQuery<
+		ScoreHistory[]
+	>({
+		queryKey: [
+			'schools',
+			schoolId,
+			'user-game-score-history',
+			historyUser?.uid,
+		],
+		queryFn: () =>
+			schoolService.getUserGameScoreHistory(schoolId, historyUser?.uid ?? ''),
+		enabled: Boolean(schoolId && historyUser?.uid),
 	});
 
 	const updateRolesMutation = useMutation({
@@ -85,11 +149,55 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 		updateRolesMutation.mutate({ userId, roles });
 	};
 
+	const historyColumns = [
+		{
+			title: 'Jogo',
+			dataIndex: 'gameName',
+			key: 'gameName',
+			render: (slug: string) => gameDisplayName(slug),
+		},
+		{
+			title: 'Personagem',
+			dataIndex: 'characterName',
+			key: 'characterName',
+			render: (v: string | undefined) => v || '—',
+		},
+		{
+			title: 'Início',
+			key: 'startedAt',
+			render: (_: unknown, row: ScoreHistory) =>
+				formatDateTimePtBr(row.startedAt ?? row.timestamp),
+		},
+		{
+			title: 'Fim',
+			key: 'endedAt',
+			render: (_: unknown, row: ScoreHistory) =>
+				formatDateTimePtBr(row.endedAt),
+		},
+		{
+			title: 'Pontos',
+			dataIndex: 'score',
+			key: 'score',
+			align: 'right' as const,
+		},
+		{
+			title: 'Situação',
+			key: 'status',
+			render: (_: unknown, row: ScoreHistory) => sessionStatusLabel(row.status),
+		},
+	];
+
+	const renderOpenHistory = (record: SchoolUserInterface) => (
+		<Button type="link" size="small" onClick={() => setHistoryUser(record)}>
+			Ver partidas
+		</Button>
+	);
+
 	if (isTeacherProfile) {
 		return (
 			<Card>
 				<p className="text-slate-600">
-					Seu perfil pode acompanhar o ranking, mas nao possui permissao para
+					Seu perfil pode acompanhar o ranking, mas não possui permissão para
 					gerenciar usuarios desta escola.
 				</p>
 			</Card>
@@ -136,6 +244,33 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 
 	return (
 		<Card>
+			<Modal
+				title={
+					historyUser
+						? `Partidas — ${
+								historyUser.childName ?? historyUser.parentName ?? 'Usuário'
+							}`
+						: 'Histórico de partidas'
+				}
+				open={Boolean(historyUser)}
+				onCancel={() => setHistoryUser(null)}
+				footer={null}
+				width={960}
+				destroyOnHidden
+			>
+				<Table<ScoreHistory>
+					rowKey={(row) =>
+						row.id ?? `${row.timestamp}-${row.gameName}-${row.characterName}`
+					}
+					loading={historyLoading}
+					dataSource={gameHistory}
+					columns={historyColumns}
+					pagination={{ pageSize: 10, showSizeChanger: true }}
+					locale={{
+						emptyText: 'Nenhuma partida registrada para este usuário.',
+					}}
+				/>
+			</Modal>
 			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
 				<div>
 					<Title className="mb-1">Usuários da escola</Title>
@@ -153,21 +288,23 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 					className="w-full md:max-w-md"
 				/>
 			</div>
-
 			<div className="block md:hidden">
 				<Table
 					rowKey="uid"
 					loading={isLoading}
-					pagination={{ pageSize: 8 }}
 					dataSource={users}
 					columns={[
 						{
 							title: 'Dados',
 							render: (record: SchoolUserInterface) => (
 								<div className="flex flex-col gap-1">
-									<div className="font-bold text-slate-600 text-sm">
-										{record.childName}
-									</div>
+									<button
+										type="button"
+										className="font-bold text-slate-600 text-sm text-left underline-offset-2 hover:underline"
+										onClick={() => setHistoryUser(record)}
+									>
+										{record.childName || '—'}
+									</button>
 									<div className="text-xs truncate overflow-hidden text-ellipsis">
 										{record.parentName}
 									</div>
@@ -175,7 +312,8 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 										{record.email}
 									</div>
 									<div className="pt-1">{renderRoles(record)}</div>
-									<div className="pt-1">
+									<div className="pt-1 flex flex-wrap gap-2 items-center">
+										{renderOpenHistory(record)}
 										<Button
 											onClick={() => handleSendPassword(record.email)}
 											loading={sendingRecoveryEmail === record.email}
@@ -194,7 +332,6 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 					}}
 				/>
 			</div>
-
 			<div className="hidden md:block">
 				<Table
 					rowKey="uid"
@@ -205,7 +342,15 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 						{
 							title: 'Aluno',
 							dataIndex: 'childName',
-							render: (value: string | null | undefined) => value || '-',
+							render: (value: string | null | undefined, record) => (
+								<Button
+									type="link"
+									className="p-0 h-auto font-semibold"
+									onClick={() => setHistoryUser(record)}
+								>
+									{value || '—'}
+								</Button>
+							),
 						},
 						{
 							title: 'Responsável',
@@ -223,6 +368,13 @@ export const SchoolUsers = ({ schoolId }: SchoolUsersProps) => {
 							width: 220,
 							render: (_: unknown, record: SchoolUserInterface) =>
 								renderRoles(record),
+						},
+						{
+							title: 'Partidas',
+							key: 'history',
+							width: 130,
+							render: (_: unknown, record: SchoolUserInterface) =>
+								renderOpenHistory(record),
 						},
 						{
 							title: 'Ação',

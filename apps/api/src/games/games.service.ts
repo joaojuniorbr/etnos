@@ -91,6 +91,43 @@ export class GamesService {
     }
   }
 
+  private async abandonInProgressSessions(userId: string) {
+    await this.prismaService.gameScoreHistory.updateMany({
+      where: {
+        userId,
+        status: 'in_progress',
+      },
+      data: {
+        endedAt: new Date(),
+        status: 'abandoned',
+      },
+    });
+  }
+
+  private mapScoreHistoryRow(item: {
+    id: string;
+    gameSlug: string;
+    characterSlug: string;
+    score: number;
+    startedAt: Date;
+    endedAt: Date | null;
+    status: string;
+    createdAt: Date;
+  }): ScoreHistory {
+    const endedOrStarted = item.endedAt ?? item.startedAt;
+
+    return {
+      id: item.id,
+      characterName: item.characterSlug,
+      gameName: item.gameSlug,
+      score: item.score,
+      timestamp: endedOrStarted.toISOString(),
+      startedAt: item.startedAt.toISOString(),
+      endedAt: item.endedAt ? item.endedAt.toISOString() : null,
+      status: item.status,
+    };
+  }
+
   async getGames() {
     return this.prismaService.gameConfig.findMany();
   }
@@ -111,16 +148,28 @@ export class GamesService {
         gameSlug: gameSlug || undefined,
       },
       orderBy: {
-        createdAt: 'desc',
+        startedAt: 'desc',
       },
     });
 
-    return history.map((item) => ({
-      characterName: item.characterSlug,
-      gameName: item.gameSlug,
-      score: item.score,
-      timestamp: item.createdAt.toISOString(),
-    }));
+    return history.map((item) => this.mapScoreHistoryRow(item));
+  }
+
+  async getScoreHistoryForSchoolUser(
+    studentFirebaseUid: string,
+    schoolId: string,
+  ): Promise<ScoreHistory[]> {
+    const rows = await this.prismaService.gameScoreHistory.findMany({
+      where: {
+        userId: studentFirebaseUid,
+        schoolId,
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    return rows.map((item) => this.mapScoreHistoryRow(item));
   }
 
   async saveConfig(data: ConfigGamesInterface) {
@@ -386,6 +435,8 @@ export class GamesService {
     characterSlug: string;
     score: number;
     userId: string;
+    phase?: 'start' | 'end';
+    sessionId?: string;
   }) {
     await this.assertUserCanAccessGameContent(
       data.userId,
@@ -393,8 +444,65 @@ export class GamesService {
       data.characterSlug,
     );
 
-    const user = await this.getUserSchoolId(data.userId);
-    const schoolId = user?.school ?? null;
+    const userRow = await this.getUserSchoolId(data.userId);
+    const schoolId = userRow?.school ?? null;
+
+    if (data.phase === 'start') {
+      await this.abandonInProgressSessions(data.userId);
+
+      return this.prismaService.gameScoreHistory.create({
+        data: {
+          gameSlug: data.slug,
+          characterSlug: data.characterSlug,
+          score: 0,
+          userId: data.userId,
+          schoolId,
+          startedAt: new Date(),
+          endedAt: null,
+          status: 'in_progress',
+        },
+      });
+    }
+
+    if (data.phase === 'end' && data.sessionId) {
+      const existing = await this.prismaService.gameScoreHistory.findFirst({
+        where: {
+          id: data.sessionId,
+          userId: data.userId,
+          status: 'in_progress',
+        },
+      });
+
+      if (!existing) {
+        await this.abandonInProgressSessions(data.userId);
+        const now = new Date();
+
+        return this.prismaService.gameScoreHistory.create({
+          data: {
+            gameSlug: data.slug,
+            characterSlug: data.characterSlug,
+            score: data.score,
+            userId: data.userId,
+            schoolId,
+            startedAt: now,
+            endedAt: now,
+            status: 'completed',
+          },
+        });
+      }
+
+      return this.prismaService.gameScoreHistory.update({
+        where: { id: data.sessionId },
+        data: {
+          score: data.score,
+          endedAt: new Date(),
+          status: 'completed',
+        },
+      });
+    }
+
+    await this.abandonInProgressSessions(data.userId);
+    const now = new Date();
 
     return this.prismaService.gameScoreHistory.create({
       data: {
@@ -403,6 +511,9 @@ export class GamesService {
         score: data.score,
         userId: data.userId,
         schoolId,
+        startedAt: now,
+        endedAt: now,
+        status: 'completed',
       },
     });
   }

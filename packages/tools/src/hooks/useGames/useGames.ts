@@ -50,10 +50,25 @@ export const useGames = (userId?: string) => {
 			});
 	};
 
+	const startGameSession = (slug: string, characterSlug: string) => {
+		if (!userId) {
+			return Promise.resolve(null);
+		}
+
+		return scoreGamesService.saveScoreHistory(
+			slug,
+			characterSlug,
+			0,
+			userId,
+			{ phase: 'start' },
+		);
+	};
+
 	const saveGameScoreHistory = (
 		slug: string,
 		characterSlug: string,
 		score: number,
+		sessionId?: string | null,
 	) => {
 		if (!userId) {
 			return;
@@ -64,6 +79,9 @@ export const useGames = (userId?: string) => {
 			characterSlug,
 			score,
 			userId,
+			sessionId
+				? { phase: 'end', sessionId: sessionId ?? undefined }
+				: undefined,
 		);
 	};
 
@@ -80,6 +98,7 @@ export const useGames = (userId?: string) => {
 	return {
 		allGames,
 		saveGameScore,
+		startGameSession,
 		saveGameScoreHistory,
 		playSound,
 	};

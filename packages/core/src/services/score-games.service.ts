@@ -30,6 +30,7 @@ export const createScoreGamesService = (api: AxiosInstance) => ({
 		characterSlug: string,
 		score: number,
 		userId: string,
+		options?: { phase?: 'start' | 'end'; sessionId?: string },
 	) {
 		return withUserGuard(
 			userId,
@@ -39,6 +40,7 @@ export const createScoreGamesService = (api: AxiosInstance) => ({
 						slug,
 						characterSlug,
 						score,
+						...options,
 					})
 					.then((response) => response.data),
 			null,

@@ -50,6 +50,9 @@ describe('GamesService', () => {
     gameScoreHistory: {
       create: jest.Mock;
       findMany: jest.Mock;
+      updateMany: jest.Mock;
+      update: jest.Mock;
+      findFirst: jest.Mock;
     };
     $transaction: jest.Mock;
   };
@@ -158,6 +161,9 @@ describe('GamesService', () => {
     gameScoreHistory: {
       create: jest.fn(),
       findMany: jest.fn().mockResolvedValue([]),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+      update: jest.fn(),
+      findFirst: jest.fn(),
     },
     $transaction: jest.fn((callback) => callback(mockPrismaService)),
   };
@@ -654,6 +660,7 @@ describe('GamesService', () => {
 
     await service.saveScoreHistory(scoreData);
 
+    expect(prismaService.gameScoreHistory.updateMany).toHaveBeenCalled();
     expect(prismaService.user.findUnique).toHaveBeenCalledWith({
       where: {
         firebaseUid: 'user-123',
@@ -664,13 +671,14 @@ describe('GamesService', () => {
       },
     });
     expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         gameSlug: 'memory-game',
         characterSlug: 'joao-silva',
         score: 150,
         userId: 'user-123',
         schoolId: 'school-1',
-      },
+        status: 'completed',
+      }),
     });
   });
 
@@ -689,13 +697,14 @@ describe('GamesService', () => {
     await service.saveScoreHistory(scoreData);
 
     expect(prismaService.gameScoreHistory.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         gameSlug: 'memory-game',
         characterSlug: 'joao-silva',
         score: 90,
         userId: 'user-123',
         schoolId: null,
-      },
+        status: 'completed',
+      }),
     });
     expect(prismaService.gameScore.create).not.toHaveBeenCalled();
   });
@@ -712,8 +721,13 @@ describe('GamesService', () => {
     const createdAt = new Date();
     prismaService.gameScoreHistory.findMany.mockResolvedValueOnce([
       {
+        id: 'hist-1',
         gameSlug: 'memory-game',
+        characterSlug: 'anita',
         score: 100,
+        startedAt: createdAt,
+        endedAt: createdAt,
+        status: 'completed',
         createdAt,
       },
     ]);
@@ -722,13 +736,18 @@ describe('GamesService', () => {
 
     expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', gameSlug: undefined },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { startedAt: 'desc' },
     });
     expect(result).toEqual([
       {
+        id: 'hist-1',
+        characterName: 'anita',
         gameName: 'memory-game',
         score: 100,
         timestamp: createdAt.toISOString(),
+        startedAt: createdAt.toISOString(),
+        endedAt: createdAt.toISOString(),
+        status: 'completed',
       },
     ]);
   });
@@ -738,7 +757,7 @@ describe('GamesService', () => {
 
     expect(prismaService.gameScoreHistory.findMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', gameSlug: 'guess-game' },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { startedAt: 'desc' },
     });
   });
 });

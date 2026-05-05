@@ -1,3 +1,30 @@
+# [1.8.0](https://github.com/joaojuniorbr/etnos/compare/v1.7.0...v1.8.0) (2026-05-05)
+
+### cadastro
+
+#### ✨ Features (Novidades)
+
+* [CU-86ah76396] Implementar Onboarding Pós-Login para Vínculo com Escola ([fbd8d9d](https://github.com/joaojuniorbr/etnos/commit/fbd8d9d1a8ce30b3592f8f21bc10750f10ad7c5a))
+* [CU-86ah79f9a] Cadastro Simplificado de Estudante via Link da Escola ([9993ed2](https://github.com/joaojuniorbr/etnos/commit/9993ed2a916da14c9f22634cce95d34c36f248ea))
+
+### histórico
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq06kz] Histórico de Atividades do Aluno ([fd792be](https://github.com/joaojuniorbr/etnos/commit/fd792be0539e64a84f7a861de8913d27fb2bafbc))
+
+### sonar
+
+#### 🎨 Estilo/UI
+
+* correção de issues do sonar ([28bd3b9](https://github.com/joaojuniorbr/etnos/commit/28bd3b9ee07009ee394e7ee9c73ae2fec95c0e82))
+
+### testes
+
+#### ✅ Testes
+
+* ajustes nos testes unitários ([c5fb37d](https://github.com/joaojuniorbr/etnos/commit/c5fb37d6ffab6bcb588322767560c2bcccb40c83))
+
 # [1.7.0](https://github.com/joaojuniorbr/etnos/compare/v1.6.0...v1.7.0) (2026-04-30)
 
 ### admin

@@ -10,16 +10,24 @@ import {
 } from '@etnos/tools';
 import { GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GuessGameExperience } from './GuessGameExperience';
 
 export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, startGameSession, playSound } =
-		useGames(user?.uid);
+	const games = useGames(user?.uid);
+	const {
+		saveGameScore,
+		saveGameScoreHistory,
+		startGameSession,
+		playSound,
+		submitGameNps,
+	} = games;
+	const getGameNps = games.getGameNps ?? (() => Promise.resolve(null));
 	const [round, setRound] = useState(0);
 	const gameSessionIdRef = useRef<string | null>(null);
+	const [hasSubmittedGameNps, setHasSubmittedGameNps] = useState(false);
 
 	const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug ?? '';
 
@@ -35,6 +43,17 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 	const validateGuessMutation = useMutation({
 		mutationFn: guessGameContentService.validateAttempt,
 	});
+
+	useEffect(() => {
+		if (!user?.uid) {
+			setHasSubmittedGameNps(false);
+			return;
+		}
+
+		void getGameNps(GamesEnum.GUESS_GAME).then((nps) => {
+			setHasSubmittedGameNps(Boolean(nps));
+		});
+	}, [getGameNps, user?.uid]);
 
 	const handleSaveScore = async (score: number) => {
 		const currentBestScore = scoreGame?.score ?? 0;
@@ -96,6 +115,13 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onValidateAttempt={(payload) =>
 				validateGuessMutation.mutateAsync(payload)
 			}
+			npsEnabled={Boolean(user?.uid && activeCharacterSlug && !hasSubmittedGameNps)}
+			npsGameSlug={GamesEnum.GUESS_GAME}
+			npsCharacterSlug={activeCharacterSlug}
+			onSubmitGameNps={async (...args) => {
+				await submitGameNps(...args);
+				setHasSubmittedGameNps(true);
+			}}
 		/>
 	);
 };

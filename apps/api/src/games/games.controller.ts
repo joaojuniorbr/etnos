@@ -27,6 +27,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { GameDto } from './dto/game.dto';
 import { SaveScoreDto } from './dto/save-score.dto';
+import { SaveGameNpsDto } from './dto/save-game-nps.dto';
 import { SaveMemoryGameContentDto } from './dto/save-memory-game-content.dto';
 import { SaveGuessGameContentDto } from './dto/save-guess-game-content.dto';
 import { ValidateGuessGameDto } from './dto/validate-guess-game.dto';
@@ -269,6 +270,31 @@ export class GamesController {
     return this.gamesService.getScoreGame({
       slug,
       characterSlug,
+      userId: req.user.uid,
+    });
+  }
+
+  @Post('nps')
+  @ApiOperation({ summary: 'Registra feedback NPS (nota 1–5) após o jogo' })
+  @ApiBody({ type: SaveGameNpsDto })
+  @ApiResponse({ status: 201, description: 'Feedback registrado com sucesso.' })
+  async saveGameNps(@Req() req, @Body() data: SaveGameNpsDto) {
+    return this.gamesService.saveGameNps({
+      slug: data.slug,
+      characterSlug: data.characterSlug,
+      rating: data.rating,
+      comment: data.comment,
+      userId: req.user.uid,
+    });
+  }
+
+  @Get('nps/:slug')
+  @ApiOperation({ summary: 'Retorna se o usuário já avaliou o jogo' })
+  @ApiParam({ name: 'slug', required: true })
+  @ApiResponse({ status: 200, description: 'Status de avaliação retornado.' })
+  async getGameNps(@Req() req, @Param('slug') slug: string) {
+    return this.gamesService.getUserGameNps({
+      slug,
       userId: req.user.uid,
     });
   }

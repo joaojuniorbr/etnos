@@ -9,7 +9,7 @@ import {
 } from 'react-icons/ri';
 import { Spin } from 'antd';
 import Image from 'next/image';
-import { FinishGame, ScoreHighlight } from '../../components';
+import { FinishGame, GameNpsModal, ScoreHighlight } from '../../components';
 import { MemoryGameLevelSelector } from './MemoryGameLevelSelector';
 import { useMemoryGame } from './useMemoryGame';
 import { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
@@ -34,6 +34,16 @@ type MemoryGameExperienceProps = {
 	/** Chamado ao voltar ao seletor de nível (reinício) */
 	onSessionReset?: () => void;
 	selectedCharacter?: CharacterInterface;
+	/** Feedback NPS após vitória (usuário logado) */
+	npsEnabled?: boolean;
+	npsGameSlug?: string;
+	npsCharacterSlug?: string;
+	onSubmitGameNps?: (
+		gameSlug: string,
+		characterSlug: string,
+		rating: number,
+		comment?: string,
+	) => Promise<void>;
 };
 
 export const MemoryGameExperience = ({
@@ -48,6 +58,10 @@ export const MemoryGameExperience = ({
 	onGameSessionStart,
 	onSessionReset,
 	selectedCharacter,
+	npsEnabled = false,
+	npsGameSlug,
+	npsCharacterSlug,
+	onSubmitGameNps,
 }: MemoryGameExperienceProps) => {
 	const availableLevels = useMemo(
 		() => getAvailableMemoryGameLevels(content.length),
@@ -56,6 +70,7 @@ export const MemoryGameExperience = ({
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
 	const autoSavedScoreRef = useRef<number | null>(null);
+	const [npsOpen, setNpsOpen] = useState(false);
 
 	useEffect(() => {
 		if (!availableLevels.length) {
@@ -101,6 +116,18 @@ export const MemoryGameExperience = ({
 		matchDelayMs,
 		onPlaySound,
 	});
+
+	const canShowNps = Boolean(
+		npsEnabled && npsGameSlug && npsCharacterSlug && onSubmitGameNps,
+	);
+
+	useEffect(() => {
+		if (isFinished && canShowNps) {
+			setNpsOpen(true);
+		} else {
+			setNpsOpen(false);
+		}
+	}, [isFinished, canShowNps]);
 
 	const handleSelectLevel = async (level: number) => {
 		setSelectedLevel(level);
@@ -203,6 +230,15 @@ export const MemoryGameExperience = ({
 
 	return (
 		<Spin spinning={isLoading}>
+			{canShowNps && npsGameSlug && npsCharacterSlug && onSubmitGameNps ? (
+				<GameNpsModal
+					open={npsOpen}
+					onClose={() => setNpsOpen(false)}
+					onSubmit={(rating, comment) =>
+						onSubmitGameNps(npsGameSlug, npsCharacterSlug, rating, comment)
+					}
+				/>
+			) : null}
 			<div className="flex flex-col items-center gap-6">
 				<div className="fixed bg-white py-2 px-2 shadow-[0px_-4px_4px_0px_rgba(0,_0,_0,_0.05)] md:shadow-none md:p-0 md:bg-transparent md:relative bottom-0 left-0 w-full z-10">
 					<div className="grid grid-cols-4 gap-1 md:grid-cols-4 sm:gap-4 w-full">

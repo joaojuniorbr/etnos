@@ -8,6 +8,7 @@ const {
 	mockSelectedCharacter,
 	mockCharacters,
 	mockUseAuth,
+	mockUseGames,
 	mockUseUser,
 	mockHandleSelectedCharacter,
 	mockGetMyGameAccess,
@@ -36,6 +37,7 @@ const {
 			},
 		],
 		mockUseAuth: { onSignOut: vi.fn() },
+		mockUseGames: { submitGameNps: vi.fn() },
 		mockUseUser: { user: { uid: '123', email: 'user@teste.com' } },
 		mockHandleSelectedCharacter: vi.fn(),
 		mockGetMyGameAccess: vi.fn(() =>
@@ -70,6 +72,7 @@ mockUseCharacter.selectCharacter = mockHandleSelectedCharacter;
 
 vi.mock('@etnos/tools', () => ({
 	useAuth: () => mockUseAuth,
+	useGames: () => mockUseGames,
 	useCharacter: () => mockUseCharacter,
 	schoolService: {
 		getMyGameAccess: mockGetMyGameAccess,

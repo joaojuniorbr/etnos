@@ -128,4 +128,51 @@ describe('scoreGamesService', () => {
 		expect(result).toEqual([]);
 		expect(apiMock.get).not.toHaveBeenCalled();
 	});
+
+	it('deve enviar NPS quando userId existir', async () => {
+		apiMock.post.mockResolvedValueOnce({ data: { id: 'nps-1' } });
+
+		await scoreGamesService.submitGameNps(
+			'memory-game',
+			'anita',
+			5,
+			'user-1',
+			'Ótimo',
+		);
+
+		expect(apiMock.post).toHaveBeenCalledWith('/games/nps', {
+			slug: 'memory-game',
+			characterSlug: 'anita',
+			rating: 5,
+			comment: 'Ótimo',
+		});
+	});
+
+	it('deve retornar null quando userId não existir em submitGameNps', async () => {
+		const result = await scoreGamesService.submitGameNps(
+			'guess-game',
+			'anita',
+			3,
+			'',
+		);
+
+		expect(result).toBeNull();
+		expect(apiMock.post).not.toHaveBeenCalled();
+	});
+
+	it('deve buscar NPS do jogo quando userId existir', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { id: 'nps-1' } });
+
+		const result = await scoreGamesService.getGameNps('memory-game', 'user-1');
+
+		expect(apiMock.get).toHaveBeenCalledWith('/games/nps/memory-game');
+		expect(result).toEqual({ id: 'nps-1' });
+	});
+
+	it('deve retornar null quando userId não existir em getGameNps', async () => {
+		const result = await scoreGamesService.getGameNps('memory-game', '');
+
+		expect(result).toBeNull();
+		expect(apiMock.get).not.toHaveBeenCalled();
+	});
 });

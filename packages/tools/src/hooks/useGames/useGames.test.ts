@@ -28,6 +28,8 @@ vi.mock('../../services', () => ({
 	scoreGamesService: {
 		saveScore: vi.fn(),
 		saveScoreHistory: vi.fn(),
+		submitGameNps: vi.fn(),
+		getGameNps: vi.fn(),
 	},
 }));
 
@@ -230,6 +232,80 @@ describe('useGames hook', () => {
 
 		expect(scoreGamesService.saveScore).toHaveBeenCalled();
 		expect(message.error).toHaveBeenCalledWith('Erro ao salvar pontuação!');
+	});
+
+	it('deve exibir erro ao enviar NPS sem userId', async () => {
+		const { result } = renderHook(() => useGames());
+
+		await act(async () => {
+			await result.current.submitGameNps('memory-game', 'iara', 5);
+		});
+
+		expect(message.error).toHaveBeenCalledWith('Usuário não encontrado!');
+		expect(scoreGamesService.submitGameNps).not.toHaveBeenCalled();
+	});
+
+	it('deve enviar NPS com sucesso', async () => {
+		(scoreGamesService.submitGameNps as any).mockResolvedValueOnce({ id: 'n1' });
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await act(async () => {
+			await result.current.submitGameNps('guess-game', 'anita', 4, 'Legal');
+		});
+
+		expect(scoreGamesService.submitGameNps).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			4,
+			'user123',
+			'Legal',
+		);
+		expect(message.success).toHaveBeenCalledWith('Obrigado pelo seu feedback!');
+	});
+
+	it('deve exibir erro quando envio de NPS falhar', async () => {
+		(scoreGamesService.submitGameNps as any).mockRejectedValueOnce(
+			new Error('fail'),
+		);
+
+		const { result } = renderHook(() => useGames('user123'));
+
+		await act(async () => {
+			await result.current.submitGameNps('guess-game', 'anita', 4, 'Legal');
+		});
+
+		expect(scoreGamesService.submitGameNps).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			4,
+			'user123',
+			'Legal',
+		);
+		expect(message.error).toHaveBeenCalledWith(
+			'Não foi possível enviar o feedback.',
+		);
+	});
+
+	it('deve consultar NPS por jogo quando houver userId', async () => {
+		(scoreGamesService.getGameNps as any).mockResolvedValueOnce({ id: 'nps-1' });
+		const { result } = renderHook(() => useGames('user123'));
+
+		await expect(result.current.getGameNps('memory-game')).resolves.toEqual({
+			id: 'nps-1',
+		});
+
+		expect(scoreGamesService.getGameNps).toHaveBeenCalledWith(
+			'memory-game',
+			'user123',
+		);
+	});
+
+	it('deve retornar null ao consultar NPS sem userId', async () => {
+		const { result } = renderHook(() => useGames());
+
+		await expect(result.current.getGameNps('memory-game')).resolves.toBeNull();
+		expect(scoreGamesService.getGameNps).not.toHaveBeenCalled();
 	});
 
 	it('deve tocar o som correto ao chamar playSound()', () => {

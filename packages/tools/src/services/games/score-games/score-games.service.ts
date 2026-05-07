@@ -60,4 +60,29 @@ export const scoreGamesService = {
 			})
 			.then((res) => res.data);
 	},
+
+	submitGameNps(
+		slug: string,
+		characterSlug: string,
+		rating: number,
+		userId: string,
+		comment?: string,
+	) {
+		if (!userId) return Promise.resolve(null);
+
+		return api
+			.post('/games/nps', {
+				slug,
+				characterSlug,
+				rating,
+				comment,
+			})
+			.then((res) => res.data);
+	},
+
+	getGameNps(slug: string, userId: string) {
+		if (!userId) return Promise.resolve(null);
+
+		return api.get(`/games/nps/${slug}`).then((res) => res.data);
+	},
 };

@@ -67,4 +67,34 @@ export const createScoreGamesService = (api: AxiosInstance) => ({
 			[],
 		);
 	},
+
+	submitGameNps(
+		slug: string,
+		characterSlug: string,
+		rating: number,
+		userId: string,
+		comment?: string,
+	) {
+		return withUserGuard(
+			userId,
+			() =>
+				api
+					.post('/games/nps', {
+						slug,
+						characterSlug,
+						rating,
+						comment,
+					})
+					.then((response) => response.data),
+			null,
+		);
+	},
+
+	getGameNps(slug: string, userId: string) {
+		return withUserGuard(
+			userId,
+			() => api.get(`/games/nps/${slug}`).then((response) => response.data),
+			null,
+		);
+	},
 });

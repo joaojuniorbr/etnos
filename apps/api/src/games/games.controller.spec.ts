@@ -37,6 +37,8 @@ const mockGamesService = {
   getScoreHistory: jest.fn().mockResolvedValue([]),
   getScoreByUser: jest.fn().mockResolvedValue([]),
   getScoreGame: jest.fn().mockResolvedValue({ score: 100 }),
+  saveGameNps: jest.fn().mockResolvedValue({ id: 'nps-1' }),
+  getUserGameNps: jest.fn().mockResolvedValue(null),
 };
 
 describe('GamesController', () => {
@@ -307,6 +309,35 @@ describe('GamesController', () => {
       userId: 'user-1',
     });
     expect(result).toEqual({ score: 100 });
+  });
+
+  it('deve salvar feedback NPS', async () => {
+    await controller.saveGameNps(
+      { user: { uid: 'user-1' } },
+      {
+        slug: 'memory-game',
+        characterSlug: 'anita',
+        rating: 4,
+        comment: 'Legal',
+      },
+    );
+
+    expect(service.saveGameNps).toHaveBeenCalledWith({
+      slug: 'memory-game',
+      characterSlug: 'anita',
+      rating: 4,
+      comment: 'Legal',
+      userId: 'user-1',
+    });
+  });
+
+  it('deve consultar NPS já enviado por jogo', async () => {
+    await controller.getGameNps({ user: { uid: 'user-1' } }, 'memory-game');
+
+    expect(service.getUserGameNps).toHaveBeenCalledWith({
+      slug: 'memory-game',
+      userId: 'user-1',
+    });
   });
 
   it('deve retornar histórico de score do usuário', async () => {

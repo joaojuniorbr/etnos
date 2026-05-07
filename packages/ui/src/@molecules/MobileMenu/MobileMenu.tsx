@@ -1,6 +1,6 @@
 'use client';
 
-import { Drawer, Button, Menu, Image } from 'antd';
+import { Drawer, Button, Menu, Image, Modal, Rate, Input, message } from 'antd';
 import {
 	RiMenu3Line,
 	RiUserLine,
@@ -14,6 +14,11 @@ import {
 	RiNotificationLine,
 } from 'react-icons/ri';
 import type { CharacterInterface, UserProfileInterface } from '@etnos/types';
+import { GamesEnum } from '@etnos/types';
+import { useGames } from '@etnos/tools';
+import { useState } from 'react';
+
+const { TextArea } = Input;
 
 interface MobileMenuProps {
 	open?: boolean;
@@ -33,10 +38,51 @@ export const MobileMenu = ({
 	selectedCharacter,
 }: MobileMenuProps) => {
 	const profileImage = user?.photoURL || `https://robohash.org/${user?.email}`;
+	const { submitGameNps } = useGames(user?.uid);
+	const [isChooserOpen, setIsChooserOpen] = useState(false);
+	const [isNpsOpen, setIsNpsOpen] = useState(false);
+	const [selectedGameSlug, setSelectedGameSlug] = useState<GamesEnum | null>(null);
+	const [rating, setRating] = useState<number>(0);
+	const [comment, setComment] = useState('');
+	const [submittingNps, setSubmittingNps] = useState(false);
 
 	const hasAdminAccess =
 		user?.role?.includes('admin') || user?.role?.includes('school');
 	const isAdmin = user?.role?.includes('admin');
+
+	const canRate = Boolean(user?.uid && selectedCharacter?.slug);
+
+	const openNpsForm = (gameSlug: GamesEnum) => {
+		setSelectedGameSlug(gameSlug);
+		setIsChooserOpen(false);
+		setRating(0);
+		setComment('');
+		setIsNpsOpen(true);
+	};
+
+	const handleSubmitNps = async () => {
+		if (!selectedGameSlug || !selectedCharacter?.slug) {
+			return;
+		}
+
+		if (rating < 1) {
+			message.warning('Selecione uma nota de 1 a 5.');
+			return;
+		}
+
+		setSubmittingNps(true);
+		try {
+			await submitGameNps(
+				selectedGameSlug,
+				selectedCharacter.slug,
+				rating,
+				comment.trim() || undefined,
+			);
+			setIsNpsOpen(false);
+		} finally {
+			setSubmittingNps(false);
+		}
+	};
 
 	return (
 		<div className={user ? 'ui:block' : 'ui:md:hidden'}>
@@ -172,6 +218,17 @@ export const MobileMenu = ({
 								},
 							]}
 						/>
+						{canRate ? (
+							<div className="ui:pt-4 ui:mt-4 ui:border-t ui:border-slate-200">
+								<Button
+									type="primary"
+									block
+									onClick={() => setIsChooserOpen(true)}
+								>
+									Fazer avaliação
+								</Button>
+							</div>
+						) : null}
 					</>
 				) : (
 					<>
@@ -195,6 +252,56 @@ export const MobileMenu = ({
 					</>
 				)}
 			</Drawer>
+			<Modal
+				open={isChooserOpen}
+				title="Escolha o jogo para avaliar"
+				onCancel={() => setIsChooserOpen(false)}
+				footer={null}
+			>
+				<div className="ui:flex ui:flex-col ui:gap-2">
+					<Button block onClick={() => openNpsForm(GamesEnum.MEMORY_GAME)}>
+						Jogo da Memória
+					</Button>
+					<Button block onClick={() => openNpsForm(GamesEnum.GUESS_GAME)}>
+						Adivinhe
+					</Button>
+				</div>
+			</Modal>
+			<Modal
+				open={isNpsOpen}
+				title="Como foi sua experiência?"
+				onCancel={() => setIsNpsOpen(false)}
+				footer={null}
+			>
+				<p className="ui:text-slate-600 ui:mb-4 ui:m-0">
+					De 1 a 5, o quanto você gostou deste jogo?
+				</p>
+				<div className="ui:flex ui:justify-center ui:mb-4">
+					<Rate count={5} value={rating} onChange={setRating} />
+				</div>
+				<TextArea
+					placeholder="Quer contar algo a mais? (opcional)"
+					value={comment}
+					onChange={(event) => setComment(event.target.value)}
+					maxLength={2000}
+					showCount
+					rows={3}
+					className="ui:mb-4"
+				/>
+				<div className="ui:flex ui:flex-col-reverse ui:sm:flex-row ui:gap-2 ui:sm:justify-end">
+					<Button onClick={() => setIsNpsOpen(false)} disabled={submittingNps}>
+						Cancelar
+					</Button>
+					<Button
+						type="primary"
+						onClick={() => void handleSubmitNps()}
+						loading={submittingNps}
+						disabled={submittingNps}
+					>
+						Enviar
+					</Button>
+				</div>
+			</Modal>
 		</div>
 	);
 };

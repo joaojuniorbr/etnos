@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { api, signImage } from '@etnos/common';
+import { api } from '@etnos/common';
 import { SignUpForm } from '@etnos/ui';
 import { useAuth } from '@etnos/tools';
 import { useQuery } from '@tanstack/react-query';
@@ -38,17 +38,16 @@ export default function CadastroPage() {
 		<Spin spinning={isProfileLoading} size="large">
 			<div className="p-6 md:p-8">
 				<div className="container mx-auto">
-					<div className="flex flex-col w-full rounded bg-white shadow md:flex-row ">
-						{signImage && (
-							<Image
-								src={signImage?.url}
-								alt={signImage?.name}
-								width={800}
-								height={800}
-								className="object-cover object-center w-1/2 order-2 rounded-tr rounded-br hidden lg:block"
-								suppressHydrationWarning
-							/>
-						)}
+					<div className="flex flex-col w-full rounded bg-white shadow md:flex-row overflow-hidden">
+						<Image
+							src="/images/persona-tech.jpg"
+							alt="Cadastre-se para começar a jogar"
+							width={800}
+							height={800}
+							className="object-cover object-center w-full border-slate-200 md:border-l md:w-1/2 md:rounded-tr md:rounded-br aspect-square md:aspect-auto md:order-2"
+							suppressHydrationWarning
+						/>
+
 						<div className="p-6 md:p-8 lg:w-1/2">
 							<SignUpForm
 								schools={schools}

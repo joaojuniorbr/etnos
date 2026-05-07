@@ -368,4 +368,45 @@ describe('MemoryGame', () => {
 			useGamesMock.mock.results[0]?.value.saveGameScoreHistory,
 		).not.toHaveBeenCalled();
 	});
+
+	it('submete NPS do jogo e marca como respondido', async () => {
+		const submitGameNps = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
+			playSound: vi.fn(),
+			submitGameNps,
+			getGameNps: vi.fn().mockResolvedValue(null),
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			npsEnabled: boolean;
+			onSubmitGameNps: (
+				gameSlug: string,
+				characterSlug: string,
+				rating: number,
+				comment?: string,
+			) => Promise<void>;
+		};
+
+		expect(props.npsEnabled).toBe(true);
+
+		await act(async () => {
+			await props.onSubmitGameNps('memory-game', 'anita', 4, 'Legal');
+		});
+
+		expect(submitGameNps).toHaveBeenCalledWith(
+			'memory-game',
+			'anita',
+			4,
+			'Legal',
+		);
+		expect(
+			(memoryGameExperienceMock.mock.calls.at(-1)?.[0] as { npsEnabled: boolean })
+				.npsEnabled,
+		).toBe(false);
+	});
 });

@@ -176,6 +176,23 @@ model GameScoreHistory {
   @@map("game_score_histories")
 }
 
+model GameNpsResponse {
+  id            String   @id @default(cuid())
+  rating        Int
+  comment       String?  @db.Text
+  userId        String   @map("user_id") @db.VarChar(255)
+  characterSlug String   @map("character_slug") @db.VarChar(255)
+  gameSlug      String   @map("game_slug") @db.VarChar(255)
+  schoolId      String?  @map("school_id") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([userId], map: "game_nps_responses_user_id_idx")
+  @@index([schoolId], map: "game_nps_responses_school_id_idx")
+  @@index([gameSlug], map: "game_nps_responses_game_slug_idx")
+  @@index([createdAt], map: "game_nps_responses_created_at_idx")
+  @@map("game_nps_responses")
+}
+
 model Midia {
   id        String   @id @default(cuid())
   url       String

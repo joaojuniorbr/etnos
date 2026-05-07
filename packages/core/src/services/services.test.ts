@@ -107,6 +107,21 @@ describe('core services', () => {
 		]);
 		await expect(service.getScoreHistory('user-1')).resolves.toEqual([{ score: 10 }]);
 
+		await expect(
+			service.submitGameNps('memory-game', 'anita', 4, '', 'x'),
+		).resolves.toBeNull();
+		await expect(
+			service.submitGameNps('memory-game', 'anita', 4, 'user-1', 'ok'),
+		).resolves.toEqual({ ok: true });
+		api.post.mockResolvedValueOnce({ data: { id: 'nps-2' } });
+		await expect(
+			service.submitGameNps('guess-game', 'iara', 5, 'user-1'),
+		).resolves.toEqual({ id: 'nps-2' });
+		await expect(service.getGameNps('guess-game', '')).resolves.toBeNull();
+		await expect(service.getGameNps('guess-game', 'user-1')).resolves.toEqual([
+			{ score: 10 },
+		]);
+
 		expect(api.post).toHaveBeenCalledWith('/games/score', {
 			slug: 'memory-game',
 			characterSlug: 'anita',
@@ -124,6 +139,19 @@ describe('core services', () => {
 		expect(api.get).toHaveBeenCalledWith('/games/score/history', {
 			params: undefined,
 		});
+		expect(api.post).toHaveBeenCalledWith('/games/nps', {
+			slug: 'memory-game',
+			characterSlug: 'anita',
+			rating: 4,
+			comment: 'ok',
+		});
+		expect(api.post).toHaveBeenCalledWith('/games/nps', {
+			slug: 'guess-game',
+			characterSlug: 'iara',
+			rating: 5,
+			comment: undefined,
+		});
+		expect(api.get).toHaveBeenCalledWith('/games/nps/guess-game');
 	});
 
 	it('notifications service usa os endpoints esperados', async () => {

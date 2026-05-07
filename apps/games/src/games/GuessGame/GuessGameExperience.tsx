@@ -16,7 +16,7 @@ import type {
 	GuessGameValidationPayloadInterface,
 	GuessGameValidationResultInterface,
 } from '@etnos/types';
-import { FinishGame, ScoreHighlight } from '../../components';
+import { FinishGame, GameNpsModal, ScoreHighlight } from '../../components';
 import {
 	getGuessGameLetterHitPoints,
 	getGuessGameRevealedLettersCount,
@@ -48,6 +48,15 @@ type GuessGameExperienceProps = {
 	onValidateAttempt: (
 		payload: GuessGameValidationPayloadInterface,
 	) => Promise<GuessGameValidationResultInterface>;
+	npsEnabled?: boolean;
+	npsGameSlug?: string;
+	npsCharacterSlug?: string;
+	onSubmitGameNps?: (
+		gameSlug: string,
+		characterSlug: string,
+		rating: number,
+		comment?: string,
+	) => Promise<void>;
 };
 
 export const GuessGameExperience = ({
@@ -63,6 +72,10 @@ export const GuessGameExperience = ({
 	onRoundSessionStart,
 	onSessionReset,
 	onValidateAttempt,
+	npsEnabled = false,
+	npsGameSlug,
+	npsCharacterSlug,
+	onSubmitGameNps,
 }: GuessGameExperienceProps) => {
 	const [isSavingScore, setIsSavingScore] = useState(false);
 	const [guesses, setGuesses] = useState('');
@@ -75,6 +88,19 @@ export const GuessGameExperience = ({
 	const [solvedWord, setSolvedWord] = useState<string>();
 	const [solvedDescription, setSolvedDescription] = useState<string>();
 	const autoSavedScoreRef = useRef<number | null>(null);
+	const [npsOpen, setNpsOpen] = useState(false);
+
+	const canShowNps = Boolean(
+		npsEnabled && npsGameSlug && npsCharacterSlug && onSubmitGameNps,
+	);
+
+	useEffect(() => {
+		if (isFinished && !isLoser && canShowNps) {
+			setNpsOpen(true);
+		} else {
+			setNpsOpen(false);
+		}
+	}, [isFinished, isLoser, canShowNps]);
 
 	const resetRound = () => {
 		setAttempt('');
@@ -229,6 +255,15 @@ export const GuessGameExperience = ({
 
 	return (
 		<Spin spinning={isLoading || isValidating || isSavingScore}>
+			{canShowNps && npsGameSlug && npsCharacterSlug && onSubmitGameNps ? (
+				<GameNpsModal
+					open={npsOpen}
+					onClose={() => setNpsOpen(false)}
+					onSubmit={(rating, comment) =>
+						onSubmitGameNps(npsGameSlug, npsCharacterSlug, rating, comment)
+					}
+				/>
+			) : null}
 			<h1 className="text-2xl mb-4 font-bold uppercase text-primary text-center">
 				Jogo Adivinhe a Palavra
 			</h1>

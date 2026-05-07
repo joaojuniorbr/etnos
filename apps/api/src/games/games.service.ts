@@ -587,6 +587,50 @@ export class GamesService {
     ) as Promise<ScoreInterface | null>;
   }
 
+  async saveGameNps(data: {
+    slug: string;
+    characterSlug: string;
+    rating: number;
+    comment?: string | null;
+    userId: string;
+  }) {
+    await this.assertUserCanAccessGameContent(
+      data.userId,
+      data.slug,
+      data.characterSlug,
+    );
+
+    const userRow = await this.getUserSchoolId(data.userId);
+    const schoolId = userRow?.school ?? null;
+    const comment =
+      typeof data.comment === 'string' && data.comment.trim().length > 0
+        ? data.comment.trim()
+        : null;
+
+    return this.prismaService.gameNpsResponse.create({
+      data: {
+        rating: data.rating,
+        comment,
+        userId: data.userId,
+        characterSlug: data.characterSlug,
+        gameSlug: data.slug,
+        schoolId,
+      },
+    });
+  }
+
+  getUserGameNps(data: { slug: string; userId: string }) {
+    return this.prismaService.gameNpsResponse.findFirst({
+      where: {
+        gameSlug: data.slug,
+        userId: data.userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   getScoreByUser(userId: string) {
     return this.prismaService.gameScore.findMany({
       where: { userId },

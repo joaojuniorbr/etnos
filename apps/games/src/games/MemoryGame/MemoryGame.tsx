@@ -19,8 +19,16 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 
 	const { selectedCharacter } = useCharacter({ fetchList: false });
 	const { user } = useUser();
-	const { saveGameScore, saveGameScoreHistory, startGameSession, playSound } =
-		useGames(user?.uid);
+	const games = useGames(user?.uid);
+	const {
+		saveGameScore,
+		saveGameScoreHistory,
+		startGameSession,
+		playSound,
+		submitGameNps,
+	} = games;
+	const getGameNps = games.getGameNps ?? (() => Promise.resolve(null));
+	const [hasSubmittedGameNps, setHasSubmittedGameNps] = useState(false);
 
 	const gameSessionIdRef = useRef<string | null>(null);
 
@@ -43,6 +51,17 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 	useEffect(() => {
 		scoreGameRefetch();
 	}, [selectedCharacter, scoreGameRefetch]);
+
+	useEffect(() => {
+		if (!user?.uid) {
+			setHasSubmittedGameNps(false);
+			return;
+		}
+
+		void getGameNps(GamesEnum.MEMORY_GAME).then((nps) => {
+			setHasSubmittedGameNps(Boolean(nps));
+		});
+	}, [getGameNps, user?.uid]);
 
 	const handleSaveScore = async (score: number) => {
 		const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug;
@@ -95,6 +114,8 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		}
 	};
 
+	const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug ?? '';
+
 	const imageCover = () => {
 		if (gamesConfig && selectedCharacter) {
 			return gamesConfig.find(
@@ -120,6 +141,13 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				gameSessionIdRef.current = null;
 			}}
 			selectedCharacter={selectedCharacter}
+			npsEnabled={Boolean(user?.uid && activeCharacterSlug && !hasSubmittedGameNps)}
+			npsGameSlug={GamesEnum.MEMORY_GAME}
+			npsCharacterSlug={activeCharacterSlug}
+			onSubmitGameNps={async (...args) => {
+				await submitGameNps(...args);
+				setHasSubmittedGameNps(true);
+			}}
 		/>
 	);
 };

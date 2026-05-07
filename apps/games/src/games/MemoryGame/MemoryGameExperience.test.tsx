@@ -36,6 +36,23 @@ vi.mock('../../components', () => ({
 			<button onClick={handleSaveScore}>save</button>
 		</div>
 	),
+	GameNpsModal: ({
+		open,
+		onClose,
+		onSubmit,
+	}: {
+		open: boolean;
+		onClose: () => void;
+		onSubmit: (rating: number, comment?: string) => Promise<void>;
+	}) =>
+		open ? (
+			<div data-testid="game-nps-modal">
+				<button onClick={onClose}>close nps</button>
+				<button onClick={() => void onSubmit(5, 'Excelente')}>
+					submit nps
+				</button>
+			</div>
+		) : null,
 	ScoreHighlight: ({
 		label,
 		score,
@@ -186,6 +203,81 @@ describe('MemoryGameExperience', () => {
 		).toBeTruthy();
 		expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
 		expect(onSaveScore).toHaveBeenCalledTimes(2);
+	});
+
+	it('abre, fecha e submete o NPS quando a partida finaliza', async () => {
+		const onSubmitGameNps = vi.fn().mockResolvedValue(undefined);
+		useMemoryGameMock.mockReturnValue({
+			cards: [],
+			handleCardClick: vi.fn(),
+			initializeGame: vi.fn(),
+			isFinished: true,
+			matchedPairs: 2,
+			moves: 4,
+			score: 120,
+			totalPairs: 2,
+		});
+
+		const { rerender } = render(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+				npsEnabled
+				npsGameSlug="memory-game"
+				npsCharacterSlug="anita"
+				onSubmitGameNps={onSubmitGameNps}
+			/>,
+		);
+
+		fireEvent.click(screen.getByText('Nível 1'));
+
+		expect(await screen.findByTestId('game-nps-modal')).toBeTruthy();
+
+		fireEvent.click(screen.getByText('close nps'));
+		expect(screen.queryByTestId('game-nps-modal')).toBeNull();
+
+		rerender(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+				npsEnabled={false}
+				npsGameSlug="memory-game"
+				npsCharacterSlug="anita"
+				onSubmitGameNps={onSubmitGameNps}
+			/>,
+		);
+
+		rerender(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+				npsEnabled
+				npsGameSlug="memory-game"
+				npsCharacterSlug="anita"
+				onSubmitGameNps={onSubmitGameNps}
+			/>,
+		);
+
+		await screen.findByTestId('game-nps-modal');
+		fireEvent.click(screen.getByText('submit nps'));
+
+		await waitFor(() => {
+			expect(onSubmitGameNps).toHaveBeenCalledWith(
+				'memory-game',
+				'anita',
+				5,
+				'Excelente',
+			);
+		});
 	});
 
 	it('salva automaticamente só uma vez por finalização enquanto o score não muda', async () => {

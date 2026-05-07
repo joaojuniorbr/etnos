@@ -10,6 +10,7 @@ const useGameScoreMock = vi.fn();
 const useUserMock = vi.fn();
 const validateAttemptMock = vi.fn();
 const finishGameMock = vi.fn();
+const gameNpsModalMock = vi.fn();
 const playableContent = {
 	id: 'guess-1',
 	title: 'Chimarrao',
@@ -112,6 +113,20 @@ vi.mock('../../components', () => ({
 		finishGameMock(props);
 		return <div data-testid="finish-game" />;
 	},
+	GameNpsModal: (props: {
+		onClose: () => void;
+		onSubmit: (rating: number, comment?: string) => Promise<void>;
+	}) => {
+		gameNpsModalMock(props);
+		return (
+			<div data-testid="game-nps-modal">
+				<button onClick={() => props.onClose()}>close nps</button>
+				<button onClick={() => void props.onSubmit(5, 'Muito bom')}>
+					submit nps
+				</button>
+			</div>
+		);
+	},
 	ScoreHighlight: ({
 		label,
 		score,
@@ -140,6 +155,7 @@ describe('GuessGame', () => {
 			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
 			startGameSession: vi.fn().mockResolvedValue(null),
 			playSound: vi.fn(),
+			submitGameNps: vi.fn().mockResolvedValue(undefined),
 		});
 		useGuessGamePlayableContentMock.mockReturnValue({
 			data: playableContent,
@@ -861,5 +877,47 @@ describe('GuessGame', () => {
 
 		expect(saveGameScore).not.toHaveBeenCalled();
 		expect(saveGameScoreHistory).not.toHaveBeenCalled();
+	});
+
+	it('submete NPS do jogo e desabilita novas respostas', async () => {
+		const submitGameNps = vi.fn().mockResolvedValue(undefined);
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
+			playSound: vi.fn(),
+			submitGameNps,
+			getGameNps: vi.fn().mockResolvedValue(null),
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		fireEvent.click(screen.getByText('close nps'));
+
+		await act(async () => {
+			fireEvent.click(screen.getByText('submit nps'));
+		});
+
+		expect(submitGameNps).toHaveBeenCalledWith(
+			'guess-game',
+			'anita',
+			5,
+			'Muito bom',
+		);
+		expect(gameNpsModalMock).toHaveBeenCalled();
 	});
 });

@@ -54,6 +54,10 @@ describe('GamesService', () => {
       update: jest.Mock;
       findFirst: jest.Mock;
     };
+    gameNpsResponse: {
+      create: jest.Mock;
+      findFirst: jest.Mock;
+    };
     $transaction: jest.Mock;
   };
 
@@ -164,6 +168,10 @@ describe('GamesService', () => {
       updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       update: jest.fn(),
       findFirst: jest.fn(),
+    },
+    gameNpsResponse: {
+      create: jest.fn().mockResolvedValue({ id: 'nps-1' }),
+      findFirst: jest.fn().mockResolvedValue(null),
     },
     $transaction: jest.fn((callback) => callback(mockPrismaService)),
   };
@@ -707,6 +715,103 @@ describe('GamesService', () => {
       }),
     });
     expect(prismaService.gameScore.create).not.toHaveBeenCalled();
+  });
+
+  it('deve registrar resposta de NPS com escola e comentário opcional', async () => {
+    const created = {
+      id: 'nps-1',
+      rating: 5,
+      comment: 'Muito bom',
+      userId: 'user-123',
+      characterSlug: 'joao-silva',
+      gameSlug: 'memory-game',
+      schoolId: 'school-1',
+      createdAt: new Date(),
+    };
+    prismaService.gameNpsResponse.create.mockResolvedValueOnce(created);
+
+    const result = await service.saveGameNps({
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      rating: 5,
+      comment: 'Muito bom',
+      userId: 'user-123',
+    });
+
+    expect(prismaService.gameNpsResponse.create).toHaveBeenCalledWith({
+      data: {
+        rating: 5,
+        comment: 'Muito bom',
+        userId: 'user-123',
+        characterSlug: 'joao-silva',
+        gameSlug: 'memory-game',
+        schoolId: 'school-1',
+      },
+    });
+    expect(result).toEqual(created);
+  });
+
+  it('deve registrar NPS com comentário vazio como null', async () => {
+    prismaService.gameNpsResponse.create.mockResolvedValueOnce({ id: 'nps-2' });
+
+    await service.saveGameNps({
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      rating: 3,
+      comment: '   ',
+      userId: 'user-123',
+    });
+
+    expect(prismaService.gameNpsResponse.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        comment: null,
+        rating: 3,
+      }),
+    });
+  });
+
+  it('deve registrar NPS sem escola quando o usuário não for encontrado', async () => {
+    prismaService.user.findUnique.mockResolvedValueOnce({
+      school: 'school-1',
+      roles: ['student'],
+    });
+    prismaService.user.findUnique.mockResolvedValueOnce(null);
+    prismaService.gameNpsResponse.create.mockResolvedValueOnce({ id: 'nps-4' });
+
+    await service.saveGameNps({
+      slug: 'memory-game',
+      characterSlug: 'joao-silva',
+      rating: 4,
+      userId: 'user-123',
+    });
+
+    expect(prismaService.gameNpsResponse.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        rating: 4,
+        comment: null,
+        schoolId: null,
+      }),
+    });
+  });
+
+  it('deve consultar NPS por jogo e usuário', async () => {
+    prismaService.gameNpsResponse.findFirst.mockResolvedValueOnce({ id: 'nps-3' });
+
+    const result = await service.getUserGameNps({
+      slug: 'guess-game',
+      userId: 'user-123',
+    });
+
+    expect(prismaService.gameNpsResponse.findFirst).toHaveBeenCalledWith({
+      where: {
+        gameSlug: 'guess-game',
+        userId: 'user-123',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    expect(result).toEqual({ id: 'nps-3' });
   });
 
   it('deve listar score por usuário', async () => {

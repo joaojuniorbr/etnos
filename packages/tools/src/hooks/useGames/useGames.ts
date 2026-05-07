@@ -93,11 +93,41 @@ export const useGames = (userId?: string) => {
 		};
 	};
 
+	const submitGameNps = (
+		slug: string,
+		characterSlug: string,
+		rating: number,
+		comment?: string,
+	) => {
+		if (!userId) {
+			message.error('Usuário não encontrado!');
+			return Promise.resolve();
+		}
+		return scoreGamesService
+			.submitGameNps(slug, characterSlug, rating, userId, comment)
+			.then(() => {
+				message.success('Obrigado pelo seu feedback!');
+			})
+			.catch(() => {
+				message.error('Não foi possível enviar o feedback.');
+			});
+	};
+
+	const getGameNps = (slug: string) => {
+		if (!userId) {
+			return Promise.resolve(null);
+		}
+
+		return scoreGamesService.getGameNps(slug, userId);
+	};
+
 	return {
 		allGames,
 		saveGameScore,
 		startGameSession,
 		saveGameScoreHistory,
 		playSound,
+		submitGameNps,
+		getGameNps,
 	};
 };

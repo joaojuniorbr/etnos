@@ -1,3 +1,24 @@
+# [1.9.0](https://github.com/joaojuniorbr/etnos/compare/v1.8.0...v1.9.0) (2026-05-07)
+
+### avaliação
+
+#### ✨ Features (Novidades)
+
+* foi adicionado um novo fluxo de avaliação ([765447f](https://github.com/joaojuniorbr/etnos/commit/765447f03abbbe219520080669fff9b020536a59))
+
+### ci
+
+#### 🐛 Bug Fixes (Correções)
+
+* roolback das tarefas do ci-main ([a03d1b2](https://github.com/joaojuniorbr/etnos/commit/a03d1b2c1340c9976e237af59ba756e0d59154b4))
+* ajuste na task validate do ci ([ac0b36d](https://github.com/joaojuniorbr/etnos/commit/ac0b36d17ac2553403383da3fb6e27ab83c06477))
+
+### documentação
+
+#### 📝 Documentação
+
+* atualizada a documentação do projeto ([d0a4bdd](https://github.com/joaojuniorbr/etnos/commit/d0a4bdd1189629d55e82d446f4bf14d4b64b3202))
+
 # [1.8.0](https://github.com/joaojuniorbr/etnos/compare/v1.7.0...v1.8.0) (2026-05-05)
 
 ### cadastro

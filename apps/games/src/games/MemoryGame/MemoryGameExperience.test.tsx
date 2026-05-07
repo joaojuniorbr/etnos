@@ -198,9 +198,7 @@ describe('MemoryGameExperience', () => {
 		fireEvent.click(screen.getByText('save'));
 		fireEvent.click(screen.getByText('restart'));
 
-		expect(
-			screen.getByText('Escolha o nível para começar'),
-		).toBeTruthy();
+		expect(screen.getByText('Escolha o nível para começar')).toBeTruthy();
 		expect(onSaveScoreHistory).toHaveBeenCalledTimes(1);
 		expect(onSaveScore).toHaveBeenCalledTimes(2);
 	});

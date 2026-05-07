@@ -55,13 +55,9 @@ export const useGames = (userId?: string) => {
 			return Promise.resolve(null);
 		}
 
-		return scoreGamesService.saveScoreHistory(
-			slug,
-			characterSlug,
-			0,
-			userId,
-			{ phase: 'start' },
-		);
+		return scoreGamesService.saveScoreHistory(slug, characterSlug, 0, userId, {
+			phase: 'start',
+		});
 	};
 
 	const saveGameScoreHistory = (

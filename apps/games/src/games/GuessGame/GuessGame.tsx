@@ -115,7 +115,9 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onValidateAttempt={(payload) =>
 				validateGuessMutation.mutateAsync(payload)
 			}
-			npsEnabled={Boolean(user?.uid && activeCharacterSlug && !hasSubmittedGameNps)}
+			npsEnabled={Boolean(
+				user?.uid && activeCharacterSlug && !hasSubmittedGameNps,
+			)}
 			npsGameSlug={GamesEnum.GUESS_GAME}
 			npsCharacterSlug={activeCharacterSlug}
 			onSubmitGameNps={async (...args) => {

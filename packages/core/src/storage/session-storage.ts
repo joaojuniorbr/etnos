@@ -109,10 +109,7 @@ export const createSessionStorage = (storage: StorageAdapter) => {
 			if (Number.isFinite(expiresInSeconds) && expiresInSeconds > 0) {
 				const expiresAt =
 					Date.now() + expiresInSeconds * MILLISECONDS_PER_SECOND;
-				await storage.setItem(
-					AUTH_EXPIRES_AT_STORAGE_KEY,
-					String(expiresAt),
-				);
+				await storage.setItem(AUTH_EXPIRES_AT_STORAGE_KEY, String(expiresAt));
 			}
 		}
 
@@ -211,7 +208,10 @@ export const createSessionStorage = (storage: StorageAdapter) => {
 			return null;
 		}
 
-		if (session.expiresAt && session.expiresAt - now <= TOKEN_REFRESH_BUFFER_MS) {
+		if (
+			session.expiresAt &&
+			session.expiresAt - now <= TOKEN_REFRESH_BUFFER_MS
+		) {
 			refreshPromise ??= refreshStoredAuthToken(apiKey).finally(() => {
 				refreshPromise = null;
 			});

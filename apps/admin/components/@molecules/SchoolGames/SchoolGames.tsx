@@ -28,17 +28,20 @@ export const SchoolGames = ({ schoolId, schoolName }: SchoolGamesProps) => {
 		label: GameNameEnum[gameSlug],
 	}));
 
-	const { data: schoolGameAccess, isLoading } = useQuery<SchoolGameAccessInterface>({
-		queryKey: ['schools', 'game-access', schoolId],
-		queryFn: () => schoolService.getGameAccessBySchool(schoolId),
-		enabled: Boolean(schoolId),
-	});
+	const { data: schoolGameAccess, isLoading } =
+		useQuery<SchoolGameAccessInterface>({
+			queryKey: ['schools', 'game-access', schoolId],
+			queryFn: () => schoolService.getGameAccessBySchool(schoolId),
+			enabled: Boolean(schoolId),
+		});
 
 	const updateMutation = useMutation({
 		mutationFn: (payload: UpdateSchoolGameAccessPayload) =>
 			schoolService.updateGameAccessBySchool(schoolId, payload),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ['schools', 'game-access'] });
+			void queryClient.invalidateQueries({
+				queryKey: ['schools', 'game-access'],
+			});
 			message.success('Configuração da escola atualizada com sucesso');
 		},
 		onError: () => {
@@ -63,7 +66,10 @@ export const SchoolGames = ({ schoolId, schoolName }: SchoolGamesProps) => {
 			isSaving={updateMutation.isPending}
 			onSave={(payload) => updateMutation.mutate(payload)}
 			onResetToDefault={() =>
-				updateMutation.mutate({ enabledGameSlugs: [], enabledCharacterSlugs: [] })
+				updateMutation.mutate({
+					enabledGameSlugs: [],
+					enabledCharacterSlugs: [],
+				})
 			}
 		/>
 	);

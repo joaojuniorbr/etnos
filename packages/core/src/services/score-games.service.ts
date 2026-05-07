@@ -1,8 +1,11 @@
 import type { AxiosInstance } from 'axios';
 import type { ScoreHistory, ScoreInterface } from '@etnos/types';
 
-const withUserGuard = <T>(userId: string, callback: () => Promise<T>, fallback: T) =>
-	userId ? callback() : Promise.resolve(fallback);
+const withUserGuard = <T>(
+	userId: string,
+	callback: () => Promise<T>,
+	fallback: T,
+) => (userId ? callback() : Promise.resolve(fallback));
 
 export const createScoreGamesService = (api: AxiosInstance) => ({
 	saveScore(

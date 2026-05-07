@@ -251,8 +251,8 @@ export default function EscolasPage() {
 								<Title className="mb-1">Acessos ao painel da escola</Title>
 								<p className="text-slate-600 text-sm">
 									Defina quais perfis com role <code>school</code> podem
-									visualizar a escola selecionada. Se o e-mail ainda não existir,
-									o usuário será cadastrado automaticamente.
+									visualizar a escola selecionada. Se o e-mail ainda não
+									existir, o usuário será cadastrado automaticamente.
 								</p>
 							</div>
 
@@ -260,9 +260,7 @@ export default function EscolasPage() {
 								<Input
 									placeholder="email@escola.com"
 									value={schoolAccessEmail}
-									onChange={(event) =>
-										setSchoolAccessEmail(event.target.value)
-									}
+									onChange={(event) => setSchoolAccessEmail(event.target.value)}
 								/>
 								<Button
 									type="primary"

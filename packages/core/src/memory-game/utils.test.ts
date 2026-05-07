@@ -67,10 +67,8 @@ describe('memory-game utils', () => {
 	});
 
 	it('seleciona conteúdo do nível usando o embaralhamento informado', () => {
-		const result = getMemoryGameLevelContent(
-			content,
-			1,
-			<T>(items: T[]) => [...items].reverse(),
+		const result = getMemoryGameLevelContent(content, 1, <T>(items: T[]) =>
+			[...items].reverse(),
 		);
 
 		expect(result).toEqual([
@@ -86,13 +84,11 @@ describe('memory-game utils', () => {
 			{ id: 1, name: 'A', image: 'a.jpg', isFlipped: true, isMatched: false },
 		];
 
-		const result = resolveMemoryGameTurn(
-			cards,
-			[0, 1],
-			100,
-			1,
-			{ pointAddition: 100, pointBonus: 50, pointPenalty: 50 },
-		);
+		const result = resolveMemoryGameTurn(cards, [0, 1], 100, 1, {
+			pointAddition: 100,
+			pointBonus: 50,
+			pointPenalty: 50,
+		});
 
 		expect(result).toEqual({
 			cards: [
@@ -113,19 +109,23 @@ describe('memory-game utils', () => {
 			{ id: 2, name: 'B', image: 'b.jpg', isFlipped: false, isMatched: false },
 		];
 
-		const result = resolveMemoryGameTurn(
-			cards,
-			[0, 1],
-			100,
-			0,
-			{ pointAddition: 100, pointBonus: 50, pointPenalty: 50 },
-		);
+		const result = resolveMemoryGameTurn(cards, [0, 1], 100, 0, {
+			pointAddition: 100,
+			pointBonus: 50,
+			pointPenalty: 50,
+		});
 
 		expect(result).toEqual({
 			cards: [
 				{ id: 0, name: 'A', image: 'a.jpg', isFlipped: true, isMatched: true },
 				{ id: 1, name: 'A', image: 'a.jpg', isFlipped: true, isMatched: true },
-				{ id: 2, name: 'B', image: 'b.jpg', isFlipped: false, isMatched: false },
+				{
+					id: 2,
+					name: 'B',
+					image: 'b.jpg',
+					isFlipped: false,
+					isMatched: false,
+				},
 			],
 			score: 200,
 			isFinished: false,
@@ -141,19 +141,35 @@ describe('memory-game utils', () => {
 			{ id: 2, name: 'C', image: 'c.jpg', isFlipped: false, isMatched: false },
 		];
 
-		const result = resolveMemoryGameTurn(
-			cards,
-			[0, 1],
-			100,
-			2,
-			{ pointAddition: 100, pointBonus: 50, pointPenalty: 50 },
-		);
+		const result = resolveMemoryGameTurn(cards, [0, 1], 100, 2, {
+			pointAddition: 100,
+			pointBonus: 50,
+			pointPenalty: 50,
+		});
 
 		expect(result).toEqual({
 			cards: [
-				{ id: 0, name: 'A', image: 'a.jpg', isFlipped: false, isMatched: false },
-				{ id: 1, name: 'B', image: 'b.jpg', isFlipped: false, isMatched: false },
-				{ id: 2, name: 'C', image: 'c.jpg', isFlipped: false, isMatched: false },
+				{
+					id: 0,
+					name: 'A',
+					image: 'a.jpg',
+					isFlipped: false,
+					isMatched: false,
+				},
+				{
+					id: 1,
+					name: 'B',
+					image: 'b.jpg',
+					isFlipped: false,
+					isMatched: false,
+				},
+				{
+					id: 2,
+					name: 'C',
+					image: 'c.jpg',
+					isFlipped: false,
+					isMatched: false,
+				},
 			],
 			score: 50,
 			isFinished: false,

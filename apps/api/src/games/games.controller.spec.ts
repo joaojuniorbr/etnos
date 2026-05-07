@@ -122,7 +122,10 @@ describe('GamesController', () => {
   it('deve listar imagens de memory game', async () => {
     await controller.getMemoryGameImages({ user: { uid: 'user-1' } }, 'char-1');
 
-    expect(service.getMemoryGameImages).toHaveBeenCalledWith('char-1', 'user-1');
+    expect(service.getMemoryGameImages).toHaveBeenCalledWith(
+      'char-1',
+      'user-1',
+    );
   });
 
   it('deve listar conteúdo de guess game', async () => {

@@ -29,12 +29,16 @@ export class SendNotificationDto {
   @IsEnum(NotificationTargetType)
   targetType: NotificationTargetType;
 
-  @ApiPropertyOptional({ description: 'ID da escola (obrigatório se targetType=SCHOOL)' })
+  @ApiPropertyOptional({
+    description: 'ID da escola (obrigatório se targetType=SCHOOL)',
+  })
   @IsOptional()
   @IsString()
   schoolId?: string;
 
-  @ApiPropertyOptional({ description: 'ID do usuário (obrigatório se targetType=INDIVIDUAL)' })
+  @ApiPropertyOptional({
+    description: 'ID do usuário (obrigatório se targetType=INDIVIDUAL)',
+  })
   @IsOptional()
   @IsString()
   userId?: string;

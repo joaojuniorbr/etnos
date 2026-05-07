@@ -82,9 +82,12 @@ describe('notificationsService', () => {
 			schoolId: 'school-1',
 		});
 
-		expect(apiMock.get).toHaveBeenCalledWith('/notifications/recipients-count', {
-			params: { targetType: 'SCHOOL', schoolId: 'school-1' },
-		});
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/notifications/recipients-count',
+			{
+				params: { targetType: 'SCHOOL', schoolId: 'school-1' },
+			},
+		);
 		expect(result).toEqual({ count: 3 });
 	});
 

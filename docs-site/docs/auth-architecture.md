@@ -16,6 +16,7 @@ As peças principais desse fluxo são:
 - `packages/tools/authSession`, que guarda a sessão local e faz o refresh do
   token;
 - `packages/ui/AuthProtected`, que protege as áreas autenticadas.
+- `apps/student-mobile`, que reutiliza os mesmos contratos via `@etnos/core`.
 
 ## Como o fluxo funciona
 
@@ -87,6 +88,13 @@ a sessão ainda esteja dentro da janela de atividade permitida.
 
 1. o frontend chama `POST /auth/recovery`;
 2. a API usa o Firebase Identity Toolkit para disparar o e-mail de reset.
+
+### Onboarding e vínculo com escola
+
+Após autenticar, o estudante pode passar por um onboarding para completar dados
+de perfil e vínculo escolar (inclusive por link/código de escola). Esse fluxo
+é usado para garantir que o perfil retornado em `GET /auth/profile` esteja
+completo para navegação nos apps.
 
 ## Perfil autenticado
 

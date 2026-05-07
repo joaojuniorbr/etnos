@@ -192,12 +192,7 @@ describe('useGames hook', () => {
 		const { result } = renderHook(() => useGames('user123'));
 
 		await act(async () => {
-			await result.current.saveGameScoreHistory(
-				'memory-game',
-				'iara',
-				200,
-				'',
-			);
+			await result.current.saveGameScoreHistory('memory-game', 'iara', 200, '');
 		});
 
 		expect(scoreGamesService.saveScoreHistory).toHaveBeenCalledWith(
@@ -246,7 +241,9 @@ describe('useGames hook', () => {
 	});
 
 	it('deve enviar NPS com sucesso', async () => {
-		(scoreGamesService.submitGameNps as any).mockResolvedValueOnce({ id: 'n1' });
+		(scoreGamesService.submitGameNps as any).mockResolvedValueOnce({
+			id: 'n1',
+		});
 
 		const { result } = renderHook(() => useGames('user123'));
 
@@ -288,7 +285,9 @@ describe('useGames hook', () => {
 	});
 
 	it('deve consultar NPS por jogo quando houver userId', async () => {
-		(scoreGamesService.getGameNps as any).mockResolvedValueOnce({ id: 'nps-1' });
+		(scoreGamesService.getGameNps as any).mockResolvedValueOnce({
+			id: 'nps-1',
+		});
 		const { result } = renderHook(() => useGames('user123'));
 
 		await expect(result.current.getGameNps('memory-game')).resolves.toEqual({

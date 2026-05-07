@@ -15,6 +15,8 @@ export const createCharactersService = (api: AxiosInstance) => ({
 	},
 
 	getCharacterAvatars(slug: string): Promise<MidiaInterface[]> {
-		return api.get(`/characters/${slug}/avatars`).then((response) => response.data);
+		return api
+			.get(`/characters/${slug}/avatars`)
+			.then((response) => response.data);
 	},
 });

@@ -38,6 +38,8 @@ export const createAuthService = (api: AxiosInstance) => ({
 	},
 
 	recovery(email: string) {
-		return api.post('/auth/recovery', { email }).then((response) => response.data);
+		return api
+			.post('/auth/recovery', { email })
+			.then((response) => response.data);
 	},
 });

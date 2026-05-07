@@ -223,7 +223,9 @@ export default function ProfilePage() {
 				</SectionCard>
 
 				<SectionCard>
-					<LoadingState isLoading={isUpdatingNotifications || isSyncingPushToken}>
+					<LoadingState
+						isLoading={isUpdatingNotifications || isSyncingPushToken}
+					>
 						<View style={tw`gap-4`}>
 							<View style={tw`flex-row items-center justify-between gap-4`}>
 								<View style={tw`flex-1`}>

@@ -41,7 +41,9 @@ export const MobileMenu = ({
 	const { submitGameNps } = useGames(user?.uid);
 	const [isChooserOpen, setIsChooserOpen] = useState(false);
 	const [isNpsOpen, setIsNpsOpen] = useState(false);
-	const [selectedGameSlug, setSelectedGameSlug] = useState<GamesEnum | null>(null);
+	const [selectedGameSlug, setSelectedGameSlug] = useState<GamesEnum | null>(
+		null,
+	);
 	const [rating, setRating] = useState<number>(0);
 	const [comment, setComment] = useState('');
 	const [submittingNps, setSubmittingNps] = useState(false);
@@ -173,7 +175,7 @@ export const MobileMenu = ({
 											key: 'games',
 											label: <a href="/estudante/jogos">Jogos</a>,
 											icon: <RiGameLine />,
-									  }
+										}
 									: null,
 
 								hasAdminAccess
@@ -206,10 +208,10 @@ export const MobileMenu = ({
 																label: <a href="/admin/midia">Midia</a>,
 																icon: <RiImageLine />,
 															},
-													  ]
+														]
 													: []),
 											],
-									  }
+										}
 									: null,
 								{
 									key: 'profile',

@@ -102,10 +102,12 @@ describe('core services', () => {
 			service.saveScoreHistory('memory-game', 'anita', 80, 'user-1'),
 		).resolves.toEqual({ ok: true });
 		await expect(service.getScore('user-1')).resolves.toEqual([{ score: 10 }]);
-		await expect(service.getScoreHistory('user-1', 'memory-game')).resolves.toEqual([
+		await expect(
+			service.getScoreHistory('user-1', 'memory-game'),
+		).resolves.toEqual([{ score: 10 }]);
+		await expect(service.getScoreHistory('user-1')).resolves.toEqual([
 			{ score: 10 },
 		]);
-		await expect(service.getScoreHistory('user-1')).resolves.toEqual([{ score: 10 }]);
 
 		await expect(
 			service.submitGameNps('memory-game', 'anita', 4, '', 'x'),

@@ -4,26 +4,26 @@
 
 #### ✨ Features (Novidades)
 
-* [CU-86ah76396] Implementar Onboarding Pós-Login para Vínculo com Escola ([fbd8d9d](https://github.com/joaojuniorbr/etnos/commit/fbd8d9d1a8ce30b3592f8f21bc10750f10ad7c5a))
-* [CU-86ah79f9a] Cadastro Simplificado de Estudante via Link da Escola ([9993ed2](https://github.com/joaojuniorbr/etnos/commit/9993ed2a916da14c9f22634cce95d34c36f248ea))
+- [CU-86ah76396] Implementar Onboarding Pós-Login para Vínculo com Escola ([fbd8d9d](https://github.com/joaojuniorbr/etnos/commit/fbd8d9d1a8ce30b3592f8f21bc10750f10ad7c5a))
+- [CU-86ah79f9a] Cadastro Simplificado de Estudante via Link da Escola ([9993ed2](https://github.com/joaojuniorbr/etnos/commit/9993ed2a916da14c9f22634cce95d34c36f248ea))
 
 ### histórico
 
 #### ✨ Features (Novidades)
 
-* [CU-86afq06kz] Histórico de Atividades do Aluno ([fd792be](https://github.com/joaojuniorbr/etnos/commit/fd792be0539e64a84f7a861de8913d27fb2bafbc))
+- [CU-86afq06kz] Histórico de Atividades do Aluno ([fd792be](https://github.com/joaojuniorbr/etnos/commit/fd792be0539e64a84f7a861de8913d27fb2bafbc))
 
 ### sonar
 
 #### 🎨 Estilo/UI
 
-* correção de issues do sonar ([28bd3b9](https://github.com/joaojuniorbr/etnos/commit/28bd3b9ee07009ee394e7ee9c73ae2fec95c0e82))
+- correção de issues do sonar ([28bd3b9](https://github.com/joaojuniorbr/etnos/commit/28bd3b9ee07009ee394e7ee9c73ae2fec95c0e82))
 
 ### testes
 
 #### ✅ Testes
 
-* ajustes nos testes unitários ([c5fb37d](https://github.com/joaojuniorbr/etnos/commit/c5fb37d6ffab6bcb588322767560c2bcccb40c83))
+- ajustes nos testes unitários ([c5fb37d](https://github.com/joaojuniorbr/etnos/commit/c5fb37d6ffab6bcb588322767560c2bcccb40c83))
 
 # [1.7.0](https://github.com/joaojuniorbr/etnos/compare/v1.6.0...v1.7.0) (2026-04-30)
 
@@ -31,60 +31,60 @@
 
 #### ✨ Features (Novidades)
 
-* [CU-86afq066q] Implementar Gestão de Usuários no Admin (UC007) ([aab8135](https://github.com/joaojuniorbr/etnos/commit/aab813542acb3804da13d63811f4d0458ee3f254))
-* [CU-86afq066q] Gestão de Usuários ([91ebf62](https://github.com/joaojuniorbr/etnos/commit/91ebf6256565fc4f5c71b1798a34288530f5818d))
+- [CU-86afq066q] Implementar Gestão de Usuários no Admin (UC007) ([aab8135](https://github.com/joaojuniorbr/etnos/commit/aab813542acb3804da13d63811f4d0458ee3f254))
+- [CU-86afq066q] Gestão de Usuários ([91ebf62](https://github.com/joaojuniorbr/etnos/commit/91ebf6256565fc4f5c71b1798a34288530f5818d))
 
 ### app
 
 #### ✨ Features (Novidades)
 
-* [CU-86ah444d8] Fluxo de recuperar senha ([e2d4fc8](https://github.com/joaojuniorbr/etnos/commit/e2d4fc8133a3431b8a3e1627df272bfa70d42c8a))
-* [CU-86ah444d8] Criação de um App Nativo para os estudantes ([2628ebf](https://github.com/joaojuniorbr/etnos/commit/2628ebfb3dce1c7a6aad652beed2cf39db992f5b))
-* notificação de push no app do estudante ([8fede6f](https://github.com/joaojuniorbr/etnos/commit/8fede6f6c41be8a02a3e3f9237212e4089267ebe))
+- [CU-86ah444d8] Fluxo de recuperar senha ([e2d4fc8](https://github.com/joaojuniorbr/etnos/commit/e2d4fc8133a3431b8a3e1627df272bfa70d42c8a))
+- [CU-86ah444d8] Criação de um App Nativo para os estudantes ([2628ebf](https://github.com/joaojuniorbr/etnos/commit/2628ebfb3dce1c7a6aad652beed2cf39db992f5b))
+- notificação de push no app do estudante ([8fede6f](https://github.com/joaojuniorbr/etnos/commit/8fede6f6c41be8a02a3e3f9237212e4089267ebe))
 
 #### 🔨 Refatoração
 
-* finalização da primeira versão do app ([264a94c](https://github.com/joaojuniorbr/etnos/commit/264a94c7f8e2d6169ad2fa3958478214fc4f6655))
+- finalização da primeira versão do app ([264a94c](https://github.com/joaojuniorbr/etnos/commit/264a94c7f8e2d6169ad2fa3958478214fc4f6655))
 
 #### ✅ Testes
 
-* ajuste de testes e tipagem ([880cc8b](https://github.com/joaojuniorbr/etnos/commit/880cc8b7ebe583ad31d931d963c838ad2dd7a19a))
+- ajuste de testes e tipagem ([880cc8b](https://github.com/joaojuniorbr/etnos/commit/880cc8b7ebe583ad31d931d963c838ad2dd7a19a))
 
 ### documentação
 
 #### 📝 Documentação
 
-* atualização da documentação incluindo o app no readme ([5583df9](https://github.com/joaojuniorbr/etnos/commit/5583df9685bea3b2580b170a8bce17bc49628068))
+- atualização da documentação incluindo o app no readme ([5583df9](https://github.com/joaojuniorbr/etnos/commit/5583df9685bea3b2580b170a8bce17bc49628068))
 
 ### geral
 
 #### ✨ Features (Novidades)
 
-* [CU-86afq06b5] Controle de Concorrência e Integridade de Uso (RNF002) ([c547170](https://github.com/joaojuniorbr/etnos/commit/c547170504eb41340c12c54a899bc9caee5d7288))
+- [CU-86afq06b5] Controle de Concorrência e Integridade de Uso (RNF002) ([c547170](https://github.com/joaojuniorbr/etnos/commit/c547170504eb41340c12c54a899bc9caee5d7288))
 
 ### manutencao
 
 #### ⚙️ Manutenção
 
-* remoção dos arquivos da node modules ([06c5cd1](https://github.com/joaojuniorbr/etnos/commit/06c5cd103b3e87d42ccf4dc67b27b4f5cdf4a9a5))
+- remoção dos arquivos da node modules ([06c5cd1](https://github.com/joaojuniorbr/etnos/commit/06c5cd103b3e87d42ccf4dc67b27b4f5cdf4a9a5))
 
 ### mobile
 
 #### 🐛 Bug Fixes (Correções)
 
-* ajuste no resize da tela quando é usado o input de texto ([55983cc](https://github.com/joaojuniorbr/etnos/commit/55983ccbf1501332380d2fcd8553165283006fe9))
+- ajuste no resize da tela quando é usado o input de texto ([55983cc](https://github.com/joaojuniorbr/etnos/commit/55983ccbf1501332380d2fcd8553165283006fe9))
 
 ### notificacoes
 
 #### 🔨 Refatoração
 
-* [CU-86ah44djp] Implementar Sistema de Notificações para o App de Estudantes ([e48adbd](https://github.com/joaojuniorbr/etnos/commit/e48adbd361999543ab60a5f2466eedf9fc60b12c))
+- [CU-86ah44djp] Implementar Sistema de Notificações para o App de Estudantes ([e48adbd](https://github.com/joaojuniorbr/etnos/commit/e48adbd361999543ab60a5f2466eedf9fc60b12c))
 
 ### notificações
 
 #### ✨ Features (Novidades)
 
-* [CU-86ah453ht] Implementar Envio de Notificações via Painel Administrativo ([8594f77](https://github.com/joaojuniorbr/etnos/commit/8594f77bb77e0d8ade5ff043a4dbf7e9697403b5))
+- [CU-86ah453ht] Implementar Envio de Notificações via Painel Administrativo ([8594f77](https://github.com/joaojuniorbr/etnos/commit/8594f77bb77e0d8ade5ff043a4dbf7e9697403b5))
 
 # [1.6.0](https://github.com/joaojuniorbr/etnos/compare/v1.5.0...v1.6.0) (2026-04-22)
 
@@ -92,13 +92,13 @@
 
 #### ✨ Features (Novidades)
 
-* [CU-86afq05jq] - Configurar Estrutura Base do Painel Admin (RF026) ([64d0351](https://github.com/joaojuniorbr/etnos/commit/64d03511ccf4430309c988011405df7f8b665f67))
+- [CU-86afq05jq] - Configurar Estrutura Base do Painel Admin (RF026) ([64d0351](https://github.com/joaojuniorbr/etnos/commit/64d03511ccf4430309c988011405df7f8b665f67))
 
 ### workflow
 
 #### 🧪 CI/CD
 
-* adjuste no worflow ([fa82ed5](https://github.com/joaojuniorbr/etnos/commit/fa82ed59be0a29d4d415bbb853d61e615edf88e2))
+- adjuste no worflow ([fa82ed5](https://github.com/joaojuniorbr/etnos/commit/fa82ed59be0a29d4d415bbb853d61e615edf88e2))
 
 # [1.5.0](https://github.com/joaojuniorbr/etnos/compare/v1.4.2...v1.5.0) (2026-04-03)
 
@@ -106,84 +106,84 @@
 
 #### 🔨 Refatoração
 
-* ajuste na página de não encontrado, incluindo novos botões de navegação ([17547f2](https://github.com/joaojuniorbr/etnos/commit/17547f2564fa96508b5c265f8c209bbf15ce80ce))
+- ajuste na página de não encontrado, incluindo novos botões de navegação ([17547f2](https://github.com/joaojuniorbr/etnos/commit/17547f2564fa96508b5c265f8c209bbf15ce80ce))
 
 ### adivinhe a palavra
 
 #### 🔨 Refatoração
 
-* [CU-86aggwgeq] mudança no salvamento dos dados do jogo ([2c46d71](https://github.com/joaojuniorbr/etnos/commit/2c46d710dac982ae252f63d44f9ef10efa1cf57d))
+- [CU-86aggwgeq] mudança no salvamento dos dados do jogo ([2c46d71](https://github.com/joaojuniorbr/etnos/commit/2c46d710dac982ae252f63d44f9ef10efa1cf57d))
 
 ### admin
 
 #### ✨ Features (Novidades)
 
-* [CU-86afq05jt] Implementar Gestão de Escolas ([8dd0bef](https://github.com/joaojuniorbr/etnos/commit/8dd0befdf33d03e5a2a1d2cd802653b955d03d83))
-* nova página inicial de administração ([66d551f](https://github.com/joaojuniorbr/etnos/commit/66d551fe95cb35bb37ca7583cb0347330fa5fa67))
+- [CU-86afq05jt] Implementar Gestão de Escolas ([8dd0bef](https://github.com/joaojuniorbr/etnos/commit/8dd0befdf33d03e5a2a1d2cd802653b955d03d83))
+- nova página inicial de administração ([66d551f](https://github.com/joaojuniorbr/etnos/commit/66d551fe95cb35bb37ca7583cb0347330fa5fa67))
 
 #### 🔨 Refatoração
 
-* ajustes no admin e na documentação ([c5bac7e](https://github.com/joaojuniorbr/etnos/commit/c5bac7e3525f6a17ffe24068f3239293d093ccc4))
+- ajustes no admin e na documentação ([c5bac7e](https://github.com/joaojuniorbr/etnos/commit/c5bac7e3525f6a17ffe24068f3239293d093ccc4))
 
 ### documentação
 
 #### 📝 Documentação
 
-* documentação das entregas apresentadas para os docentes da IFPR ([de53610](https://github.com/joaojuniorbr/etnos/commit/de53610eea21968d2ce8305feea206b7cbd3e83a))
+- documentação das entregas apresentadas para os docentes da IFPR ([de53610](https://github.com/joaojuniorbr/etnos/commit/de53610eea21968d2ce8305feea206b7cbd3e83a))
 
 ### geral
 
 #### ⚙️ Manutenção
 
-* setup do spec kit do github ([3a6b5cc](https://github.com/joaojuniorbr/etnos/commit/3a6b5cc3a8e9c1b9705ce5256d29902d44f08b07))
+- setup do spec kit do github ([3a6b5cc](https://github.com/joaojuniorbr/etnos/commit/3a6b5cc3a8e9c1b9705ce5256d29902d44f08b07))
 
 #### 🔀 Merges
 
-* Merge pull request #28 from joaojuniorbr/001-student-score-history ([36dc84e](https://github.com/joaojuniorbr/etnos/commit/36dc84ee4d3f35de74c5c028064782618d055871))
+- Merge pull request #28 from joaojuniorbr/001-student-score-history ([36dc84e](https://github.com/joaojuniorbr/etnos/commit/36dc84ee4d3f35de74c5c028064782618d055871))
 
 ### guessgame
 
 #### ✨ Features (Novidades)
 
-* [CU-86aggwgeq] Migração dos Dados estáticos do jogo adivinhe uma palavra ([e93ffeb](https://github.com/joaojuniorbr/etnos/commit/e93ffebdd819de3ec161f0943a4b40b42f2aa9d5))
+- [CU-86aggwgeq] Migração dos Dados estáticos do jogo adivinhe uma palavra ([e93ffeb](https://github.com/joaojuniorbr/etnos/commit/e93ffebdd819de3ec161f0943a4b40b42f2aa9d5))
 
 ### jogo da memoria
 
 #### 🔨 Refatoração
 
-* [CU-86afpzy8n] Salvamento automático da maior pontuação ([45ea9f3](https://github.com/joaojuniorbr/etnos/commit/45ea9f31f9af09e6a52c976d49221a901c192feb))
+- [CU-86afpzy8n] Salvamento automático da maior pontuação ([45ea9f3](https://github.com/joaojuniorbr/etnos/commit/45ea9f31f9af09e6a52c976d49221a901c192feb))
 
 ### jogos
 
 #### ✨ Features (Novidades)
 
-* [CU-86aggtzkm] Histórico de Jogos ([27df0fb](https://github.com/joaojuniorbr/etnos/commit/27df0fb0c6d230f9594d539e1769ca3ae29fa00d))
+- [CU-86aggtzkm] Histórico de Jogos ([27df0fb](https://github.com/joaojuniorbr/etnos/commit/27df0fb0c6d230f9594d539e1769ca3ae29fa00d))
 
 ### menu
 
 #### 🐛 Bug Fixes (Correções)
 
-* quando usuário nao estava autenticado, aparecia o botão de sair no menu ([b711711](https://github.com/joaojuniorbr/etnos/commit/b711711b31c03fc881b9205ba145f71c24bb07af))
+- quando usuário nao estava autenticado, aparecia o botão de sair no menu ([b711711](https://github.com/joaojuniorbr/etnos/commit/b711711b31c03fc881b9205ba145f71c24bb07af))
 
 ### perfil
 
 #### ✨ Features (Novidades)
 
-* histórico de pontuação no perfil ([ac5739f](https://github.com/joaojuniorbr/etnos/commit/ac5739ff79e276df6c1017e636d70f0bf42fa420))
+- histórico de pontuação no perfil ([ac5739f](https://github.com/joaojuniorbr/etnos/commit/ac5739ff79e276df6c1017e636d70f0bf42fa420))
 
 ### sonar
 
 #### ⚙️ Manutenção
 
-* remoção de variaveis não utilizadas ([26262ef](https://github.com/joaojuniorbr/etnos/commit/26262ef0702389c02ac24d47c512e4a3d217a919))
-* ajustes de issues do sonar ([1bf9bce](https://github.com/joaojuniorbr/etnos/commit/1bf9bcea46687e955acf51004ed2d67c38aee1e9))
-* configuracao do sonar cloud para executar localmente ([1ea214d](https://github.com/joaojuniorbr/etnos/commit/1ea214d772a5fee4f7d1f8b001d029430122b834))
+- remoção de variaveis não utilizadas ([26262ef](https://github.com/joaojuniorbr/etnos/commit/26262ef0702389c02ac24d47c512e4a3d217a919))
+- ajustes de issues do sonar ([1bf9bce](https://github.com/joaojuniorbr/etnos/commit/1bf9bcea46687e955acf51004ed2d67c38aee1e9))
+- configuracao do sonar cloud para executar localmente ([1ea214d](https://github.com/joaojuniorbr/etnos/commit/1ea214d772a5fee4f7d1f8b001d029430122b834))
 
 ### storybook
 
 #### 📝 Documentação
 
-* ajustes do story NotFound ([fe3932a](https://github.com/joaojuniorbr/etnos/commit/fe3932a61e72d5f5ef164b712f01b0c212398821))
+- ajustes do story NotFound ([fe3932a](https://github.com/joaojuniorbr/etnos/commit/fe3932a61e72d5f5ef164b712f01b0c212398821))
 
 ## [1.4.2](https://github.com/joaojuniorbr/etnos/compare/v1.4.1...v1.4.2) (2026-03-26)
 

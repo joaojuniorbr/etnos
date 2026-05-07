@@ -144,7 +144,10 @@ export class GamesController {
     @Req() req,
     @Param('characterSlug') characterSlug: string,
   ) {
-    return this.gamesService.getGuessGamePlayContent(characterSlug, req.user.uid);
+    return this.gamesService.getGuessGamePlayContent(
+      characterSlug,
+      req.user.uid,
+    );
   }
 
   @Post('memory')
@@ -194,7 +197,10 @@ export class GamesController {
   @Post('guess/validate')
   @ApiOperation({ summary: 'Valida tentativa do jogo adivinhe' })
   @ApiBody({ type: ValidateGuessGameDto })
-  async validateGuessGameAttempt(@Req() req, @Body() data: ValidateGuessGameDto) {
+  async validateGuessGameAttempt(
+    @Req() req,
+    @Body() data: ValidateGuessGameDto,
+  ) {
     return this.gamesService.validateGuessGameAttempt({
       ...data,
       userId: req.user.uid,

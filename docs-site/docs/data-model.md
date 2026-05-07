@@ -22,6 +22,7 @@ Postgres.
 | `game_configs`         | Configuração por jogo e personagem           |
 | `memory_game_contents` | Conteúdo visual do jogo da memória           |
 | `game_scores`          | Pontuações por usuário                       |
+| `game_nps_responses`   | Feedback de satisfação (NPS) por usuário     |
 | `midia`                | Metadados dos arquivos salvos no Storage     |
 
 ## Visão relacional
@@ -32,7 +33,9 @@ erDiagram
     CHARACTERS ||--o{ GAME_CONFIGS : "slug -> character_slug"
     CHARACTERS ||--o{ MEMORY_GAME_CONTENTS : "id -> character_id"
     CHARACTERS ||--o{ GAME_SCORES : "slug -> character_slug"
+    CHARACTERS ||--o{ GAME_NPS_RESPONSES : "slug -> character_slug"
     USERS ||--o{ GAME_SCORES : "firebase_uid -> user_id"
+    USERS ||--o{ GAME_NPS_RESPONSES : "firebase_uid -> user_id"
     USERS ||--o{ MIDIA : "firebase_uid -> user_id"
     USERS {
         string id PK
@@ -77,6 +80,14 @@ erDiagram
         string character_slug
         int score
         string user_id
+    }
+    GAME_NPS_RESPONSES {
+        string id PK
+        string slug
+        string character_slug
+        int score
+        string user_id
+        string comment
     }
     MIDIA {
         string id PK
@@ -252,6 +263,22 @@ Campos principais:
 Uso típico:
 
 - organizar a biblioteca de imagens usada pelo admin e pelos jogos
+
+### `game_nps_responses`
+
+Feedback de satisfação do usuário por jogo/personagem, usado para acompanhar a
+experiência ao final da partida.
+
+Campos principais:
+
+- `id`
+- `slug`
+- `character_slug`
+- `score`
+- `comment`
+- `user_id`
+- `created_at`
+- `updated_at`
 
 Regras:
 

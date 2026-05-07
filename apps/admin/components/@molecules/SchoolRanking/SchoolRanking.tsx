@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
 import { schoolService, useCharacter } from '@etnos/tools';
-import { GameNameEnum, GamesEnum, type UserRankingInterface } from '@etnos/types';
+import {
+	GameNameEnum,
+	GamesEnum,
+	type UserRankingInterface,
+} from '@etnos/types';
 import { UserRanking } from '../UserRanking';
 
 interface SchoolRankingProps {
@@ -34,7 +38,8 @@ export const SchoolRanking = ({ schoolId }: SchoolRankingProps) => {
 	];
 
 	const selectedGameSlug = selectedGame === 'all' ? undefined : selectedGame;
-	const selectedCharacterSlug = selectedCharacter === 'all' ? undefined : selectedCharacter;
+	const selectedCharacterSlug =
+		selectedCharacter === 'all' ? undefined : selectedCharacter;
 
 	const { data: ranking = [], isLoading } = useQuery<UserRankingInterface[]>({
 		queryKey: [
@@ -45,7 +50,11 @@ export const SchoolRanking = ({ schoolId }: SchoolRankingProps) => {
 			selectedCharacterSlug ?? 'all',
 		],
 		queryFn: () =>
-			schoolService.getUsersRankingBySchool(schoolId, selectedGameSlug, selectedCharacterSlug),
+			schoolService.getUsersRankingBySchool(
+				schoolId,
+				selectedGameSlug,
+				selectedCharacterSlug,
+			),
 		enabled: Boolean(schoolId),
 	});
 

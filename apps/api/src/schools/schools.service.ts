@@ -716,9 +716,8 @@ export class SchoolsService {
 
     await this.ensureSchoolExists(schoolId);
 
-    const validatedPayload = await this.validateSchoolGameAccessPayload(
-      payload,
-    );
+    const validatedPayload =
+      await this.validateSchoolGameAccessPayload(payload);
 
     await this.prismaService.$transaction(async (transaction) => {
       await transaction.schoolEnabledGame.deleteMany({

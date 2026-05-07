@@ -12,7 +12,11 @@ export type GameNpsModalProps = {
 	onSubmit: (rating: number, comment?: string) => Promise<void>;
 };
 
-export const GameNpsModal = ({ open, onClose, onSubmit }: GameNpsModalProps) => {
+export const GameNpsModal = ({
+	open,
+	onClose,
+	onSubmit,
+}: GameNpsModalProps) => {
 	const [rating, setRating] = useState<number>(0);
 	const [comment, setComment] = useState('');
 	const [submitting, setSubmitting] = useState(false);
@@ -65,7 +69,12 @@ export const GameNpsModal = ({ open, onClose, onSubmit }: GameNpsModalProps) => 
 				className="mb-4"
 			/>
 			<div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
-				<Button onClick={onClose} disabled={submitting} block className="sm:w-auto">
+				<Button
+					onClick={onClose}
+					disabled={submitting}
+					block
+					className="sm:w-auto"
+				>
 					Pular
 				</Button>
 				<Button

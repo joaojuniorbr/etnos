@@ -814,7 +814,10 @@ describe('AuthService', () => {
         }),
       } as any);
       prismaService.user.findUnique
-        .mockResolvedValueOnce({ id: 'db-user-id', firebaseUid: 'google-user-id' })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'google-user-id',
+        })
         .mockResolvedValueOnce({
           id: 'db-user-id',
           firebaseUid: 'google-user-id',

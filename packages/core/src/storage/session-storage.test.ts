@@ -44,10 +44,12 @@ describe('session-storage', () => {
 	});
 
 	it('detecta quando a sessão excedeu o tempo de inatividade', () => {
-		expect(hasSessionExceededInactivityLimit(1, daysToMilliseconds(9) + 1)).toBe(
-			true,
+		expect(
+			hasSessionExceededInactivityLimit(1, daysToMilliseconds(9) + 1),
+		).toBe(true);
+		expect(hasSessionExceededInactivityLimit(1, daysToMilliseconds(1))).toBe(
+			false,
 		);
-		expect(hasSessionExceededInactivityLimit(1, daysToMilliseconds(1))).toBe(false);
 		expect(hasSessionExceededInactivityLimit(null)).toBe(false);
 	});
 
@@ -132,7 +134,9 @@ describe('session-storage', () => {
 		data.set(AUTH_TOKEN_STORAGE_KEY, 'token');
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.resolveValidStoredAuthToken()).resolves.toBeNull();
+		await expect(
+			sessionStorage.resolveValidStoredAuthToken(),
+		).resolves.toBeNull();
 		expect(storage.removeItem).toHaveBeenCalledWith(AUTH_TOKEN_STORAGE_KEY);
 	});
 
@@ -140,7 +144,9 @@ describe('session-storage', () => {
 		const { storage } = createStorageAdapter();
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.resolveValidStoredAuthToken()).resolves.toBeNull();
+		await expect(
+			sessionStorage.resolveValidStoredAuthToken(),
+		).resolves.toBeNull();
 		expect(storage.removeItem).not.toHaveBeenCalled();
 	});
 
@@ -154,7 +160,9 @@ describe('session-storage', () => {
 
 		vi.setSystemTime(new Date(daysToMilliseconds(9) + 1));
 
-		await expect(sessionStorage.resolveValidStoredAuthToken()).resolves.toBeNull();
+		await expect(
+			sessionStorage.resolveValidStoredAuthToken(),
+		).resolves.toBeNull();
 		expect(storage.removeItem).toHaveBeenCalled();
 	});
 
@@ -167,7 +175,9 @@ describe('session-storage', () => {
 		data.set(AUTH_EXPIRES_AT_STORAGE_KEY, String(Date.now() + 120000));
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.resolveValidStoredAuthToken()).resolves.toBe('token');
+		await expect(sessionStorage.resolveValidStoredAuthToken()).resolves.toBe(
+			'token',
+		);
 	});
 
 	it('atualiza o token usando refresh token quando estiver perto de expirar', async () => {
@@ -213,7 +223,9 @@ describe('session-storage', () => {
 		} as never);
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.refreshStoredAuthToken('api-key')).resolves.toBeNull();
+		await expect(
+			sessionStorage.refreshStoredAuthToken('api-key'),
+		).resolves.toBeNull();
 		expect(storage.removeItem).toHaveBeenCalled();
 	});
 
@@ -288,9 +300,9 @@ describe('session-storage', () => {
 		vi.mocked(axios.post).mockRejectedValueOnce(error);
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.refreshStoredAuthToken('api-key')).rejects.toThrow(
-			'network error',
-		);
+		await expect(
+			sessionStorage.refreshStoredAuthToken('api-key'),
+		).rejects.toThrow('network error');
 	});
 
 	it('retorna null quando o refresh token muda durante a renovação', async () => {
@@ -309,7 +321,9 @@ describe('session-storage', () => {
 		});
 		const sessionStorage = createSessionStorage(storage);
 
-		await expect(sessionStorage.refreshStoredAuthToken('api-key')).resolves.toBeNull();
+		await expect(
+			sessionStorage.refreshStoredAuthToken('api-key'),
+		).resolves.toBeNull();
 		expect(data.get(AUTH_TOKEN_STORAGE_KEY)).not.toBe('new-token');
 	});
 });

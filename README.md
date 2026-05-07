@@ -2,63 +2,63 @@
 
 # Etnos
 
-Uma plataforma educacional com jogos culturais para estudantes do ensino
-fundamental. Por trás da parte divertida, existe um monorepo com apps web, app
-nativo, API, biblioteca de jogos e pacotes compartilhados fazendo a mágica
-acontecer.
+Plataforma educacional com jogos culturais para estudantes do ensino
+fundamental, organizada em monorepo com apps web/mobile, API e pacotes
+compartilhados.
 
-[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](./CHANGELOG.md)
 ![Node](https://img.shields.io/badge/Node-%3E%3D20-green)
 ![Yarn](https://img.shields.io/badge/Yarn-1.22.19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue)
 ![License](https://img.shields.io/badge/license-UNLICENSED-lightgray)
 
----
+## Visão geral do monorepo
 
-## Visão geral
+### Apps
 
-O repositório reúne tudo o que faz o Etnos sair da ideia e virar produto:
+- `apps/web`: site institucional, login e cadastro.
+- `apps/student`: portal web do estudante com jogos e perfil.
+- `apps/student-mobile`: app nativo Expo (iOS, Android e Web).
+- `apps/admin`: painel administrativo para conteúdo e operação.
+- `apps/api`: API NestJS com Prisma, Firebase e Swagger.
+- `apps/games`: biblioteca React de jogos reutilizáveis.
+- `apps/docs`: Storybook dos componentes visuais.
 
-- `apps/web`: o site institucional, que faz as apresentações.
-- `apps/student`: a área do estudante na web, onde a brincadeira começa.
-- `apps/student-mobile`: o app nativo para iOS e Android, feito com Expo.
-- `apps/admin`: o painel administrativo, que organiza os bastidores.
-- `apps/api`: a API REST com NestJS, que cuida da parte séria.
-- `apps/games`: a biblioteca React onde os jogos moram.
-- `apps/docs`: o Storybook com componentes e padrões visuais.
-- `packages/core`: utilitários e cliente de API compartilhados pelo app mobile.
-- `docs-site`: a documentação em MkDocs, para quando bater a curiosidade
-  técnica.
+### Packages
 
-## Jogos atuais
+- `packages/core`: cliente HTTP e serviços compartilhados para o mobile.
+- `packages/tools`: hooks, serviços e helpers para apps web.
+- `packages/ui`: biblioteca de componentes e estilos compartilhados.
+- `packages/types`: contratos e entidades compartilhadas.
+- `packages/tailwind-config`: estilos e config comum de Tailwind/PostCSS.
+- `packages/typescript-config`: presets de `tsconfig` do monorepo.
+- `packages/eslint-config`: presets de lint reutilizáveis.
 
-- `guess-game`: um desafio de adivinhação com dicas e pontuação.
-- `memory-game`: jogo da memória configurável por personagem, com capa, conteúdo
-  dinâmico e persistência de recorde.
+### Docs
 
-O jogo da memória, por exemplo, passeia por quatro camadas do monorepo:
+- `docs-site`: documentação técnica publicada com MkDocs.
 
-- `apps/student` mostra a experiência para o aluno;
-- `apps/games` concentra a lógica e a interface do jogo;
-- `apps/admin` organiza capa e imagens das cartas;
-- `apps/api` salva configurações, conteúdo e score.
+## Funcionalidades atuais
+
+- `guess-game`: jogo de adivinhação com dicas e score.
+- `memory-game`: jogo da memória por personagem, com capa, cartas e recorde.
+- onboarding pós-login com vínculo do estudante à escola.
+- cadastro simplificado por link/código da escola.
 
 ## Stack principal
 
-- Frontend web: Next.js, React 19, TypeScript, Tailwind CSS e Ant Design.
-- Mobile: React Native, Expo, Expo Router e twrnc.
-- Backend: NestJS, Firebase Auth e Prisma.
-- Monorepo: Turborepo e Yarn Workspaces.
+- Frontend web: Next.js 16, React 19, Tailwind CSS e Ant Design.
+- Mobile: React Native, Expo, Expo Router e React Query.
+- Backend: NestJS, Prisma, PostgreSQL, Firebase Auth/Storage e Sentry.
+- Monorepo: Yarn Workspaces e Turborepo.
 - Testes: Vitest, Testing Library, Jest e Playwright.
 
 ## Requisitos
 
-- Node.js >= 18
+- Node.js >= 20
 - Yarn >= 1.22.19
 
 ## Primeiros passos
-
-Se a ideia é colocar tudo para rodar localmente, o começo do caminho é este:
 
 ```bash
 git clone https://github.com/joaojuniorbr/etnos.git
@@ -66,10 +66,13 @@ cd etnos
 yarn install
 ```
 
-Depois disso, configure os arquivos de ambiente das aplicações Next.js com
-`.env.local` e da API com `.env`.
+Configure os arquivos de ambiente:
 
-Exemplo para frontend:
+- apps Next (`apps/web`, `apps/admin`, `apps/student`): `.env.local`
+- API (`apps/api`): `.env`
+- mobile (`apps/student-mobile`): `.env` (quando necessário)
+
+Exemplo frontend:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3333
@@ -77,11 +80,13 @@ NEXT_PUBLIC_FIREBASE_API_KEY=your_key
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
 ```
 
-Exemplo para API:
+Exemplo API:
 
 ```env
 NODE_ENV=development
 PORT=3333
+DATABASE_URL=postgres://...
+DIRECT_URL=postgres://...
 FIREBASE_PROJECT_ID=your_project
 FIREBASE_PRIVATE_KEY=your_private_key
 FIREBASE_CLIENT_EMAIL=your_email
@@ -89,13 +94,13 @@ FIREBASE_CLIENT_EMAIL=your_email
 
 ## Desenvolvimento
 
-Para levantar o monorepo inteiro de uma vez:
+Subir todo o monorepo:
 
 ```bash
 yarn dev
 ```
 
-Com tudo rodando, estes são os endereços principais:
+Endpoints locais principais:
 
 - `http://localhost:3000`: web
 - `http://localhost:3001`: admin
@@ -103,47 +108,13 @@ Com tudo rodando, estes são os endereços principais:
 - `http://localhost:3333`: api
 - `http://localhost:6006`: Storybook
 
-## Estrutura
+Mobile:
 
-Mapa rápido da casa:
-
-```text
-etnos/
-  apps/
-    admin/
-    api/
-    docs/
-    games/
-    student/
-    student-mobile/
-    web/
-  docs-site/
-  packages/
-    core/
-    eslint-config/
-    tailwind-config/
-    tools/
-    types/
-    typescript-config/
-    ui/
+```bash
+yarn workspace @etnos/student-mobile dev
 ```
 
-## Fluxo de jogos
-
-O catálogo de jogos é definido em `packages/tools`, o `student` escolhe o jogo
-pela rota, e a renderização fica a cargo da biblioteca `@etnos/games`.
-
-No caso do `memory-game`, a jornada acontece mais ou menos assim:
-
-1. o estudante entra na rota do jogo com o personagem selecionado;
-2. `apps/games` busca configuração visual, cartas e recorde;
-3. `packages/tools` conversa com a API;
-4. `apps/api` devolve as configurações e salva o score;
-5. `apps/admin` deixa o baralho pronto para ganhar cara nova quando precisar.
-
 ## Scripts úteis
-
-Os comandos mais usados no dia a dia:
 
 ```bash
 yarn dev
@@ -153,24 +124,20 @@ yarn test
 yarn check-types
 ```
 
-## Dados
+## Fluxo de jogos (resumo)
 
-- 📘 [Swagger](https://api.etnos.online/docs): a porta de entrada para explorar
-  a API, testar rotas e ver os contratos em ação.
-- 🚀 [Aplicação funcionando](https://etnos.online): a plataforma publicada para
-  navegar, conhecer a experiência e ver o Etnos em movimento.
-- 📚 [Documentação acadêmica](https://joaojuniorbr.github.io/etnos/):
-  arquitetura, banco de dados, contexto do projeto e material técnico reunidos
-  em um só lugar.
-- 🎨 [Storybook](https://691f7645d388cc8aa2a047b6-amyptzoyzk.chromatic.com/):
-  vitrine dos componentes, telas e padrões visuais que dão forma à interface.
-- 📈
-  [Dashboard Looker](https://lookerstudio.google.com/reporting/7c5d87fa-106f-4041-9e4f-9fc865675b7a/):
-  dados sobre a plataforma
+1. estudante acessa um jogo no `apps/student` ou `apps/student-mobile`;
+2. renderização vem de `@etnos/games` (web) e integrações de `@etnos/core`/`@etnos/tools`;
+3. API (`apps/api`) retorna configuração e persiste score/NPS;
+4. `apps/admin` mantém conteúdo, capas e mídias.
 
-- 🔍
-  [Sonar Cloud](https://sonarcloud.io/project/overview?id=joaojuniorbr_etnos):
-  análise de qualidade, testes, cobertura e segurança.
+## Links
+
+- [Swagger](https://api.etnos.online/docs)
+- [Aplicação](https://etnos.online)
+- [Documentação técnica](https://joaojuniorbr.github.io/etnos/)
+- [Storybook](https://691f7645d388cc8aa2a047b6-amyptzoyzk.chromatic.com/)
+- [Sonar Cloud](https://sonarcloud.io/project/overview?id=joaojuniorbr_etnos)
 
 ## Licença
 

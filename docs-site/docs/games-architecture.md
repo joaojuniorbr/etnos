@@ -3,11 +3,12 @@
 ## Visão geral
 
 Os jogos do Etnos foram organizados para separar bem experiência visual, regras
-do jogo, integração com API e persistência. Hoje essa parte passa por seis áreas
+do jogo, integração com API e persistência. Hoje essa parte passa por sete áreas
 principais do monorepo:
 
 - `apps/student`: entrega a experiência jogável para o estudante.
 - `apps/admin`: permite configurar conteúdo e capas dos jogos.
+- `apps/student-mobile`: app nativo que consome jogos e score.
 - `apps/games`: biblioteca React com os jogos reutilizaveis.
 - `apps/api`: expõe endpoints autenticados para configuração, conteúdo e score.
 - `packages/tools`: hooks e services que conectam frontend e API.
@@ -25,6 +26,8 @@ flowchart LR
     E --> F["Banco de dados"]
     G["Admin app"] --> C
     G --> D
+    M["Student mobile"] --> I["@etnos/core"]
+    I --> D
     H["@etnos/types"] --> A
     H --> B
     H --> C
@@ -58,6 +61,7 @@ Hoje a biblioteca exporta:
 - `MemoryGame`
 - `FinishGame`
 - `ScoreHighlight`
+- `GameNpsModal`
 
 Assim, o `student` consome um jogo pronto sem duplicar lógica de pontuação,
 feedback visual ou integração com score.
@@ -89,6 +93,7 @@ endpoints para:
 - configuração de capa por jogo e personagem;
 - cadastro e remoção de conteúdo do jogo da memória;
 - consulta e gravacao de pontuacoes;
+- coleta de NPS ao final dos jogos com `POST /games/nps`;
 - listagem de imagens formatadas para o frontend.
 
 ## Jogo da memória

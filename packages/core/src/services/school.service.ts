@@ -1,8 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type {
-	SchoolGameAccessInterface,
-	SchoolInterface,
-} from '@etnos/types';
+import type { SchoolGameAccessInterface, SchoolInterface } from '@etnos/types';
 
 export const createSchoolService = (api: AxiosInstance) => ({
 	getAll(): Promise<SchoolInterface[]> {

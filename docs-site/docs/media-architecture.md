@@ -146,6 +146,7 @@ O fluxo de jogos depende diretamente da arquitetura de mídia:
 - as cartas do jogo da memória são selecionadas a partir dos assets de uma pasta
   por personagem;
 - o componente `ImageLibrary` depende da listagem paginada da API.
+- o app mobile consome os mesmos assets já curados no admin.
 
 ## Endpoints principais
 

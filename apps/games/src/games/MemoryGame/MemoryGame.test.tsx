@@ -304,7 +304,9 @@ describe('MemoryGame', () => {
 	});
 
 	it('não inicia sessão quando não houver usuário ou personagem', async () => {
-		const startGameSession = vi.fn().mockResolvedValue({ id: 'memory-session-1' });
+		const startGameSession = vi
+			.fn()
+			.mockResolvedValue({ id: 'memory-session-1' });
 		useCharacterMock.mockReturnValue({ selectedCharacter: undefined });
 		useUserMock.mockReturnValue({ user: null });
 		useGamesMock.mockReturnValue({
@@ -405,8 +407,11 @@ describe('MemoryGame', () => {
 			'Legal',
 		);
 		expect(
-			(memoryGameExperienceMock.mock.calls.at(-1)?.[0] as { npsEnabled: boolean })
-				.npsEnabled,
+			(
+				memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+					npsEnabled: boolean;
+				}
+			).npsEnabled,
 		).toBe(false);
 	});
 });

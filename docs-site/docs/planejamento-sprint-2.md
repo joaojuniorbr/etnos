@@ -1,5 +1,7 @@
 # SPRINT 2 - (16/03/2026 - 29/03/2026)
 
+Registro histórico da sprint 2 do ciclo 2026.
+
 ## Desenvolver Jogo da Memória - Temática Diversidade
 
 Tarefa: Desenvolver Jogo da Memória com a temática definida (já finalizada)

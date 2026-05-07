@@ -77,7 +77,8 @@ camada de dados.
 
 - `Monorepo` mostra como os apps e pacotes se conectam.
 - `Autenticação` reúne o fluxo de login, sessão e proteção de rotas.
-- `App Mobile` descreve o app nativo e o pacote `core` que o sustenta.
+- `Monorepo` também cobre o app nativo (`apps/student-mobile`) e o pacote
+  `packages/core`.
 - `Mídia` mostra upload, armazenamento e biblioteca de imagens.
 - `Swagger` centraliza a documentação interativa da API.
 - `Banco de Dados` e `Modelagem` descrevem persistência, relações e regras do

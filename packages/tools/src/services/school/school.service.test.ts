@@ -332,9 +332,12 @@ describe('schoolService', () => {
 			'escola@teste.com',
 		);
 
-		expect(apiMock.post).toHaveBeenCalledWith('/schools/school-1/access-users', {
-			email: 'escola@teste.com',
-		});
+		expect(apiMock.post).toHaveBeenCalledWith(
+			'/schools/school-1/access-users',
+			{
+				email: 'escola@teste.com',
+			},
+		);
 		expect(result).toEqual({ uid: 'user-2' });
 	});
 

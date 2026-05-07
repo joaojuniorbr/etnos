@@ -538,7 +538,9 @@ describe('SchoolsService', () => {
         select: { gameSlug: true },
         orderBy: { gameSlug: 'asc' },
       });
-      expect(prismaService.schoolEnabledCharacter.findMany).toHaveBeenCalledWith({
+      expect(
+        prismaService.schoolEnabledCharacter.findMany,
+      ).toHaveBeenCalledWith({
         where: { schoolId: '1' },
         select: { characterSlug: true },
         orderBy: { characterSlug: 'asc' },
@@ -550,7 +552,10 @@ describe('SchoolsService', () => {
     });
 
     it('retorna todos os jogos e personagens quando a escola ainda nao possui configuracao customizada', async () => {
-      const result = await service.getGameAccessBySchool('firebase-user-1', '1');
+      const result = await service.getGameAccessBySchool(
+        'firebase-user-1',
+        '1',
+      );
 
       expectAuthenticatedProfileLookup();
       expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledWith({
@@ -558,7 +563,9 @@ describe('SchoolsService', () => {
         select: { gameSlug: true },
         orderBy: { gameSlug: 'asc' },
       });
-      expect(prismaService.schoolEnabledCharacter.findMany).toHaveBeenCalledWith({
+      expect(
+        prismaService.schoolEnabledCharacter.findMany,
+      ).toHaveBeenCalledWith({
         where: { schoolId: '1' },
         select: { characterSlug: true },
         orderBy: { characterSlug: 'asc' },
@@ -578,7 +585,10 @@ describe('SchoolsService', () => {
         { characterSlug: 'iara' },
       ]);
 
-      const result = await service.getGameAccessBySchool('firebase-user-1', '1');
+      const result = await service.getGameAccessBySchool(
+        'firebase-user-1',
+        '1',
+      );
 
       expect(result.enabledGameSlugs).toEqual(['guess-game']);
       expect(result.enabledCharacterSlugs).toEqual(['iara']);
@@ -596,7 +606,9 @@ describe('SchoolsService', () => {
       expect(prismaService.schoolEnabledGame.deleteMany).toHaveBeenCalledWith({
         where: { schoolId: '1' },
       });
-      expect(prismaService.schoolEnabledCharacter.deleteMany).toHaveBeenCalledWith({
+      expect(
+        prismaService.schoolEnabledCharacter.deleteMany,
+      ).toHaveBeenCalledWith({
         where: { schoolId: '1' },
       });
       expect(prismaService.schoolEnabledGame.createMany).toHaveBeenCalledWith({
@@ -605,19 +617,27 @@ describe('SchoolsService', () => {
           { schoolId: '1', gameSlug: 'memory-game' },
         ],
       });
-      expect(prismaService.schoolEnabledCharacter.createMany).toHaveBeenCalledWith({
+      expect(
+        prismaService.schoolEnabledCharacter.createMany,
+      ).toHaveBeenCalledWith({
         data: [{ schoolId: '1', characterSlug: 'iara' }],
       });
     });
 
     it('permite limpar a configuracao customizada da escola', async () => {
-      const result = await service.updateGameAccessBySchool('firebase-user-1', '1', {
-        enabledGameSlugs: [],
-        enabledCharacterSlugs: [],
-      });
+      const result = await service.updateGameAccessBySchool(
+        'firebase-user-1',
+        '1',
+        {
+          enabledGameSlugs: [],
+          enabledCharacterSlugs: [],
+        },
+      );
 
       expect(prismaService.schoolEnabledGame.createMany).not.toHaveBeenCalled();
-      expect(prismaService.schoolEnabledCharacter.createMany).not.toHaveBeenCalled();
+      expect(
+        prismaService.schoolEnabledCharacter.createMany,
+      ).not.toHaveBeenCalled();
       expect(result.hasCustomGames).toBe(false);
       expect(result.hasCustomCharacters).toBe(false);
     });
@@ -983,7 +1003,9 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({ roles: ['admin'], school: null }),
       );
-      prismaService.user.findFirst.mockResolvedValueOnce({ id: 'student-row-id' });
+      prismaService.user.findFirst.mockResolvedValueOnce({
+        id: 'student-row-id',
+      });
       const rows = [
         {
           id: 'h1',
@@ -1702,7 +1724,10 @@ describe('SchoolsService', () => {
         updatedAt: new Date('2026-03-01T00:00:00.000Z'),
       });
 
-      const result = await service.addAccessUserToSchool('1', 'gestora@test.com');
+      const result = await service.addAccessUserToSchool(
+        '1',
+        'gestora@test.com',
+      );
 
       expect(mockedAdminAuth.getUserByEmail).toHaveBeenCalledWith(
         'gestora@test.com',
@@ -1918,7 +1943,10 @@ describe('SchoolsService', () => {
         updatedAt: new Date('2026-03-01T00:00:00.000Z'),
       });
 
-      const result = await service.addAccessUserToSchool('1', 'gestor@test.com');
+      const result = await service.addAccessUserToSchool(
+        '1',
+        'gestor@test.com',
+      );
 
       expect(prismaService.user.update).not.toHaveBeenCalled();
       expect(result).toEqual({
@@ -1934,7 +1962,9 @@ describe('SchoolsService', () => {
     });
 
     it('propaga erro inesperado do Firebase', async () => {
-      mockedAdminAuth.getUserByEmail.mockRejectedValueOnce(new Error('firebase'));
+      mockedAdminAuth.getUserByEmail.mockRejectedValueOnce(
+        new Error('firebase'),
+      );
 
       await expect(
         service.addAccessUserToSchool('1', 'erro@test.com'),
@@ -1981,9 +2011,9 @@ describe('SchoolsService', () => {
     it('lança erro quando a escola do acesso nao existir', async () => {
       prismaService.school.findUnique.mockResolvedValueOnce(null);
 
-      await expect(service.getAccessUsersBySchool('missing-school')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getAccessUsersBySchool('missing-school'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

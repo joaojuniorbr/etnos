@@ -51,7 +51,9 @@ describe('createApiClient', () => {
 		const interceptor = getRequestInterceptor(api);
 		const originalConfig = createRequestConfig({ 'X-Test': 'ok' });
 
-		const config = (await interceptor?.(originalConfig)) as InternalAxiosRequestConfig;
+		const config = (await interceptor?.(
+			originalConfig,
+		)) as InternalAxiosRequestConfig;
 
 		expect(config).toBe(originalConfig);
 		expect(onRequestAuthenticated).not.toHaveBeenCalled();
@@ -62,7 +64,9 @@ describe('createApiClient', () => {
 		const interceptor = getRequestInterceptor(api);
 		const originalConfig = createRequestConfig();
 
-		const config = (await interceptor?.(originalConfig)) as InternalAxiosRequestConfig;
+		const config = (await interceptor?.(
+			originalConfig,
+		)) as InternalAxiosRequestConfig;
 
 		expect(config).toBe(originalConfig);
 	});

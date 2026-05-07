@@ -2,6 +2,8 @@
 
 # Projeto Interdisciplinar I - ETNOS: Gamificando a diversidade
 
+Documento histórico acadêmico (referência de 2025).
+
 **INSTITUTO FEDERAL DO PARANÁ – CAMPUS PINHAIS**
 
 _Curso de Gestão da Tecnologia da Informação_

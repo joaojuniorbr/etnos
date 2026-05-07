@@ -42,9 +42,7 @@ export const schoolService = {
 		return api.get('/schools/me/game-access').then((res) => res.data);
 	},
 
-	getGameAccessBySchool(
-		schoolId: string,
-	): Promise<SchoolGameAccessInterface> {
+	getGameAccessBySchool(schoolId: string): Promise<SchoolGameAccessInterface> {
 		return api.get(`/schools/${schoolId}/game-access`).then((res) => res.data);
 	},
 
@@ -52,7 +50,9 @@ export const schoolService = {
 		schoolId: string,
 		payload: UpdateSchoolGameAccessPayload,
 	): Promise<SchoolGameAccessInterface> {
-		return api.patch(`/schools/${schoolId}/game-access`, payload).then((res) => res.data);
+		return api
+			.patch(`/schools/${schoolId}/game-access`, payload)
+			.then((res) => res.data);
 	},
 
 	getMyUsers(search?: string): Promise<SchoolUserInterface[]> {

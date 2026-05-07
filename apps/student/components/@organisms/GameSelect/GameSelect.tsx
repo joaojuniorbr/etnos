@@ -39,7 +39,9 @@ export const GameSelect = () => {
 	}
 
 	if (!enabledGames.length) {
-		return <Empty description="Sua escola ainda não possui jogos habilitados." />;
+		return (
+			<Empty description="Sua escola ainda não possui jogos habilitados." />
+		);
 	}
 
 	return (

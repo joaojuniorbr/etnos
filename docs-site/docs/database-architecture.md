@@ -63,6 +63,7 @@ O backend usa o `firebaseUid` como elo entre identidade e perfil.
 - configurações de jogos
 - conteúdo do jogo da memória
 - pontuações
+- respostas de NPS por jogo/personagem
 - metadados de mídia
 
 ### Prisma
@@ -120,6 +121,8 @@ e persistência passa pela API.
 - `game_configs.character_slug` aponta para `characters.slug`
 - `game_scores.character_slug` aponta para `characters.slug`
 - `game_scores.user_id` e `midia.user_id` apontam para `users.firebase_uid`
+- `game_nps_responses.character_slug` aponta para `characters.slug`
+- `game_nps_responses.user_id` aponta para `users.firebase_uid`
 
 ## Operação do banco
 

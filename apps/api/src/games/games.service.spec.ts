@@ -328,7 +328,9 @@ describe('GamesService', () => {
 
     expect(result).toEqual([{ id: '1', name: 'anita-1', image: 'imagem-1' }]);
     expect(prismaService.schoolEnabledGame.findMany).not.toHaveBeenCalled();
-    expect(prismaService.schoolEnabledCharacter.findMany).not.toHaveBeenCalled();
+    expect(
+      prismaService.schoolEnabledCharacter.findMany,
+    ).not.toHaveBeenCalled();
   });
 
   it('deve criar conteúdo do guess game quando não houver id', async () => {
@@ -377,7 +379,9 @@ describe('GamesService', () => {
 
     jest.spyOn(crypto, 'randomInt').mockImplementationOnce(() => 0 as never);
 
-    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toEqual({
+    await expect(
+      service.getGuessGamePlayContent('anita', 'user-123'),
+    ).resolves.toEqual({
       id: 'guess-1',
       title: 'Chimarrao',
       tips: ['Dica 1'],
@@ -390,7 +394,9 @@ describe('GamesService', () => {
   it('deve retornar null quando não houver conteúdo jogável', async () => {
     prismaService.guessGameContent.findMany.mockResolvedValueOnce([]);
 
-    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toBeNull();
+    await expect(
+      service.getGuessGamePlayContent('anita', 'user-123'),
+    ).resolves.toBeNull();
   });
 
   it('deve retornar null quando o item sorteado não existir', async () => {
@@ -398,7 +404,9 @@ describe('GamesService', () => {
       .spyOn(service, 'getGuessGameContent')
       .mockResolvedValueOnce([undefined] as any);
 
-    await expect(service.getGuessGamePlayContent('anita', 'user-123')).resolves.toBeNull();
+    await expect(
+      service.getGuessGamePlayContent('anita', 'user-123'),
+    ).resolves.toBeNull();
   });
 
   it('deve retornar lista vazia quando a tabela do guess game ainda não existir', async () => {
@@ -596,7 +604,9 @@ describe('GamesService', () => {
 
     expect(prismaService.user.findUnique).toHaveBeenCalled();
     expect(prismaService.gameScoreHistory.create).not.toHaveBeenCalled();
-    expect(prismaService.$transaction).toHaveBeenCalledWith(expect.any(Function));
+    expect(prismaService.$transaction).toHaveBeenCalledWith(
+      expect.any(Function),
+    );
     expect(prismaService.gameScore.upsert).toHaveBeenCalledWith({
       where: {
         slug_characterSlug_userId: {
@@ -795,7 +805,9 @@ describe('GamesService', () => {
   });
 
   it('deve consultar NPS por jogo e usuário', async () => {
-    prismaService.gameNpsResponse.findFirst.mockResolvedValueOnce({ id: 'nps-3' });
+    prismaService.gameNpsResponse.findFirst.mockResolvedValueOnce({
+      id: 'nps-3',
+    });
 
     const result = await service.getUserGameNps({
       slug: 'guess-game',

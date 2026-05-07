@@ -6,9 +6,10 @@ A API do Etnos expõe a documentação interativa pelo Swagger UI. Essa interfac
 mostra os endpoints disponíveis, os corpos esperados, os parâmetros, os grupos
 de rotas e os cenários de autenticação com bearer token.
 
-No ambiente local, a documentação fica disponível em:
+No ambiente local, com a API na porta padrão do projeto, a documentação fica
+disponível em:
 
-- `http://localhost:8080/docs`
+- `http://localhost:3333/docs`
 
 As rotas da API continuam respeitando o prefixo global `api`, então os endpoints
 documentados aparecem como `/api/auth`, `/api/games`, `/api/midia` e assim por

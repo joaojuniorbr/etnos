@@ -41,9 +41,10 @@ Se os commits nao forem semânticos, o release pode nao ser gerado como esperado
 
 ## Arquivos de configuração
 
-- `.releaserc.json`
+- `.releaserc.cjs`
 - `.github/workflows/release.yml`
 - `.github/workflows/pr-title.yml`
+- `.github/workflows/ci-main.yml`
 
 ## Teste local antes da pipeline
 

@@ -176,7 +176,7 @@ export class UsersService {
       this.mapUser({
         ...user,
         schoolName: user.school
-          ? schoolNameById.get(user.school) ?? null
+          ? (schoolNameById.get(user.school) ?? null)
           : null,
       }),
     );

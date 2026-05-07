@@ -57,7 +57,7 @@ de progresso da plataforma.
 
 ## Recursos
 
-- [Apresentação](../files/2025-wipex-apresentacao.pdf)
+- [Apresentação](files/2025-wipex-apresentacao.pdf)
 
 ## AGRADECIMENTOS
 

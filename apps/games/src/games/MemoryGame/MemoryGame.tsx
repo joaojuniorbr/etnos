@@ -141,7 +141,9 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 				gameSessionIdRef.current = null;
 			}}
 			selectedCharacter={selectedCharacter}
-			npsEnabled={Boolean(user?.uid && activeCharacterSlug && !hasSubmittedGameNps)}
+			npsEnabled={Boolean(
+				user?.uid && activeCharacterSlug && !hasSubmittedGameNps,
+			)}
 			npsGameSlug={GamesEnum.MEMORY_GAME}
 			npsCharacterSlug={activeCharacterSlug}
 			onSubmitGameNps={async (...args) => {

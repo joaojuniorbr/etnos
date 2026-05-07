@@ -55,7 +55,8 @@ export const usePushNotifications = (user: UserProfileInterface | null) => {
 	const notificationsEnabled = user?.notificationsEnabled !== false;
 
 	const registerPushToken = useCallback(async (userId: string) => {
-		const { status: existingStatus } = await Notifications.getPermissionsAsync();
+		const { status: existingStatus } =
+			await Notifications.getPermissionsAsync();
 		const finalStatus =
 			existingStatus === 'granted'
 				? existingStatus
@@ -152,11 +153,7 @@ export const usePushNotifications = (user: UserProfileInterface | null) => {
 		void unregisterPushToken(userId).catch(() => {
 			disabledSyncedUserIdRef.current = null;
 		});
-	}, [
-		notificationsEnabled,
-		unregisterPushToken,
-		user?.id,
-	]);
+	}, [notificationsEnabled, unregisterPushToken, user?.id]);
 
 	return {
 		ensurePushTokenRegistered: async () => {

@@ -1,1 +1,1 @@
-export * from './FormTemplateNotification'
+export * from './FormTemplateNotification';

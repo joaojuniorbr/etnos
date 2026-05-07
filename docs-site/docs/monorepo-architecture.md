@@ -15,6 +15,8 @@ flowchart LR
     B["apps/student"] --> U
     B --> G["apps/games"]
     B --> T["packages/tools"]
+    M["apps/student-mobile"] --> C0["packages/core"]
+    M --> Y["packages/types"]
     C["apps/admin"] --> U
     C --> T
     D["apps/api"] --> Y["packages/types"]
@@ -87,6 +89,17 @@ Responsabilidades:
 
 Storybook do design system e dos componentes compartilhados.
 
+### `apps/student-mobile`
+
+Aplicativo nativo (Expo) para iOS, Android e Web.
+
+Responsabilidades:
+
+- autenticação e sessão no app nativo;
+- seleção de personagem e consumo de jogos;
+- integração com notificações push;
+- consumo de serviços via `packages/core`.
+
 ## Pacotes
 
 ### `packages/ui`
@@ -120,6 +133,11 @@ Responsabilidades:
 - interfaces de usuário, escola, personagem e mídia;
 - enums e contratos dos jogos;
 - tipagem comum do dominio.
+
+### `packages/core`
+
+Camada compartilhada do app nativo com cliente HTTP, serviços e storage de
+sessão.
 
 ## Layouts
 

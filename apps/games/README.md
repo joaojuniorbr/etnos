@@ -12,6 +12,7 @@ componentes React prontos para integracao com `@etnos/tools`, `@etnos/types` e
   pontuacao e persistencia de recorde.
 - `GuessGame`: jogo de adivinhacao com dicas, tentativas, sons e salvamento de
   pontuacao.
+- `GameNpsModal`: modal de coleta de satisfacao apos partidas.
 
 ## Estrutura
 
@@ -46,6 +47,11 @@ import '@etnos/games/styles.css';
 export const Example = () => <MemoryGame characterSlug="anita" />;
 ```
 
+Subpath exports:
+
+- `@etnos/games/guess-game`
+- `@etnos/games/memory-game`
+
 ## Scripts
 
 - `yarn dev`: observa componentes TypeScript e folha de estilos.
@@ -59,5 +65,6 @@ export const Example = () => <MemoryGame characterSlug="anita" />;
 - `apps/student` consome os jogos renderizando `MemoryGame` e `GuessGame`.
 - `apps/admin` gerencia configuracoes e conteudo do jogo da memoria.
 - `apps/api` persiste configuracao, conteudo e pontuacao.
+- `apps/api` recebe feedback de NPS via `POST /games/nps`.
 
 Para a visao arquitetural completa, consulte `docs-site/docs/games-architecture.md`.

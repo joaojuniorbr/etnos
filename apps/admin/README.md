@@ -1,28 +1,65 @@
-## Getting Started
+# @etnos/admin (`apps/admin`)
 
-First, run the development server:
+Painel administrativo do Etnos para gestão de conteúdo, usuários e operação da
+plataforma.
+
+## Responsabilidades
+
+- gerenciar escolas e usuários;
+- gerenciar personagens, jogos e configurações;
+- administrar biblioteca de mídias;
+- publicar notificações.
+
+## Stack
+
+- Next.js 16 + React 19 + TypeScript
+- Tailwind CSS 4
+- `@etnos/ui`, `@etnos/tools`, `@etnos/types`
+
+## Scripts
+
+```bash
+yarn dev
+yarn build
+yarn start
+yarn lint
+yarn check-types
+```
+
+## Desenvolvimento local
+
+Executar em `http://localhost:3001`:
 
 ```bash
 yarn dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+## Variáveis de ambiente
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+Criar `apps/admin/.env.local`:
 
-To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3001/api/hello](http://localhost:3001/api/hello).
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+```
 
-## Learn More
+## Estrutura funcional (resumo)
 
-To learn more about Next.js, take a look at the following resources:
+- `app/escolas`: gestão de escolas.
+- `app/usuarios`: gestão de usuários.
+- `app/personagens`: gestão de personagens.
+- `app/jogos`: gestão de jogos e conteúdos.
+- `app/midia`: biblioteca de mídia.
+- `app/notificacoes`: envio e histórico de notificações.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
+## Integração no monorepo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- usa `@etnos/ui` para componentes;
+- usa `@etnos/tools` para chamadas à API;
+- usa `@etnos/types` para contratos compartilhados;
+- integra com `apps/api` para persistência.

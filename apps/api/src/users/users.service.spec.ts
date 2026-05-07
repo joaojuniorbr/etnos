@@ -80,7 +80,10 @@ describe('UsersService', () => {
   });
 
   it('lista usuarios filtrando por escola e busca', async () => {
-    const result = await service.findAll({ schoolId: 'school-1', search: 'ana' });
+    const result = await service.findAll({
+      schoolId: 'school-1',
+      search: 'ana',
+    });
 
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
@@ -199,7 +202,9 @@ describe('UsersService', () => {
     prismaService.user.findUnique
       .mockResolvedValueOnce(createRequester({ roles: ['admin'] }))
       .mockResolvedValueOnce(createUser({ school: null }));
-    prismaService.user.update.mockResolvedValueOnce(createUser({ school: null }));
+    prismaService.user.update.mockResolvedValueOnce(
+      createUser({ school: null }),
+    );
 
     const result = await service.updateUser('admin-uid', 'user-1', {});
 
@@ -306,7 +311,9 @@ describe('UsersService', () => {
 
   it('bloqueia school admin sem permissao sobre a escola do usuario', async () => {
     prismaService.user.findUnique
-      .mockResolvedValueOnce(createRequester({ roles: ['school'], school: 'school-1' }))
+      .mockResolvedValueOnce(
+        createRequester({ roles: ['school'], school: 'school-1' }),
+      )
       .mockResolvedValueOnce(createUser({ school: 'school-3' }));
 
     await expect(
@@ -325,8 +332,9 @@ describe('UsersService', () => {
   });
 
   it('bloqueia school admin alterando status ou perfis administrativos', async () => {
-    prismaService.user.findUnique
-      .mockResolvedValue(createRequester({ roles: ['school'], school: 'school-1' }));
+    prismaService.user.findUnique.mockResolvedValue(
+      createRequester({ roles: ['school'], school: 'school-1' }),
+    );
 
     await expect(
       service.updateUser('school', 'user-1', { isActive: false }),

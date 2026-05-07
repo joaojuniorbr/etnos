@@ -158,7 +158,9 @@ describe('GameNpsModal', () => {
 		fireEvent.click(screen.getByRole('button', { name: /nota-3/i }));
 		expect(screen.getByTestId('rate-value').textContent).toBe('3');
 
-		rerender(<GameNpsModal open={false} onClose={onClose} onSubmit={vi.fn()} />);
+		rerender(
+			<GameNpsModal open={false} onClose={onClose} onSubmit={vi.fn()} />,
+		);
 		rerender(<GameNpsModal open onClose={onClose} onSubmit={vi.fn()} />);
 
 		expect(screen.getByTestId('rate-value').textContent).toBe('0');

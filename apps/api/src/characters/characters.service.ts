@@ -4,6 +4,12 @@ import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class CharactersService {
+  private readonly cacheTtlMs = 30_000;
+  private readonly charactersCache = new Map<
+    string,
+    { expiresAt: number; data: CharacterInterface[] }
+  >();
+
   constructor(private readonly prismaService: PrismaService) {}
 
   private getAvatarFolder(slug: string) {
@@ -11,6 +17,13 @@ export class CharactersService {
   }
 
   async getCharacters(slug?: string) {
+    const cacheKey = slug ?? '__all__';
+    const cached = this.charactersCache.get(cacheKey);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
     const characters = await this.prismaService.character.findMany({
       where: slug ? { slug } : undefined,
     });
@@ -48,10 +61,17 @@ export class CharactersService {
       {},
     );
 
-    return characters.map((character) => ({
+    const data = characters.map((character) => ({
       ...character,
       avatarUrls: avatarsByFolder[this.getAvatarFolder(character.slug)] ?? [],
     }));
+
+    this.charactersCache.set(cacheKey, {
+      expiresAt: Date.now() + this.cacheTtlMs,
+      data,
+    });
+
+    return data;
   }
 
   async getCharacterBySlug(slug: string) {
@@ -99,6 +119,8 @@ export class CharactersService {
       },
     });
 
+    this.charactersCache.clear();
+
     return {
       id: created.id,
       ...character,
@@ -122,6 +144,8 @@ export class CharactersService {
         imageUrl: character.imageUrl,
       },
     });
+
+    this.charactersCache.clear();
 
     return character;
   }

@@ -12,6 +12,15 @@ import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class AuthService {
+  private readonly profileCacheTtlMs = 30_000;
+  private readonly profileCache = new Map<
+    string,
+    {
+      expiresAt: number;
+      data: ReturnType<AuthService['mapProfile']>;
+    }
+  >();
+
   private readonly firebaseApiKey =
     this.configService.get<string>('FIREBASE_API_KEY');
 
@@ -312,9 +321,21 @@ export class AuthService {
   }
 
   async getProfile(id: string) {
+    const cached = this.profileCache.get(id);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
     const data = await this.findProfileByFirebaseUid(id);
-    logger.info('getProfile', { id, exists: !!data });
-    return this.mapProfile(data);
+    const profile = this.mapProfile(data);
+
+    this.profileCache.set(id, {
+      expiresAt: Date.now() + this.profileCacheTtlMs,
+      data: profile,
+    });
+
+    return profile;
   }
 
   async updateProfile(
@@ -346,6 +367,8 @@ export class AuthService {
       where: { firebaseUid: id },
       data: safeData,
     });
+
+    this.profileCache.delete(id);
 
     return this.getProfile(id);
   }

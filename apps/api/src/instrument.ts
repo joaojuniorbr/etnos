@@ -1,7 +1,18 @@
 import * as Sentry from '@sentry/nestjs';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import { config as loadEnv } from 'dotenv';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const envFiles = [
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), 'apps/api/.env'),
+];
+
+envFiles.filter(existsSync).forEach((path) => {
+  loadEnv({ path, quiet: true });
+});
+
 const parseNumberEnv = (
   value: string | undefined,
   fallback: number,
@@ -25,17 +36,11 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations: [nodeProfilingIntegration()],
   enableLogs: true,
-  tracesSampleRate: parseNumberEnv(
-    process.env.SENTRY_TRACES_SAMPLE_RATE,
-    isProduction ? 0.1 : 1,
-  ),
+  tracesSampleRate: parseNumberEnv(process.env.SENTRY_TRACES_SAMPLE_RATE, 1),
   profileSessionSampleRate: parseNumberEnv(
     process.env.SENTRY_PROFILE_SESSION_SAMPLE_RATE,
-    isProduction ? 0 : 1,
+    1,
   ),
   profileLifecycle: 'trace',
-  sendDefaultPii: parseBooleanEnv(
-    process.env.SENTRY_SEND_DEFAULT_PII,
-    !isProduction,
-  ),
+  sendDefaultPii: parseBooleanEnv(process.env.SENTRY_SEND_DEFAULT_PII, false),
 });

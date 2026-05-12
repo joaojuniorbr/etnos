@@ -1,0 +1,16 @@
+{
+	"name": "@etnos/performance",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"test:auth-read-flow": "node scripts/run-k6-with-env.mjs scripts/auth-read-flow.js",
+		"test:auth-read-flow:summary": "node scripts/run-k6-with-env.mjs --summary-export=results/auth-read-flow-summary.json scripts/auth-read-flow.js",
+		"test:auth-read-flow:grafana": "node scripts/run-k6-with-env.mjs --grafana scripts/auth-read-flow.js",
+		"test:public-schools": "node scripts/run-k6-with-env.mjs scripts/public-schools.js",
+		"test:public-schools:summary": "node scripts/run-k6-with-env.mjs --summary-export=results/public-schools-summary.json scripts/public-schools.js",
+		"test:public-schools:grafana": "node scripts/run-k6-with-env.mjs --grafana scripts/public-schools.js",
+		"observability:up": "sh scripts/docker-compose.sh up -d prometheus grafana",
+		"observability:down": "sh scripts/docker-compose.sh down",
+		"observability:logs": "sh scripts/docker-compose.sh logs -f prometheus grafana"
+	}
+}

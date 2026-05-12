@@ -24,6 +24,16 @@ const AVAILABLE_GAME_SLUGS = ['memory-game', 'guess-game'] as const;
 
 @Injectable()
 export class SchoolsService {
+  private readonly gameAccessCacheTtlMs = 30_000;
+  private readonly gameAccessCache = new Map<
+    string,
+    { expiresAt: number; data: SchoolGameAccessInterface }
+  >();
+  private readonly myGameAccessCache = new Map<
+    string,
+    { expiresAt: number; data: SchoolGameAccessInterface }
+  >();
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly gamesService: GamesService,
@@ -275,6 +285,13 @@ export class SchoolsService {
     schoolId: string,
     viewerRoles: string[],
   ): Promise<SchoolGameAccessInterface> {
+    const cacheKey = `${schoolId}:${[...viewerRoles].sort().join(',')}`;
+    const cached = this.gameAccessCache.get(cacheKey);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
+    }
+
     const [enabledGames, enabledCharacters, availableCharacterSlugs] =
       await Promise.all([
         this.prismaService.schoolEnabledGame.findMany({
@@ -294,7 +311,7 @@ export class SchoolsService {
     const hasCustomGames = enabledGames.length > 0;
     const hasCustomCharacters = enabledCharacters.length > 0;
 
-    return {
+    const data = {
       schoolId,
       enabledGameSlugs: hasCustomGames
         ? enabledGames.map((game) => game.gameSlug)
@@ -307,6 +324,13 @@ export class SchoolsService {
       canEdit: this.canEditSchoolGameAccess(viewerRoles),
       viewerRoles: viewerRoles as UserRole[],
     };
+
+    this.gameAccessCache.set(cacheKey, {
+      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
+      data,
+    });
+
+    return data;
   }
 
   private async validateSchoolGameAccessPayload(
@@ -675,15 +699,28 @@ export class SchoolsService {
   async getMyGameAccess(
     firebaseUid: string,
   ): Promise<SchoolGameAccessInterface> {
-    const profile = await this.getAuthenticatedProfile(firebaseUid);
+    const cached = this.myGameAccessCache.get(firebaseUid);
 
-    if (!profile.school) {
-      return this.buildSchoolGameAccess('', profile.roles);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.data;
     }
 
-    await this.ensureSchoolExists(profile.school);
+    const profile = await this.getAuthenticatedProfile(firebaseUid);
 
-    return this.buildSchoolGameAccess(profile.school, profile.roles);
+    if (profile.school) {
+      await this.ensureSchoolExists(profile.school);
+    }
+
+    const gameAccess = profile.school
+      ? await this.buildSchoolGameAccess(profile.school, profile.roles)
+      : await this.buildSchoolGameAccess('', profile.roles);
+
+    this.myGameAccessCache.set(firebaseUid, {
+      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
+      data: gameAccess,
+    });
+
+    return gameAccess;
   }
 
   async getGameAccessBySchool(
@@ -716,8 +753,9 @@ export class SchoolsService {
 
     await this.ensureSchoolExists(schoolId);
 
-    const validatedPayload =
-      await this.validateSchoolGameAccessPayload(payload);
+    const validatedPayload = await this.validateSchoolGameAccessPayload(
+      payload,
+    );
 
     await this.prismaService.$transaction(async (transaction) => {
       await transaction.schoolEnabledGame.deleteMany({
@@ -745,6 +783,9 @@ export class SchoolsService {
         });
       }
     });
+
+    this.gameAccessCache.clear();
+    this.myGameAccessCache.clear();
 
     return this.buildSchoolGameAccess(schoolId, profile.roles);
   }

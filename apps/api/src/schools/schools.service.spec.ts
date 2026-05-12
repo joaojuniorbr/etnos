@@ -551,6 +551,19 @@ describe('SchoolsService', () => {
       expect(result.canEdit).toBe(true);
     });
 
+    it('reutiliza meu acesso a jogos em cache quando a entrada ainda estiver válida', async () => {
+      await service.getMyGameAccess('firebase-user-1');
+      const result = await service.getMyGameAccess('firebase-user-1');
+
+      expect(result.schoolId).toBe('1');
+      expect(prismaService.user.findUnique).toHaveBeenCalledTimes(1);
+      expect(prismaService.school.findUnique).toHaveBeenCalledTimes(1);
+      expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledTimes(1);
+      expect(
+        prismaService.schoolEnabledCharacter.findMany,
+      ).toHaveBeenCalledTimes(1);
+    });
+
     it('retorna todos os jogos e personagens quando a escola ainda nao possui configuracao customizada', async () => {
       const result = await service.getGameAccessBySchool(
         'firebase-user-1',
@@ -575,6 +588,22 @@ describe('SchoolsService', () => {
       expect(result.hasCustomGames).toBe(false);
       expect(result.hasCustomCharacters).toBe(false);
       expect(result.canEdit).toBe(true);
+    });
+
+    it('reutiliza configuracao de jogos por escola em cache', async () => {
+      await service.getGameAccessBySchool('firebase-user-1', '1');
+      const result = await service.getGameAccessBySchool(
+        'firebase-user-1',
+        '1',
+      );
+
+      expect(result.schoolId).toBe('1');
+      expect(prismaService.user.findUnique).toHaveBeenCalledTimes(2);
+      expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledTimes(1);
+      expect(
+        prismaService.schoolEnabledCharacter.findMany,
+      ).toHaveBeenCalledTimes(1);
+      expect(prismaService.character.findMany).toHaveBeenCalledTimes(1);
     });
 
     it('retorna configuracao customizada de jogos e personagens da escola', async () => {

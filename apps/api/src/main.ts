@@ -1,11 +1,11 @@
+import './instrument';
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-
-import './instrument';
 
 const getReleaseVersion = () => {
   try {

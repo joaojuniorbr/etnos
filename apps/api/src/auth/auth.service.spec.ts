@@ -262,6 +262,33 @@ describe('AuthService', () => {
 
       await expect(service.getProfile('missing-user')).resolves.toBeNull();
     });
+
+    it('deve reutilizar perfil em cache quando ainda estiver válido', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-cache',
+        email: 'cache@email.com',
+        parentName: 'Cache',
+        childName: null,
+        childBirthDate: null,
+        parentPhone: null,
+        school: null,
+        photoURL: null,
+        avatarCharacterSlug: null,
+        notificationsEnabled: true,
+        roles: ['student'],
+        createdAt: new Date('2026-03-15T00:00:00.000Z'),
+        updatedAt: new Date('2026-03-15T01:00:00.000Z'),
+        schoolAccesses: [],
+        pushTokens: [],
+      });
+
+      const first = await service.getProfile('user-cache');
+      const second = await service.getProfile('user-cache');
+
+      expect(first).toEqual(second);
+      expect(prismaService.user.findUnique).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('changePassword', () => {

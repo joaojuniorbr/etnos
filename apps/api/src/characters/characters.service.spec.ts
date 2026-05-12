@@ -76,6 +76,15 @@ describe('CharactersService', () => {
     });
   });
 
+  it('deve reutilizar personagens em cache quando a entrada ainda estiver válida', async () => {
+    const first = await service.getCharacters('joao-silva');
+    const second = await service.getCharacters('joao-silva');
+
+    expect(first).toEqual(second);
+    expect(prismaService.character.findMany).toHaveBeenCalledTimes(1);
+    expect(prismaService.midia.findMany).toHaveBeenCalledTimes(1);
+  });
+
   it('deve ignorar mídias sem folder ao montar avatarUrls', async () => {
     prismaService.midia.findMany.mockResolvedValueOnce([
       {

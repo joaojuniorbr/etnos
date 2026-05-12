@@ -9,6 +9,7 @@ usuários, notificações e mídia.
 - Prisma + PostgreSQL
 - Firebase Auth e Firebase Storage
 - Sentry (`@sentry/nestjs`)
+- Prometheus metrics (`prom-client`)
 - Expo Server SDK (push notification)
 
 ## Scripts
@@ -35,6 +36,7 @@ FIREBASE_PROJECT_ID=
 FIREBASE_CLIENT_EMAIL=
 FIREBASE_PRIVATE_KEY=
 FIREBASE_STORAGE_BUCKET=
+FIREBASE_CHECK_REVOKED_TOKENS=false
 SENTRY_DSN=
 ```
 
@@ -43,6 +45,28 @@ SENTRY_DSN=
 Com a API local em `3333`, a documentação fica em:
 
 - `http://localhost:3333/docs`
+
+## Métricas
+
+Com a API local em `8080`, as métricas Prometheus ficam em:
+
+- `http://localhost:8080/api/metrics`
+
+Essas métricas alimentam a stack local de Grafana/Prometheus em `packages/performance`.
+
+## Performance e observabilidade
+
+Por padrão, a validação do Firebase ID token não consulta revogação remota a cada request (`FIREBASE_CHECK_REVOKED_TOKENS=false`). Isso evita uma chamada externa por rota autenticada durante navegação normal. Se precisar validar tokens revogados em cada requisição, configure:
+
+```env
+FIREBASE_CHECK_REVOKED_TOKENS=true
+```
+
+Logs de anomalia do teste de carga para o Sentry ficam desligados por padrão para não gerar milhares de eventos durante k6. Para ligar temporariamente:
+
+```env
+SENTRY_LOAD_TEST_ANOMALY_LOGS=true
+```
 
 ## Endpoints principais
 

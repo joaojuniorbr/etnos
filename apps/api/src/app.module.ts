@@ -12,6 +12,7 @@ import { MidiaModule } from './midia/midia.module';
 import { UsersModule } from './users';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma';
+import { MetricsModule } from './metrics';
 import { APP_FILTER } from '@nestjs/core';
 
 @Module({
@@ -30,6 +31,7 @@ import { APP_FILTER } from '@nestjs/core';
     MidiaModule,
     UsersModule,
     NotificationsModule,
+    MetricsModule,
   ],
   controllers: [],
   providers: [

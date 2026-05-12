@@ -36,11 +36,11 @@ describe('instrument', () => {
       tracesSampleRate: 1,
       profileSessionSampleRate: 1,
       profileLifecycle: 'trace',
-      sendDefaultPii: true,
+      sendDefaultPii: false,
     });
   });
 
-  it('deve usar fallbacks seguros em produção e respeitar boolean env falso', async () => {
+  it('deve usar fallbacks iguais em qualquer ambiente e respeitar boolean env falso', async () => {
     const init = jest.fn();
     const integration = { name: 'profiling' };
     const nodeProfilingIntegration = jest.fn(() => integration);
@@ -65,8 +65,8 @@ describe('instrument', () => {
       dsn: 'https://dsn.example',
       integrations: [integration],
       enableLogs: true,
-      tracesSampleRate: 0.1,
-      profileSessionSampleRate: 0,
+      tracesSampleRate: 1,
+      profileSessionSampleRate: 1,
       profileLifecycle: 'trace',
       sendDefaultPii: false,
     });
@@ -101,5 +101,34 @@ describe('instrument', () => {
       profileLifecycle: 'trace',
       sendDefaultPii: false,
     });
+  });
+
+  it('deve usar fallback para sendDefaultPii quando env não estiver definida', async () => {
+    const init = jest.fn();
+    const integration = { name: 'profiling' };
+    const nodeProfilingIntegration = jest.fn(() => integration);
+
+    process.env.SENTRY_DSN = 'https://dsn.example';
+    delete process.env.SENTRY_SEND_DEFAULT_PII;
+
+    jest.doMock('node:fs', () => ({
+      existsSync: jest.fn(() => false),
+    }));
+
+    jest.doMock('@sentry/nestjs', () => ({
+      init,
+    }));
+
+    jest.doMock('@sentry/profiling-node', () => ({
+      nodeProfilingIntegration,
+    }));
+
+    await import('./instrument');
+
+    expect(init).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sendDefaultPii: false,
+      }),
+    );
   });
 });

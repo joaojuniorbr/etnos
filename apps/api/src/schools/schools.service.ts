@@ -7,6 +7,9 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
+  AdminDashboardCharacterUsageInterface,
+  AdminDashboardNpsInterface,
+  DashboardPieSliceInterface,
   SchoolGameAccessInterface,
   SchoolInterface,
   SchoolRankingInterface,
@@ -974,6 +977,322 @@ export class SchoolsService {
         ...ranking,
         position: index + 1,
       }));
+  }
+
+  async getTopUsersForGameForAdmin(options: {
+    gameSlug: string;
+    schoolId?: string;
+    limit: number;
+  }): Promise<UserRankingInterface[]> {
+    const { gameSlug, limit } = options;
+    const schoolId = options.schoolId?.trim() || undefined;
+
+    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+      throw new BadRequestException('Jogo invalido para o ranking.');
+    }
+
+    let schoolUserUids: string[] | undefined;
+
+    if (schoolId) {
+      await this.ensureSchoolExists(schoolId);
+      const schoolUsers = await this.prismaService.user.findMany({
+        where: { school: schoolId },
+        select: { firebaseUid: true },
+      });
+      schoolUserUids = schoolUsers.map((user) => user.firebaseUid);
+
+      if (schoolUserUids.length === 0) {
+        return [];
+      }
+    }
+
+    const grouped = await this.prismaService.gameScore.groupBy({
+      by: ['userId'],
+      where: {
+        slug: gameSlug,
+        ...(schoolUserUids?.length
+          ? { userId: { in: schoolUserUids } }
+          : {}),
+      },
+      _sum: {
+        score: true,
+      },
+      orderBy: {
+        _sum: {
+          score: 'desc',
+        },
+      },
+      take: limit,
+    });
+
+    const ranked = grouped
+      .map((row) => ({
+        uid: row.userId,
+        totalScore: row._sum.score ?? 0,
+      }))
+      .filter((row) => row.totalScore > 0);
+
+    if (!ranked.length) {
+      return [];
+    }
+
+    const uids = ranked.map((row) => row.uid);
+    const users = await this.prismaService.user.findMany({
+      where: { firebaseUid: { in: uids } },
+      select: {
+        id: true,
+        firebaseUid: true,
+        email: true,
+        parentName: true,
+        childName: true,
+        school: true,
+      },
+    });
+
+    type DashboardRankingUser = (typeof users)[number];
+
+    const userByUid = new Map<string, DashboardRankingUser>(
+      users.map((user) => [user.firebaseUid, user]),
+    );
+
+    const schoolIds = [
+      ...new Set(
+        users
+          .map((user) => user.school)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+      ),
+    ];
+
+    const schools = schoolIds.length
+      ? await this.prismaService.school.findMany({
+          where: { id: { in: schoolIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+
+    const schoolNameById = new Map<string, string>(
+      schools.map((school) => [school.id, school.name]),
+    );
+
+    const rows: UserRankingInterface[] = [];
+
+    for (const row of ranked) {
+      const user = userByUid.get(row.uid);
+
+      if (!user) {
+        continue;
+      }
+
+      const schoolName: string | null = user.school
+        ? (schoolNameById.get(user.school) ?? null)
+        : null;
+
+      rows.push({
+        position: 0,
+        uid: row.uid,
+        userId: user.id,
+        email: user.email,
+        parentName: user.parentName,
+        childName: user.childName,
+        school: user.school,
+        schoolName,
+        gameSlug,
+        totalScore: row.totalScore,
+      });
+    }
+
+    return rows.map((entry, index) => ({
+      ...entry,
+      position: index + 1,
+    }));
+  }
+
+  private buildDashboardPieSlices(
+    entries: Array<{ key: string; label: string; value: number }>,
+  ): DashboardPieSliceInterface[] {
+    const total = entries.reduce((sum, entry) => sum + entry.value, 0);
+
+    return entries
+      .filter((entry) => entry.value > 0)
+      .map((entry) => ({
+        key: entry.key,
+        label: entry.label,
+        value: entry.value,
+        percentage:
+          total > 0 ? Number(((entry.value / total) * 100).toFixed(1)) : 0,
+      }));
+  }
+
+  async getDashboardCharacterUsageForAdmin(options: {
+    gameSlug: string;
+    schoolId?: string;
+  }): Promise<AdminDashboardCharacterUsageInterface> {
+    const { gameSlug } = options;
+    const schoolId = options.schoolId?.trim() || undefined;
+
+    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+      throw new BadRequestException('Jogo invalido para o uso de personagens.');
+    }
+
+    if (schoolId) {
+      await this.ensureSchoolExists(schoolId);
+    }
+
+    const grouped = await this.prismaService.gameScoreHistory.groupBy({
+      by: ['characterSlug'],
+      where: {
+        status: 'completed',
+        gameSlug,
+        ...(schoolId ? { schoolId } : {}),
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    const characters = await this.prismaService.character.findMany({
+      select: { slug: true, name: true },
+    });
+    const nameBySlug = new Map(
+      characters.map((character) => [character.slug, character.name]),
+    );
+
+    const entries = grouped
+      .map((row) => ({
+        key: row.characterSlug,
+        label: nameBySlug.get(row.characterSlug) ?? row.characterSlug,
+        value: row._count._all,
+      }))
+      .sort((left, right) => right.value - left.value);
+
+    const slices = this.buildDashboardPieSlices(entries);
+    const top = slices[0];
+
+    return {
+      slices,
+      topCharacterSlug: top?.key ?? null,
+      topCharacterName: top?.label ?? null,
+      totalPlays: entries.reduce((sum, entry) => sum + entry.value, 0),
+    };
+  }
+
+  async getDashboardNpsForAdmin(options: {
+    gameSlug: string;
+    schoolId?: string;
+  }): Promise<AdminDashboardNpsInterface> {
+    const { gameSlug } = options;
+    const schoolId = options.schoolId?.trim() || undefined;
+
+    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+      throw new BadRequestException('Jogo invalido para o NPS.');
+    }
+
+    if (schoolId) {
+      await this.ensureSchoolExists(schoolId);
+
+      const grouped = await this.prismaService.gameNpsResponse.groupBy({
+        by: ['rating'],
+        where: {
+          gameSlug,
+          schoolId,
+        },
+        _count: {
+          _all: true,
+        },
+      });
+
+      const ratingLabels: Record<number, string> = {
+        1: '1 estrela',
+        2: '2 estrelas',
+        3: '3 estrelas',
+        4: '4 estrelas',
+        5: '5 estrelas',
+      };
+
+      const entries = grouped
+        .map((row) => ({
+          key: String(row.rating),
+          label: ratingLabels[row.rating] ?? `Nota ${row.rating}`,
+          value: row._count._all,
+        }))
+        .sort((left, right) => Number(left.key) - Number(right.key));
+
+      const slices = this.buildDashboardPieSlices(entries);
+      const totalResponses = slices.reduce(
+        (sum, slice) => sum + slice.value,
+        0,
+      );
+      const weightedSum = grouped.reduce(
+        (sum, row) => sum + row.rating * row._count._all,
+        0,
+      );
+
+      return {
+        slices,
+        totalResponses,
+        averageRating:
+          totalResponses > 0
+            ? Number((weightedSum / totalResponses).toFixed(2))
+            : null,
+        viewMode: 'by_rating',
+      };
+    }
+
+    const grouped = await this.prismaService.gameNpsResponse.groupBy({
+      by: ['schoolId'],
+      where: {
+        gameSlug,
+        schoolId: { not: null },
+      },
+      _count: {
+        _all: true,
+      },
+      _avg: {
+        rating: true,
+      },
+    });
+
+    const schoolIds = grouped
+      .map((row) => row.schoolId)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    const schools = schoolIds.length
+      ? await this.prismaService.school.findMany({
+          where: { id: { in: schoolIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+
+    const schoolNameById = new Map(
+      schools.map((school) => [school.id, school.name]),
+    );
+
+    const entries = grouped
+      .map((row) => ({
+        key: row.schoolId ?? 'unknown',
+        label: row.schoolId
+          ? (schoolNameById.get(row.schoolId) ?? row.schoolId)
+          : 'Sem escola',
+        value: row._count._all,
+      }))
+      .sort((left, right) => right.value - left.value);
+
+    const slices = this.buildDashboardPieSlices(entries);
+    const totalResponses = slices.reduce((sum, slice) => sum + slice.value, 0);
+    const weightedSum = grouped.reduce((sum, row) => {
+      const avg = row._avg.rating ?? 0;
+      return sum + avg * row._count._all;
+    }, 0);
+
+    return {
+      slices,
+      totalResponses,
+      averageRating:
+        totalResponses > 0
+          ? Number((weightedSum / totalResponses).toFixed(2))
+          : null,
+      viewMode: 'by_school',
+    };
   }
 
   async getUserRankingFromMySchool(

@@ -201,6 +201,64 @@ describe('schoolService', () => {
 		expect(result).toEqual([{ position: 1 }]);
 	});
 
+	it('deve buscar uso de personagens do dashboard', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: { topCharacterName: 'Anita', slices: [], totalPlays: 0 },
+		});
+
+		const result = await schoolService.getDashboardCharacterUsage({
+			gameSlug: 'memory-game',
+			schoolId: 'school-1',
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith(
+			'/schools/dashboard/character-usage',
+			{ params: { gameSlug: 'memory-game', schoolId: 'school-1' } },
+		);
+		expect(result.topCharacterName).toBe('Anita');
+	});
+
+	it('deve buscar NPS do dashboard', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: { totalResponses: 2, slices: [], viewMode: 'by_school' },
+		});
+
+		await schoolService.getDashboardNps({ gameSlug: 'memory-game' });
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/dashboard/nps', {
+			params: { gameSlug: 'memory-game' },
+		});
+	});
+
+	it('deve buscar top usuarios do dashboard admin', async () => {
+		apiMock.get.mockResolvedValueOnce({
+			data: [{ position: 1, uid: 'u1', totalScore: 50 }],
+		});
+
+		const result = await schoolService.getDashboardTopUsers({
+			gameSlug: 'memory-game',
+			limit: 10,
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/dashboard/top-users', {
+			params: { gameSlug: 'memory-game', limit: 10 },
+		});
+		expect(result).toEqual([{ position: 1, uid: 'u1', totalScore: 50 }]);
+	});
+
+	it('deve buscar top usuarios do dashboard com escola', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: [] });
+
+		await schoolService.getDashboardTopUsers({
+			schoolId: 'school-1',
+			limit: 5,
+		});
+
+		expect(apiMock.get).toHaveBeenCalledWith('/schools/dashboard/top-users', {
+			params: { gameSlug: 'memory-game', limit: 5, schoolId: 'school-1' },
+		});
+	});
+
 	it('deve buscar ranking de usuarios da escola com filtro por jogo', async () => {
 		apiMock.get.mockResolvedValueOnce({
 			data: [{ position: 1, uid: 'user-1' }],

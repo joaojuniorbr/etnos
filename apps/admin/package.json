@@ -11,18 +11,19 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@etnos/ui": "*",
 		"@etnos/tools": "*",
+		"@etnos/types": "*",
+		"@etnos/ui": "*",
 		"next": "^16.0.7",
 		"react": "19.2.0",
 		"react-dom": "19.2.0",
-		"@etnos/types": "*"
+		"recharts": "2.15.0"
 	},
 	"devDependencies": {
-		"@next/eslint-plugin-next": "^16.0.7",
 		"@etnos/eslint-config": "*",
 		"@etnos/tailwind-config": "*",
 		"@etnos/typescript-config": "*",
+		"@next/eslint-plugin-next": "^16.0.7",
 		"@tailwindcss/postcss": "^4.1.5",
 		"@types/node": "^22.15.30",
 		"@types/react": "^19.1.0",

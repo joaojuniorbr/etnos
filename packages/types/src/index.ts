@@ -8,4 +8,5 @@ export * from './entities/school-game-access';
 export * from './entities/school-ranking';
 export * from './entities/school-user';
 export * from './entities/user-ranking';
+export * from './entities/admin-dashboard-analytics';
 export * from './games';

@@ -1,5 +1,7 @@
 import { api } from '../../helpers';
 import type {
+	AdminDashboardCharacterUsageInterface,
+	AdminDashboardNpsInterface,
 	ScoreHistory,
 	SchoolInterface,
 	SchoolGameAccessInterface,
@@ -113,6 +115,60 @@ export const schoolService = {
 								...(characterSlug ? { characterSlug } : {}),
 							}
 						: undefined,
+			})
+			.then((res) => res.data);
+	},
+
+	getDashboardCharacterUsage(options?: {
+		gameSlug?: string;
+		schoolId?: string;
+	}): Promise<AdminDashboardCharacterUsageInterface> {
+		const gameSlug = options?.gameSlug ?? 'memory-game';
+		const schoolId = options?.schoolId;
+
+		return api
+			.get('/schools/dashboard/character-usage', {
+				params: {
+					gameSlug,
+					...(schoolId ? { schoolId } : {}),
+				},
+			})
+			.then((res) => res.data);
+	},
+
+	getDashboardNps(options?: {
+		gameSlug?: string;
+		schoolId?: string;
+	}): Promise<AdminDashboardNpsInterface> {
+		const gameSlug = options?.gameSlug ?? 'memory-game';
+		const schoolId = options?.schoolId;
+
+		return api
+			.get('/schools/dashboard/nps', {
+				params: {
+					gameSlug,
+					...(schoolId ? { schoolId } : {}),
+				},
+			})
+			.then((res) => res.data);
+	},
+
+	getDashboardTopUsers(options?: {
+		gameSlug?: string;
+		schoolId?: string;
+		limit?: number;
+	}): Promise<UserRankingInterface[]> {
+		const gameSlug = options?.gameSlug ?? 'memory-game';
+		const limit = options?.limit ?? 10;
+		const schoolId = options?.schoolId;
+
+		return api
+			.get('/schools/dashboard/top-users', {
+				params: {
+					gameSlug,
+					limit,
+					...(schoolId ? { schoolId } : {}),
+				},
 			})
 			.then((res) => res.data);
 	},

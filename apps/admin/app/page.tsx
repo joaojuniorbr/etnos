@@ -8,46 +8,13 @@ import {
 	schoolSections,
 } from './admin-navigation';
 import { Card, Title } from '@etnos/ui';
-import { schoolService, useAuth } from '@etnos/tools';
-import { useEffect, useState } from 'react';
-import {
-	GameNameEnum,
-	GamesEnum,
-	type SchoolRankingInterface,
-} from '@etnos/types';
-import { SchoolsRanking } from '@etnos/components';
-
-const gameOptions = [
-	{
-		value: 'all',
-		label: 'Todos os jogos',
-	},
-	...Object.values(GamesEnum).map((gameSlug) => ({
-		value: gameSlug,
-		label: GameNameEnum[gameSlug],
-	})),
-];
+import { useAuth } from '@etnos/tools';
+import { AdminPerformanceDashboard } from '@etnos/components';
 
 export default function Page() {
 	const { user } = useAuth();
 	const isAdmin = user?.role?.includes('admin');
 	const sections = isAdmin ? adminSections : schoolSections;
-	const [selectedGame, setSelectedGame] = useState<string>('all');
-	const [schoolRanking, setSchoolRanking] = useState<SchoolRankingInterface[]>(
-		[],
-	);
-
-	useEffect(() => {
-		if (!isAdmin) {
-			return;
-		}
-
-		schoolService
-			.getRanking(selectedGame === 'all' ? undefined : selectedGame)
-			.then((ranking) => {
-				setSchoolRanking(ranking);
-			});
-	}, [isAdmin, selectedGame]);
 
 	return (
 		<div className="min-h-screen bg-slate-50">
@@ -92,12 +59,7 @@ export default function Page() {
 				{isAdmin ? (
 					<>
 						<section className="pt-12">
-							<SchoolsRanking
-								ranking={schoolRanking}
-								selectedGame={selectedGame}
-								onGameChange={setSelectedGame}
-								gameOptions={gameOptions}
-							/>
+							<AdminPerformanceDashboard />
 						</section>
 
 						<section className="pt-12">

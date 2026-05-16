@@ -5,3 +5,7 @@ export * from './useGames';
 export * from './useGamesConfig';
 export * from './useMidia';
 export * from './useSchools';
+export * from './useSchoolRanking';
+export * from './useAdminPerformanceTopUsers';
+export * from './useAdminDashboardCharacterUsage';
+export * from './useAdminDashboardNps';

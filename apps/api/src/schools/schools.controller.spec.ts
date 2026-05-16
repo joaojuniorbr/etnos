@@ -75,6 +75,28 @@ describe('SchoolsController', () => {
       .mockResolvedValue({ uid: 'user-2', email: 'escola@teste.com' }),
     removeAccessUserFromSchool: jest.fn().mockResolvedValue(true),
     getSchoolUserGameScoreHistory: jest.fn().mockResolvedValue([]),
+    getDashboardCharacterUsageForAdmin: jest.fn().mockResolvedValue({
+      slices: [{ key: 'anita', label: 'Anita', value: 10, percentage: 100 }],
+      topCharacterSlug: 'anita',
+      topCharacterName: 'Anita',
+      totalPlays: 10,
+    }),
+    getDashboardNpsForAdmin: jest.fn().mockResolvedValue({
+      slices: [{ key: '1', label: 'IFPR', value: 5, percentage: 100 }],
+      totalResponses: 5,
+      averageRating: 4.2,
+      viewMode: 'by_school',
+    }),
+    getTopUsersForGameForAdmin: jest.fn().mockResolvedValue([
+      {
+        position: 1,
+        uid: 'firebase-user-1',
+        childName: 'Aluno 1',
+        totalScore: 200,
+        schoolName: 'IFPR',
+        gameSlug: 'memory-game',
+      },
+    ]),
   };
 
   beforeEach(async () => {
@@ -105,6 +127,54 @@ describe('SchoolsController', () => {
 
     expect(service.getAll).toHaveBeenCalled();
     expect(result).toEqual([{ id: '1', name: 'IFPR' }]);
+  });
+
+  it('deve retornar uso de personagens do dashboard', async () => {
+    const result = await controller.getDashboardCharacterUsage(
+      'memory-game',
+      'school-1',
+    );
+
+    expect(service.getDashboardCharacterUsageForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: 'school-1',
+    });
+    expect(result.topCharacterName).toBe('Anita');
+  });
+
+  it('deve retornar NPS do dashboard', async () => {
+    const result = await controller.getDashboardNps('memory-game');
+
+    expect(service.getDashboardNpsForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: undefined,
+    });
+    expect(result.viewMode).toBe('by_school');
+  });
+
+  it('deve retornar top usuarios do dashboard admin com parametros default', async () => {
+    const result = await controller.getDashboardTopUsers(
+      'memory-game',
+      undefined,
+      undefined,
+    );
+
+    expect(service.getTopUsersForGameForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: undefined,
+      limit: 10,
+    });
+    expect(result[0].totalScore).toBe(200);
+  });
+
+  it('deve repassar escola e limite ao top usuarios do dashboard', async () => {
+    await controller.getDashboardTopUsers('memory-game', 'school-1', '5');
+
+    expect(service.getTopUsersForGameForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: 'school-1',
+      limit: 5,
+    });
   });
 
   it('deve buscar escola por id', async () => {

@@ -44,6 +44,64 @@ export class SchoolsController {
     return this.schoolsService.getAll();
   }
 
+  @Get('dashboard/character-usage')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Uso de personagens no dashboard administrativo',
+    description:
+      'Agrega partidas concluidas por personagem. Opcionalmente restringe por escola.',
+  })
+  async getDashboardCharacterUsage(
+    @Query('gameSlug') gameSlug = 'memory-game',
+    @Query('schoolId') schoolId?: string,
+  ) {
+    return this.schoolsService.getDashboardCharacterUsageForAdmin({
+      gameSlug,
+      schoolId,
+    });
+  }
+
+  @Get('dashboard/nps')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Distribuicao de NPS no dashboard administrativo',
+    description:
+      'Sem escola: respostas por escola. Com escola: distribuicao por nota (1 a 5).',
+  })
+  async getDashboardNps(
+    @Query('gameSlug') gameSlug = 'memory-game',
+    @Query('schoolId') schoolId?: string,
+  ) {
+    return this.schoolsService.getDashboardNpsForAdmin({
+      gameSlug,
+      schoolId,
+    });
+  }
+
+  @Get('dashboard/top-users')
+  @UseGuards(AdminRoleGuard)
+  @ApiOperation({
+    summary: 'Top usuarios por jogo para o dashboard administrativo',
+    description:
+      'Agrega pontuacoes por usuario. Opcionalmente restringe a uma escola. Apenas administradores.',
+  })
+  async getDashboardTopUsers(
+    @Query('gameSlug') gameSlug = 'memory-game',
+    @Query('schoolId') schoolId?: string,
+    @Query('limit') limitRaw?: string,
+  ) {
+    const parsed = Number.parseInt(limitRaw ?? '10', 10);
+    const limit = Number.isFinite(parsed)
+      ? Math.min(Math.max(parsed, 1), 50)
+      : 10;
+
+    return this.schoolsService.getTopUsersForGameForAdmin({
+      gameSlug,
+      schoolId,
+      limit,
+    });
+  }
+
   @Get('me')
   @UseGuards(SchoolRoleGuard)
   @ApiOperation({ summary: 'Busca a escola do perfil autenticado' })

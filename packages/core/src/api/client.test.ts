@@ -1,6 +1,6 @@
 import type { InternalAxiosRequestConfig } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
-import { createApiClient } from './client.js';
+import { createApiClient } from './client';
 
 const createRequestConfig = (
 	headers: Record<string, string> = {},

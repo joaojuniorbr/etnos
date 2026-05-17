@@ -6,7 +6,7 @@ import {
 	getMemoryGameLevelContent,
 	resolveMemoryGameTurn,
 	shuffleArray,
-} from './memory-game.utils.js';
+} from './memory-game.utils';
 
 const content = [
 	{ name: 'A', image: 'a.jpg' },

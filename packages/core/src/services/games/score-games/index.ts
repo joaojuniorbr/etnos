@@ -1,1 +1,1 @@
-export * from './score-games.service.js';
+export * from './score-games.service';

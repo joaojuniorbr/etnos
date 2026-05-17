@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AxiosInstance } from 'axios';
-import { createMemoryGameService } from './memory-game.service.js';
+import { createMemoryGameService } from './memory-game.service';
 
 const createApiMock = () =>
 	({

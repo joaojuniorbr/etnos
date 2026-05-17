@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AxiosInstance } from 'axios';
-import { createAuthService } from './auth.service.js';
+import { createAuthService } from './auth.service';
 
 const createApiMock = () =>
 	({

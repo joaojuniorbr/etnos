@@ -1,1 +1,1 @@
-export * from './memory-game.service.js';
+export * from './memory-game.service';

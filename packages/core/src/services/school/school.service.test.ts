@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AxiosInstance } from 'axios';
-import { createSchoolService } from './school.service.js';
+import { createSchoolService } from './school.service';
 
 const createApiMock = () =>
 	({

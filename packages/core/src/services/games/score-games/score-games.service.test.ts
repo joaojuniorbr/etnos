@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AxiosInstance } from 'axios';
-import { createScoreGamesService } from './score-games.service.js';
+import { createScoreGamesService } from './score-games.service';
 
 const createApiMock = () =>
 	({

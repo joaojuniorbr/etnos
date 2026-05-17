@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AxiosInstance } from 'axios';
-import { createNotificationsService } from './notifications.service.js';
+import { createNotificationsService } from './notifications.service';
 
 describe('createNotificationsService', () => {
 	it('registra e remove token push com payload', async () => {

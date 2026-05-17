@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
 	transpilePackages: [
+		'@etnos/core',
 		'@etnos/ui',
 		'@etnos/tools',
 		'@etnos/games',

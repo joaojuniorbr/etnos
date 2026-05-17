@@ -1,1 +1,1 @@
-export * from './school.service.js';
+export * from './school.service';

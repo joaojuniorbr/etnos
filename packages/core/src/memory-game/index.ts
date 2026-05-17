@@ -1,2 +1,2 @@
-export * from './types.js';
-export * from './memory-game.utils.js';
+export * from './types';
+export * from './memory-game.utils';

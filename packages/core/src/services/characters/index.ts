@@ -1,1 +1,1 @@
-export * from './characters.service.js';
+export * from './characters.service';

@@ -8,7 +8,7 @@ import {
 	createSessionStorage,
 	daysToMilliseconds,
 	hasSessionExceededInactivityLimit,
-} from './session-storage.js';
+} from './session-storage';
 
 vi.mock('axios', () => ({
 	default: {

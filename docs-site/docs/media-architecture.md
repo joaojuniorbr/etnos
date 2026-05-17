@@ -10,16 +10,6 @@ O fluxo de mídia do Etnos é híbrido:
 
 ## Diagrama da arquitetura
 
-```mermaid
-flowchart LR
-    A["Admin / Frontend"] --> B["API /midia"]
-    B --> C["Firebase Storage"]
-    B --> D["Prisma"]
-    D --> E["PostgreSQL"]
-    C --> B
-    E --> B
-```
-
 ![Modelagem de Dados](files/flow-midia.png)
 
 ## Como esse fluxo foi organizado
@@ -76,23 +66,6 @@ Em todos os casos, a API tenta:
 4. remover o metadado do Postgres.
 
 ## Diagrama de sequencia
-
-```mermaid
-sequenceDiagram
-    participant UI as Admin
-    participant API as API /midia
-    participant FS as Firebase Storage
-    participant DB as PostgreSQL
-
-    UI->>API: POST /midia/upload
-    API->>FS: salva arquivo no bucket
-    FS-->>API: confirma upload
-    API->>FS: gera signed URL
-    FS-->>API: retorna URL
-    API->>DB: salva metadados
-    DB-->>API: confirma persistencia
-    API-->>UI: retorna URL e item salvo
-```
 
 ![Diagrama de Sequencia](files/midia-sequence.png)
 

@@ -2,13 +2,14 @@ site_name: Etnos
 site_url: https://joaojuniorbr.github.io/etnos
 
 theme:
-  name: material
+  name: shadcn
   language: pt-BR
   font:
     text: IBM Plex Sans
     code: Fira Code
   features:
     - navigation.expand
+    - navigation.sections
     - search.highlight
     - search.suggest
 
@@ -18,20 +19,30 @@ plugins:
 nav:
   - Home: index.md
   - Arquitetura:
-      - Monorepo: monorepo-architecture.md
       - Autenticação: auth-architecture.md
+      - Monorepo: monorepo-architecture.md
+      - Pacotes compartilhados: packages-overview.md
+      - Analytics (Mixpanel): analytics-architecture.md
+      - App mobile: mobile-architecture.md
       - Mídia: media-architecture.md
       - Swagger: swagger.md
   - Jogos:
-      - Jogos: games-architecture.md
+      - Arquitetura dos jogos: games-architecture.md
+      - Jogos educacionais:
+          - Jogo da memória: memory-game.md
   - Banco de Dados:
-      - Banco de Dados: database-architecture.md
+      - Arquitetura de dados: database-architecture.md
       - Modelagem: data-model.md
+  - Qualidade:
+      - Testes de performance: performance-tests.md
   - Entregas:
-      - Planejamento 2026:
+      - Relatório 2026:
           - Sprint 01: planejamento-sprint-1.md
           - Sprint 02: planejamento-sprint-2.md
-
+          - Sprint 03: planejamento-sprint-3.md
+          - Sprint 04: planejamento-sprint-4.md
+          - Sprint 05: planejamento-sprint-5.md
+          - Sprint 06: planejamento-sprint-6.md
       - 2025:
           - Entrega 01: 2025-p1.md
           - Entrega 02: 2025-p2.md

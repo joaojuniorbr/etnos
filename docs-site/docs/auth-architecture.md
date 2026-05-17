@@ -17,17 +17,9 @@ As peças principais desse fluxo são:
   token;
 - `packages/ui/AuthProtected`, que protege as áreas autenticadas.
 - `apps/student-mobile`, que reutiliza os mesmos contratos via `@etnos/core`.
+- `@etnos/analytics`, que identifica o usuário no Mixpanel após o perfil carregar.
 
 ## Como o fluxo funciona
-
-```mermaid
-flowchart LR
-    A["Usuário"] --> B["Frontend Next.js"]
-    B --> C["Firebase Auth"]
-    B --> D["API NestJS"]
-    C --> D
-    D --> E["PostgreSQL"]
-```
 
 ![Modelagem de Dados](files/auth-flow.png)
 
@@ -97,24 +89,6 @@ de perfil e vínculo escolar (inclusive por link/código de escola). Esse fluxo
 completo para navegação nos apps.
 
 ## Perfil autenticado
-
-```mermaid
-sequenceDiagram
-    participant UI as Frontend
-    participant SESSION as authSession
-    participant API as API /auth/profile
-    participant FIREBASE as "firebase-auth strategy"
-    participant DB as PostgreSQL
-
-    UI->>SESSION: resolve token válido
-    SESSION-->>UI: retorna bearer token
-    UI->>API: GET /auth/profile
-    API->>FIREBASE: verifyIdToken
-    FIREBASE-->>API: uid autenticado
-    API->>DB: busca user por firebaseUid
-    DB-->>API: retorna perfil
-    API-->>UI: responde dados do usuário
-```
 
 ![Modelagem de Dados](files/profile-sequence.png)
 

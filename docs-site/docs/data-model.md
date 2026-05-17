@@ -1,350 +1,156 @@
-# Modelagem de Dados
+# Modelagem de dados
 
 ## Visão geral
 
-O banco principal da API é relacional e modelado em Prisma. Esta página mostra
-como as tabelas se conectam e como o domínio do Etnos foi organizado no
-Postgres.
+O banco principal é **PostgreSQL**, modelado em **Prisma**. A fonte de verdade
+do schema é `apps/api/prisma/schema.prisma`.
 
-## Arquivos relacionados
+## Resumo das tabelas
 
-- [DDL PostgreSQL para DrawSQL](files/etnos-postgresql-ddl.sql)
-- fonte de verdade do schema: `apps/api/prisma/schema.prisma`
-- [Arquitetura de Banco de Dados](database-architecture.md)
+| Tabela                      | Finalidade                                |
+| --------------------------- | ----------------------------------------- |
+| `users`                     | Perfil de negócio (Firebase `uid`)        |
+| `schools`                   | Escolas cadastradas                       |
+| `school_accesses`           | Vínculo usuário ↔ escola                  |
+| `school_enabled_games`      | Jogos habilitados por escola              |
+| `school_enabled_characters` | Personagens habilitados por escola        |
+| `characters`                | Catálogo de personagens culturais         |
+| `game_configs`              | Capa/config visual por jogo e personagem  |
+| `memory_game_contents`      | Cartas do jogo da memória                 |
+| `guess_game_contents`       | Palavras e dicas do Amotion               |
+| `game_scores`               | Recorde atual por usuário/jogo/personagem |
+| `game_score_histories`      | Histórico de partidas                     |
+| `game_nps_responses`        | Feedback NPS pós-jogo                     |
+| `midia`                     | Metadados de arquivos no Storage          |
+| `user_push_tokens`          | Tokens Expo para push                     |
+| `notification_templates`    | Modelos de notificação                    |
+| `notification_logs`         | Registro de envios                        |
 
-## Resumo rápido
-
-| Tabela                 | Finalidade                                   |
-| ---------------------- | -------------------------------------------- |
-| `users`                | Perfil de negócio vinculado ao Firebase Auth |
-| `schools`              | Cadastro de escolas                          |
-| `characters`           | Personagens culturais da plataforma          |
-| `game_configs`         | Configuração por jogo e personagem           |
-| `memory_game_contents` | Conteúdo visual do jogo da memória           |
-| `game_scores`          | Pontuações por usuário                       |
-| `game_nps_responses`   | Feedback de satisfação (NPS) por usuário     |
-| `midia`                | Metadados dos arquivos salvos no Storage     |
-
-## Visão relacional
-
-```mermaid
-erDiagram
-    SCHOOLS ||--o{ USERS : "id -> school"
-    CHARACTERS ||--o{ GAME_CONFIGS : "slug -> character_slug"
-    CHARACTERS ||--o{ MEMORY_GAME_CONTENTS : "id -> character_id"
-    CHARACTERS ||--o{ GAME_SCORES : "slug -> character_slug"
-    CHARACTERS ||--o{ GAME_NPS_RESPONSES : "slug -> character_slug"
-    USERS ||--o{ GAME_SCORES : "firebase_uid -> user_id"
-    USERS ||--o{ GAME_NPS_RESPONSES : "firebase_uid -> user_id"
-    USERS ||--o{ MIDIA : "firebase_uid -> user_id"
-    USERS {
-        string id PK
-        string firebase_uid UK
-        string email
-        string parent_name
-        string child_name
-        string child_birth_date
-        string parent_phone
-        string school "schoolId"
-        string[] roles
-    }
-    SCHOOLS {
-        string id PK
-        string name UK
-        string city
-        string state
-    }
-    CHARACTERS {
-        string id PK
-        string slug UK
-        string name
-        string region
-        string description
-        string image_url
-    }
-    GAME_CONFIGS {
-        string id PK
-        string game_slug
-        string character_slug FK
-        string image_cover_url
-    }
-    MEMORY_GAME_CONTENTS {
-        string id PK
-        string slug
-        string character_id
-        string url
-    }
-    GAME_SCORES {
-        string id PK
-        string slug
-        string character_slug
-        int score
-        string user_id
-    }
-    GAME_NPS_RESPONSES {
-        string id PK
-        string slug
-        string character_slug
-        int score
-        string user_id
-        string comment
-    }
-    MIDIA {
-        string id PK
-        string user_id
-        string folder
-        string path
-        string url
-    }
-```
-
-### Imagem da modelagem
-
-![Modelagem de Dados](files/database-model.png)
-
-### Mermaid
-
-[URL Mermaid](https://mermaid.ai/live/edit#pako:eNqtVe-PmjAY_lfI-1kNgojyYYnhvDtz81xEP2xzIT2o0ASoKWXZzfN_XwvqyRUdS8Yn-v58-vZ52j0ENMTgAGZ3BEUMpZtME5_nPi4Wnz3t7a3bpXtt7U2XnuZoGyCh1v2k5UFMabKBKth9nCwn7kqGHOMfJvOp7y6e72cPVVqeFJFMDGLEUMAx86XleoH5dL5YfvVPdVbT59Vl__cyJPwLCs9dLKdtQFR7vJK6JQy_oBz7RQWgyGu9a7nz2d1s0j5rXy3kl3NGskgTwV-eFGut2Fr14xSRRLHuEMMZ9zOUYsUXxCQJb7leCOOxHyKOr9XdxTRTnRU95MTLn9l5x-8x339ojCY4r-yHOuvajkRCbxpFQPirCoqf93FQGNO2Y0mhdTMSxchwRGimmEOcB4zseJOPpCgSJ8ySGtCanNpCjQSkiuDq4V7yX7t_ugIjoD9FzEcwjdL8l_ndwCO08dHZOIujMv9T17qbZFwQmDL1PE_yrU2jFHtbILUKl9qmSYhZg8h4fGMg0IGIkRAczgrcgRQzcQWIJZRwNsBjLFgJ8iaSF4cUoczZoewbpekpjdEiisHZoiQXq2In5X58C85WoXWBz6VFxsHp2yO9rALOHn6BY1h2T9dts2-YI2s0HgzsDryC07WM3ti0dXNsj21DH9mjQwd-l4313nA4NI2B0bctkWlZZgdwSDhl8-o1Cmi2JREc_gCK1fv9)
-
-## Tabelas
+## Entidades
 
 ### `users`
 
-Representa o perfil de negócio do usuário autenticado.
+Perfil de negócio vinculado ao Firebase Auth.
 
-Campos principais:
+| Campo                                                           | Descrição                        |
+| --------------------------------------------------------------- | -------------------------------- |
+| `id`                                                            | CUID interno                     |
+| `firebase_uid`                                                  | Chave com Firebase (único)       |
+| `email`                                                         | E-mail                           |
+| `parent_name`, `child_name`, `child_birth_date`, `parent_phone` | Dados do responsável/criança     |
+| `school_id`                                                     | FK para `schools.id`             |
+| `photo_url`                                                     | Avatar/foto                      |
+| `avatar_character_slug`                                         | Personagem escolhido como avatar |
+| `roles`                                                         | Papéis (`student`, etc.)         |
+| `is_active`                                                     | Conta ativa                      |
+| `notifications_enabled`                                         | Opt-in de push                   |
 
-- `id`: identificador interno
-- `firebase_uid`: vínculo com o Firebase Auth
-- `email`
-- `parent_name`
-- `child_name`
-- `child_birth_date`
-- `parent_phone`
-- `school`
-- `roles`
-- `created_at`
-- `updated_at`
-
-Regras:
-
-- `firebase_uid` é único
-- o usuário autentica no Firebase, mas o perfil é salvo aqui
-
-Na prática, o campo persistido hoje se chama `school`, mas ele representa o
-`schoolId` e aponta para `schools.id`.
+Relações Prisma: `school`, `schoolAccesses`, `pushTokens`.
 
 ### `schools`
 
-Cadastro de escolas disponíveis para uso na plataforma.
+| Campo           | Descrição                                       |
+| --------------- | ----------------------------------------------- |
+| `name`          | Nome (único)                                    |
+| `code`          | Código para cadastro por link (único, opcional) |
+| `city`, `state` | Localização                                     |
 
-Campos principais:
+Relações: usuários, acessos, jogos/personagens habilitados.
 
-- `id`
-- `name`
-- `city`
-- `state`
-- `created_at`
-- `updated_at`
+### `school_accesses`
 
-Regras:
+Vínculo explícito usuário ↔ escola (além de `users.school_id`).
 
-- `name` é único no schema atual
+- único: `(school_id, user_id)`
 
-- alimentar seletores de escola no cadastro e no perfil
+### `school_enabled_games` / `school_enabled_characters`
+
+Controlam o que cada escola pode usar.
+
+- `game_slug` / `character_slug` com FK para escola;
+- `character_slug` referencia `characters.slug`.
+
+Usado em `GET /schools/me/game-access` e validações no app do estudante.
 
 ### `characters`
 
-Entidade principal para personagens culturais usados nos jogos e na biblioteca.
-
-Campos principais:
-
-- `id`
-- `name`
-- `region`
-- `description`
-- `slug`
-- `image_url`
-- `created_at`
-- `updated_at`
-
-Regras:
-
-- `slug` é único
-
-Uso típico:
-
-- servir como catálogo principal da experiência cultural e base dos jogos
+Catálogo de personagens (slug único, região, descrição, `image_url`).
 
 ### `game_configs`
 
-Configuração por jogo e personagem.
+Configuração visual por par `(game_slug, character_slug)`.
 
-Campos principais:
-
-- `id`
-- `game_slug`
-- `character_slug`
-- `image_cover_url`
-- `created_at`
-- `updated_at`
-
-Relações:
-
-- `character_slug` referencia `characters.slug`
-
-Regras:
-
-- combinação `game_slug + character_slug` é única
-
-Uso típico:
-
-- guardar a capa e a configuração visual do `memory-game` para cada personagem
+- exemplo: `image_cover_url` do jogo da memória.
 
 ### `memory_game_contents`
 
-Conteúdo visual usado no jogo da memória.
+Cartas por personagem (`character_id` → `characters.id`, `slug`, `url`).
 
-Campos principais:
+### `guess_game_contents`
 
-- `id`
-- `url`
-- `slug`
-- `character_id`
-- `created_at`
-- `updated_at`
-
-Aqui, `character_id` referencia `characters.id`, e o campo `slug` continua
-sendo usado nas consultas por personagem.
-
-Uso típico:
-
-- montar as cartas e imagens do jogo da memória por personagem
+Conteúdo do Adivinhe: `word`, `tips[]`, `title`, `description`, `character_slug`.
 
 ### `game_scores`
 
-Pontuações salvas por usuário em cada jogo/personagem.
+Recorde atual (upsert) por `(slug, character_slug, user_id)`.
 
-Campos principais:
+- `slug`: identificador do jogo (ex.: `memory-game`)
+- `user_id`: `firebase_uid` do estudante
 
-- `id`
-- `slug`
-- `character_slug`
-- `score`
-- `user_id`
-- `created_at`
-- `updated_at`
+### `game_score_histories`
 
-Regras:
+Histórico de partidas para analytics e relatórios.
 
-- combinação `slug + character_slug + user_id` é única
+| Campo                         | Descrição                    |
+| ----------------------------- | ---------------------------- |
+| `game_slug`, `character_slug` | Contexto da partida          |
+| `score`                       | Pontuação                    |
+| `user_id`                     | Firebase UID                 |
+| `school_id`                   | Escola no momento da partida |
+| `started_at`, `ended_at`      | Janela da sessão             |
+| `status`                      | Ex.: `completed`             |
 
-Aqui, `character_slug` referencia `characters.slug` e `user_id` referencia
-`users.firebase_uid`.
-
-Uso típico:
-
-- recuperar o desempenho do estudante por jogo
-
-### `midia`
-
-Metadados dos arquivos enviados para o Firebase Storage.
-
-Campos principais:
-
-- `id`
-- `url`
-- `folder`
-- `path`
-- `user_id`
-- `created_at`
-- `updated_at`
-
-Uso típico:
-
-- organizar a biblioteca de imagens usada pelo admin e pelos jogos
+Índices compostos para consultas por usuário, escola e jogo.
 
 ### `game_nps_responses`
 
-Feedback de satisfação do usuário por jogo/personagem, usado para acompanhar a
-experiência ao final da partida.
+Feedback após o jogo.
 
-Campos principais:
+| Campo                         | Descrição             |
+| ----------------------------- | --------------------- |
+| `rating`                      | Nota NPS              |
+| `comment`                     | Comentário opcional   |
+| `game_slug`, `character_slug` | Contexto              |
+| `user_id`, `school_id`        | Quem respondeu e onde |
 
-- `id`
-- `slug`
-- `character_slug`
-- `score`
-- `comment`
-- `user_id`
-- `created_at`
-- `updated_at`
+### `midia`
 
-Regras:
+Metadados de arquivos no Firebase Storage (`url`, `folder`, `path`, `user_id`).
 
-- índice por `user_id`
-- índice por `folder`
+### `user_push_tokens`
 
-Observação:
+Token Expo por dispositivo, ligado a `users.id`.
 
-- o arquivo físico fica no Firebase Storage
-- esta tabela guarda apenas metadados e vínculo com usuário
-- `user_id` referencia `users.firebase_uid`
-- também sustenta a listagem da biblioteca de mídia e a organização por pasta
+### `notification_templates` / `notification_logs`
 
-## Resumo relacional
+Templates reutilizáveis e log de campanhas enviadas (escola alvo, contagem de tokens, etc.).
 
-### Relações explícitas no Prisma
+## Índices e performance
 
-- `game_configs.character_slug -> characters.slug`
+Além das chaves únicas por domínio, a migration `20260516120000_add_performance_indices`
+reforça consultas frequentes em:
 
-### Relações implícitas por convenção
+- histórico de scores (`user_id`, `school_id`, `game_slug`, datas);
+- NPS e mídia por usuário/escola;
+- listagens do admin sob carga.
 
-- `users.school -> schools.id`
-- `memory_game_contents.character_id -> characters.id`
-- `game_scores.character_slug -> characters.slug`
-- `game_scores.user_id -> users.firebase_uid`
-- `midia.user_id -> users.firebase_uid`
-- `users.firebase_uid <-> Firebase Auth uid`
+Ver [Testes de performance](performance-tests.md) para validação com k6.
 
-## Observações de modelagem
+## Convenções
 
-### Relações ainda não formalizadas no banco
-
-Alguns vínculos ainda carregam nomes herdados da estrutura anterior,
-principalmente o campo `users.school`, que semanticamente funciona como
-`schoolId`. Na documentação, essas relações aparecem do ponto de vista do
-domínio, mesmo quando o nome físico da coluna ainda é legado.
-
-## Índices e unicidade
-
-### Chaves únicas
-
-- `users.firebase_uid`
-- `schools.name`
-- `characters.slug`
-- `game_configs(game_slug, character_slug)`
-- `game_scores(slug, character_slug, user_id)`
-
-### Índices auxiliares
-
-- `memory_game_contents.slug`
-- `game_scores.user_id`
-- `midia.user_id`
-- `midia.folder`
-
-## Decisões importantes da modelagem
-
-### Uso de `firebaseUid`
-
-O `firebaseUid` é a chave de integração entre autenticação e domínio. Isso evita
-duplicar responsabilidade de auth no banco relacional.
-
-### Slugs como chave de domínio
-
-`characters.slug` e `game_slug` aparecem bastante porque fazem parte do contrato
-atual da API e simplificam consultas e URLs.
-
-### Arquivos fora do banco
-
-O banco não armazena binários. Apenas URLs, caminhos e metadados.
+| Tópico           | Convenção                                   |
+| ---------------- | ------------------------------------------- |
+| Integração auth  | `firebase_uid` como elo Firebase ↔ Postgres |
+| URLs de jogo/API | `slug` de personagem e `game_slug`          |
+| Arquivos         | URLs no banco; binário no Storage           |
+| Nomes físicos    | `snake_case` via `@map` no Prisma           |

@@ -1,25 +1,21 @@
-![Etnos](./files/github-cover.jpg)
-
 # ETNOS: gamificando a diversidade
+
+![Etnos](./files/github-cover.jpg)
 
 ## Sobre o projeto
 
-O **Etnos** é uma plataforma educacional pensada para estudantes do ensino
-fundamental. A proposta é usar jogos interativos para apresentar a diversidade
-cultural brasileira de um jeito lúdico, visual e acessível.
+O **Etnos** é uma plataforma educacional para estudantes do ensino fundamental.
+A proposta é usar jogos interativos para apresentar a diversidade cultural
+brasileira de forma lúdica, visual e acessível.
 
-O projeto está organizado como um monorepo com aplicações web, app nativo iOS e
-Android, painel administrativo, portal do estudante, API e pacotes
-compartilhados. Isso ajuda a reaproveitar componentes, contratos e serviços sem
-espalhar lógica pelo projeto.
+O projeto está organizado como **monorepo** com aplicações web, app nativo
+(Expo), painel administrativo, API NestJS e pacotes compartilhados.
 
 ## Objetivo pedagógico
 
-O produto foi desenhado para:
-
 - promover respeito às diferenças étnico-raciais;
 - valorizar saberes, símbolos, histórias e tradições do Brasil;
-- transformar o aprendizado em uma jornada mais envolvente e participativa.
+- transformar o aprendizado em uma jornada envolvente e participativa.
 
 ## Público-alvo
 
@@ -30,56 +26,86 @@ O produto foi desenhado para:
 ## Experiência de jogo
 
 Cada personagem representa um recorte cultural e regional do Brasil. A jornada
-do estudante combina seleção de personagem, escolha do desafio e progressão por
-meio de pontuação e recordes.
+combina seleção de personagem, escolha do desafio e progressão por pontuação e
+recordes.
 
 ### Personagens
 
-| Regiao         | Personagem       | Foco cultural                           |
-| :------------- | :--------------- | :-------------------------------------- |
-| Amazonia       | Iara Curumim     | floresta, lendas e biodiversidade       |
-| Minas Gerais   | Tonico do Fogão  | culinária, memória afetiva e interior   |
-| Rio de Janeiro | Dandara do Morro | ritmos, resistencia e cultura urbana    |
-| Nordeste       | Zeca do Sertao   | festas, oralidade e simbolos populares  |
-| Sul            | Anita dos Pampas | tradicoes gauchas e identidade regional |
+| Região | Personagem | Foco cultural |
+| :--- | :--- | :--- |
+| Amazônia | Iara Curumim | floresta, lendas e biodiversidade |
+| Minas Gerais | Tonico do Fogão | culinária, memória afetiva e interior |
+| Rio de Janeiro | Dandara do Morro | ritmos, resistência e cultura urbana |
+| Nordeste | Zeca do Sertão | festas, oralidade e símbolos populares |
+| Sul | Anita dos Pampas | tradições gaúchas e identidade regional |
 
 ### Jogos
 
-- **Adivinhe**: o estudante descobre uma palavra com apoio de dicas.
-- **Jogo da Memória**: o estudante encontra pares visuais relacionados ao
-  personagem selecionado.
+- **Adivinhe**: descobrir uma palavra com apoio de dicas.
+- **Jogo da Memória**: encontrar pares visuais do personagem selecionado.
 
-## Documentação técnica
+## Mapa da documentação
 
-O site reúne a documentação da plataforma, dos jogos, da autenticação e da
-camada de dados.
+### Arquitetura
 
-### Guias disponíveis
+| Guia | Conteúdo |
+| :--- | :--- |
+| [Monorepo](monorepo-architecture.md) | Apps, pacotes, fluxo entre camadas |
+| [App mobile](mobile-architecture.md) | Expo, rotas, auth e jogos no nativo |
+| [Pacotes compartilhados](packages-overview.md) | `ui`, `tools`, `core`, `analytics`, etc. |
+| [Autenticação](auth-architecture.md) | Firebase Auth + perfil no Postgres |
+| [Analytics](analytics-architecture.md) | Mixpanel, eventos e identidade |
+| [Mídia](media-architecture.md) | Upload, Storage e tabela `midia` |
+| [Swagger](swagger.md) | Documentação interativa da API |
 
-- **Monorepo**: explica como `web`, `student`, `student-mobile`, `admin`, `api`
-  e os pacotes compartilhados se conectam.
-- **Autenticação**: detalha login, cadastro, refresh de token, proteção de rotas
-  e perfil autenticado, tanto na web quanto no app nativo.
-- **App Mobile**: descreve a arquitetura do app Expo para iOS e Android, com
-  Expo Router, contextos de autenticação e seleção de personagem, e o pacote
-  `packages/core` que serve de base para o cliente de API mobile.
-- **Mídia**: descreve upload, storage, catalogação de assets e integração com o
-  admin.
-- **Swagger**: mostra onde acessar a documentação interativa da API e como
-  testar rotas públicas e autenticadas.
-- **Jogos**: panorama da integração entre `student`, `student-mobile`, `admin`,
-  `apps/games`, `packages/tools`, `packages/types` e `api`, com foco especial no
-  jogo da memória.
-- **Banco de Dados**: organização de persistência da plataforma.
-- **Modelagem**: estruturas, relações e regras principais.
+### Jogos e dados
 
-## Navegação
+| Guia | Conteúdo |
+| :--- | :--- |
+| [Jogos](games-architecture.md) | Biblioteca `@etnos/games`, score e admin |
+| [Arquitetura de dados](database-architecture.md) | Postgres, Prisma, Firebase |
+| [Modelagem](data-model.md) | Tabelas, relações e índices |
 
-- `Monorepo` mostra como os apps e pacotes se conectam.
-- `Autenticação` reúne o fluxo de login, sessão e proteção de rotas.
-- `Monorepo` também cobre o app nativo (`apps/student-mobile`) e o pacote
-  `packages/core`.
-- `Mídia` mostra upload, armazenamento e biblioteca de imagens.
-- `Swagger` centraliza a documentação interativa da API.
-- `Banco de Dados` e `Modelagem` descrevem persistência, relações e regras do
-  domínio.
+### Qualidade
+
+| Guia | Conteúdo |
+| :--- | :--- |
+| [Testes de performance](performance-tests.md) | Cenários k6, thresholds e resultados |
+
+### Entregas acadêmicas
+
+Planejamento de sprints (2026) e entregas históricas (2025) na seção **Entregas**
+do menu.
+
+## Links úteis
+
+- [Repositório no GitHub](https://github.com/joaojuniorbr/etnos)
+- [Swagger (produção)](https://api.etnos.online/docs)
+- [Aplicação](https://etnos.online)
+- [Storybook](https://691f7645d388cc8aa2a047b6-amyptzoyzk.chromatic.com/)
+
+## Desenvolvimento local
+
+```bash
+git clone https://github.com/joaojuniorbr/etnos.git
+cd etnos
+yarn install
+yarn dev
+```
+
+Portas principais:
+
+| Serviço | URL |
+| :--- | :--- |
+| Web | http://localhost:3000 |
+| Admin | http://localhost:3001 |
+| Student | http://localhost:3002 |
+| API | http://localhost:8080/api (padrão NestJS) |
+| Swagger | http://localhost:8080/docs |
+| Storybook | http://localhost:6006 |
+
+Documentação MkDocs (local):
+
+```bash
+cd docs-site && mkdocs serve
+```

@@ -1,140 +1,78 @@
-# Arquitetura de Banco de Dados
+# Arquitetura de dados
 
 ## Visão geral
 
-No Etnos, a API concentra as regras de negócio e usa uma stack de dados bem
-dividida:
+A API concentra regras de negócio e usa uma stack de dados dividida por
+responsabilidade:
 
-- `Firebase Auth` para identidade;
-- `Firebase Storage` para arquivos;
-- `PostgreSQL` para os dados de domínio;
-- `Prisma` para acessar o banco.
+| Tecnologia           | Papel                          |
+| -------------------- | ------------------------------ |
+| **Firebase Auth**    | Identidade, login, tokens      |
+| **Firebase Storage** | Arquivos (imagens, uploads)    |
+| **PostgreSQL**       | Dados de domínio               |
+| **Prisma**           | ORM, schema tipado, migrations |
 
-Fluxo principal:
+Fluxo principal: `Cliente → API → Prisma → PostgreSQL`
 
-`Cliente -> API NestJS -> Prisma -> PostgreSQL`
+![Modelagem dos Dados](./files/data-architeture.png)
 
-Fluxos auxiliares:
+## Princípios de organização
 
-- autenticação: `Cliente -> Firebase Auth`
-- autorização na API: `Firebase token -> firebase.strategy.ts`
-- uploads: `API -> Firebase Storage`
+### Auth separado de perfil
 
-## Diagrama da arquitetura
+O usuário autentica no Firebase; o perfil de negócio fica em `users` no Postgres,
+ligado por `firebase_uid`. A mesma API atende web e mobile.
 
-```mermaid
-flowchart LR
-    A["Web / App Nativo"] --> B["API NestJS"]
-    B --> C["Prisma ORM"]
-    C --> D["PostgreSQL"]
-    A --> E["Firebase Auth"]
-    E --> B
-    B --> F["Firebase Storage"]
-```
+### Storage separado de metadados
 
-## Responsabilidades por tecnologia
+Binários no Firebase Storage; metadados em `midia` para listagem, pastas e
+vínculo com usuário.
 
-| Tecnologia         | Papel na arquitetura                              |
-| ------------------ | ------------------------------------------------- |
-| `Firebase Auth`    | Login, identidade, emissão e validação de token   |
-| `Firebase Storage` | Armazenamento de arquivos enviados pela aplicação |
-| `PostgreSQL`       | Persistência principal dos dados de domínio       |
-| `Prisma`           | ORM, schema tipado e acesso ao banco              |
-| `NestJS API`       | Regras de negócio, validação e orquestração       |
+### API como fonte de verdade
 
-### Firebase Auth
+O frontend não acessa o banco diretamente. Validação, autorização por escola e
+persistência passam pela API.
 
-Cuida de:
+### Cache de leitura
 
-- login com e-mail e senha
-- login com Google
-- recuperação de senha
-- emissão e validação de `idToken`
+O catálogo público de personagens (`GET /characters`) usa cache em memória na API
+(TTL ~5 min), validado pelos [testes de performance](performance-tests.md).
 
-O backend usa o `firebaseUid` como elo entre identidade e perfil.
+## Domínios no Postgres
 
-### PostgreSQL
+| Domínio                | Tabelas principais                                                          |
+| ---------------------- | --------------------------------------------------------------------------- |
+| Usuários e escolas     | `users`, `schools`, `school_accesses`                                       |
+| Habilitação por escola | `school_enabled_games`, `school_enabled_characters`                         |
+| Personagens e jogos    | `characters`, `game_configs`, `memory_game_contents`, `guess_game_contents` |
+| Pontuação              | `game_scores`, `game_score_histories`                                       |
+| Feedback               | `game_nps_responses`                                                        |
+| Mídia                  | `midia`                                                                     |
+| Notificações           | `user_push_tokens`, `notification_templates`, `notification_logs`           |
 
-É onde ficam:
+Detalhamento de colunas e relações: [Modelagem](data-model.md).
 
-- perfis de usuário
-- escolas
-- personagens
-- configurações de jogos
-- conteúdo do jogo da memória
-- pontuações
-- respostas de NPS por jogo/personagem
-- metadados de mídia
+## Prisma
 
-### Prisma
+- schema: `apps/api/prisma/schema.prisma`
+- migrations: `apps/api/prisma/migrations/`
+- convenção: modelos em `camelCase`, colunas com `@map` em `snake_case`
+- timestamps: `createdAt` / `updatedAt` nas entidades principais
 
-É a camada que:
-
-- mapear o schema relacional
-- gerar o client tipado
-- padronizar queries e updates
-- manter a modelagem explícita no código
-
-Arquivo principal do schema:
-
-- `apps/api/prisma/schema.prisma`
-
-## Como essa arquitetura foi organizada
-
-### 1. Auth separado de perfil
-
-O usuário autentica no Firebase, mas o perfil de negócio fica no Postgres. Com
-isso, o mesmo backend atende web e app nativo, as regras ficam centralizadas no
-servidor e o domínio continua desacoplado do SDK do banco no frontend.
-
-### 2. Storage separado de metadados
-
-Os arquivos continuam no Firebase Storage, mas os metadados ficam em `midia`.
-
-Assim, a API consegue paginar, filtrar e relacionar arquivos com usuários sem
-misturar tudo no bucket.
-
-### 3. API como fonte de verdade
-
-O frontend não deve conhecer detalhes do banco. Toda regra de acesso, validação
-e persistência passa pela API.
-
-## O que isso traz para o projeto
-
-- backend mais consistente para web e app nativo
-- regras de negócio centralizadas no servidor
-- modelagem explícita e versionada com Prisma
-- menor acoplamento do domínio ao SDK de banco do frontend
-
-## Convenções adotadas
-
-- nomes internos no Prisma em `camelCase`
-- nomes de colunas com `@map(...)` em `snake_case`
-- `createdAt` e `updatedAt` em todas as tabelas principais
-- uso de índices e chaves únicas para regras de unicidade
-
-## Relações importantes
-
-- `users.school` funciona como referência para `schools.id`
-- `users.firebase_uid` referencia a identidade do Firebase
-- `memory_game_contents.character_id` aponta para `characters.id`
-- `game_configs.character_slug` aponta para `characters.slug`
-- `game_scores.character_slug` aponta para `characters.slug`
-- `game_scores.user_id` e `midia.user_id` apontam para `users.firebase_uid`
-- `game_nps_responses.character_slug` aponta para `characters.slug`
-- `game_nps_responses.user_id` aponta para `users.firebase_uid`
-
-## Operação do banco
-
-Comandos mais usados no dia a dia:
+### Comandos
 
 ```bash
+cd apps/api
 yarn prisma:generate
-yarn prisma:migrate:dev --name <nome-da-migration>
+yarn prisma:migrate:dev --name <nome>
 yarn prisma:migrate:deploy
 ```
 
-## Documentos relacionados
+## Relações centrais
 
-- [Modelagem de Dados](data-model.md)
-- [DDL PostgreSQL para DrawSQL](files/etnos-postgresql-ddl.sql)
+- `users.school_id` → `schools.id` (relação formal no Prisma)
+- `users.firebase_uid` ↔ Firebase Auth `uid`
+- `school_enabled_characters.character_slug` → `characters.slug`
+- `game_configs.character_slug` → `characters.slug`
+- `game_scores.user_id` → `users.firebase_uid` (por convenção de domínio)
+- `memory_game_contents.character_id` → `characters.id`

@@ -3,185 +3,107 @@
 ## Visão geral
 
 O Etnos está organizado como um monorepo com apps de produto, biblioteca de
-componentes, biblioteca de jogos, contratos compartilhados e utilitários de
-integração. A ideia aqui é simples: cada app tem um papel claro, e os pacotes
-compartilhados evitam repetição de código.
+jogos, design system, contratos compartilhados, analytics e testes de performance.
+Cada app tem um papel claro; os pacotes evitam duplicação de código.
 
 ## Mapa geral
 
-```mermaid
-flowchart LR
-    A["apps/web"] --> U["packages/ui"]
-    B["apps/student"] --> U
-    B --> G["apps/games"]
-    B --> T["packages/tools"]
-    M["apps/student-mobile"] --> C0["packages/core"]
-    M --> Y["packages/types"]
-    C["apps/admin"] --> U
-    C --> T
-    D["apps/api"] --> Y["packages/types"]
-    G --> T
-    G --> Y
-    T --> Y
-    A --> T
-    U --> T
-```
-
-![Mapa de alto nivel](./files/monorepo-flow.png)
+![Mapa de alto nível](./files/monorepo-flow.png)
 
 ## Apps
 
 ### `apps/web`
 
-Site institucional e porta de entrada pública da plataforma.
+Site institucional e porta de entrada pública.
 
-Responsabilidades:
-
-- landing page;
-- cadastro e login;
-- comunicacao publica com a API;
-- apresentacao da proposta pedagogica.
+- landing page, cadastro e login;
+- comunicação com a API;
+- analytics via `@etnos/analytics` (`appName: web`).
 
 ### `apps/student`
 
 Portal autenticado do estudante.
 
-Responsabilidades:
-
-- selecao de personagem;
-- acesso aos jogos;
-- perfil do estudante;
-- renderização da experiência de aprendizado.
+- seleção de personagem e jogos;
+- perfil e onboarding escolar;
+- renderização de `@etnos/games`;
+- analytics (`appName: student`).
 
 ### `apps/admin`
 
-Painel autenticado de operação.
+Painel de operação e conteúdo.
 
-Responsabilidades:
-
-- gestao de escolas;
-- gestao de personagens;
-- gestão de mídia;
-- configuração e conteúdo de jogos.
+- escolas, personagens habilitados, jogos por escola;
+- biblioteca de mídia e configuração de jogos;
+- dashboard de desempenho e notificações push;
+- analytics (`appName: admin`).
 
 ### `apps/api`
 
-Backend NestJS e fonte principal de verdade do domínio.
+Backend NestJS — fonte de verdade do domínio.
 
-Responsabilidades:
+- validação de token Firebase;
+- persistência PostgreSQL via Prisma;
+- uploads no Firebase Storage;
+- métricas Prometheus e integração Sentry;
+- cache de catálogo de personagens para leitura pública.
 
-- autenticar requests com token do Firebase;
-- persistir dados de negocio no Postgres via Prisma;
-- intermediar upload e remoção de arquivos no Firebase Storage;
-- expor endpoints publicos e autenticados.
+Porta padrão: **8080** (`PORT` no `.env`). Prefixo global: `/api`.
 
 ### `apps/games`
 
-Biblioteca React de jogos.
-
-Responsabilidades:
-
-- encapsular interface e lógica dos jogos;
-- expor componentes reutilizaveis para `student`;
-- manter estados, pontuação e experiência visual de cada jogo.
+Biblioteca React de jogos (`GuessGame`, `MemoryGame`, NPS, placar).
 
 ### `apps/docs`
 
-Storybook do design system e dos componentes compartilhados.
+Storybook do design system (porta **6006**).
 
 ### `apps/student-mobile`
 
-Aplicativo nativo (Expo) para iOS, Android e Web.
-
-Responsabilidades:
-
-- autenticação e sessão no app nativo;
-- seleção de personagem e consumo de jogos;
-- integração com notificações push;
-- consumo de serviços via `packages/core`.
+App Expo (iOS, Android, Web). Ver [App mobile](mobile-architecture.md).
 
 ## Pacotes
 
-### `packages/ui`
+Resumo completo em [Pacotes compartilhados](packages-overview.md).
 
-Design system, providers, layout principal e guards.
+| Pacote                       | Papel                              |
+| ---------------------------- | ---------------------------------- |
+| `packages/ui`                | Design system e `AppProviders` web |
+| `packages/tools`             | Hooks e HTTP para apps Next        |
+| `packages/core`              | Cliente HTTP e sessão mobile       |
+| `packages/types`             | Contratos TypeScript               |
+| `packages/analytics`         | Mixpanel web/native                |
+| `packages/performance`       | Testes k6 (não é runtime)          |
+| `packages/typescript-config` | Presets TS                         |
+| `packages/eslint-config`     | Presets ESLint                     |
+| `packages/tailwind-config`   | Preset Tailwind                    |
 
-Pontos importantes:
+## Layouts web
 
-- `AppProviders` cria o `QueryClient` e provedor de usuário;
-- `MainLayout` injeta header, footer, analytics e configuração global do Ant
-  Design;
-- `AuthProtected` protege rotas autenticadas.
+- `web`: `AppProviders` sem bloqueio de auth;
+- `student` e `admin`: `AppProviders` + `AuthProtected`.
 
-### `packages/tools`
-
-Camada de integração e lógica de consumo.
-
-Responsabilidades:
-
-- hooks baseados em React Query;
-- services HTTP;
-- helpers de sessão, token, erros e utilitários;
-- listagem de jogos e reprodução de sons.
-
-### `packages/types`
-
-Contratos compartilhados entre apps, API e bibliotecas.
-
-Responsabilidades:
-
-- interfaces de usuário, escola, personagem e mídia;
-- enums e contratos dos jogos;
-- tipagem comum do dominio.
-
-### `packages/core`
-
-Camada compartilhada do app nativo com cliente HTTP, serviços e storage de
-sessão.
-
-## Layouts
-
-Os apps web reutilizam o mesmo layout base e os mesmos providers, com pequenas
-diferenças de proteção:
-
-- `web` usa `AppProviders` sem bloqueio de autenticação;
-- `student` usa `AppProviders` com `AuthProtected`;
-- `admin` usa `AppProviders` com `AuthProtected`.
-
-Isso reduz duplicação e mantém cabeçalho, rodapé, locale, tema e cache de
-queries alinhados entre as interfaces.
+Isso alinha cabeçalho, rodapé, locale, tema Ant Design e React Query.
 
 ## Fluxo entre camadas
 
-```mermaid
-sequenceDiagram
-    participant UI as App Next.js
-    participant TOOLS as packages/tools
-    participant API as apps/api
-    participant DB as PostgreSQL
-    participant FS as Firebase
-
-    UI->>TOOLS: chama hook ou service
-    TOOLS->>API: request HTTP
-    API->>DB: leitura ou escrita de dominio
-    API->>FS: auth ou storage quando necessario
-    DB-->>API: retorna dados
-    FS-->>API: retorna token validado ou arquivo
-    API-->>TOOLS: responde JSON
-    TOOLS-->>UI: atualiza estado da interface
-```
-
 ![Fluxo entre camadas](./files/monorepo-sequence.png)
 
-## Build
+## Monorepo tooling
 
-O monorepo usa `Turborepo` com tarefas compartilhadas para:
+| Ferramenta       | Uso                                           |
+| ---------------- | --------------------------------------------- |
+| Yarn Workspaces  | dependências entre pacotes                    |
+| Turborepo        | `build`, `dev`, `lint`, `test`, `check-types` |
+| MkDocs           | documentação em `docs-site/`                  |
+| semantic-release | versionamento (`CHANGELOG.md`)                |
 
-- `build`
-- `dev`
-- `lint`
-- `test`
-- `check-types`
+### Scripts na raiz
 
-O cache considera saídas como `dist`, `.next`, `storybook-static` e `coverage`,
-enquanto `dev` permanece sem cache e em modo persistente.
+```bash
+yarn dev          # sobe apps em paralelo
+yarn build
+yarn test
+yarn lint
+yarn check-types
+```

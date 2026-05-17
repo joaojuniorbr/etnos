@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Text, View } from 'react-native';
+import { characterKeys, schoolKeys } from '@etnos/tools';
 import { CharacterCard, LoadingState, Screen, SectionCard } from '@/components';
 import { useCharacterSelection } from '@/contexts';
 import { charactersService, schoolService, tw } from '@/utils';
@@ -8,12 +9,14 @@ import { charactersService, schoolService, tw } from '@/utils';
 export default function CharactersPage() {
 	const { selectedCharacterSlug, selectCharacter } = useCharacterSelection();
 	const charactersQuery = useQuery({
-		queryKey: ['characters'],
+		queryKey: characterKeys.all(),
 		queryFn: () => charactersService.getCharacters(),
+		staleTime: 5 * 60_000,
 	});
 	const gameAccessQuery = useQuery({
-		queryKey: ['school-game-access'],
+		queryKey: schoolKeys.myGameAccess(),
 		queryFn: () => schoolService.getMyGameAccess(),
+		staleTime: 30_000,
 	});
 
 	const enabledCharacters = useMemo(() => {

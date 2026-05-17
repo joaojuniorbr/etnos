@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { PublicService } from './public.service';
+import { CacheService } from 'src/cache';
 import { EmailService } from 'src/email';
 import { PrismaService } from 'src/prisma';
 
@@ -17,6 +18,7 @@ describe('PublicService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PublicService,
+        CacheService,
         {
           provide: EmailService,
           useValue: {

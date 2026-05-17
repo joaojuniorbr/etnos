@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { MobileMenu } from '../../@molecules';
 import { useUser } from '../../context';
-import { useAuth, useCharacter } from '@etnos/tools';
+import { useAuth, useCharacter, useMyGameAccess } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
 import { Image, Modal } from 'antd';
-import { schoolService } from '@etnos/services';
 
 export const HeaderMobile = () => {
 	const [open, setOpen] = useState(false);
@@ -24,10 +22,7 @@ export const HeaderMobile = () => {
 	const { selectedCharacter, data, selectCharacter } = useCharacter({
 		fetchList: openCharacter,
 	});
-	const { data: gameAccess } = useQuery({
-		queryKey: ['schools', 'me', 'game-access'],
-		queryFn: () => schoolService.getMyGameAccess(),
-	});
+	const { data: gameAccess } = useMyGameAccess();
 	const enabledCharacters = data?.filter((character) =>
 		gameAccess?.enabledCharacterSlugs?.includes(character.slug),
 	);

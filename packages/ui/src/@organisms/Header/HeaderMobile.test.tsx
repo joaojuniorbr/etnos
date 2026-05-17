@@ -17,7 +17,7 @@ const {
 	mockUseGames,
 	mockUseUser,
 	mockHandleSelectedCharacter,
-	mockGetMyGameAccess,
+	mockUseMyGameAccess,
 	mockUseCharacter,
 } = vi.hoisted(() => {
 	const selectedCharacter = {
@@ -46,11 +46,11 @@ const {
 		mockUseGames: { submitGameNps: vi.fn() },
 		mockUseUser: { user: { uid: '123', email: 'user@teste.com' } },
 		mockHandleSelectedCharacter: vi.fn(),
-		mockGetMyGameAccess: vi.fn(() =>
-			Promise.resolve({
+		mockUseMyGameAccess: vi.fn(() => ({
+			data: {
 				enabledCharacterSlugs: ['anita', 'zeca'],
-			}),
-		),
+			},
+		})),
 		mockUseCharacter: {
 			selectedCharacter,
 			data: [
@@ -80,12 +80,7 @@ vi.mock('@etnos/tools', () => ({
 	useAuth: () => mockUseAuth,
 	useGames: () => mockUseGames,
 	useCharacter: () => mockUseCharacter,
-}));
-
-vi.mock('@etnos/services', () => ({
-	schoolService: {
-		getMyGameAccess: mockGetMyGameAccess,
-	},
+	useMyGameAccess: () => mockUseMyGameAccess(),
 }));
 
 vi.mock('../../context', () => ({
@@ -145,8 +140,10 @@ describe('HeaderMobile', () => {
 	});
 
 	it('limpa o personagem selecionado quando ele nao esta habilitado para a escola', async () => {
-		mockGetMyGameAccess.mockResolvedValueOnce({
-			enabledCharacterSlugs: ['zeca'],
+		mockUseMyGameAccess.mockReturnValueOnce({
+			data: {
+				enabledCharacterSlugs: ['zeca'],
+			},
 		});
 
 		render(<HeaderMobile />, { wrapper: createWrapper() });

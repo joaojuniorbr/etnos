@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { api } from '@etnos/common';
 import { SignUpForm } from '@etnos/ui';
-import { useAuth } from '@etnos/tools';
+import { QUERY_STALE_TIME, schoolKeys, useAuth } from '@etnos/tools';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Spin } from 'antd';
@@ -22,7 +22,8 @@ export default function CadastroPage() {
 	}, [user]);
 
 	const { data: schools, isLoading: isLoadingSchool } = useQuery({
-		queryKey: ['schools', 'public'],
+		queryKey: schoolKeys.public(),
+		staleTime: QUERY_STALE_TIME.catalog,
 		queryFn: () =>
 			api
 				.get<

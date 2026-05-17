@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { CacheKeys, CACHE_TTL_MS, CacheService } from 'src/cache';
 import { EmailService } from 'src/email';
 import { PrismaService } from 'src/prisma';
 
@@ -7,6 +8,7 @@ export class PublicService {
   constructor(
     private readonly emailService: EmailService,
     private readonly prismaService: PrismaService,
+    private readonly cacheService: CacheService,
   ) {}
 
   sendContactEmail(phone: unknown) {
@@ -34,10 +36,15 @@ export class PublicService {
   }
 
   getSchools() {
-    return this.prismaService.school.findMany({
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.schoolsAll(),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.school.findMany({
+          orderBy: {
+            name: 'asc',
+          },
+        }),
+    );
   }
 }

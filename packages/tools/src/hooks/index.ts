@@ -10,6 +10,7 @@ export * from './useSchoolAccessUsers';
 export * from './useSchoolUsersBySchool';
 export * from './useUserGameScoreHistory';
 export * from './useSchoolGameAccess';
+export * from './useMyGameAccess';
 export * from './useSchoolMutations';
 export * from './useUpdateUserRolesMutation';
 export * from './useAdminUsers';

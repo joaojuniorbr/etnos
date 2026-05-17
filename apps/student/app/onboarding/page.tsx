@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@etnos/tools';
+import { QUERY_STALE_TIME, schoolKeys, useAuth } from '@etnos/tools';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Form, Image, Input, message, Select, Spin } from 'antd';
 import { api } from '@etnos/services';
@@ -12,7 +12,8 @@ export default function StudentOnboardingPage() {
 	const [form] = Form.useForm<{ school: string; childName: string }>();
 
 	const { data: schools, isLoading: isLoadingSchools } = useQuery({
-		queryKey: ['schools', 'public'],
+		queryKey: schoolKeys.public(),
+		staleTime: QUERY_STALE_TIME.catalog,
 		queryFn: () =>
 			api.get<SchoolPublic[]>('/public/schools').then((res) => res.data),
 	});

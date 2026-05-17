@@ -1,29 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import type { CharacterInterface } from '@etnos/types';
+import { CacheKeys, CachePrefixes, CACHE_TTL_MS, CacheService } from 'src/cache';
 import { PrismaService } from 'src/prisma';
 
 @Injectable()
 export class CharactersService {
-  private readonly cacheTtlMs = 30_000;
-  private readonly charactersCache = new Map<
-    string,
-    { expiresAt: number; data: CharacterInterface[] }
-  >();
-
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   private getAvatarFolder(slug: string) {
     return `avatar/${slug}`;
   }
 
-  async getCharacters(slug?: string) {
-    const cacheKey = slug ?? '__all__';
-    const cached = this.charactersCache.get(cacheKey);
-
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
-
+  private async loadCharacters(slug?: string): Promise<CharacterInterface[]> {
     const characters = await this.prismaService.character.findMany({
       where: slug ? { slug } : undefined,
     });
@@ -61,45 +52,69 @@ export class CharactersService {
       {},
     );
 
-    const data = characters.map((character) => ({
+    return characters.map((character) => ({
       ...character,
       avatarUrls: avatarsByFolder[this.getAvatarFolder(character.slug)] ?? [],
     }));
+  }
 
-    this.charactersCache.set(cacheKey, {
-      expiresAt: Date.now() + this.cacheTtlMs,
-      data,
-    });
+  async getCharacters(slug?: string) {
+    const cacheKey = slug
+      ? CacheKeys.charactersFilter(slug)
+      : CacheKeys.charactersAll();
 
-    return data;
+    return this.cacheService.getOrSet(cacheKey, CACHE_TTL_MS.catalog, () =>
+      this.loadCharacters(slug),
+    );
   }
 
   async getCharacterBySlug(slug: string) {
-    const character = await this.prismaService.character.findUnique({
-      where: { slug },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.characterDetail(slug),
+      CACHE_TTL_MS.catalog,
+      async () => {
+        const character = await this.prismaService.character.findUnique({
+          where: { slug },
+        });
 
-    if (!character) {
-      return null;
-    }
+        if (!character) {
+          return null;
+        }
 
-    return {
-      ...character,
-      avatarUrls: (await this.getCharacterAvatars(slug)).map(
-        (item) => item.url,
-      ),
-    };
+        return {
+          ...character,
+          avatarUrls: (await this.getCharacterAvatars(slug)).map(
+            (item) => item.url,
+          ),
+        };
+      },
+    );
   }
 
   async getCharacterAvatars(slug: string) {
-    return this.prismaService.midia.findMany({
-      where: {
-        folder: this.getAvatarFolder(slug),
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.characterAvatars(slug),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.midia.findMany({
+          where: {
+            folder: this.getAvatarFolder(slug),
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }),
+    );
+  }
+
+  private invalidateCharacterCaches() {
+    this.cacheService.delete(CacheKeys.characterSlugs());
+    this.cacheService.invalidateByPrefix('catalog:characters:');
+    this.cacheService.invalidateByPrefix('catalog:character:');
+    this.cacheService.invalidateByPrefix('catalog:character-avatars:');
+    this.cacheService.invalidateByPrefix(CachePrefixes.schoolEnabledAccess);
+    this.cacheService.invalidateByPrefix(CachePrefixes.schoolGameAccess);
+    this.cacheService.invalidateByPrefix(CachePrefixes.myGameAccess);
   }
 
   async save(character: CharacterInterface) {
@@ -119,7 +134,7 @@ export class CharactersService {
       },
     });
 
-    this.charactersCache.clear();
+    this.invalidateCharacterCaches();
 
     return {
       id: created.id,
@@ -145,7 +160,7 @@ export class CharactersService {
       },
     });
 
-    this.charactersCache.clear();
+    this.invalidateCharacterCaches();
 
     return character;
   }

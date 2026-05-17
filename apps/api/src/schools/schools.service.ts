@@ -20,6 +20,12 @@ import type {
 } from '@etnos/types';
 import * as admin from 'firebase-admin';
 import { randomBytes } from 'node:crypto';
+import {
+  CacheKeys,
+  CachePrefixes,
+  CACHE_TTL_MS,
+  CacheService,
+} from 'src/cache';
 import { GamesService } from 'src/games/games.service';
 import { PrismaService } from 'src/prisma';
 
@@ -27,22 +33,10 @@ const AVAILABLE_GAME_SLUGS = ['memory-game', 'guess-game'] as const;
 
 @Injectable()
 export class SchoolsService {
-  private readonly gameAccessCacheTtlMs = 30_000;
-  private readonly gameAccessCache = new Map<
-    string,
-    { expiresAt: number; data: SchoolGameAccessInterface }
-  >();
-  private readonly myGameAccessCache = new Map<
-    string,
-    { expiresAt: number; data: SchoolGameAccessInterface }
-  >();
-  private readonly characterSlugsCacheTtlMs = 60_000;
-  private characterSlugsCache: { expiresAt: number; slugs: string[] } | null =
-    null;
-
   constructor(
     private readonly prismaService: PrismaService,
     private readonly gamesService: GamesService,
+    private readonly cacheService: CacheService,
   ) {}
 
   private getAvailableGameSlugs(): string[] {
@@ -253,29 +247,32 @@ export class SchoolsService {
   }
 
   private async getAvailableCharacterSlugs() {
-    if (
-      this.characterSlugsCache &&
-      this.characterSlugsCache.expiresAt > Date.now()
-    ) {
-      return this.characterSlugsCache.slugs;
-    }
+    return this.cacheService.getOrSet(
+      CacheKeys.characterSlugs(),
+      CACHE_TTL_MS.characterSlugs,
+      async () => {
+        const characters = await this.prismaService.character.findMany({
+          select: {
+            slug: true,
+          },
+          orderBy: {
+            name: 'asc',
+          },
+        });
 
-    const characters = await this.prismaService.character.findMany({
-      select: {
-        slug: true,
+        return characters.map((character) => character.slug);
       },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    );
+  }
 
-    const slugs = characters.map((character) => character.slug);
-    this.characterSlugsCache = {
-      expiresAt: Date.now() + this.characterSlugsCacheTtlMs,
-      slugs,
-    };
+  private invalidateSchoolCatalogCaches() {
+    this.cacheService.delete(CacheKeys.schoolsAll());
+  }
 
-    return slugs;
+  private invalidateSchoolGameAccessCaches() {
+    this.cacheService.invalidateByPrefix(CachePrefixes.schoolGameAccess);
+    this.cacheService.invalidateByPrefix(CachePrefixes.schoolEnabledAccess);
+    this.cacheService.invalidateByPrefix(CachePrefixes.myGameAccess);
   }
 
   private normalizeUniqueValues(values: string[]) {
@@ -292,15 +289,12 @@ export class SchoolsService {
     schoolId: string,
     viewerRoles: string[],
   ): Promise<SchoolGameAccessInterface> {
-    const cacheKey = `${schoolId}:${this.sortStringsAlphabetically(
-      viewerRoles,
-    ).join(',')}`;
-    const cached = this.gameAccessCache.get(cacheKey);
+    const rolesKey = this.sortStringsAlphabetically(viewerRoles).join(',');
 
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
-
+    return this.cacheService.getOrSet(
+      CacheKeys.schoolGameAccess(schoolId, rolesKey),
+      CACHE_TTL_MS.gameAccess,
+      async () => {
     const enabledGames = await this.prismaService.schoolEnabledGame.findMany({
       where: { schoolId },
       select: { gameSlug: true },
@@ -318,7 +312,7 @@ export class SchoolsService {
     const hasCustomGames = enabledGames.length > 0;
     const hasCustomCharacters = enabledCharacters.length > 0;
 
-    const data = {
+    return {
       schoolId,
       enabledGameSlugs: hasCustomGames
         ? enabledGames.map((game) => game.gameSlug)
@@ -331,13 +325,8 @@ export class SchoolsService {
       canEdit: this.canEditSchoolGameAccess(viewerRoles),
       viewerRoles: viewerRoles as UserRole[],
     };
-
-    this.gameAccessCache.set(cacheKey, {
-      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
-      data,
-    });
-
-    return data;
+      },
+    );
   }
 
   private async validateSchoolGameAccessPayload(
@@ -494,11 +483,16 @@ export class SchoolsService {
   }
 
   async getAll(): Promise<SchoolInterface[]> {
-    return this.prismaService.school.findMany({
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.schoolsAll(),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.school.findMany({
+          orderBy: {
+            name: 'asc',
+          },
+        }),
+    );
   }
 
   async create(school: SchoolInterface) {
@@ -527,6 +521,8 @@ export class SchoolsService {
           state: school.state,
         },
       });
+
+      this.invalidateSchoolCatalogCaches();
 
       return {
         id: created.id,
@@ -578,6 +574,8 @@ export class SchoolsService {
       },
     });
 
+    this.invalidateSchoolCatalogCaches();
+
     return {
       id,
       ...school,
@@ -589,6 +587,9 @@ export class SchoolsService {
     await this.prismaService.school.delete({
       where: { id },
     });
+
+    this.invalidateSchoolCatalogCaches();
+    this.invalidateSchoolGameAccessCaches();
 
     return true;
   }
@@ -706,28 +707,21 @@ export class SchoolsService {
   async getMyGameAccess(
     firebaseUid: string,
   ): Promise<SchoolGameAccessInterface> {
-    const cached = this.myGameAccessCache.get(firebaseUid);
+    return this.cacheService.getOrSet(
+      CacheKeys.myGameAccess(firebaseUid),
+      CACHE_TTL_MS.gameAccess,
+      async () => {
+        const profile = await this.getAuthenticatedProfile(firebaseUid);
 
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
+        if (profile.schoolId) {
+          await this.ensureSchoolExists(profile.schoolId);
+        }
 
-    const profile = await this.getAuthenticatedProfile(firebaseUid);
-
-    if (profile.schoolId) {
-      await this.ensureSchoolExists(profile.schoolId);
-    }
-
-    const gameAccess = profile.schoolId
-      ? await this.buildSchoolGameAccess(profile.schoolId, profile.roles)
-      : await this.buildSchoolGameAccess('', profile.roles);
-
-    this.myGameAccessCache.set(firebaseUid, {
-      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
-      data: gameAccess,
-    });
-
-    return gameAccess;
+        return profile.schoolId
+          ? await this.buildSchoolGameAccess(profile.schoolId, profile.roles)
+          : await this.buildSchoolGameAccess('', profile.roles);
+      },
+    );
   }
 
   async getGameAccessBySchool(
@@ -791,8 +785,7 @@ export class SchoolsService {
       }
     });
 
-    this.gameAccessCache.clear();
-    this.myGameAccessCache.clear();
+    this.invalidateSchoolGameAccessCaches();
 
     return this.buildSchoolGameAccess(schoolId, profile.roles);
   }

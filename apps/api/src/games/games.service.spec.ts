@@ -3,6 +3,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'node:crypto';
 import { GamesService } from './games.service';
+import { CacheService } from 'src/cache';
 import { PrismaService } from 'src/prisma';
 
 describe('GamesService', () => {
@@ -180,6 +181,7 @@ describe('GamesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GamesService,
+        CacheService,
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -189,6 +191,7 @@ describe('GamesService', () => {
 
     service = module.get<GamesService>(GamesService);
     prismaService = module.get(PrismaService);
+    module.get(CacheService).clear();
     jest.clearAllMocks();
     prismaService.user.findUnique.mockResolvedValue({
       schoolId: 'school-1',

@@ -10,6 +10,12 @@ export const useSchoolMutations = () => {
 
 	const invalidateSchools = () => {
 		void queryClient.invalidateQueries({ queryKey: schoolKeys.all() });
+		void queryClient.invalidateQueries({ queryKey: schoolKeys.public() });
+	};
+
+	const invalidateGameAccess = () => {
+		void queryClient.invalidateQueries({ queryKey: ['schools', 'game-access'] });
+		void queryClient.invalidateQueries({ queryKey: schoolKeys.myGameAccess() });
 	};
 
 	const invalidateAccessUsers = () => {
@@ -61,11 +67,7 @@ export const useSchoolMutations = () => {
 			schoolId: string;
 			payload: Parameters<typeof schoolService.updateGameAccessBySchool>[1];
 		}) => schoolService.updateGameAccessBySchool(schoolId, payload),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['schools', 'game-access'],
-			});
-		},
+		onSuccess: invalidateGameAccess,
 	});
 
 	return {

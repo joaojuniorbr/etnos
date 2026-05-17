@@ -1,5 +1,7 @@
 export const schoolKeys = {
 	all: () => ['schools', 'all'] as const,
+	public: () => ['schools', 'public'] as const,
+	myGameAccess: () => ['schools', 'me', 'game-access'] as const,
 	managed: () => ['schools', 'me', 'managed'] as const,
 	gameAccess: (schoolId: string) => ['schools', 'game-access', schoolId] as const,
 	viewerUsers: (schoolId: string, search = '') =>

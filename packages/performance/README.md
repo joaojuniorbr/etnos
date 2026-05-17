@@ -38,6 +38,68 @@ Informe a URL base publicada da API, mantendo o sufixo `/api`:
 API_URL=https://minha-api.com/api k6 run packages/performance/scripts/public-schools.js
 ```
 
+## Personagens (cache)
+
+O teste `characters` exercita os endpoints públicos de leitura usados pelo app:
+
+- `GET /characters` (lista completa — ~70% do tráfego)
+- `GET /characters/:slug` (detalhe — ~20%)
+- `GET /characters/:slug/avatars` (avatares — ~10%)
+
+O cenário tem duas fases:
+
+1. **Warmup** — VUs constantes só na lista, para popular o cache do servidor (TTL ~5 min no catálogo).
+2. **Carga sustentada** — rampa de VUs com mix realista dos três endpoints.
+
+Métricas customizadas ajudam a comparar cache frio vs quente:
+
+- `characters_list_ms_warmup` / `characters_list_ms_load` — latência da lista por fase
+- `characters_cache_likely_hits` — requisições com resposta &lt; 120ms (indício de cache quente)
+
+Rodar localmente (API em `http://localhost:8080/api`):
+
+```sh
+yarn workspace @etnos/performance test:characters
+```
+
+Smoke rápido (~1,5 min):
+
+```sh
+yarn workspace @etnos/performance test:characters:smoke
+```
+
+Stress (até ~150 VUs):
+
+```sh
+yarn workspace @etnos/performance test:characters:stress
+```
+
+Variáveis úteis:
+
+| Variável | Descrição |
+| --- | --- |
+| `API_URL` | Base da API com `/api` (padrão: `http://localhost:8080/api`) |
+| `LOAD_PROFILE` | `smoke`, `standard` (padrão) ou `stress` |
+| `CHARACTER_SLUGS` | Slugs de fallback se o setup não conseguir listar personagens (ex.: `anita,iara`) |
+
+Summary JSON do k6:
+
+```sh
+yarn workspace @etnos/performance test:characters:summary
+```
+
+Observação de cache (JSON separado ao final da rodada):
+
+- `packages/performance/results/characters-cache-observation.json`
+
+Com Grafana (mesma stack de `observability:up`):
+
+```sh
+yarn workspace @etnos/performance test:characters:grafana
+```
+
+O script envia `X-ETNOS-Load-Test: characters` para rastreio no Sentry/métricas da API.
+
 ## Fluxo autenticado de leitura
 
 O teste `auth-read-flow` simula usuários existentes fazendo:

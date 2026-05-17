@@ -11,14 +11,16 @@ import {
 } from '@/components';
 import { studentGames } from '@/constants';
 import { useCharacterSelection } from '@/contexts';
+import { schoolKeys } from '@etnos/tools';
 import { schoolService, tw } from '@/utils';
 import { Image } from 'expo-image';
 
 export default function GamesPage() {
 	const { selectedCharacterSlug } = useCharacterSelection();
 	const gameAccessQuery = useQuery({
-		queryKey: ['school-game-access'],
+		queryKey: schoolKeys.myGameAccess(),
 		queryFn: () => schoolService.getMyGameAccess(),
+		staleTime: 30_000,
 	});
 
 	if (gameAccessQuery.isLoading) {

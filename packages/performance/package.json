@@ -9,6 +9,11 @@
 		"test:public-schools": "node scripts/run-k6-with-env.mjs scripts/public-schools.js",
 		"test:public-schools:summary": "node scripts/run-k6-with-env.mjs --summary-export=results/public-schools-summary.json scripts/public-schools.js",
 		"test:public-schools:grafana": "node scripts/run-k6-with-env.mjs --grafana scripts/public-schools.js",
+		"test:characters": "node scripts/run-k6-with-env.mjs scripts/characters.js",
+		"test:characters:smoke": "LOAD_PROFILE=smoke node scripts/run-k6-with-env.mjs scripts/characters.js",
+		"test:characters:stress": "LOAD_PROFILE=stress node scripts/run-k6-with-env.mjs scripts/characters.js",
+		"test:characters:summary": "node scripts/run-k6-with-env.mjs --summary-export=results/characters-summary.json scripts/characters.js",
+		"test:characters:grafana": "node scripts/run-k6-with-env.mjs --grafana scripts/characters.js",
 		"observability:up": "sh scripts/docker-compose.sh up -d prometheus grafana",
 		"observability:down": "sh scripts/docker-compose.sh down",
 		"observability:logs": "sh scripts/docker-compose.sh logs -f prometheus grafana"

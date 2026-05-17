@@ -1,24 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Button, Spin } from 'antd';
 
 import { CharacterCard } from '@etnos/ui';
-import { useCharacter } from '@etnos/tools';
+import { useCharacter, useMyGameAccess } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
 import { useRouter } from 'next/navigation';
-import { schoolService } from '@etnos/services';
 
 export const CharacterSelect = () => {
 	const router = useRouter();
 
 	const { data, selectCharacter, selectedCharacter, isLoading } =
 		useCharacter();
-	const { data: gameAccess, isLoading: isLoadingGameAccess } = useQuery({
-		queryKey: ['schools', 'me', 'game-access'],
-		queryFn: () => schoolService.getMyGameAccess(),
-	});
+	const { data: gameAccess, isLoading: isLoadingGameAccess } = useMyGameAccess();
 
 	const enabledCharacters = data?.filter((character) =>
 		gameAccess?.enabledCharacterSlugs?.includes(character.slug),

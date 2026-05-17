@@ -1,20 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Empty, Spin } from 'antd';
-import { useCharacter, useGames } from '@etnos/tools';
+import { useCharacter, useGames, useMyGameAccess } from '@etnos/tools';
 import { CardGame } from '@/components/@molecules';
-import { schoolService } from '@etnos/services';
 
 export const GameSelect = () => {
 	const { selectedCharacter, selectCharacter } = useCharacter({
 		fetchList: false,
 	});
-	const { data: gameAccess, isLoading } = useQuery({
-		queryKey: ['schools', 'me', 'game-access'],
-		queryFn: () => schoolService.getMyGameAccess(),
-	});
+	const { data: gameAccess, isLoading } = useMyGameAccess();
 
 	const { allGames } = useGames();
 	const enabledGames = allGames.filter((game) =>

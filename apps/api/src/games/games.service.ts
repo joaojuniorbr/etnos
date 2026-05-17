@@ -10,6 +10,7 @@ import type {
   ScoreHistory,
   ScoreInterface,
 } from '@etnos/types';
+import { CacheKeys, CACHE_TTL_MS, CacheService } from 'src/cache';
 import { PrismaService } from 'src/prisma';
 
 const GAME_SLUGS = ['memory-game', 'guess-game'] as const;
@@ -22,21 +23,17 @@ type GameAccessContext = {
   schoolId: string | null;
 };
 
+type SchoolEnabledAccess = {
+  enabledGameSlugs: string[];
+  enabledCharacterSlugs: string[];
+};
+
 @Injectable()
 export class GamesService {
-  private readonly gameAccessCacheTtlMs = 30_000;
-  private readonly gameAccessCache = new Map<
-    string,
-    {
-      expiresAt: number;
-      enabledGameSlugs: string[];
-      enabledCharacterSlugs: string[];
-    }
-  >();
-  private characterSlugsCache: { expiresAt: number; slugs: string[] } | null =
-    null;
-
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   private isMissingGuessGameContentTable(error: unknown) {
     if (
@@ -65,59 +62,61 @@ export class GamesService {
   }
 
   private async getAllCharacterSlugs() {
-    if (
-      this.characterSlugsCache &&
-      this.characterSlugsCache.expiresAt > Date.now()
-    ) {
-      return this.characterSlugsCache.slugs;
-    }
+    return this.cacheService.getOrSet(
+      CacheKeys.characterSlugs(),
+      CACHE_TTL_MS.characterSlugs,
+      async () => {
+        const characters = await this.prismaService.character.findMany({
+          select: { slug: true },
+        });
 
-    const characters = await this.prismaService.character.findMany({
-      select: { slug: true },
-    });
-    const slugs = characters.map((character) => character.slug);
-
-    this.characterSlugsCache = {
-      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
-      slugs,
-    };
-
-    return slugs;
+        return characters.map((character) => character.slug);
+      },
+    );
   }
 
-  private async getEnabledGameAccessForSchool(schoolId: string) {
-    const cached = this.gameAccessCache.get(schoolId);
+  private async getEnabledGameAccessForSchool(
+    schoolId: string,
+  ): Promise<SchoolEnabledAccess> {
+    return this.cacheService.getOrSet(
+      CacheKeys.schoolEnabledAccess(schoolId),
+      CACHE_TTL_MS.gameAccess,
+      async () => {
+        const enabledGames = await this.prismaService.schoolEnabledGame.findMany(
+          {
+            where: { schoolId },
+            select: { gameSlug: true },
+          },
+        );
+        const enabledCharacters =
+          await this.prismaService.schoolEnabledCharacter.findMany({
+            where: { schoolId },
+            select: { characterSlug: true },
+          });
+        const allCharacterSlugs = await this.getAllCharacterSlugs();
 
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached;
+        return {
+          enabledGameSlugs: enabledGames.length
+            ? enabledGames.map((game) => game.gameSlug)
+            : [...GAME_SLUGS],
+          enabledCharacterSlugs: enabledCharacters.length
+            ? enabledCharacters.map((character) => character.characterSlug)
+            : allCharacterSlugs,
+        };
+      },
+    );
+  }
+
+  private invalidateGameConfigCaches(gameSlug?: string, characterSlug?: string) {
+    this.cacheService.delete(CacheKeys.gameConfigsAll());
+
+    if (gameSlug) {
+      this.cacheService.delete(CacheKeys.gameConfigsByGame(gameSlug));
     }
 
-    const enabledGames = await this.prismaService.schoolEnabledGame.findMany({
-      where: { schoolId },
-      select: { gameSlug: true },
-    });
-    const enabledCharacters =
-      await this.prismaService.schoolEnabledCharacter.findMany({
-        where: { schoolId },
-        select: { characterSlug: true },
-      });
-    const allCharacterSlugs = await this.getAllCharacterSlugs();
-
-    const access = {
-      enabledGameSlugs: enabledGames.length
-        ? enabledGames.map((game) => game.gameSlug)
-        : [...GAME_SLUGS],
-      enabledCharacterSlugs: enabledCharacters.length
-        ? enabledCharacters.map((character) => character.characterSlug)
-        : allCharacterSlugs,
-    };
-
-    this.gameAccessCache.set(schoolId, {
-      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
-      ...access,
-    });
-
-    return access;
+    if (gameSlug && characterSlug) {
+      this.cacheService.delete(CacheKeys.gameConfig(gameSlug, characterSlug));
+    }
   }
 
   private async assertUserCanAccessGameContent(
@@ -185,13 +184,22 @@ export class GamesService {
   }
 
   async getGames() {
-    return this.prismaService.gameConfig.findMany();
+    return this.cacheService.getOrSet(
+      CacheKeys.gameConfigsAll(),
+      CACHE_TTL_MS.catalog,
+      () => this.prismaService.gameConfig.findMany(),
+    );
   }
 
   async getGamesBySlug(gameSlug: string) {
-    return this.prismaService.gameConfig.findFirst({
-      where: { gameSlug },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.gameConfigsByGame(gameSlug),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.gameConfig.findFirst({
+          where: { gameSlug },
+        }),
+    );
   }
 
   async getScoreHistory(
@@ -249,6 +257,8 @@ export class GamesService {
       },
     });
 
+    this.invalidateGameConfigCaches(data.gameSlug, data.characterSlug);
+
     return {
       id,
       ...data,
@@ -256,20 +266,30 @@ export class GamesService {
   }
 
   async getConfig(gameSlug: string, characterSlug: string) {
-    return this.prismaService.gameConfig.findUnique({
-      where: {
-        gameSlug_characterSlug: {
-          gameSlug,
-          characterSlug,
-        },
-      },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.gameConfig(gameSlug, characterSlug),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.gameConfig.findUnique({
+          where: {
+            gameSlug_characterSlug: {
+              gameSlug,
+              characterSlug,
+            },
+          },
+        }),
+    );
   }
 
   async getConfigByGame(gameSlug: string) {
-    return this.prismaService.gameConfig.findMany({
-      where: { gameSlug },
-    });
+    return this.cacheService.getOrSet(
+      CacheKeys.gameConfigsByGame(gameSlug),
+      CACHE_TTL_MS.catalog,
+      () =>
+        this.prismaService.gameConfig.findMany({
+          where: { gameSlug },
+        }),
+    );
   }
 
   async removeConfig(gameSlug: string, characterSlug: string) {
@@ -281,6 +301,9 @@ export class GamesService {
         },
       },
     });
+
+    this.invalidateGameConfigCaches(gameSlug, characterSlug);
+
     return true;
   }
 

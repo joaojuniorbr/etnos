@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { gameConfigKeys } from '../../query-keys';
 import { scoreGamesService } from '@etnos/services';
 
 export const useGameScore = (
@@ -9,7 +10,8 @@ export const useGameScore = (
 	characterSlug: string,
 ) =>
 	useQuery({
-		queryKey: ['games', 'score', slug, userId],
+		queryKey: gameConfigKeys.score(slug, userId, characterSlug),
+		enabled: Boolean(userId && slug && characterSlug),
 		queryFn: () =>
 			scoreGamesService
 				.getFromGameScore(slug, characterSlug, userId)

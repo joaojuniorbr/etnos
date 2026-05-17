@@ -13,6 +13,7 @@ import { MidiaModule } from './midia/midia.module';
 import { UsersModule } from './users';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma';
+import { CacheModule } from './cache';
 import { MetricsModule } from './metrics';
 import { APP_FILTER } from '@nestjs/core';
 
@@ -22,6 +23,7 @@ import { APP_FILTER } from '@nestjs/core';
       isGlobal: true,
     }),
     PrismaModule,
+    CacheModule,
     AuthModule,
     FirebaseModule,
     GamesModule,

@@ -6,13 +6,10 @@ import { QUERY_STALE_TIME } from '../../constants/query-cache';
 import { schoolKeys } from '../../query-keys';
 import { schoolService } from '@etnos/services';
 
-export const useSchoolGameAccess = (
-	schoolId: string,
-	options?: { enabled?: boolean },
-) =>
+export const useMyGameAccess = (options?: { enabled?: boolean }) =>
 	useQuery<SchoolGameAccessInterface>({
-		queryKey: schoolKeys.gameAccess(schoolId),
-		queryFn: () => schoolService.getGameAccessBySchool(schoolId),
+		queryKey: schoolKeys.myGameAccess(),
+		queryFn: () => schoolService.getMyGameAccess(),
 		staleTime: QUERY_STALE_TIME.gameAccess,
-		enabled: options?.enabled !== false && Boolean(schoolId),
+		enabled: options?.enabled !== false,
 	});

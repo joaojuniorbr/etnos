@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import type { CharacterInterface } from '@etnos/types';
+import { QUERY_STALE_TIME } from '../../constants/query-cache';
+import { characterKeys } from '../../query-keys';
 import { charactersService } from '@etnos/services';
 
 const CHARACTER_STORAGE_KEY = 'selectedCharacter';
@@ -19,8 +21,9 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 	const [selectedSlug, setSelectedSlug] = useState<string>();
 
 	const charactersQuery = useQuery<CharacterInterface[]>({
-		queryKey: ['character', 'all'],
+		queryKey: characterKeys.all(),
 		enabled: fetchList,
+		staleTime: QUERY_STALE_TIME.catalog,
 		queryFn: () => charactersService.getCharacters(),
 	});
 
@@ -29,8 +32,9 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 	);
 
 	const selectedCharacterQuery = useQuery<CharacterInterface | null>({
-		queryKey: ['character', 'selected', selectedSlug],
+		queryKey: characterKeys.selected(selectedSlug),
 		enabled: Boolean(selectedSlug) && !selectedCharacterFromList,
+		staleTime: QUERY_STALE_TIME.catalog,
 		queryFn: () => charactersService.getCharacterBySlug(selectedSlug!),
 	});
 

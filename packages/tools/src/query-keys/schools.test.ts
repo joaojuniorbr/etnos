@@ -4,6 +4,12 @@ import { schoolKeys } from './schools';
 describe('schoolKeys', () => {
 	it('retorna chaves de escolas', () => {
 		expect(schoolKeys.all()).toEqual(['schools', 'all']);
+		expect(schoolKeys.public()).toEqual(['schools', 'public']);
+		expect(schoolKeys.myGameAccess()).toEqual([
+			'schools',
+			'me',
+			'game-access',
+		]);
 		expect(schoolKeys.managed()).toEqual(['schools', 'me', 'managed']);
 		expect(schoolKeys.gameAccess('school-1')).toEqual([
 			'schools',

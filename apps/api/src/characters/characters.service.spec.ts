@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CharactersService } from './characters.service';
+import { CacheService } from 'src/cache';
 import { PrismaService } from 'src/prisma';
 
 describe('CharactersService', () => {
   let service: CharactersService;
+  let cacheService: CacheService;
   let prismaService: {
     character: {
       findMany: jest.Mock;
@@ -47,6 +49,7 @@ describe('CharactersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CharactersService,
+        CacheService,
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -55,7 +58,9 @@ describe('CharactersService', () => {
     }).compile();
 
     service = module.get<CharactersService>(CharactersService);
+    cacheService = module.get(CacheService);
     prismaService = module.get(PrismaService);
+    cacheService.clear();
     jest.clearAllMocks();
   });
 

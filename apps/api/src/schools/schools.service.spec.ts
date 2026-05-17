@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { SchoolsService } from './schools.service';
+import { CacheService } from 'src/cache';
 import { GamesService } from 'src/games/games.service';
 import { PrismaService } from 'src/prisma';
 import * as admin from 'firebase-admin';
@@ -393,6 +394,7 @@ describe('SchoolsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SchoolsService,
+        CacheService,
         {
           provide: PrismaService,
           useValue: prismaService,
@@ -405,6 +407,7 @@ describe('SchoolsService', () => {
     }).compile();
 
     service = module.get<SchoolsService>(SchoolsService);
+    module.get(CacheService).clear();
     jest.clearAllMocks();
     restoreSchoolsPrismaMocks(prismaService);
   });

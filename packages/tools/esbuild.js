@@ -1,7 +1,4 @@
 import * as esbuild from 'esbuild';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 try {
 	await esbuild.build({

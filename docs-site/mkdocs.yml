@@ -3,15 +3,11 @@ site_url: https://joaojuniorbr.github.io/etnos
 
 theme:
   name: shadcn
+  show_title: true
   language: pt-BR
-  font:
-    text: IBM Plex Sans
-    code: Fira Code
-  features:
-    - navigation.expand
-    - navigation.sections
-    - search.highlight
-    - search.suggest
+  pygments_style:
+    light: shadcn-light
+    dark: github-dark
 
 plugins:
   - search

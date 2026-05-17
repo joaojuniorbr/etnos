@@ -239,7 +239,7 @@ curl http://localhost:8080/api/metrics
 - Total e taxa de requisições.
 - Métricas da API: p95 por rota, requisições por segundo, erros 5xx, memória e event loop.
 
-O cenário atual aumenta a carga progressivamente até 50 usuários virtuais e valida se o endpoint público mantém status `200` e tempo de resposta adequado.
+O cenário `public-schools` aumenta a carga progressivamente até **100 VUs** no pico (com fase sustentada em 50 VUs) e valida se o endpoint público mantém status `200` e p95 abaixo de 600 ms.
 
 ## Sentry
 

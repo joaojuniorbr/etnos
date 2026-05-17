@@ -108,21 +108,24 @@ vi.mock('antd', () => {
 		/>
 	);
 
+	const Image = ({
+		src,
+		alt,
+	}: {
+		src?: string;
+		alt?: string;
+	}) => <img src={src} alt={alt} />;
+
 	return {
 		Button,
 		Divider: () => <hr />,
+		Image,
 		Input: { OTP: InputOtp },
 		Spin: ({ children }: { children: React.ReactNode }) => (
 			<div>{children}</div>
 		),
 	};
 });
-
-vi.mock('next/image', () => ({
-	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => (
-		<img {...props} />
-	),
-}));
 
 vi.mock('../../components', () => ({
 	FinishGame: (props: unknown) => {

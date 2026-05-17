@@ -1,7 +1,6 @@
 'use client';
 
-import { Button, Divider, Input, Spin } from 'antd';
-import Image from 'next/image';
+import { Button, Divider, Input, Spin, Image } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import {
 	RiCheckDoubleLine,
@@ -381,12 +380,7 @@ export const GuessGameExperience = ({
 
 					{content?.imageUrl ? (
 						<div className="mb-6 flex justify-center">
-							<Image
-								src={content.imageUrl}
-								alt={content.title}
-								width={300}
-								height={300}
-							/>
+							<Image src={content.imageUrl} alt={content.title} />
 						</div>
 					) : null}
 

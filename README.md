@@ -30,13 +30,16 @@ compartilhados.
 - `packages/tools`: hooks, serviços e helpers para apps web.
 - `packages/ui`: biblioteca de componentes e estilos compartilhados.
 - `packages/types`: contratos e entidades compartilhadas.
+- `packages/analytics`: integração Mixpanel (web e mobile).
+- `packages/performance`: testes de carga com k6.
 - `packages/tailwind-config`: estilos e config comum de Tailwind/PostCSS.
 - `packages/typescript-config`: presets de `tsconfig` do monorepo.
 - `packages/eslint-config`: presets de lint reutilizáveis.
 
 ### Docs
 
-- `docs-site`: documentação técnica publicada com MkDocs.
+- `docs-site`: documentação técnica (MkDocs → GitHub Pages).
+- `AGENTS.md`: convenções para agentes (analytics, eventos Mixpanel).
 
 ## Funcionalidades atuais
 
@@ -116,7 +119,7 @@ Endpoints locais principais:
 - `http://localhost:3000`: web
 - `http://localhost:3001`: admin
 - `http://localhost:3002`: student
-- `http://localhost:3333`: api
+- `http://localhost:8080/api`: api (porta padrão NestJS; Swagger em `/docs`)
 - `http://localhost:6006`: Storybook
 
 Mobile:
@@ -142,11 +145,15 @@ yarn check-types
 3. API (`apps/api`) retorna configuração e persiste score/NPS;
 4. `apps/admin` mantém conteúdo, capas e mídias.
 
+## Documentação
+
+- [Documentação técnica (MkDocs)](https://joaojuniorbr.github.io/etnos/) — arquitetura, banco, analytics, performance
+- Local: `cd docs-site && mkdocs serve`
+
 ## Links
 
 - [Swagger](https://api.etnos.online/docs)
 - [Aplicação](https://etnos.online)
-- [Documentação técnica](https://joaojuniorbr.github.io/etnos/)
 - [Storybook](https://691f7645d388cc8aa2a047b6-amyptzoyzk.chromatic.com/)
 - [Sonar Cloud](https://sonarcloud.io/project/overview?id=joaojuniorbr_etnos)
 

@@ -10,6 +10,7 @@ import type {
   UserRole,
 } from '@etnos/types';
 import { PrismaService } from 'src/prisma';
+import { resolveSchoolId } from 'src/schools/school-reference.util';
 
 const VALID_ROLES = new Set<UserRole>([
   'admin',
@@ -28,7 +29,7 @@ export class UsersService {
     email?: string | null;
     parentName?: string | null;
     childName?: string | null;
-    school?: string | null;
+    schoolId?: string | null;
     roles: string[];
     isActive: boolean;
     notificationsEnabled: boolean;
@@ -43,7 +44,7 @@ export class UsersService {
       email: user.email,
       parentName: user.parentName,
       childName: user.childName,
-      school: user.school,
+      school: user.schoolId ?? null,
       schoolName: user.schoolName ?? null,
       roles: user.roles as UserRole[],
       isActive: user.isActive,
@@ -83,7 +84,7 @@ export class UsersService {
       select: {
         id: true,
         firebaseUid: true,
-        school: true,
+        schoolId: true,
         roles: true,
         isActive: true,
         schoolAccesses: {
@@ -104,7 +105,7 @@ export class UsersService {
   ) {
     return Array.from(
       new Set([
-        ...(requester.school ? [requester.school] : []),
+        ...(requester.schoolId ? [requester.schoolId] : []),
         ...requester.schoolAccesses.map((access) => access.schoolId),
       ]),
     );
@@ -119,7 +120,7 @@ export class UsersService {
 
     const users = await this.prismaService.user.findMany({
       where: {
-        ...(filters?.schoolId ? { school: filters.schoolId } : {}),
+        ...(filters?.schoolId ? { schoolId: filters.schoolId } : {}),
         ...(filters?.hasPushToken
           ? { notificationsEnabled: true, pushTokens: { some: {} } }
           : {}),
@@ -160,7 +161,7 @@ export class UsersService {
     });
 
     const schoolIds = Array.from(
-      new Set(users.map((user) => user.school).filter(Boolean)),
+      new Set(users.map((user) => user.schoolId).filter(Boolean)),
     ) as string[];
     const schools = schoolIds.length
       ? await this.prismaService.school.findMany({
@@ -175,8 +176,8 @@ export class UsersService {
     return users.map((user) =>
       this.mapUser({
         ...user,
-        schoolName: user.school
-          ? schoolNameById.get(user.school) ?? null
+        schoolName: user.schoolId
+          ? schoolNameById.get(user.schoolId) ?? null
           : null,
       }),
     );
@@ -211,7 +212,7 @@ export class UsersService {
       }
 
       const managedSchoolIds = this.getManagedSchoolIds(requester);
-      const targetSchool = payload.school ?? target.school;
+      const targetSchool = payload.school ?? target.schoolId;
 
       if (!targetSchool || !managedSchoolIds.includes(targetSchool)) {
         throw new ForbiddenException(
@@ -232,20 +233,27 @@ export class UsersService {
       }
     }
 
+    const schoolId =
+      payload.school === undefined
+        ? undefined
+        : payload.school === null
+          ? null
+          : await resolveSchoolId(this.prismaService, payload.school);
+
     const updated = await this.prismaService.user.update({
       where: { id: userId },
       data: {
         ...(roles ? { roles } : {}),
-        ...(payload.school === undefined ? {} : { school: payload.school }),
+        ...(schoolId === undefined ? {} : { schoolId }),
         ...(payload.isActive === undefined
           ? {}
           : { isActive: payload.isActive }),
       },
     });
 
-    const school = updated.school
+    const school = updated.schoolId
       ? await this.prismaService.school.findUnique({
-          where: { id: updated.school },
+          where: { id: updated.schoolId },
           select: { name: true },
         })
       : null;

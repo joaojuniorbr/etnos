@@ -17,7 +17,7 @@ const createUser = (overrides: Record<string, unknown> = {}) => ({
   childName: 'Aluno',
   childBirthDate: null,
   parentPhone: null,
-  school: 'school-1',
+  schoolId: 'school-1',
   photoURL: null,
   avatarCharacterSlug: null,
   roles: ['student'],
@@ -32,7 +32,7 @@ const createUser = (overrides: Record<string, unknown> = {}) => ({
 const createRequester = (overrides: Record<string, unknown> = {}) => ({
   id: 'requester-1',
   firebaseUid: 'requester-uid',
-  school: 'school-1',
+  schoolId: 'school-1',
   roles: ['admin'],
   isActive: true,
   schoolAccesses: [],
@@ -50,6 +50,7 @@ describe('UsersService', () => {
     school: {
       findMany: jest.Mock;
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
     };
   };
 
@@ -65,6 +66,9 @@ describe('UsersService', () => {
           .fn()
           .mockResolvedValue([{ id: 'school-1', name: 'Escola 1' }]),
         findUnique: jest.fn().mockResolvedValue({ name: 'Escola 1' }),
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ id: 'school-1' }),
       },
     };
 
@@ -87,7 +91,7 @@ describe('UsersService', () => {
 
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
-        school: 'school-1',
+        schoolId: 'school-1',
         OR: [
           { email: { contains: 'ana', mode: 'insensitive' } },
           { parentName: { contains: 'ana', mode: 'insensitive' } },
@@ -130,7 +134,7 @@ describe('UsersService', () => {
 
   it('filtra usuarios com push token ativo', async () => {
     prismaService.user.findMany.mockResolvedValueOnce([
-      createUser({ school: null }),
+      createUser({ schoolId: null }),
     ]);
 
     await service.findAll({ hasPushToken: true });
@@ -150,7 +154,7 @@ describe('UsersService', () => {
 
   it('lista usuarios sem escola vinculada sem consultar escolas', async () => {
     prismaService.user.findMany.mockResolvedValueOnce([
-      createUser({ school: null }),
+      createUser({ schoolId: null }),
     ]);
 
     const result = await service.findAll();
@@ -174,10 +178,11 @@ describe('UsersService', () => {
     prismaService.user.update.mockResolvedValueOnce(
       createUser({
         roles: ['teacher'],
-        school: 'school-2',
+        schoolId: 'school-2',
         isActive: false,
       }),
     );
+    prismaService.school.findFirst.mockResolvedValueOnce({ id: 'school-2' });
     prismaService.school.findUnique.mockResolvedValueOnce({ name: 'Escola 2' });
 
     const result = await service.updateUser('admin-uid', 'user-1', {
@@ -190,7 +195,7 @@ describe('UsersService', () => {
       where: { id: 'user-1' },
       data: {
         roles: ['teacher'],
-        school: 'school-2',
+        schoolId: 'school-2',
         isActive: false,
       },
     });
@@ -198,12 +203,33 @@ describe('UsersService', () => {
     expect(result.schoolName).toBe('Escola 2');
   });
 
+  it('admin remove vinculo de escola quando school for null', async () => {
+    prismaService.user.findUnique
+      .mockResolvedValueOnce(createRequester({ roles: ['admin'] }))
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-1' }));
+    prismaService.user.update.mockResolvedValueOnce(
+      createUser({ schoolId: null }),
+    );
+
+    const result = await service.updateUser('admin-uid', 'user-1', {
+      school: null,
+    });
+
+    expect(prismaService.school.findFirst).not.toHaveBeenCalled();
+    expect(prismaService.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { schoolId: null },
+    });
+    expect(result.school).toBeNull();
+    expect(prismaService.school.findUnique).not.toHaveBeenCalled();
+  });
+
   it('admin atualiza usuario sem alterar campos opcionais e sem escola vinculada', async () => {
     prismaService.user.findUnique
       .mockResolvedValueOnce(createRequester({ roles: ['admin'] }))
-      .mockResolvedValueOnce(createUser({ school: null }));
+      .mockResolvedValueOnce(createUser({ schoolId: null }));
     prismaService.user.update.mockResolvedValueOnce(
-      createUser({ school: null }),
+      createUser({ schoolId: null }),
     );
 
     const result = await service.updateUser('admin-uid', 'user-1', {});
@@ -221,11 +247,12 @@ describe('UsersService', () => {
       .mockResolvedValueOnce(
         createRequester({
           roles: ['school'],
-          school: 'school-1',
+          schoolId: 'school-1',
           schoolAccesses: [{ schoolId: 'school-2' }],
         }),
       )
-      .mockResolvedValueOnce(createUser({ school: 'school-2' }));
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-2' }));
+    prismaService.school.findFirst.mockResolvedValueOnce({ id: 'school-2' });
 
     await service.updateUser('school-uid', 'user-1', {
       roles: ['teacher'],
@@ -236,7 +263,7 @@ describe('UsersService', () => {
       where: { id: 'user-1' },
       data: {
         roles: ['teacher'],
-        school: 'school-2',
+        schoolId: 'school-2',
       },
     });
   });
@@ -246,11 +273,12 @@ describe('UsersService', () => {
       .mockResolvedValueOnce(
         createRequester({
           roles: ['school'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: 'school-2' }],
         }),
       )
-      .mockResolvedValueOnce(createUser({ school: 'school-2' }));
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-2' }));
+    prismaService.school.findFirst.mockResolvedValueOnce({ id: 'school-2' });
 
     await service.updateUser('school-uid', 'user-1', {
       roles: ['teacher'],
@@ -312,9 +340,9 @@ describe('UsersService', () => {
   it('bloqueia school admin sem permissao sobre a escola do usuario', async () => {
     prismaService.user.findUnique
       .mockResolvedValueOnce(
-        createRequester({ roles: ['school'], school: 'school-1' }),
+        createRequester({ roles: ['school'], schoolId: 'school-1' }),
       )
-      .mockResolvedValueOnce(createUser({ school: 'school-3' }));
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-3' }));
 
     await expect(
       service.updateUser('school', 'user-1', { roles: ['teacher'] }),
@@ -333,7 +361,7 @@ describe('UsersService', () => {
 
   it('bloqueia school admin alterando status ou perfis administrativos', async () => {
     prismaService.user.findUnique.mockResolvedValue(
-      createRequester({ roles: ['school'], school: 'school-1' }),
+      createRequester({ roles: ['school'], schoolId: 'school-1' }),
     );
 
     await expect(
@@ -348,9 +376,9 @@ describe('UsersService', () => {
   it('bloqueia school admin promovendo usuário para perfil school', async () => {
     prismaService.user.findUnique
       .mockResolvedValueOnce(
-        createRequester({ roles: ['school'], school: 'school-1' }),
+        createRequester({ roles: ['school'], schoolId: 'school-1' }),
       )
-      .mockResolvedValueOnce(createUser({ school: 'school-1' }));
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-1' }));
 
     await expect(
       service.updateUser('school', 'user-1', { roles: ['school'] }),
@@ -360,9 +388,9 @@ describe('UsersService', () => {
   it('bloqueia school admin alterando status mesmo com escola válida', async () => {
     prismaService.user.findUnique
       .mockResolvedValueOnce(
-        createRequester({ roles: ['school'], school: 'school-1' }),
+        createRequester({ roles: ['school'], schoolId: 'school-1' }),
       )
-      .mockResolvedValueOnce(createUser({ school: 'school-1' }));
+      .mockResolvedValueOnce(createUser({ schoolId: 'school-1' }));
 
     await expect(
       service.updateUser('school', 'user-1', {

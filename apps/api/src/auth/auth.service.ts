@@ -8,7 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { logger } from '@sentry/nestjs';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma';
+import { resolveSchoolId } from 'src/schools/school-reference.util';
 
 @Injectable()
 export class AuthService {
@@ -45,6 +47,7 @@ export class AuthService {
     return this.prismaService.user.findUnique({
       where: { firebaseUid },
       include: {
+        school: true,
         schoolAccesses: {
           include: {
             school: true,
@@ -76,8 +79,8 @@ export class AuthService {
       childName: profile.childName,
       childBirthDate: profile.childBirthDate,
       parentPhone: profile.parentPhone,
-      school: accessSchool?.id ?? profile.school ?? null,
-      schoolName: accessSchool?.name ?? null,
+      school: accessSchool?.id ?? profile.schoolId ?? null,
+      schoolName: accessSchool?.name ?? profile.school?.name ?? null,
       photoURL: profile.photoURL,
       avatarCharacterSlug: profile.avatarCharacterSlug,
       roles: profile.roles,
@@ -158,7 +161,7 @@ export class AuthService {
             childName: null,
             childBirthDate: null,
             parentPhone: null,
-            school: null,
+            schoolId: null,
             photoURL: userRecord.photoURL ?? null,
             avatarCharacterSlug: null,
             roles: ['student'],
@@ -219,6 +222,10 @@ export class AuthService {
         throw new UnauthorizedException('Email já cadastrado');
       }
 
+      const schoolId = data.school
+        ? await resolveSchoolId(this.prismaService, data.school)
+        : null;
+
       await this.prismaService.user.create({
         data: {
           firebaseUid: userRecord.uid,
@@ -227,7 +234,7 @@ export class AuthService {
           childName: data.childName ?? null,
           childBirthDate: data.childBirthDate ?? null,
           parentPhone: data.parentPhone ?? null,
-          school: data.school ?? null,
+          schoolId,
           photoURL: null,
           avatarCharacterSlug: null,
           roles: ['student'],
@@ -361,11 +368,28 @@ export class AuthService {
       Object.entries(data).filter(([key]) =>
         this.profileAllowedFields.has(key),
       ),
-    );
+    ) as Record<string, unknown>;
+
+    const { school: schoolRef, schoolName: _schoolName, ...profileData } =
+      safeData;
+    const updateData: Prisma.UserUpdateInput = {
+      ...(profileData as Prisma.UserUpdateInput),
+    };
+
+    if (schoolRef !== undefined) {
+      const resolvedSchoolId =
+        schoolRef === null || schoolRef === ''
+          ? null
+          : await resolveSchoolId(this.prismaService, String(schoolRef));
+
+      updateData.school = resolvedSchoolId
+        ? { connect: { id: resolvedSchoolId } }
+        : { disconnect: true };
+    }
 
     await this.prismaService.user.update({
       where: { firebaseUid: id },
-      data: safeData,
+      data: updateData,
     });
 
     this.profileCache.delete(id);

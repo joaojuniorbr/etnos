@@ -16,12 +16,31 @@ import { RegisterPushTokenDto } from './dto/register-push-token.dto';
 import { UnregisterPushTokenDto } from './dto/unregister-push-token.dto';
 import { CountNotificationRecipientsDto } from './dto/count-notification-recipients.dto';
 
+type ResolvedNotificationTokens = {
+  tokens: string[];
+  schoolName?: string | null;
+};
+
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly expoPushService: ExpoPushService,
   ) {}
+
+  private buildSchoolUserWhere(schoolId: string) {
+    return {
+      notificationsEnabled: true,
+      schoolId,
+    };
+  }
+
+  private async findSchoolForNotifications(schoolId: string) {
+    return this.prismaService.school.findUnique({
+      where: { id: schoolId },
+      select: { id: true, code: true, name: true },
+    });
+  }
 
   async registerPushToken(firebaseUid: string, dto: RegisterPushTokenDto) {
     const user = await this.prismaService.user.findUnique({
@@ -84,7 +103,7 @@ export class NotificationsService {
       userId: dto.userId ?? undefined,
     });
 
-    const tokens = await this.resolveTokens(dto);
+    const { tokens, schoolName } = await this.resolveTokens(dto);
 
     logger.info('notifications.send.tokens_resolved', {
       targetType: dto.targetType,
@@ -125,22 +144,13 @@ export class NotificationsService {
       throw error;
     }
 
-    let schoolName: string | null = null;
-    if (dto.schoolId) {
-      const school = await this.prismaService.school.findUnique({
-        where: { id: dto.schoolId },
-        select: { name: true },
-      });
-      schoolName = school?.name ?? null;
-    }
-
     await this.prismaService.notificationLog.create({
       data: {
         title: dto.title,
         message: dto.message,
         targetType: dto.targetType,
         schoolId: dto.schoolId ?? null,
-        schoolName,
+        schoolName: schoolName ?? null,
         sentBy: sender.id,
         sentByEmail: sender.email ?? null,
         tokenCount: successCount,
@@ -175,7 +185,7 @@ export class NotificationsService {
   private async findSenderOrFail(firebaseUid: string) {
     const sender = await this.prismaService.user.findUnique({
       where: { firebaseUid },
-      select: { id: true, email: true, roles: true, school: true },
+      select: { id: true, email: true, roles: true, schoolId: true },
     });
 
     if (!sender) {
@@ -247,13 +257,13 @@ export class NotificationsService {
 
   private async resolveTokens(
     dto: SendNotificationWithDeeplinkDto,
-  ): Promise<string[]> {
+  ): Promise<ResolvedNotificationTokens> {
     if (dto.targetType === NotificationTargetType.GLOBAL) {
       const tokens = await this.prismaService.userPushToken.findMany({
         where: { user: { notificationsEnabled: true } },
         select: { token: true },
       });
-      return tokens.map((t) => t.token);
+      return { tokens: tokens.map((t) => t.token) };
     }
 
     if (dto.targetType === NotificationTargetType.INDIVIDUAL && dto.userId) {
@@ -264,40 +274,28 @@ export class NotificationsService {
         },
         select: { token: true },
       });
-      return tokens.map((t) => t.token);
+      return { tokens: tokens.map((t) => t.token) };
     }
 
     if (dto.targetType === NotificationTargetType.SCHOOL && dto.schoolId) {
-      const school = await this.prismaService.school.findUnique({
-        where: { id: dto.schoolId },
-        select: { id: true, code: true },
-      });
+      const school = await this.findSchoolForNotifications(dto.schoolId);
 
-      if (!school) return [];
+      if (!school) {
+        return { tokens: [], schoolName: null };
+      }
 
-      const users = await this.prismaService.user.findMany({
-        where: {
-          OR: [
-            { school: school.id },
-            ...(school.code ? [{ school: school.code }] : []),
-          ],
-          notificationsEnabled: true,
-        },
-        select: { id: true },
-      });
-
-      if (!users.length) return [];
-
-      const userIds = users.map((u) => u.id);
       const tokens = await this.prismaService.userPushToken.findMany({
-        where: { userId: { in: userIds } },
+        where: { user: this.buildSchoolUserWhere(school.id) },
         select: { token: true },
       });
 
-      return tokens.map((t) => t.token);
+      return {
+        tokens: tokens.map((t) => t.token),
+        schoolName: school.name,
+      };
     }
 
-    return [];
+    return { tokens: [] };
   }
 
   private async resolveRecipientUserCount(
@@ -324,20 +322,14 @@ export class NotificationsService {
     }
 
     if (dto.targetType === NotificationTargetType.SCHOOL && dto.schoolId) {
-      const school = await this.prismaService.school.findUnique({
-        where: { id: dto.schoolId },
-        select: { id: true, code: true },
-      });
+      const school = await this.findSchoolForNotifications(dto.schoolId);
 
       if (!school) return 0;
 
       return this.prismaService.user.count({
         where: {
           ...enabledWithToken,
-          OR: [
-            { school: school.id },
-            ...(school.code ? [{ school: school.code }] : []),
-          ],
+          ...this.buildSchoolUserWhere(school.id),
         },
       });
     }
@@ -348,7 +340,11 @@ export class NotificationsService {
   async getHistory(firebaseUid: string) {
     const user = await this.prismaService.user.findUnique({
       where: { firebaseUid },
-      select: { id: true, roles: true },
+      select: {
+        id: true,
+        roles: true,
+        schoolAccesses: { select: { schoolId: true } },
+      },
     });
 
     if (!user) throw new NotFoundException('Usuário não encontrado.');
@@ -362,12 +358,7 @@ export class NotificationsService {
       });
     }
 
-    const accesses = await this.prismaService.schoolAccess.findMany({
-      where: { userId: user.id },
-      select: { schoolId: true },
-    });
-
-    const schoolIds = accesses.map((a) => a.schoolId);
+    const schoolIds = user.schoolAccesses.map((access) => access.schoolId);
 
     return this.prismaService.notificationLog.findMany({
       where: { schoolId: { in: schoolIds } },

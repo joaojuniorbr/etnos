@@ -263,13 +263,11 @@ describe('NotificationsService', () => {
       school: null,
     });
     prismaService.schoolAccess.findFirst.mockResolvedValue({ id: 'access-1' });
-    prismaService.school.findUnique
-      .mockResolvedValueOnce({ id: 'school-1', code: 'ESCOLA' })
-      .mockResolvedValueOnce({ name: 'Escola Teste' });
-    prismaService.user.findMany.mockResolvedValue([
-      { id: 'student-1' },
-      { id: 'student-2' },
-    ]);
+    prismaService.school.findUnique.mockResolvedValueOnce({
+      id: 'school-1',
+      code: 'ESCOLA',
+      name: 'Escola Teste',
+    });
     prismaService.userPushToken.findMany.mockResolvedValue([
       { token: 'ExponentPushToken[1]' },
       { token: 'ExponentPushToken[2]' },
@@ -454,7 +452,7 @@ describe('NotificationsService', () => {
       where: {
         notificationsEnabled: true,
         pushTokens: { some: {} },
-        OR: [{ school: 'school-1' }, { school: 'ESCOLA' }],
+        schoolId: 'school-1',
       },
     });
   });
@@ -502,7 +500,7 @@ describe('NotificationsService', () => {
       where: {
         notificationsEnabled: true,
         pushTokens: { some: {} },
-        OR: [{ school: 'school-1' }],
+        schoolId: 'school-1',
       },
     });
   });
@@ -599,16 +597,14 @@ describe('NotificationsService', () => {
     prismaService.user.findUnique.mockResolvedValue({
       id: 'user-1',
       roles: ['school'],
+      schoolAccesses: [{ schoolId: 'school-1' }, { schoolId: 'school-2' }],
     });
-    prismaService.schoolAccess.findMany.mockResolvedValue([
-      { schoolId: 'school-1' },
-      { schoolId: 'school-2' },
-    ]);
     prismaService.notificationLog.findMany.mockResolvedValue([{ id: 'log-1' }]);
 
     await expect(service.getHistory('firebase-1')).resolves.toEqual([
       { id: 'log-1' },
     ]);
+    expect(prismaService.schoolAccess.findMany).not.toHaveBeenCalled();
     expect(prismaService.notificationLog.findMany).toHaveBeenCalledWith({
       where: { schoolId: { in: ['school-1', 'school-2'] } },
       orderBy: { sentAt: 'desc' },
@@ -747,10 +743,12 @@ describe('NotificationsService', () => {
       roles: ['admin'],
       school: null,
     });
-    prismaService.school.findUnique
-      .mockResolvedValueOnce({ id: 'school-1', code: 'ESCOLA' })
-      .mockResolvedValueOnce({ name: 'Escola Teste' });
-    prismaService.user.findMany.mockResolvedValue([]);
+    prismaService.school.findUnique.mockResolvedValueOnce({
+      id: 'school-1',
+      code: 'ESCOLA',
+      name: 'Escola Teste',
+    });
+    prismaService.userPushToken.findMany.mockResolvedValue([]);
     expoPushService.sendToTokens.mockResolvedValue(0);
 
     const result = await service.send('firebase-admin', {
@@ -767,13 +765,13 @@ describe('NotificationsService', () => {
       'Mensagem',
       undefined,
     );
-    expect(prismaService.userPushToken.findMany).not.toHaveBeenCalled();
+    expect(prismaService.userPushToken.findMany).toHaveBeenCalled();
   });
 
   it('retorna lista vazia para alvo não reconhecido ao resolver tokens', async () => {
     await expect(
       (service as any).resolveTokens({ targetType: 'UNKNOWN' }),
-    ).resolves.toEqual([]);
+    ).resolves.toEqual({ tokens: [] });
   });
 
   it('retorna zero para alvo não reconhecido ao contar destinatários', async () => {
@@ -790,13 +788,11 @@ describe('NotificationsService', () => {
       school: null,
     });
     prismaService.schoolAccess.findFirst.mockResolvedValue({ id: 'access-1' });
-    prismaService.school.findUnique
-      .mockResolvedValueOnce({ id: 'school-1', code: null })
-      .mockResolvedValueOnce({ name: 'Escola Teste' });
-    prismaService.user.findMany.mockResolvedValue([
-      { id: 'student-1' },
-      { id: 'student-2' },
-    ]);
+    prismaService.school.findUnique.mockResolvedValueOnce({
+      id: 'school-1',
+      code: null,
+      name: 'Escola Teste',
+    });
     prismaService.userPushToken.findMany.mockResolvedValue([
       { token: 'ExponentPushToken[1]' },
       { token: 'ExponentPushToken[2]' },
@@ -810,12 +806,14 @@ describe('NotificationsService', () => {
       schoolId: 'school-1',
     });
 
-    expect(prismaService.user.findMany).toHaveBeenCalledWith({
+    expect(prismaService.userPushToken.findMany).toHaveBeenCalledWith({
       where: {
-        OR: [{ school: 'school-1' }],
-        notificationsEnabled: true,
+        user: {
+          notificationsEnabled: true,
+          schoolId: 'school-1',
+        },
       },
-      select: { id: true },
+      select: { token: true },
     });
     expect(result).toEqual({ ok: true, sent: 2 });
   });

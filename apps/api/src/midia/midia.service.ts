@@ -4,9 +4,37 @@ import type { MidiaInterface } from '@etnos/types';
 import { PrismaService } from 'src/prisma';
 const SIGNED_URL_EXPIRES = '03-01-2500';
 
+const UPLOAD_CONCURRENCY_LIMIT = 3;
+
 @Injectable()
 export class MidiaService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private async mapWithConcurrency<T, R>(
+    items: T[],
+    limit: number,
+    mapper: (item: T, index: number) => Promise<R>,
+  ): Promise<R[]> {
+    if (!items.length) {
+      return [];
+    }
+
+    const results = new Array<R>(items.length);
+    let nextIndex = 0;
+    const workerCount = Math.min(limit, items.length);
+
+    await Promise.all(
+      Array.from({ length: workerCount }, async () => {
+        while (nextIndex < items.length) {
+          const currentIndex = nextIndex;
+          nextIndex += 1;
+          results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+        }
+      }),
+    );
+
+    return results;
+  }
 
   getPathFromUrl(url: string): string {
     const decodedUrl = decodeURIComponent(url);
@@ -53,11 +81,9 @@ export class MidiaService {
   }
 
   async uploadMultipleImages(files: any[], folder: string, userId: string) {
-    const uploadPromises = files.map((file) =>
+    return this.mapWithConcurrency(files, UPLOAD_CONCURRENCY_LIMIT, (file) =>
       this.uploadImage(file, folder, userId),
     );
-
-    return Promise.all(uploadPromises);
   }
 
   async getMidia(
@@ -165,20 +191,21 @@ export class MidiaService {
   }
 
   async getFolders(userId?: string) {
-    const docs = await this.prismaService.midia.findMany({
-      where: userId ? { userId } : {},
-      select: { folder: true },
+    const grouped = await this.prismaService.midia.groupBy({
+      by: ['folder'],
+      where: {
+        ...(userId ? { userId } : {}),
+        folder: { not: null },
+      },
+      _count: { _all: true },
     });
 
-    const folders = new Map<string, number>();
-
-    docs.forEach((doc) => {
-      if (!doc.folder) return;
-      folders.set(doc.folder, (folders.get(doc.folder) ?? 0) + 1);
-    });
-
-    return Array.from(folders.entries())
-      .map(([folder, count]) => ({ folder, count }))
+    return grouped
+      .filter((row) => row.folder)
+      .map((row) => ({
+        folder: row.folder as string,
+        count: row._count._all,
+      }))
       .sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));
   }
 }

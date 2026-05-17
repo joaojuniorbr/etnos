@@ -16,7 +16,7 @@ model User {
   childName            String?         @map("child_name") @db.VarChar(255)
   childBirthDate       String?         @map("child_birth_date") @db.VarChar(50)
   parentPhone          String?         @map("parent_phone") @db.VarChar(50)
-  school               String?         @db.VarChar(255)
+  schoolId             String?         @map("school_id")
   photoURL             String?         @map("photo_url")
   avatarCharacterSlug  String?         @map("avatar_character_slug") @db.VarChar(255)
   roles                String[]        @default(["student"])
@@ -24,10 +24,11 @@ model User {
   notificationsEnabled Boolean         @default(true) @map("notifications_enabled")
   createdAt            DateTime        @default(now()) @map("created_at")
   updatedAt            DateTime        @updatedAt @map("updated_at")
+  school               School?         @relation(fields: [schoolId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   schoolAccesses       SchoolAccess[]
   pushTokens           UserPushToken[]
 
-  @@index([school], map: "users_school_idx")
+  @@index([schoolId], map: "users_school_id_idx")
   @@index([notificationsEnabled], map: "users_notifications_enabled_idx")
   @@map("users")
 }
@@ -43,6 +44,7 @@ model School {
   userAccesses      SchoolAccess[]
   enabledGames      SchoolEnabledGame[]
   enabledCharacters SchoolEnabledCharacter[]
+  users             User[]
 
   @@map("schools")
 }

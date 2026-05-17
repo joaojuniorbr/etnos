@@ -118,7 +118,7 @@ describe('GamesService', () => {
     user: {
       findUnique: jest
         .fn()
-        .mockResolvedValue({ school: 'school-1', roles: ['student'] }),
+        .mockResolvedValue({ schoolId: 'school-1', roles: ['student'] }),
     },
     character: {
       findMany: jest
@@ -190,6 +190,17 @@ describe('GamesService', () => {
     service = module.get<GamesService>(GamesService);
     prismaService = module.get(PrismaService);
     jest.clearAllMocks();
+    prismaService.user.findUnique.mockResolvedValue({
+      schoolId: 'school-1',
+      roles: ['student'],
+    });
+    prismaService.character.findMany.mockResolvedValue([
+      { slug: 'anita' },
+      { slug: 'joao-silva' },
+      { slug: 'maria' },
+    ]);
+    prismaService.schoolEnabledGame.findMany.mockResolvedValue([]);
+    prismaService.schoolEnabledCharacter.findMany.mockResolvedValue([]);
   });
 
   it('deve listar jogos', async () => {
@@ -303,6 +314,31 @@ describe('GamesService', () => {
         idCharacter: 'c1',
       },
     ]);
+  });
+
+  it('reutiliza cache de acesso por escola e de personagens', async () => {
+    prismaService.memoryGameContent.findMany.mockResolvedValue([
+      { id: '1', slug: 'anita', url: 'imagem-1', characterId: 'char-1' },
+    ]);
+
+    await service.getMemoryGameImages('anita', 'user-123');
+    await service.getMemoryGameImages('anita', 'user-123');
+
+    expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledTimes(1);
+    expect(prismaService.schoolEnabledCharacter.findMany).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(prismaService.character.findMany).toHaveBeenCalledTimes(1);
+
+    prismaService.user.findUnique.mockResolvedValueOnce({
+      schoolId: 'school-2',
+      roles: ['student'],
+    });
+
+    await service.getMemoryGameImages('anita', 'user-456');
+
+    expect(prismaService.character.findMany).toHaveBeenCalledTimes(1);
+    expect(prismaService.schoolEnabledGame.findMany).toHaveBeenCalledTimes(2);
   });
 
   it('bloqueia acesso a conteúdo não habilitado para a escola do usuário', async () => {
@@ -676,7 +712,7 @@ describe('GamesService', () => {
         firebaseUid: 'user-123',
       },
       select: {
-        school: true,
+        schoolId: true,
         roles: true,
       },
     });
@@ -695,11 +731,7 @@ describe('GamesService', () => {
   it('deve salvar histórico sem escola quando o usuário não estiver vinculado', async () => {
     const scoreData = makeScoreData({ score: 90 });
 
-    prismaService.user.findUnique.mockResolvedValueOnce({
-      school: null,
-      roles: ['student'],
-    });
-    prismaService.user.findUnique.mockResolvedValueOnce({
+    prismaService.user.findUnique.mockResolvedValue({
       school: null,
       roles: ['student'],
     });
@@ -773,11 +805,7 @@ describe('GamesService', () => {
   });
 
   it('deve registrar NPS sem escola quando o usuário não for encontrado', async () => {
-    prismaService.user.findUnique.mockResolvedValueOnce({
-      school: 'school-1',
-      roles: ['student'],
-    });
-    prismaService.user.findUnique.mockResolvedValueOnce(null);
+    prismaService.user.findUnique.mockResolvedValue(null);
     prismaService.gameNpsResponse.create.mockResolvedValueOnce({ id: 'nps-4' });
 
     await service.saveGameNps({

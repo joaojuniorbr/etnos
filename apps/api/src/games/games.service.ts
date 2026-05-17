@@ -18,8 +18,24 @@ const GAME_SLUG = {
   GUESS_GAME: 'guess-game',
 } as const;
 
+type GameAccessContext = {
+  schoolId: string | null;
+};
+
 @Injectable()
 export class GamesService {
+  private readonly gameAccessCacheTtlMs = 30_000;
+  private readonly gameAccessCache = new Map<
+    string,
+    {
+      expiresAt: number;
+      enabledGameSlugs: string[];
+      enabledCharacterSlugs: string[];
+    }
+  >();
+  private characterSlugsCache: { expiresAt: number; slugs: string[] } | null =
+    null;
+
   constructor(private readonly prismaService: PrismaService) {}
 
   private isMissingGuessGameContentTable(error: unknown) {
@@ -40,7 +56,7 @@ export class GamesService {
         firebaseUid: userId,
       },
       select: {
-        school: true,
+        schoolId: true,
         roles: true,
       },
     });
@@ -48,43 +64,76 @@ export class GamesService {
     return user ?? null;
   }
 
+  private async getAllCharacterSlugs() {
+    if (
+      this.characterSlugsCache &&
+      this.characterSlugsCache.expiresAt > Date.now()
+    ) {
+      return this.characterSlugsCache.slugs;
+    }
+
+    const characters = await this.prismaService.character.findMany({
+      select: { slug: true },
+    });
+    const slugs = characters.map((character) => character.slug);
+
+    this.characterSlugsCache = {
+      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
+      slugs,
+    };
+
+    return slugs;
+  }
+
   private async getEnabledGameAccessForSchool(schoolId: string) {
-    const [enabledGames, enabledCharacters, allCharacters] = await Promise.all([
-      this.prismaService.schoolEnabledGame.findMany({
-        where: { schoolId },
-        select: { gameSlug: true },
-      }),
-      this.prismaService.schoolEnabledCharacter.findMany({
+    const cached = this.gameAccessCache.get(schoolId);
+
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached;
+    }
+
+    const enabledGames = await this.prismaService.schoolEnabledGame.findMany({
+      where: { schoolId },
+      select: { gameSlug: true },
+    });
+    const enabledCharacters =
+      await this.prismaService.schoolEnabledCharacter.findMany({
         where: { schoolId },
         select: { characterSlug: true },
-      }),
-      this.prismaService.character.findMany({
-        select: { slug: true },
-      }),
-    ]);
+      });
+    const allCharacterSlugs = await this.getAllCharacterSlugs();
 
-    return {
+    const access = {
       enabledGameSlugs: enabledGames.length
         ? enabledGames.map((game) => game.gameSlug)
         : [...GAME_SLUGS],
       enabledCharacterSlugs: enabledCharacters.length
         ? enabledCharacters.map((character) => character.characterSlug)
-        : allCharacters.map((character) => character.slug),
+        : allCharacterSlugs,
     };
+
+    this.gameAccessCache.set(schoolId, {
+      expiresAt: Date.now() + this.gameAccessCacheTtlMs,
+      ...access,
+    });
+
+    return access;
   }
 
   private async assertUserCanAccessGameContent(
     userId: string,
     gameSlug: string,
     characterSlug: string,
-  ) {
+  ): Promise<GameAccessContext> {
     const user = await this.getUserSchoolId(userId);
 
-    if (!user?.school || user.roles?.includes('admin')) {
-      return;
+    if (!user?.schoolId || user.roles?.includes('admin')) {
+      return { schoolId: user?.schoolId ?? null };
     }
 
-    const enabledAccess = await this.getEnabledGameAccessForSchool(user.school);
+    const enabledAccess = await this.getEnabledGameAccessForSchool(
+      user.schoolId,
+    );
 
     if (
       !enabledAccess.enabledGameSlugs.includes(gameSlug) ||
@@ -94,6 +143,8 @@ export class GamesService {
         'Este jogo ou personagem nao esta habilitado para a escola do usuario.',
       );
     }
+
+    return { schoolId: user.schoolId };
   }
 
   private async abandonInProgressSessions(userId: string) {
@@ -443,14 +494,11 @@ export class GamesService {
     phase?: 'start' | 'end';
     sessionId?: string;
   }) {
-    await this.assertUserCanAccessGameContent(
+    const { schoolId } = await this.assertUserCanAccessGameContent(
       data.userId,
       data.slug,
       data.characterSlug,
     );
-
-    const userRow = await this.getUserSchoolId(data.userId);
-    const schoolId = userRow?.school ?? null;
 
     if (data.phase === 'start') {
       await this.abandonInProgressSessions(data.userId);
@@ -574,22 +622,26 @@ export class GamesService {
     });
   }
 
-  getScoreGame(data: { slug: string; characterSlug: string; userId: string }) {
-    return this.assertUserCanAccessGameContent(
+  async getScoreGame(data: {
+    slug: string;
+    characterSlug: string;
+    userId: string;
+  }) {
+    await this.assertUserCanAccessGameContent(
       data.userId,
       data.slug,
       data.characterSlug,
-    ).then(() =>
-      this.prismaService.gameScore.findUnique({
-        where: {
-          slug_characterSlug_userId: {
-            slug: data.slug,
-            characterSlug: data.characterSlug,
-            userId: data.userId,
-          },
+    );
+
+    return this.prismaService.gameScore.findUnique({
+      where: {
+        slug_characterSlug_userId: {
+          slug: data.slug,
+          characterSlug: data.characterSlug,
+          userId: data.userId,
         },
-      }),
-    ) as Promise<ScoreInterface | null>;
+      },
+    }) as Promise<ScoreInterface | null>;
   }
 
   async saveGameNps(data: {
@@ -599,14 +651,11 @@ export class GamesService {
     comment?: string | null;
     userId: string;
   }) {
-    await this.assertUserCanAccessGameContent(
+    const { schoolId } = await this.assertUserCanAccessGameContent(
       data.userId,
       data.slug,
       data.characterSlug,
     );
-
-    const userRow = await this.getUserSchoolId(data.userId);
-    const schoolId = userRow?.school ?? null;
     const comment =
       typeof data.comment === 'string' && data.comment.trim().length > 0
         ? data.comment.trim()

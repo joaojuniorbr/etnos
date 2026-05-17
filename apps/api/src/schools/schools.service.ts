@@ -36,6 +36,9 @@ export class SchoolsService {
     string,
     { expiresAt: number; data: SchoolGameAccessInterface }
   >();
+  private readonly characterSlugsCacheTtlMs = 60_000;
+  private characterSlugsCache: { expiresAt: number; slugs: string[] } | null =
+    null;
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -78,41 +81,37 @@ export class SchoolsService {
       ...(characterSlug ? { characterSlug } : {}),
     };
 
-    const [users, scores] = await Promise.all([
-      this.prismaService.user.findMany({
-        where: {
-          school: schoolId,
-        },
-        select: {
-          id: true,
-          firebaseUid: true,
-          email: true,
-          parentName: true,
-          childName: true,
-          school: true,
-        },
-      }),
-      this.prismaService.gameScore.findMany({
-        where: Object.keys(scoreWhere).length ? scoreWhere : undefined,
-        select: {
-          userId: true,
-          score: true,
-        },
-      }),
-    ]);
+    const users = await this.prismaService.user.findMany({
+      where: {
+        schoolId,
+      },
+      select: {
+        id: true,
+        firebaseUid: true,
+        email: true,
+        parentName: true,
+        childName: true,
+        schoolId: true,
+      },
+    });
 
-    const userMap = new Map(
-      users.map((schoolUser) => [
-        schoolUser.firebaseUid,
-        {
-          userId: schoolUser.id,
-          uid: schoolUser.firebaseUid,
-          email: schoolUser.email,
-          parentName: schoolUser.parentName,
-          childName: schoolUser.childName,
-          school: schoolUser.school,
-        },
-      ]),
+    const schoolFirebaseUids = users.map((schoolUser) => schoolUser.firebaseUid);
+
+    const scoreAggregates = schoolFirebaseUids.length
+      ? await this.prismaService.gameScore.groupBy({
+          by: ['userId'],
+          where: {
+            userId: { in: schoolFirebaseUids },
+            ...scoreWhere,
+          },
+          _sum: {
+            score: true,
+          },
+        })
+      : [];
+
+    const totalScoreByUid = new Map(
+      scoreAggregates.map((row) => [row.userId, row._sum.score ?? 0]),
     );
 
     const rankingMap = new Map<string, UserRankingInterface>();
@@ -125,26 +124,10 @@ export class SchoolsService {
         email: schoolUser.email,
         parentName: schoolUser.parentName,
         childName: schoolUser.childName,
-        school: schoolUser.school,
+        school: schoolUser.schoolId,
         gameSlug: gameSlug ?? null,
-        totalScore: 0,
+        totalScore: totalScoreByUid.get(schoolUser.firebaseUid) ?? 0,
       });
-    });
-
-    scores.forEach((score) => {
-      const rankingUser = userMap.get(score.userId);
-
-      if (!rankingUser) {
-        return;
-      }
-
-      const currentRanking = rankingMap.get(rankingUser.uid);
-
-      if (!currentRanking) {
-        return;
-      }
-
-      currentRanking.totalScore += score.score;
     });
 
     return Array.from(rankingMap.values())
@@ -164,16 +147,16 @@ export class SchoolsService {
   }
 
   private mapSchoolUser(
-    schoolUser: Pick<
-      SchoolUserInterface,
-      | 'id'
-      | 'email'
-      | 'parentName'
-      | 'childName'
-      | 'school'
-      | 'roles'
-      | 'updatedAt'
-    > & { firebaseUid?: string | null },
+    schoolUser: {
+      id: string;
+      firebaseUid?: string | null;
+      email: string | null;
+      parentName: string | null;
+      childName: string | null;
+      schoolId: string | null;
+      roles: string[];
+      updatedAt: Date;
+    },
   ): SchoolUserInterface {
     return {
       id: schoolUser.id,
@@ -181,7 +164,7 @@ export class SchoolsService {
       email: schoolUser.email,
       parentName: schoolUser.parentName,
       childName: schoolUser.childName,
-      school: schoolUser.school,
+      school: schoolUser.schoolId,
       roles: schoolUser.roles,
       updatedAt: schoolUser.updatedAt,
     };
@@ -194,7 +177,7 @@ export class SchoolsService {
         id: true,
         firebaseUid: true,
         email: true,
-        school: true,
+        schoolId: true,
         roles: true,
         schoolAccesses: {
           select: {
@@ -219,8 +202,8 @@ export class SchoolsService {
         ...profile.schoolAccesses.map((access) => access.schoolId),
         ...((profile.roles.includes('school') ||
           profile.roles.includes('teacher')) &&
-        profile.school
-          ? [profile.school]
+        profile.schoolId
+          ? [profile.schoolId]
           : []),
       ]),
     );
@@ -270,6 +253,13 @@ export class SchoolsService {
   }
 
   private async getAvailableCharacterSlugs() {
+    if (
+      this.characterSlugsCache &&
+      this.characterSlugsCache.expiresAt > Date.now()
+    ) {
+      return this.characterSlugsCache.slugs;
+    }
+
     const characters = await this.prismaService.character.findMany({
       select: {
         slug: true,
@@ -279,7 +269,13 @@ export class SchoolsService {
       },
     });
 
-    return characters.map((character) => character.slug);
+    const slugs = characters.map((character) => character.slug);
+    this.characterSlugsCache = {
+      expiresAt: Date.now() + this.characterSlugsCacheTtlMs,
+      slugs,
+    };
+
+    return slugs;
   }
 
   private normalizeUniqueValues(values: string[]) {
@@ -305,20 +301,18 @@ export class SchoolsService {
       return cached.data;
     }
 
-    const [enabledGames, enabledCharacters, availableCharacterSlugs] =
-      await Promise.all([
-        this.prismaService.schoolEnabledGame.findMany({
-          where: { schoolId },
-          select: { gameSlug: true },
-          orderBy: { gameSlug: 'asc' },
-        }),
-        this.prismaService.schoolEnabledCharacter.findMany({
-          where: { schoolId },
-          select: { characterSlug: true },
-          orderBy: { characterSlug: 'asc' },
-        }),
-        this.getAvailableCharacterSlugs(),
-      ]);
+    const enabledGames = await this.prismaService.schoolEnabledGame.findMany({
+      where: { schoolId },
+      select: { gameSlug: true },
+      orderBy: { gameSlug: 'asc' },
+    });
+    const enabledCharacters =
+      await this.prismaService.schoolEnabledCharacter.findMany({
+        where: { schoolId },
+        select: { characterSlug: true },
+        orderBy: { characterSlug: 'asc' },
+      });
+    const availableCharacterSlugs = await this.getAvailableCharacterSlugs();
 
     const availableGameSlugs = this.getAvailableGameSlugs();
     const hasCustomGames = enabledGames.length > 0;
@@ -491,7 +485,7 @@ export class SchoolsService {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: firebaseUser.photoURL ?? null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -608,14 +602,14 @@ export class SchoolsService {
   async getMySchool(firebaseUid: string): Promise<SchoolInterface> {
     const user = await this.getAuthenticatedProfile(firebaseUid);
 
-    if (!user.school) {
+    if (!user.schoolId) {
       throw new ForbiddenException(
         'O perfil autenticado nao possui escola vinculada.',
       );
     }
 
     const school = await this.prismaService.school.findUnique({
-      where: { id: user.school },
+      where: { id: user.schoolId },
     });
 
     if (!school) {
@@ -631,7 +625,7 @@ export class SchoolsService {
   ): Promise<SchoolUserInterface[]> {
     const user = await this.getAuthenticatedProfile(firebaseUid);
 
-    if (!user.school) {
+    if (!user.schoolId) {
       throw new ForbiddenException(
         'O perfil autenticado nao possui escola vinculada.',
       );
@@ -642,7 +636,7 @@ export class SchoolsService {
     return this.prismaService.user
       .findMany({
         where: {
-          school: user.school,
+          schoolId: user.schoolId,
           ...(normalizedSearch
             ? {
                 OR: [
@@ -679,7 +673,7 @@ export class SchoolsService {
           email: true,
           parentName: true,
           childName: true,
-          school: true,
+          schoolId: true,
           roles: true,
           updatedAt: true,
         },
@@ -720,12 +714,12 @@ export class SchoolsService {
 
     const profile = await this.getAuthenticatedProfile(firebaseUid);
 
-    if (profile.school) {
-      await this.ensureSchoolExists(profile.school);
+    if (profile.schoolId) {
+      await this.ensureSchoolExists(profile.schoolId);
     }
 
-    const gameAccess = profile.school
-      ? await this.buildSchoolGameAccess(profile.school, profile.roles)
+    const gameAccess = profile.schoolId
+      ? await this.buildSchoolGameAccess(profile.schoolId, profile.roles)
       : await this.buildSchoolGameAccess('', profile.roles);
 
     this.myGameAccessCache.set(firebaseUid, {
@@ -815,7 +809,7 @@ export class SchoolsService {
     return this.prismaService.user
       .findMany({
         where: {
-          school: schoolId,
+          schoolId,
           ...(normalizedSearch
             ? {
                 OR: [
@@ -852,7 +846,7 @@ export class SchoolsService {
           email: true,
           parentName: true,
           childName: true,
-          school: true,
+          schoolId: true,
           roles: true,
           updatedAt: true,
         },
@@ -872,7 +866,7 @@ export class SchoolsService {
     const student = await this.prismaService.user.findFirst({
       where: {
         firebaseUid: studentFirebaseUid,
-        school: schoolId,
+        schoolId,
       },
       select: { id: true },
     });
@@ -888,38 +882,39 @@ export class SchoolsService {
   }
 
   async getSchoolRanking(gameSlug?: string): Promise<SchoolRankingInterface[]> {
-    const [schools, users, scores] = await Promise.all([
-      this.prismaService.school.findMany({
-        orderBy: { name: 'asc' },
-      }),
-      this.prismaService.user.findMany({
-        where: {
-          school: {
-            not: null,
+    const schools = await this.prismaService.school.findMany({
+      orderBy: { name: 'asc' },
+    });
+    const users = await this.prismaService.user.findMany({
+      where: {
+        schoolId: {
+          not: null,
+        },
+      },
+      select: {
+        firebaseUid: true,
+        schoolId: true,
+      },
+    });
+
+    const userFirebaseUids = users.map((user) => user.firebaseUid);
+    const scoreAggregates = userFirebaseUids.length
+      ? await this.prismaService.gameScore.groupBy({
+          by: ['userId'],
+          where: {
+            userId: { in: userFirebaseUids },
+            ...(gameSlug ? { slug: gameSlug } : {}),
           },
-        },
-        select: {
-          firebaseUid: true,
-          school: true,
-        },
-      }),
-      this.prismaService.gameScore.findMany({
-        where: gameSlug
-          ? {
-              slug: gameSlug,
-            }
-          : undefined,
-        select: {
-          userId: true,
-          score: true,
-        },
-      }),
-    ]);
+          _sum: {
+            score: true,
+          },
+        })
+      : [];
 
     const schoolByUserId = new Map(
       users
-        .filter((user) => !!user.school)
-        .map((user) => [user.firebaseUid, user.school]),
+        .filter((user) => !!user.schoolId)
+        .map((user) => [user.firebaseUid, user.schoolId as string]),
     );
 
     const rankingMap = new Map<
@@ -939,21 +934,21 @@ export class SchoolsService {
       });
     });
 
-    scores.forEach((score) => {
-      const schoolId = schoolByUserId.get(score.userId);
+    scoreAggregates.forEach((row) => {
+      const resolvedSchoolId = schoolByUserId.get(row.userId);
 
-      if (!schoolId) {
+      if (!resolvedSchoolId) {
         return;
       }
 
-      const schoolRanking = rankingMap.get(schoolId);
+      const schoolRanking = rankingMap.get(resolvedSchoolId);
 
       if (!schoolRanking) {
         return;
       }
 
-      schoolRanking.totalScore += score.score;
-      schoolRanking.playerIds.add(score.userId);
+      schoolRanking.totalScore += row._sum.score ?? 0;
+      schoolRanking.playerIds.add(row.userId);
     });
 
     return Array.from(rankingMap.values())
@@ -1005,8 +1000,9 @@ export class SchoolsService {
 
     if (schoolId) {
       await this.ensureSchoolExists(schoolId);
+
       const schoolUsers = await this.prismaService.user.findMany({
-        where: { school: schoolId },
+        where: { schoolId },
         select: { firebaseUid: true },
       });
       schoolUserUids = schoolUsers.map((user) => user.firebaseUid);
@@ -1053,7 +1049,7 @@ export class SchoolsService {
         email: true,
         parentName: true,
         childName: true,
-        school: true,
+        schoolId: true,
       },
     });
 
@@ -1066,7 +1062,7 @@ export class SchoolsService {
     const schoolIds = [
       ...new Set(
         users
-          .map((user) => user.school)
+          .map((user) => user.schoolId)
           .filter(
             (id): id is string => typeof id === 'string' && id.length > 0,
           ),
@@ -1093,8 +1089,8 @@ export class SchoolsService {
         continue;
       }
 
-      const schoolName: string | null = user.school
-        ? schoolNameById.get(user.school) ?? null
+      const schoolName: string | null = user.schoolId
+        ? schoolNameById.get(user.schoolId) ?? null
         : null;
 
       rows.push({
@@ -1104,7 +1100,7 @@ export class SchoolsService {
         email: user.email,
         parentName: user.parentName,
         childName: user.childName,
-        school: user.school,
+        school: user.schoolId,
         schoolName,
         gameSlug,
         totalScore: row.totalScore,
@@ -1160,9 +1156,13 @@ export class SchoolsService {
       },
     });
 
-    const characters = await this.prismaService.character.findMany({
-      select: { slug: true, name: true },
-    });
+    const characterSlugs = grouped.map((row) => row.characterSlug);
+    const characters = characterSlugs.length
+      ? await this.prismaService.character.findMany({
+          where: { slug: { in: characterSlugs } },
+          select: { slug: true, name: true },
+        })
+      : [];
     const nameBySlug = new Map(
       characters.map((character) => [character.slug, character.name]),
     );
@@ -1312,13 +1312,17 @@ export class SchoolsService {
   ): Promise<UserRankingInterface[]> {
     const user = await this.getAuthenticatedProfile(firebaseUid);
 
-    if (!user.school) {
+    if (!user.schoolId) {
       throw new ForbiddenException(
         'O perfil autenticado nao possui escola vinculada.',
       );
     }
 
-    return this.getUserRankingBySchoolId(user.school, gameSlug, characterSlug);
+    return this.getUserRankingBySchoolId(
+      user.schoolId,
+      gameSlug,
+      characterSlug,
+    );
   }
 
   async getUserRankingBySchoolForViewer(
@@ -1348,7 +1352,7 @@ export class SchoolsService {
             email: true,
             parentName: true,
             childName: true,
-            school: true,
+            schoolId: true,
             roles: true,
             updatedAt: true,
           },
@@ -1386,7 +1390,7 @@ export class SchoolsService {
       email: user.email,
       parentName: user.parentName,
       childName: user.childName,
-      school: user.school,
+      schoolId: user.schoolId,
       roles: user.roles,
       updatedAt: user.updatedAt,
     });

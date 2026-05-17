@@ -31,6 +31,9 @@ describe('AuthService', () => {
       create: jest.Mock;
       update: jest.Mock;
     };
+    school: {
+      findFirst: jest.Mock;
+    };
   };
 
   const mockPrismaService = {
@@ -38,6 +41,9 @@ describe('AuthService', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+    },
+    school: {
+      findFirst: jest.fn(),
     },
   };
 
@@ -197,6 +203,7 @@ describe('AuthService', () => {
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { firebaseUid: 'user-123' },
         include: {
+          school: true,
           schoolAccesses: {
             include: {
               school: true,
@@ -240,7 +247,8 @@ describe('AuthService', () => {
         childName: 'Lia',
         childBirthDate: null,
         parentPhone: null,
-        school: 'school-col-1',
+        schoolId: 'school-col-1',
+        school: { id: 'school-col-1', name: 'Escola Coluna' },
         photoURL: null,
         avatarCharacterSlug: null,
         notificationsEnabled: true,
@@ -254,7 +262,7 @@ describe('AuthService', () => {
       const result = await service.getProfile('user-456');
 
       expect(result?.school).toBe('school-col-1');
-      expect(result?.schoolName).toBeNull();
+      expect(result?.schoolName).toBe('Escola Coluna');
     });
 
     it('deve retornar null quando perfil não existir', async () => {
@@ -527,6 +535,97 @@ describe('AuthService', () => {
         service.updateProfile('user-missing', { parentName: 'Teste' }),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('deve desvincular escola quando school for null ou vazio', async () => {
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({ id: 'db-user-id', firebaseUid: 'user-123' })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          schoolId: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
+          roles: ['student'],
+          schoolAccesses: [],
+          pushTokens: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({});
+
+      await service.updateProfile('user-123', { school: null });
+
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { school: { disconnect: true } },
+      });
+      expect(prismaService.school.findFirst).not.toHaveBeenCalled();
+
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({ id: 'db-user-id', firebaseUid: 'user-123' })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          schoolId: null,
+          photoURL: null,
+          avatarCharacterSlug: null,
+          roles: ['student'],
+          schoolAccesses: [],
+          pushTokens: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({});
+
+      await service.updateProfile('user-123', { school: '' });
+
+      expect(prismaService.user.update).toHaveBeenLastCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { school: { disconnect: true } },
+      });
+    });
+
+    it('deve vincular escola quando school for informado', async () => {
+      prismaService.school.findFirst.mockResolvedValueOnce({ id: 'school-1' });
+      prismaService.user.findUnique
+        .mockResolvedValueOnce({ id: 'db-user-id', firebaseUid: 'user-123' })
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'user-123',
+          email: TEST_EMAIL,
+          parentName: 'Nome',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          schoolId: 'school-1',
+          photoURL: null,
+          avatarCharacterSlug: null,
+          roles: ['student'],
+          schoolAccesses: [],
+          pushTokens: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      prismaService.user.update.mockResolvedValueOnce({});
+
+      await service.updateProfile('user-123', { school: 'IFPR' });
+
+      expect(prismaService.school.findFirst).toHaveBeenCalled();
+      expect(prismaService.user.update).toHaveBeenCalledWith({
+        where: { firebaseUid: 'user-123' },
+        data: { school: { connect: { id: 'school-1' } } },
+      });
+    });
   });
 
   describe('registerWithEmailAndPassword', () => {
@@ -570,6 +669,48 @@ describe('AuthService', () => {
         }),
       });
       expect(result.idToken).toBe('id-token');
+    });
+
+    it('deve resolver escola no cadastro quando school for informado', async () => {
+      prismaService.school.findFirst.mockResolvedValueOnce({ id: 'school-1' });
+      mockedAxios.post.mockResolvedValueOnce({
+        data: {
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+          expiresIn: '3600',
+          localId: 'new-user-id',
+        },
+      });
+      prismaService.user.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 'db-user-id',
+          firebaseUid: 'new-user-id',
+          email: 'new@email.com',
+          parentName: 'Pai',
+          childName: null,
+          childBirthDate: null,
+          parentPhone: null,
+          schoolId: 'school-1',
+          roles: ['student'],
+          schoolAccesses: [],
+          pushTokens: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      await service.registerWithEmailAndPassword({
+        email: 'new@email.com',
+        password: TEST_PASSWORD,
+        school: 'IFPR',
+      });
+
+      expect(prismaService.school.findFirst).toHaveBeenCalled();
+      expect(prismaService.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          schoolId: 'school-1',
+        }),
+      });
     });
 
     it('deve criar perfil quando usuário já existe no firebase auth', async () => {
@@ -708,7 +849,7 @@ describe('AuthService', () => {
           childName: null,
           childBirthDate: null,
           parentPhone: null,
-          school: null,
+          schoolId: null,
           photoURL: null,
           avatarCharacterSlug: null,
           roles: ['student'],
@@ -764,7 +905,7 @@ describe('AuthService', () => {
           childName: null,
           childBirthDate: null,
           parentPhone: null,
-          school: null,
+          schoolId: null,
           photoURL: null,
           avatarCharacterSlug: null,
           roles: ['student'],

@@ -17,6 +17,7 @@ describe('MidiaService', () => {
       create: jest.Mock;
       delete: jest.Mock;
       deleteMany: jest.Mock;
+      groupBy: jest.Mock;
     };
   };
 
@@ -28,6 +29,7 @@ describe('MidiaService', () => {
       create: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
+      groupBy: jest.fn(),
     },
   };
 
@@ -398,15 +400,21 @@ describe('MidiaService', () => {
   });
 
   it('deve montar pastas com contagem ordenada e ignorar sem pasta', async () => {
-    mockPrismaService.midia.findMany.mockResolvedValue([
-      { folder: 'B' },
-      { folder: 'A' },
-      { folder: 'B' },
-      { folder: null },
+    mockPrismaService.midia.groupBy.mockResolvedValue([
+      { folder: 'B', _count: { _all: 2 } },
+      { folder: 'A', _count: { _all: 1 } },
     ]);
 
     const result = await service.getFolders('user-1');
 
+    expect(prismaService.midia.groupBy).toHaveBeenCalledWith({
+      by: ['folder'],
+      where: {
+        userId: 'user-1',
+        folder: { not: null },
+      },
+      _count: { _all: true },
+    });
     expect(result).toEqual([
       { folder: 'A', count: 1 },
       { folder: 'B', count: 2 },
@@ -414,13 +422,18 @@ describe('MidiaService', () => {
   });
 
   it('deve listar pastas sem filtrar por usuário no modo admin', async () => {
-    mockPrismaService.midia.findMany.mockResolvedValue([{ folder: 'games' }]);
+    mockPrismaService.midia.groupBy.mockResolvedValue([
+      { folder: 'games', _count: { _all: 1 } },
+    ]);
 
     const result = await service.getFolders();
 
-    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
-      where: {},
-      select: { folder: true },
+    expect(prismaService.midia.groupBy).toHaveBeenCalledWith({
+      by: ['folder'],
+      where: {
+        folder: { not: null },
+      },
+      _count: { _all: true },
     });
     expect(result).toEqual([{ folder: 'games', count: 1 }]);
   });

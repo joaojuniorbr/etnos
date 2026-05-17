@@ -21,7 +21,7 @@ const schoolUserSelect = {
   email: true,
   parentName: true,
   childName: true,
-  school: true,
+  schoolId: true,
 };
 
 const schoolUsersListSelect = {
@@ -58,7 +58,7 @@ const createAuthenticatedProfile = (
     id: string;
     firebaseUid: string;
     email?: string | null;
-    school: string | null;
+    schoolId: string | null;
     roles: string[];
     schoolAccesses: Array<{ schoolId: string }>;
   }>,
@@ -66,7 +66,7 @@ const createAuthenticatedProfile = (
   id: 'user-1',
   firebaseUid: 'firebase-user-1',
   email: 'school@test.com',
-  school: '1',
+  schoolId: '1',
   roles: ['school'],
   schoolAccesses: [],
   ...overrides,
@@ -79,7 +79,7 @@ const createUserEntity = (
     childName?: string | null;
     parentName?: string | null;
     email?: string | null;
-    school?: string | null;
+    schoolId?: string | null;
     roles?: string[];
     updatedAt?: Date;
   }>,
@@ -89,7 +89,7 @@ const createUserEntity = (
   childName: 'Aluno 1',
   parentName: 'Responsavel 1',
   email: 'aluno1@test.com',
-  school: '1',
+  schoolId: '1',
   roles: ['student'],
   updatedAt: new Date('2026-03-01T00:00:00.000Z'),
   ...overrides,
@@ -99,6 +99,21 @@ const createUserScore = (userId: string, score: number) => ({
   userId,
   score,
 });
+
+const aggregateScoresByUser = (
+  scores: ReturnType<typeof createUserScore>[],
+) => {
+  const totals = new Map<string, number>();
+
+  scores.forEach(({ userId, score }) => {
+    totals.set(userId, (totals.get(userId) ?? 0) + score);
+  });
+
+  return Array.from(totals.entries()).map(([userId, total]) => ({
+    userId,
+    _sum: { score: total },
+  }));
+};
 
 const createUserRanking = (
   overrides?: Partial<{
@@ -184,7 +199,7 @@ const createSchoolsServiceMocks = (defaultSchool = createSchool()) => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: data.roles ?? ['school'],
@@ -236,6 +251,35 @@ const createSchoolsServiceMocks = (defaultSchool = createSchool()) => {
   return mocks;
 };
 
+const restoreSchoolsPrismaMocks = (
+  prismaService: ReturnType<typeof createSchoolsServiceMocks>,
+) => {
+  prismaService.school.findMany.mockResolvedValue([createSchool()]);
+  prismaService.school.findUnique.mockResolvedValue(createSchool());
+  prismaService.school.findFirst.mockResolvedValue(null);
+  prismaService.user.findUnique.mockResolvedValue(createAuthenticatedProfile());
+  prismaService.user.findFirst.mockResolvedValue(null);
+  prismaService.user.findMany.mockResolvedValue([
+    createUserEntity(),
+    createUserEntity({
+      id: undefined,
+      childName: undefined,
+      parentName: undefined,
+      email: undefined,
+      roles: undefined,
+      updatedAt: undefined,
+    }),
+  ]);
+  prismaService.character.findMany.mockResolvedValue([
+    { slug: 'anita', name: 'Anita' },
+    { slug: 'iara', name: 'Iara' },
+  ]);
+  prismaService.gameScore.findMany.mockResolvedValue([
+    createUserScore('firebase-user-1', 80),
+  ]);
+  prismaService.gameScore.groupBy.mockResolvedValue([]);
+};
+
 describe('SchoolsService', () => {
   let service: SchoolsService;
   let prismaService: ReturnType<typeof createSchoolsServiceMocks>;
@@ -254,7 +298,7 @@ describe('SchoolsService', () => {
         id: true,
         firebaseUid: true,
         email: true,
-        school: true,
+        schoolId: true,
         roles: true,
         schoolAccesses: {
           select: {
@@ -268,7 +312,7 @@ describe('SchoolsService', () => {
   const expectSchoolUsersLookup = (search?: string) => {
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
-        school: '1',
+        schoolId: '1',
         ...(search
           ? {
               OR: [
@@ -311,13 +355,17 @@ describe('SchoolsService', () => {
 
     expect(prismaService.user.findMany).toHaveBeenCalledWith({
       where: {
-        school: schoolId,
+        schoolId,
       },
       select: schoolUserSelect,
     });
-    expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
-      where: Object.keys(scoreWhere).length ? scoreWhere : undefined,
-      select: { userId: true, score: true },
+    expect(prismaService.gameScore.groupBy).toHaveBeenCalledWith({
+      by: ['userId'],
+      where: expect.objectContaining({
+        userId: { in: expect.any(Array) },
+        ...scoreWhere,
+      }),
+      _sum: { score: true },
     });
   };
 
@@ -326,7 +374,9 @@ describe('SchoolsService', () => {
     scores: ReturnType<typeof createUserScore>[],
   ) => {
     prismaService.user.findMany.mockResolvedValueOnce(users);
-    prismaService.gameScore.findMany.mockResolvedValueOnce(scores);
+    prismaService.gameScore.groupBy.mockResolvedValueOnce(
+      aggregateScoresByUser(scores),
+    );
   };
 
   beforeEach(async () => {
@@ -356,6 +406,7 @@ describe('SchoolsService', () => {
 
     service = module.get<SchoolsService>(SchoolsService);
     jest.clearAllMocks();
+    restoreSchoolsPrismaMocks(prismaService);
   });
 
   describe('CRUD basico', () => {
@@ -513,7 +564,7 @@ describe('SchoolsService', () => {
     it('retorna acesso padrão quando o perfil não possui escola vinculada', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: null,
+          schoolId: null,
           roles: ['teacher'],
         }),
       );
@@ -529,7 +580,7 @@ describe('SchoolsService', () => {
     it('retorna acesso da escola vinculada no meu perfil quando a escola existe', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: '1',
+          schoolId: '1',
           roles: ['school'],
         }),
       );
@@ -745,19 +796,19 @@ describe('SchoolsService', () => {
       ],
       [
         'perfil autenticado sem escola',
-        createAuthenticatedProfile({ school: null }),
+        createAuthenticatedProfile({ schoolId: null }),
         ForbiddenException,
         'getMySchool',
       ],
       [
         'perfil sem escola ao listar usuarios',
-        createAuthenticatedProfile({ school: null }),
+        createAuthenticatedProfile({ schoolId: null }),
         ForbiddenException,
         'getUsersFromMySchool',
       ],
       [
         'perfil sem escola ao montar ranking de usuarios',
-        createAuthenticatedProfile({ school: null }),
+        createAuthenticatedProfile({ schoolId: null }),
         ForbiddenException,
         'getUserRankingFromMySchool',
       ],
@@ -827,7 +878,7 @@ describe('SchoolsService', () => {
     it('lista escolas gerenciadas pelo perfil school usando school principal e acessos extras', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: '1',
+          schoolId: '1',
           schoolAccesses: [{ schoolId: '2' }, { schoolId: '1' }],
         }),
       );
@@ -859,7 +910,7 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['teacher'],
-          school: '1',
+          schoolId: '1',
           schoolAccesses: [],
         }),
       );
@@ -884,7 +935,7 @@ describe('SchoolsService', () => {
     it('retorna lista vazia quando o perfil nao possui escolas gerenciadas', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: null,
+          schoolId: null,
           schoolAccesses: [],
         }),
       );
@@ -898,7 +949,7 @@ describe('SchoolsService', () => {
     it('lista usuarios de uma escola acessivel para perfil school', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: '2' }],
         }),
       );
@@ -906,7 +957,7 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'user-2',
           firebaseUid: 'firebase-user-2',
-          school: '2',
+          schoolId: '2',
           roles: ['student'],
         }),
       ]);
@@ -931,7 +982,7 @@ describe('SchoolsService', () => {
       ]);
       expect(prismaService.user.findMany).toHaveBeenCalledWith({
         where: {
-          school: '2',
+          schoolId: '2',
           OR: [
             {
               childName: {
@@ -961,7 +1012,7 @@ describe('SchoolsService', () => {
     it('mapeia uid vazio quando usuario listado nao tiver firebaseUid', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: '2' }],
         }),
       );
@@ -969,7 +1020,7 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'user-without-firebase',
           firebaseUid: undefined,
-          school: '2',
+          schoolId: '2',
         }),
       ]);
 
@@ -993,7 +1044,7 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['admin'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [],
         }),
       );
@@ -1001,7 +1052,7 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'admin-user-view',
           firebaseUid: 'firebase-user-2',
-          school: '2',
+          schoolId: '2',
         }),
       ]);
 
@@ -1025,7 +1076,7 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['student'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [],
         }),
       );
@@ -1039,7 +1090,7 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['school'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: '3' }],
         }),
       );
@@ -1053,7 +1104,7 @@ describe('SchoolsService', () => {
   describe('Histórico de partidas do aluno (gestor)', () => {
     it('delega ao GamesService quando o aluno existe na escola', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
-        createAuthenticatedProfile({ roles: ['admin'], school: null }),
+        createAuthenticatedProfile({ roles: ['admin'], schoolId: null }),
       );
       prismaService.user.findFirst.mockResolvedValueOnce({
         id: 'student-row-id',
@@ -1081,7 +1132,7 @@ describe('SchoolsService', () => {
       expect(prismaService.user.findFirst).toHaveBeenCalledWith({
         where: {
           firebaseUid: 'student-firebase',
-          school: '1',
+          schoolId: '1',
         },
         select: { id: true },
       });
@@ -1094,7 +1145,7 @@ describe('SchoolsService', () => {
 
     it('lança NotFound quando o aluno não pertence à escola', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
-        createAuthenticatedProfile({ roles: ['admin'], school: null }),
+        createAuthenticatedProfile({ roles: ['admin'], schoolId: null }),
       );
       prismaService.user.findFirst.mockResolvedValueOnce(null);
 
@@ -1119,8 +1170,8 @@ describe('SchoolsService', () => {
           createSchool({ id: '2', name: 'Outra Escola' }),
         ],
         users: [
-          { firebaseUid: 'firebase-user-1', school: '1' },
-          { firebaseUid: 'firebase-user-2', school: '2' },
+          { firebaseUid: 'firebase-user-1', schoolId: '1' },
+          { firebaseUid: 'firebase-user-2', schoolId: '2' },
         ],
         scores: [
           createUserScore('firebase-user-1', 80),
@@ -1148,9 +1199,9 @@ describe('SchoolsService', () => {
           createSchool({ id: '3', name: 'Gama' }),
         ],
         users: [
-          { firebaseUid: 'user-1', school: '1' },
-          { firebaseUid: 'user-2', school: '2' },
-          { firebaseUid: 'user-3', school: '4' },
+          { firebaseUid: 'user-1', schoolId: '1' },
+          { firebaseUid: 'user-2', schoolId: '2' },
+          { firebaseUid: 'user-3', schoolId: '4' },
         ],
         scores: [
           createUserScore('user-1', 50),
@@ -1190,9 +1241,9 @@ describe('SchoolsService', () => {
           createSchool({ id: '2', name: 'Escola B' }),
         ],
         users: [
-          { firebaseUid: 'user-1', school: '1' },
-          { firebaseUid: 'user-2', school: '1' },
-          { firebaseUid: 'user-3', school: '2' },
+          { firebaseUid: 'user-1', schoolId: '1' },
+          { firebaseUid: 'user-2', schoolId: '1' },
+          { firebaseUid: 'user-3', schoolId: '2' },
         ],
         scores: [
           createUserScore('user-1', 20),
@@ -1220,15 +1271,69 @@ describe('SchoolsService', () => {
     ])('$name', async ({ schools, users, scores, gameSlug, expected }) => {
       prismaService.school.findMany.mockResolvedValueOnce(schools);
       prismaService.user.findMany.mockResolvedValueOnce(users);
-      prismaService.gameScore.findMany.mockResolvedValueOnce(scores);
+      prismaService.gameScore.groupBy.mockResolvedValueOnce(
+        aggregateScoresByUser(scores),
+      );
 
       await expect(service.getSchoolRanking(gameSlug)).resolves.toEqual(
         expected,
       );
-      expect(prismaService.gameScore.findMany).toHaveBeenCalledWith({
-        where: gameSlug ? { slug: gameSlug } : undefined,
-        select: { userId: true, score: true },
+      expect(prismaService.gameScore.groupBy).toHaveBeenCalledWith({
+        by: ['userId'],
+        where: {
+          userId: { in: users.map((user) => user.firebaseUid) },
+          ...(gameSlug ? { slug: gameSlug } : {}),
+        },
+        _sum: { score: true },
       });
+    });
+
+    it('nao consulta scores quando nao houver usuarios com escola', async () => {
+      prismaService.school.findMany.mockResolvedValueOnce([createSchool()]);
+      prismaService.user.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getSchoolRanking();
+
+      expect(prismaService.gameScore.groupBy).not.toHaveBeenCalled();
+      expect(result).toEqual([
+        createSchoolRanking({
+          totalScore: 0,
+          totalPlayers: 0,
+          averageScore: 0,
+        }),
+      ]);
+    });
+
+    it('ignora scores de usuarios sem escola cadastrada no ranking', async () => {
+      prismaService.school.findMany.mockResolvedValueOnce([createSchool()]);
+      prismaService.user.findMany.mockResolvedValueOnce([
+        { firebaseUid: 'orphan-user', schoolId: 'escola-inexistente' },
+      ]);
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'orphan-user', _sum: { score: 40 } },
+      ]);
+
+      const result = await service.getSchoolRanking();
+
+      expect(result[0]).toMatchObject({
+        schoolId: '1',
+        totalScore: 0,
+        totalPlayers: 0,
+      });
+    });
+
+    it('trata soma de score nula como zero no ranking por escola', async () => {
+      prismaService.school.findMany.mockResolvedValueOnce([createSchool()]);
+      prismaService.user.findMany.mockResolvedValueOnce([
+        { firebaseUid: 'user-1', schoolId: '1' },
+      ]);
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'user-1', _sum: { score: null } },
+      ]);
+
+      const result = await service.getSchoolRanking();
+
+      expect(result[0].totalScore).toBe(0);
     });
   });
 
@@ -1442,27 +1547,17 @@ describe('SchoolsService', () => {
     });
 
     it('cobre retorno quando o ranking interno nao encontra usuario atual', async () => {
-      const originalMapGet = Map.prototype.get;
-      const mapGetSpy = jest.spyOn(Map.prototype, 'get');
-      let shouldDropCurrentRanking = false;
-
-      mapGetSpy.mockImplementation(function (this: Map<unknown, unknown>, key) {
-        if (this.size === 1 && key === 'firebase-user-1') {
-          const originalResult = Reflect.apply(originalMapGet, this, [key]);
-
-          if (!shouldDropCurrentRanking) {
-            shouldDropCurrentRanking = true;
-            return originalResult;
-          }
-
-          return undefined;
-        }
-
-        return Reflect.apply(originalMapGet, this, [key]);
-      });
-
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ schoolId: '1' }),
+      );
       mockUserRankingInputs(
-        [createUserEntity({ childName: 'Ana', email: 'ana@test.com' })],
+        [
+          createUserEntity({
+            firebaseUid: 'ana-uid',
+            childName: 'Ana',
+            email: 'ana@test.com',
+          }),
+        ],
         [createUserScore('firebase-user-1', 40)],
       );
 
@@ -1470,20 +1565,55 @@ describe('SchoolsService', () => {
         service.getUserRankingFromMySchool('firebase-user-1'),
       ).resolves.toEqual([
         createUserRanking({
+          uid: 'ana-uid',
           email: 'ana@test.com',
           childName: 'Ana',
           totalScore: 0,
         }),
       ]);
+    });
 
-      mapGetSpy.mockRestore();
+    it('retorna ranking vazio quando escola nao possui alunos', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ roles: ['admin'], schoolId: null }),
+      );
+      prismaService.school.findUnique.mockResolvedValueOnce({ id: '1' });
+      prismaService.user.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getUserRankingBySchoolForViewer(
+        'firebase-user-1',
+        '1',
+      );
+
+      expect(result).toEqual([]);
+      expect(prismaService.gameScore.groupBy).not.toHaveBeenCalled();
+    });
+
+    it('trata soma de score nula como zero no ranking por usuario', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({ roles: ['admin'], schoolId: null }),
+      );
+      prismaService.school.findUnique.mockResolvedValueOnce({ id: '1' });
+      prismaService.user.findMany.mockResolvedValueOnce([
+        createUserEntity({ firebaseUid: 'firebase-user-1' }),
+      ]);
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'firebase-user-1', _sum: { score: null } },
+      ]);
+
+      const result = await service.getUserRankingBySchoolForViewer(
+        'firebase-user-1',
+        '1',
+      );
+
+      expect(result[0].totalScore).toBe(0);
     });
 
     it('retorna ranking por usuario de escola especifica para admin', async () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['school'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: '1' }],
         }),
       );
@@ -1522,7 +1652,7 @@ describe('SchoolsService', () => {
       prismaService.user.findUnique.mockResolvedValueOnce(
         createAuthenticatedProfile({
           roles: ['school'],
-          school: null,
+          schoolId: null,
           schoolAccesses: [{ schoolId: 'missing-school' }],
         }),
       );
@@ -1548,7 +1678,7 @@ describe('SchoolsService', () => {
             email: 'escola@test.com',
             parentName: 'Maria',
             childName: null,
-            school: null,
+            schoolId: null,
             roles: ['school'],
             updatedAt: new Date('2026-03-01T00:00:00.000Z'),
           },
@@ -1570,7 +1700,7 @@ describe('SchoolsService', () => {
               email: true,
               parentName: true,
               childName: true,
-              school: true,
+              schoolId: true,
               roles: true,
               updatedAt: true,
             },
@@ -1603,7 +1733,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['student'],
@@ -1617,7 +1747,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['student', 'school'],
@@ -1678,7 +1808,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1701,7 +1831,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['student', 'admin'],
@@ -1722,7 +1852,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: undefined,
@@ -1736,7 +1866,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1769,7 +1899,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: 'https://image.test/user.png',
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1792,7 +1922,7 @@ describe('SchoolsService', () => {
           childName: null,
           childBirthDate: null,
           parentPhone: null,
-          school: null,
+          schoolId: null,
           photoURL: 'https://image.test/user.png',
           avatarCharacterSlug: null,
           roles: ['school'],
@@ -1819,7 +1949,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1850,7 +1980,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['student'],
@@ -1864,7 +1994,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['student', 'school'],
@@ -1896,7 +2026,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1910,7 +2040,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1942,7 +2072,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: undefined,
@@ -1956,7 +2086,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -1988,7 +2118,7 @@ describe('SchoolsService', () => {
         childName: null,
         childBirthDate: null,
         parentPhone: null,
-        school: null,
+        schoolId: null,
         photoURL: null,
         avatarCharacterSlug: null,
         roles: ['school'],
@@ -2340,12 +2470,12 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'u1',
           firebaseUid: 'firebase-a',
-          school: '1',
+          schoolId: '1',
         }),
         createUserEntity({
           id: 'u2',
           firebaseUid: 'firebase-b',
-          school: '2',
+          schoolId: '2',
           childName: 'Aluno B',
         }),
       ]);
@@ -2431,7 +2561,7 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'u1',
           firebaseUid: 'firebase-a',
-          school: null,
+          schoolId: null,
         }),
       ]);
 
@@ -2457,7 +2587,7 @@ describe('SchoolsService', () => {
         createUserEntity({
           id: 'u1',
           firebaseUid: 'firebase-a',
-          school: 'missing-school',
+          schoolId: 'missing-school',
         }),
       ]);
       prismaService.school.findMany.mockResolvedValueOnce([]);

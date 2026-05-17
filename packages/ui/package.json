@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@ant-design/icons": "^6.1.0",
+		"@etnos/analytics": "*",
 		"@etnos/services": "*",
 		"@etnos/types": "*",
 		"@etnos/tools": "*",

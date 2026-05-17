@@ -7,6 +7,10 @@ import {
 	Screen,
 	SectionCard,
 } from '@/components';
+import {
+	trackGameFinishedNative,
+	trackGameSessionCompletedNative,
+} from '@etnos/analytics/native';
 import { useAuth, useCharacterSelection } from '@/contexts';
 import {
 	charactersService,
@@ -89,6 +93,18 @@ export default function MemoryGamePage() {
 				bestScore={bestScore}
 				character={selectedCharacter}
 				content={memoryContentQuery.data ?? []}
+				onGameFinished={async ({ score }) => {
+					if (!selectedCharacterSlug) {
+						return;
+					}
+
+					await trackGameFinishedNative({
+						game_slug: GamesEnum.MEMORY_GAME,
+						character_slug: selectedCharacterSlug,
+						score,
+						outcome: 'won',
+					});
+				}}
 				onSaveBestScore={async (score) => {
 					if (!user?.uid || !selectedCharacterSlug) {
 						return;
@@ -129,6 +145,12 @@ export default function MemoryGamePage() {
 						score,
 						user.uid,
 					);
+
+					await trackGameSessionCompletedNative({
+						game_slug: GamesEnum.MEMORY_GAME,
+						character_slug: selectedCharacterSlug,
+						score,
+					});
 				}}
 			/>
 		</Screen>

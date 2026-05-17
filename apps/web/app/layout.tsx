@@ -11,5 +11,9 @@ export const metadata: Metadata = {
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
-	return <AppProviders showDevtools>{children}</AppProviders>;
+	return (
+		<AppProviders appName="web" showDevtools>
+			{children}
+		</AppProviders>
+	);
 }

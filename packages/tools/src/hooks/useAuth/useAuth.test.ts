@@ -29,6 +29,13 @@ const {
 const { updateAuthActivityMock } = vi.hoisted(() => ({
 	updateAuthActivityMock: vi.fn(),
 }));
+const {
+	trackSignUpCompletedMock,
+	trackPasswordRecoveryRequestedMock,
+} = vi.hoisted(() => ({
+	trackSignUpCompletedMock: vi.fn(),
+	trackPasswordRecoveryRequestedMock: vi.fn(),
+}));
 
 const storageState: Record<string, string> = {};
 
@@ -77,6 +84,17 @@ vi.mock('antd', () => ({
 		success: vi.fn(),
 		error: vi.fn(),
 	},
+}));
+
+vi.mock('@etnos/analytics/web', () => ({
+	syncMixpanelUser: vi.fn(),
+	resetMixpanelUser: vi.fn(),
+	trackSignUpCompleted: trackSignUpCompletedMock,
+	trackPasswordRecoveryRequested: trackPasswordRecoveryRequestedMock,
+}));
+
+vi.mock('@etnos/analytics', () => ({
+	getEmailDomain: vi.fn((email: string) => email.split('@')[1]),
 }));
 
 const renderUseAuth = () =>
@@ -376,6 +394,9 @@ describe('useAuth', () => {
 		expect(mockApiPost).toHaveBeenCalledWith('/auth/recovery', {
 			email: 'test@test.com',
 		});
+		expect(trackPasswordRecoveryRequestedMock).toHaveBeenCalledWith({
+			email_domain: 'test.com',
+		});
 		expect(message.success).toHaveBeenCalledWith(
 			'E-mail de recuperação enviado!',
 		);
@@ -531,7 +552,30 @@ describe('useAuth', () => {
 		});
 		expect(localStorage.getItem('etnos_auth_token')).toBe('register-token');
 		expect(user).toEqual(createdUser);
+		expect(trackSignUpCompletedMock).toHaveBeenCalledWith(createdUser, 'email');
 		expect(result.current.isLoading).toBe(false);
+	});
+
+	it('não dispara trackSignUpCompleted quando registro não retorna usuário', async () => {
+		const password = randomPassword();
+		mockApiPost.mockResolvedValueOnce({
+			data: {
+				idToken: 'register-token',
+				user: null,
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		await act(async () => {
+			await result.current.onRegister({
+				parentEmail: 'new@test.com',
+				password,
+				school: 'Escola',
+			});
+		});
+
+		expect(trackSignUpCompletedMock).not.toHaveBeenCalled();
 	});
 
 	it('trata erro no onRegister', async () => {

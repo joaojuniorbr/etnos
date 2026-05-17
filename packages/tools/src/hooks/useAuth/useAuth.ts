@@ -12,6 +12,13 @@ import {
 } from '@etnos/services';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
+import { getEmailDomain } from '@etnos/analytics';
+import {
+	resetMixpanelUser,
+	syncMixpanelUser,
+	trackPasswordRecoveryRequested,
+	trackSignUpCompleted,
+} from '@etnos/analytics/web';
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -129,6 +136,12 @@ export const useAuth = () => {
 		};
 	}, [user]);
 
+	useEffect(() => {
+		if (user) {
+			syncMixpanelUser(user);
+		}
+	}, [user]);
+
 	const onSignInWithEmailAndPassword = async (
 		email: string,
 		password: string,
@@ -178,6 +191,10 @@ export const useAuth = () => {
 
 			void queryClient.invalidateQueries({ queryKey: userQueryKey });
 
+			if (user) {
+				syncMixpanelUser(user);
+			}
+
 			return user;
 		} catch {
 			message.error('Login com Google indisponível no momento.');
@@ -192,6 +209,7 @@ export const useAuth = () => {
 		try {
 			clearStoredAuthSession();
 			queryClient.setQueryData(userQueryKey, null);
+			resetMixpanelUser();
 			message.success('Desconectado com sucesso!');
 		} catch (error) {
 			message.error(errorMessage(error));
@@ -204,6 +222,9 @@ export const useAuth = () => {
 		setIsLoading(true);
 		try {
 			await api.post('/auth/recovery', { email });
+			trackPasswordRecoveryRequested({
+				email_domain: getEmailDomain(email),
+			});
 			message.success('E-mail de recuperação enviado!');
 		} catch (error) {
 			message.error(errorMessage(error));
@@ -272,6 +293,10 @@ export const useAuth = () => {
 			});
 
 			void queryClient.invalidateQueries({ queryKey: userQueryKey });
+
+			if (user) {
+				trackSignUpCompleted(user, 'email');
+			}
 
 			return user;
 		} catch (error) {

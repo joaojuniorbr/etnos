@@ -23,6 +23,7 @@
 		"vitest": "^4.0.16"
 	},
 	"dependencies": {
+		"@etnos/analytics": "*",
 		"@etnos/services": "*",
 		"@etnos/types": "*",
 		"@tanstack/react-query": "^5.87.1",

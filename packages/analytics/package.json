@@ -1,0 +1,28 @@
+{
+	"name": "@etnos/analytics",
+	"version": "1.0.0",
+	"private": true,
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./web": "./src/web/index.ts",
+		"./native": "./src/native/index.ts"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@etnos/types": "*",
+		"mixpanel-browser": "^2.65.0",
+		"mixpanel-react-native": "^3.0.8"
+	},
+	"peerDependencies": {
+		"react": "^19.0.0"
+	},
+	"devDependencies": {
+		"@etnos/typescript-config": "*",
+		"@types/react": "^19.1.0",
+		"typescript": "5.9.2"
+	}
+}

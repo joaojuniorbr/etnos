@@ -7,10 +7,12 @@ import {
 	useGameScore,
 	useMemoryGameContent,
 } from '@etnos/tools';
+import { trackGameFinished } from '@etnos/analytics/web';
 import { ConfigGamesInterface, GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
 import { useEffect, useRef, useState } from 'react';
 import { MemoryGameExperience } from './MemoryGameExperience';
+import { message } from 'antd';
 
 const GAME_SLUG = GamesEnum.MEMORY_GAME;
 
@@ -67,7 +69,13 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 		const activeCharacterSlug = characterSlug ?? selectedCharacter?.slug;
 		const currentBestScore = scoreGame?.score ?? 0;
 
-		if (!user?.uid || !activeCharacterSlug || score <= currentBestScore) {
+		if (score <= currentBestScore) {
+			message.info('Sua pontuação não é maior que o recorde atual.');
+			return;
+		}
+
+		if (!user?.uid || !activeCharacterSlug) {
+			message.error('Usuário ou personagem não encontrado.');
 			return;
 		}
 
@@ -136,6 +144,18 @@ export const MemoryGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onPlaySound={playSound}
 			onSaveScoreHistory={handleSaveScoreHistory}
 			onSaveScore={handleSaveScore}
+			onGameFinished={({ score }) => {
+				if (!activeCharacterSlug) {
+					return;
+				}
+
+				trackGameFinished({
+					game_slug: GamesEnum.MEMORY_GAME,
+					character_slug: activeCharacterSlug,
+					score,
+					outcome: 'won',
+				});
+			}}
 			onGameSessionStart={handleGameSessionStart}
 			onSessionReset={() => {
 				gameSessionIdRef.current = null;

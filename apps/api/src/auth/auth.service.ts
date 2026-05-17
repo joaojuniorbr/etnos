@@ -370,17 +370,21 @@ export class AuthService {
       ),
     ) as Record<string, unknown>;
 
-    const { school: schoolRef, schoolName: _schoolName, ...profileData } =
-      safeData;
+    const { school: schoolRef, ...profileData } = safeData;
     const updateData: Prisma.UserUpdateInput = {
       ...(profileData as Prisma.UserUpdateInput),
     };
 
     if (schoolRef !== undefined) {
-      const resolvedSchoolId =
-        schoolRef === null || schoolRef === ''
-          ? null
-          : await resolveSchoolId(this.prismaService, String(schoolRef));
+      let resolvedSchoolId: string | null;
+
+      if (schoolRef === null || schoolRef === '') {
+        resolvedSchoolId = null;
+      } else if (typeof schoolRef === 'string') {
+        resolvedSchoolId = await resolveSchoolId(this.prismaService, schoolRef);
+      } else {
+        throw new BadRequestException('Escola inválida.');
+      }
 
       updateData.school = resolvedSchoolId
         ? { connect: { id: resolvedSchoolId } }

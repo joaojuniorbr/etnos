@@ -626,6 +626,22 @@ describe('AuthService', () => {
         data: { school: { connect: { id: 'school-1' } } },
       });
     });
+
+    it('deve lançar BadRequestException quando school não for string', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce({
+        id: 'db-user-id',
+        firebaseUid: 'user-123',
+      });
+
+      await expect(
+        service.updateProfile('user-123', {
+          school: { id: 'school-1' },
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(prismaService.school.findFirst).not.toHaveBeenCalled();
+      expect(prismaService.user.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('registerWithEmailAndPassword', () => {

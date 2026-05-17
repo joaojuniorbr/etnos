@@ -28,7 +28,10 @@ export class MidiaService {
         while (nextIndex < items.length) {
           const currentIndex = nextIndex;
           nextIndex += 1;
-          results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+          results[currentIndex] = await mapper(
+            items[currentIndex],
+            currentIndex,
+          );
         }
       }),
     );
@@ -203,7 +206,7 @@ export class MidiaService {
     return grouped
       .filter((row) => row.folder)
       .map((row) => ({
-        folder: row.folder as string,
+        folder: row.folder,
         count: row._count._all,
       }))
       .sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));

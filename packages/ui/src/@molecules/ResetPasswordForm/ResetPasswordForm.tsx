@@ -1,6 +1,8 @@
 import { Form, Input, message } from 'antd';
 import { Button } from '../../@atoms';
 import { useMutation } from '@tanstack/react-query';
+import { getEmailDomain } from '@etnos/analytics';
+import { trackPasswordRecoveryRequested } from '@etnos/analytics/web';
 import { api } from '@etnos/services';
 
 interface ResetPasswordFormProps {
@@ -18,6 +20,9 @@ export const ResetPasswordForm = ({ onSubmit }: ResetPasswordFormProps) => {
 	const onFinish = async (values: { email: string }) => {
 		mutate(values.email, {
 			onSuccess: () => {
+				trackPasswordRecoveryRequested({
+					email_domain: getEmailDomain(values.email),
+				});
 				message.success('E-mail de recuperação enviado!');
 				onSubmit();
 				form.resetFields();

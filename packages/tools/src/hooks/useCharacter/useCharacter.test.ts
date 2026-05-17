@@ -12,6 +12,14 @@ vi.mock('@etnos/services', async () => ({
 	},
 }));
 
+const { trackCharacterSelectedMock } = vi.hoisted(() => ({
+	trackCharacterSelectedMock: vi.fn(),
+}));
+
+vi.mock('@etnos/analytics/web', () => ({
+	trackCharacterSelected: trackCharacterSelectedMock,
+}));
+
 const createDeferred = <T>() => {
 	let resolve!: (value: T) => void;
 	let reject!: (reason?: unknown) => void;
@@ -311,6 +319,65 @@ describe('useCharacter', () => {
 		});
 
 		expect(charactersService.getCharacters).not.toHaveBeenCalled();
+	});
+
+	it('envia analytics com nome do personagem quando a lista já foi carregada', async () => {
+		vi.mocked(charactersService.getCharacters).mockResolvedValueOnce([
+			{ slug: 'anita', name: 'Anita' },
+		] as unknown as CharacterInterface[]);
+
+		const { result } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(result.current.data).toHaveLength(1);
+		});
+
+		act(() => {
+			result.current.selectCharacter('anita');
+		});
+
+		expect(trackCharacterSelectedMock).toHaveBeenCalledWith({
+			character_slug: 'anita',
+			character_name: 'Anita',
+		});
+	});
+
+	it('envia analytics sem nome do personagem quando fetchList é false', () => {
+		const { result } = renderHook(() => useCharacter({ fetchList: false }), {
+			wrapper: createWrapper(),
+		});
+
+		act(() => {
+			result.current.selectCharacter('anita');
+		});
+
+		expect(trackCharacterSelectedMock).toHaveBeenCalledWith({
+			character_slug: 'anita',
+			character_name: undefined,
+		});
+	});
+
+	it('remove listeners de storage e custom event ao desmontar', async () => {
+		const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
+
+		const { unmount } = renderHook(() => useCharacter(), {
+			wrapper: createWrapper(),
+		});
+
+		unmount();
+
+		expect(removeEventListenerSpy).toHaveBeenCalledWith(
+			'storage',
+			expect.any(Function),
+		);
+		expect(removeEventListenerSpy).toHaveBeenCalledWith(
+			'etnos:selected-character-change',
+			expect.any(Function),
+		);
+
+		removeEventListenerSpy.mockRestore();
 	});
 
 	it('ignora a resposta de uma busca antiga quando uma mais nova termina depois', async () => {

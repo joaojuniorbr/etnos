@@ -13,7 +13,7 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<AppProviders>
+		<AppProviders appName="student">
 			<AuthProtected>
 				<RequireStudentSchool>{children}</RequireStudentSchool>
 			</AuthProtected>

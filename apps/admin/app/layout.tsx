@@ -12,7 +12,7 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<AppProviders>
+		<AppProviders appName="admin">
 			<AuthProtected
 				allowedRoles={['admin', 'school', 'teacher']}
 				forbiddenRedirectTo="/estudante"

@@ -122,14 +122,14 @@ export function warmupCache() {
 }
 
 export function mixedReads(data) {
-	const roll = Math.random();
+	const bucket = __ITER % 10;
 	const slugs = data.slugs?.length ? data.slugs : FALLBACK_SLUGS;
 
-	if (roll < 0.7) {
+	if (bucket < 7) {
 		const response = requestListCharacters('load');
 		recordListDuration(response, listDurationLoad);
 		maybeCountCacheHit(response);
-	} else if (roll < 0.9) {
+	} else if (bucket < 9) {
 		const slug = pickSlug(slugs);
 		const response = requestCharacterDetail(slug);
 		detailDurationLoad.add(response.timings.duration);
@@ -141,7 +141,7 @@ export function mixedReads(data) {
 		maybeCountCacheHit(response);
 	}
 
-	sleep(0.2 + Math.random() * 0.5);
+	sleep(0.2 + ((__ITER + __VU) % 6) * 0.1);
 }
 
 function requestListCharacters(phase) {

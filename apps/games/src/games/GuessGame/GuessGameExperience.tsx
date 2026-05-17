@@ -17,6 +17,7 @@ import type {
 	GuessGameValidationResultInterface,
 } from '@etnos/types';
 import { FinishGame, GameNpsModal, ScoreHighlight } from '../../components';
+import type { GameFinishedPayload } from '../game-finished.types';
 import {
 	getGuessGameLetterHitPoints,
 	getGuessGameRevealedLettersCount,
@@ -42,6 +43,7 @@ type GuessGameExperienceProps = {
 	onNextRound?: () => void;
 	onSaveScore?: (score: number) => Promise<void> | void;
 	onSaveScoreHistory?: (score: number) => Promise<void> | void;
+	onGameFinished?: (payload: GameFinishedPayload) => void;
 	/** Nova rodada / conteúdo — início da partida neste nível */
 	onRoundSessionStart?: () => Promise<void> | void;
 	onSessionReset?: () => void;
@@ -69,6 +71,7 @@ export const GuessGameExperience = ({
 	onNextRound,
 	onSaveScore,
 	onSaveScoreHistory,
+	onGameFinished,
 	onRoundSessionStart,
 	onSessionReset,
 	onValidateAttempt,
@@ -88,6 +91,7 @@ export const GuessGameExperience = ({
 	const [solvedWord, setSolvedWord] = useState<string>();
 	const [solvedDescription, setSolvedDescription] = useState<string>();
 	const autoSavedScoreRef = useRef<number | null>(null);
+	const gameFinishedTrackedRef = useRef(false);
 	const [npsOpen, setNpsOpen] = useState(false);
 
 	const canShowNps = Boolean(
@@ -113,6 +117,7 @@ export const GuessGameExperience = ({
 		setSolvedDescription(undefined);
 		setGuesses('');
 		autoSavedScoreRef.current = null;
+		gameFinishedTrackedRef.current = false;
 		onSessionReset?.();
 	};
 
@@ -235,6 +240,22 @@ export const GuessGameExperience = ({
 
 		void onRoundSessionStart?.();
 	}, [content?.id, onRoundSessionStart]);
+
+	useEffect(() => {
+		if (!isFinished) {
+			autoSavedScoreRef.current = null;
+			gameFinishedTrackedRef.current = false;
+			return;
+		}
+
+		if (!gameFinishedTrackedRef.current) {
+			gameFinishedTrackedRef.current = true;
+			onGameFinished?.({
+				score,
+				outcome: isLoser ? 'lost' : 'won',
+			});
+		}
+	}, [isFinished, isLoser, onGameFinished, score]);
 
 	useEffect(() => {
 		if (!isFinished) {

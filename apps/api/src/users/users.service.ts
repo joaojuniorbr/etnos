@@ -111,6 +111,18 @@ export class UsersService {
     );
   }
 
+  private async resolveUpdateSchoolId(
+    school: UpdateAdminUserPayload['school'],
+  ): Promise<string | null | undefined> {
+    if (school === undefined) {
+      return undefined;
+    }
+    if (school === null) {
+      return null;
+    }
+    return resolveSchoolId(this.prismaService, school);
+  }
+
   async findAll(filters?: {
     schoolId?: string;
     search?: string;
@@ -233,12 +245,7 @@ export class UsersService {
       }
     }
 
-    const schoolId =
-      payload.school === undefined
-        ? undefined
-        : payload.school === null
-          ? null
-          : await resolveSchoolId(this.prismaService, payload.school);
+    const schoolId = await this.resolveUpdateSchoolId(payload.school);
 
     const updated = await this.prismaService.user.update({
       where: { id: userId },

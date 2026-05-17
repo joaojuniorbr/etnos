@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Empty, Spin } from 'antd';
+import { trackGameSelected } from '@etnos/analytics/web';
 import { useCharacter, useGames, useMyGameAccess } from '@etnos/tools';
 import { CardGame } from '@/components/@molecules';
 
@@ -51,6 +52,13 @@ export const GameSelect = () => {
 					}}
 					character={selectedCharacter.slug}
 					isAboveTheFold={index === 0}
+					onSelect={() =>
+						trackGameSelected({
+							game_slug: game.slug,
+							character_slug: selectedCharacter.slug,
+							game_name: game.name,
+						})
+					}
 				/>
 			))}
 		</div>

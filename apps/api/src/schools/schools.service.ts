@@ -89,7 +89,9 @@ export class SchoolsService {
       },
     });
 
-    const schoolFirebaseUids = users.map((schoolUser) => schoolUser.firebaseUid);
+    const schoolFirebaseUids = users.map(
+      (schoolUser) => schoolUser.firebaseUid,
+    );
 
     const scoreAggregates = schoolFirebaseUids.length
       ? await this.prismaService.gameScore.groupBy({
@@ -140,18 +142,16 @@ export class SchoolsService {
       }));
   }
 
-  private mapSchoolUser(
-    schoolUser: {
-      id: string;
-      firebaseUid?: string | null;
-      email: string | null;
-      parentName: string | null;
-      childName: string | null;
-      schoolId: string | null;
-      roles: string[];
-      updatedAt: Date;
-    },
-  ): SchoolUserInterface {
+  private mapSchoolUser(schoolUser: {
+    id: string;
+    firebaseUid?: string | null;
+    email: string | null;
+    parentName: string | null;
+    childName: string | null;
+    schoolId: string | null;
+    roles: string[];
+    updatedAt: Date;
+  }): SchoolUserInterface {
     return {
       id: schoolUser.id,
       uid: schoolUser.firebaseUid ?? '',
@@ -295,36 +295,37 @@ export class SchoolsService {
       CacheKeys.schoolGameAccess(schoolId, rolesKey),
       CACHE_TTL_MS.gameAccess,
       async () => {
-    const enabledGames = await this.prismaService.schoolEnabledGame.findMany({
-      where: { schoolId },
-      select: { gameSlug: true },
-      orderBy: { gameSlug: 'asc' },
-    });
-    const enabledCharacters =
-      await this.prismaService.schoolEnabledCharacter.findMany({
-        where: { schoolId },
-        select: { characterSlug: true },
-        orderBy: { characterSlug: 'asc' },
-      });
-    const availableCharacterSlugs = await this.getAvailableCharacterSlugs();
+        const enabledGames =
+          await this.prismaService.schoolEnabledGame.findMany({
+            where: { schoolId },
+            select: { gameSlug: true },
+            orderBy: { gameSlug: 'asc' },
+          });
+        const enabledCharacters =
+          await this.prismaService.schoolEnabledCharacter.findMany({
+            where: { schoolId },
+            select: { characterSlug: true },
+            orderBy: { characterSlug: 'asc' },
+          });
+        const availableCharacterSlugs = await this.getAvailableCharacterSlugs();
 
-    const availableGameSlugs = this.getAvailableGameSlugs();
-    const hasCustomGames = enabledGames.length > 0;
-    const hasCustomCharacters = enabledCharacters.length > 0;
+        const availableGameSlugs = this.getAvailableGameSlugs();
+        const hasCustomGames = enabledGames.length > 0;
+        const hasCustomCharacters = enabledCharacters.length > 0;
 
-    return {
-      schoolId,
-      enabledGameSlugs: hasCustomGames
-        ? enabledGames.map((game) => game.gameSlug)
-        : availableGameSlugs,
-      enabledCharacterSlugs: hasCustomCharacters
-        ? enabledCharacters.map((character) => character.characterSlug)
-        : availableCharacterSlugs,
-      hasCustomGames,
-      hasCustomCharacters,
-      canEdit: this.canEditSchoolGameAccess(viewerRoles),
-      viewerRoles: viewerRoles as UserRole[],
-    };
+        return {
+          schoolId,
+          enabledGameSlugs: hasCustomGames
+            ? enabledGames.map((game) => game.gameSlug)
+            : availableGameSlugs,
+          enabledCharacterSlugs: hasCustomCharacters
+            ? enabledCharacters.map((character) => character.characterSlug)
+            : availableCharacterSlugs,
+          hasCustomGames,
+          hasCustomCharacters,
+          canEdit: this.canEditSchoolGameAccess(viewerRoles),
+          viewerRoles: viewerRoles as UserRole[],
+        };
       },
     );
   }
@@ -907,7 +908,7 @@ export class SchoolsService {
     const schoolByUserId = new Map(
       users
         .filter((user) => !!user.schoolId)
-        .map((user) => [user.firebaseUid, user.schoolId as string]),
+        .map((user) => [user.firebaseUid, user.schoolId]),
     );
 
     const rankingMap = new Map<

@@ -9,6 +9,7 @@ import {
 	Screen,
 	SectionCard,
 } from '@/components';
+import { trackGameSelectedNative } from '@etnos/analytics/native';
 import { studentGames } from '@/constants';
 import { useCharacterSelection } from '@/contexts';
 import { schoolKeys } from '@etnos/tools';
@@ -61,7 +62,14 @@ export default function GamesPage() {
 				key={game.slug}
 				game={game}
 				character={selectedCharacterSlug}
-				onPress={() => router.push(game.url as '/games/memory')}
+				onPress={() => {
+					void trackGameSelectedNative({
+						game_slug: game.slug,
+						character_slug: selectedCharacterSlug,
+						game_name: game.name,
+					});
+					router.push(game.url as '/games/memory');
+				}}
 			/>
 		));
 	} else {

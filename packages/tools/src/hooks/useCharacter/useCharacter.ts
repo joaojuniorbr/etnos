@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import type { CharacterInterface } from '@etnos/types';
+import { trackCharacterSelected } from '@etnos/analytics/web';
 import { QUERY_STALE_TIME } from '../../constants/query-cache';
 import { characterKeys } from '../../query-keys';
 import { charactersService } from '@etnos/services';
@@ -42,6 +43,15 @@ export const useCharacter = (options?: UseCharacterOptions) => {
 		if (character) {
 			localStorage.setItem(CHARACTER_STORAGE_KEY, character);
 			setSelectedSlug(character);
+
+			const characterName = charactersQuery.data?.find(
+				(item) => item.slug === character,
+			)?.name;
+
+			trackCharacterSelected({
+				character_slug: character,
+				character_name: characterName,
+			});
 		} else {
 			localStorage.removeItem(CHARACTER_STORAGE_KEY);
 			setSelectedSlug(undefined);

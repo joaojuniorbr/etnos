@@ -68,17 +68,28 @@ yarn install
 
 Configure os arquivos de ambiente:
 
-- apps Next (`apps/web`, `apps/admin`, `apps/student`): `.env.local`
+- apps Next (`apps/web`, `apps/admin`, `apps/student`): `.env.local` **dentro de cada app** (não basta na raiz do monorepo)
 - API (`apps/api`): `.env`
-- mobile (`apps/student-mobile`): `.env` (quando necessário)
+- mobile (`apps/student-mobile`): `.env`
+
+Variáveis de pacotes compartilhados (ex.: Mixpanel em `@etnos/analytics`) usam `NEXT_PUBLIC_*` no `.env.local` do app Next que você está rodando; o token é repassado pelo `AppProviders`.
 
 Exemplo frontend:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_MIXPANEL_TOKEN=your_mixpanel_project_token
 NEXT_PUBLIC_FIREBASE_API_KEY=your_key
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
 ```
+
+Mobile (`apps/student-mobile/.env`):
+
+```env
+EXPO_PUBLIC_MIXPANEL_TOKEN=your_mixpanel_project_token
+```
+
+Modelos completos: `.env.example` na raiz e em cada app (`apps/web/.env.example`, etc.).
 
 Exemplo API:
 

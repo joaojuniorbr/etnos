@@ -278,6 +278,53 @@ describe('MemoryGameExperience', () => {
 		});
 	});
 
+	it('dispara onGameFinished apenas uma vez por finalização', async () => {
+		const onGameFinished = vi.fn();
+		useMemoryGameMock.mockReturnValue({
+			cards: [],
+			handleCardClick: vi.fn(),
+			initializeGame: vi.fn(),
+			isFinished: true,
+			matchedPairs: 2,
+			moves: 4,
+			score: 120,
+			totalPairs: 2,
+		});
+
+		const { rerender } = render(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+				onGameFinished={onGameFinished}
+			/>,
+		);
+
+		fireEvent.click(screen.getByText('Nível 1'));
+
+		await waitFor(() => {
+			expect(onGameFinished).toHaveBeenCalledWith({
+				score: 120,
+				outcome: 'won',
+			});
+		});
+
+		rerender(
+			<MemoryGameExperience
+				content={[
+					{ name: 'chimarrao', image: '/a.jpg' },
+					{ name: 'churrasco', image: '/b.jpg' },
+					{ name: 'cafe', image: '/c.jpg' },
+				]}
+				onGameFinished={vi.fn()}
+			/>,
+		);
+
+		expect(onGameFinished).toHaveBeenCalledTimes(1);
+	});
+
 	it('salva automaticamente só uma vez por finalização enquanto o score não muda', async () => {
 		const onSaveScoreHistory = vi.fn().mockResolvedValue(undefined);
 		const nextOnSaveScoreHistory = vi.fn().mockResolvedValue(undefined);

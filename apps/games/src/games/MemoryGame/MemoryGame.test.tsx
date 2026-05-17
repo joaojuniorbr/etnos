@@ -10,6 +10,14 @@ const useMemoryGameContentMock = vi.fn();
 const useGamesConfigMock = vi.fn();
 const memoryGameExperienceMock = vi.fn();
 
+const { trackGameFinishedMock } = vi.hoisted(() => ({
+	trackGameFinishedMock: vi.fn(),
+}));
+
+vi.mock('@etnos/analytics/web', () => ({
+	trackGameFinished: trackGameFinishedMock,
+}));
+
 vi.mock('@etnos/tools', () => ({
 	useCharacter: (...args: unknown[]) => useCharacterMock(...args),
 	useGames: (...args: unknown[]) => useGamesMock(...args),
@@ -369,6 +377,39 @@ describe('MemoryGame', () => {
 		expect(
 			useGamesMock.mock.results[0]?.value.saveGameScoreHistory,
 		).not.toHaveBeenCalled();
+	});
+
+	it('dispara trackGameFinished quando a partida termina com personagem ativo', () => {
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameFinished: (payload: { score: number }) => void;
+		};
+
+		props.onGameFinished({ score: 180 });
+
+		expect(trackGameFinishedMock).toHaveBeenCalledWith({
+			game_slug: 'memory-game',
+			character_slug: 'anita',
+			score: 180,
+			outcome: 'won',
+		});
+	});
+
+	it('não dispara trackGameFinished sem personagem ativo', () => {
+		useCharacterMock.mockReturnValue({
+			selectedCharacter: undefined,
+		});
+
+		render(<MemoryGame />);
+
+		const props = memoryGameExperienceMock.mock.calls.at(-1)?.[0] as {
+			onGameFinished: (payload: { score: number }) => void;
+		};
+
+		props.onGameFinished({ score: 180 });
+
+		expect(trackGameFinishedMock).not.toHaveBeenCalled();
 	});
 
 	it('submete NPS do jogo e marca como respondido', async () => {

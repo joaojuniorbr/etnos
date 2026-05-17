@@ -8,6 +8,7 @@ import {
 	useGameScore,
 	useGuessGamePlayableContent,
 } from '@etnos/tools';
+import { trackGameFinished } from '@etnos/analytics/web';
 import { GamesEnum } from '@etnos/types';
 import { useUser } from '@etnos/ui';
 import { useEffect, useRef, useState } from 'react';
@@ -108,6 +109,18 @@ export const GuessGame = ({ characterSlug }: { characterSlug?: string }) => {
 			onPlaySound={playSound}
 			onSaveScore={handleSaveScore}
 			onSaveScoreHistory={handleSaveScoreHistory}
+			onGameFinished={({ score, outcome }) => {
+				if (!activeCharacterSlug) {
+					return;
+				}
+
+				trackGameFinished({
+					game_slug: GamesEnum.GUESS_GAME,
+					character_slug: activeCharacterSlug,
+					score,
+					outcome,
+				});
+			}}
 			onRoundSessionStart={handleRoundSessionStart}
 			onSessionReset={() => {
 				gameSessionIdRef.current = null;

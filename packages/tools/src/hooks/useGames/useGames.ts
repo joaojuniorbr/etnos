@@ -1,5 +1,6 @@
 'use client';
 
+import { trackGameSessionCompleted } from '@etnos/analytics/web';
 import { scoreGamesService } from '@etnos/services';
 import { message } from 'antd';
 import { GameNameEnum, GamesEnum } from '@etnos/types';
@@ -70,13 +71,23 @@ export const useGames = (userId?: string) => {
 			return;
 		}
 
-		return scoreGamesService.saveScoreHistory(
-			slug,
-			characterSlug,
-			score,
-			userId,
-			sessionId ? { phase: 'end', sessionId } : undefined,
-		);
+		return scoreGamesService
+			.saveScoreHistory(
+				slug,
+				characterSlug,
+				score,
+				userId,
+				sessionId ? { phase: 'end', sessionId } : undefined,
+			)
+			.then((result) => {
+				trackGameSessionCompleted({
+					game_slug: slug,
+					character_slug: characterSlug,
+					score,
+				});
+
+				return result;
+			});
 	};
 
 	const playSound = (sound: keyof typeof sounds) => {

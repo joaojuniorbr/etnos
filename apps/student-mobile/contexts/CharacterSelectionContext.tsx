@@ -1,3 +1,4 @@
+import { trackCharacterSelectedNative } from '@etnos/analytics/native';
 import { storageAdapter } from '@/utils';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -44,6 +45,7 @@ export const CharacterSelectionProvider = ({
 	const selectCharacter = async (slug: string | null) => {
 		if (slug) {
 			await storageAdapter.setItem(STORAGE_KEY, slug);
+			await trackCharacterSelectedNative({ character_slug: slug });
 		} else {
 			await storageAdapter.removeItem(STORAGE_KEY);
 		}

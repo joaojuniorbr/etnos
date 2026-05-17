@@ -1,13 +1,23 @@
-import type { NextConfig } from 'next';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+import type { NextConfig } from 'next';
 
-dotenv.config();
+const appDir = path.dirname(fileURLToPath(import.meta.url));
+
+dotenv.config({ path: path.join(appDir, '.env.local') });
+dotenv.config({ path: path.join(appDir, '.env') });
 
 const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-	transpilePackages: ['@etnos/ui', '@etnos/tools', '@etnos/types'],
+	transpilePackages: [
+		'@etnos/analytics',
+		'@etnos/ui',
+		'@etnos/tools',
+		'@etnos/types',
+	],
 	images: {
 		remotePatterns: [
 			{

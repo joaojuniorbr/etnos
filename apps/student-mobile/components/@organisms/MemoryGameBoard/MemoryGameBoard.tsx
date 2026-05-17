@@ -17,12 +17,18 @@ import { StatCard } from '@/components/@atoms/StatCard';
 import { tw } from '@/utils';
 import { FontAwesome } from '@expo/vector-icons';
 
+type GameFinishedPayload = {
+	score: number;
+	outcome?: 'won' | 'lost';
+};
+
 type MemoryGameBoardProps = {
 	bestScore?: ScoreInterface | null;
 	content: MemoryGameCardContent[];
 	character?: CharacterInterface | null;
 	onSaveBestScore: (score: number) => Promise<void>;
 	onSaveScoreHistory: (score: number) => Promise<void>;
+	onGameFinished?: (payload: GameFinishedPayload) => void;
 };
 
 const MISMATCH_DELAY_MS = 2000;
@@ -64,6 +70,7 @@ export const MemoryGameBoard = ({
 	content,
 	onSaveBestScore,
 	onSaveScoreHistory,
+	onGameFinished,
 }: MemoryGameBoardProps) => {
 	const availableLevels = useMemo(
 		() => getAvailableMemoryGameLevels(content.length),
@@ -77,7 +84,8 @@ export const MemoryGameBoard = ({
 	const [score, setScore] = useState(0);
 	const [consecutiveMatches, setConsecutiveMatches] = useState(0);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const savedHistoryRef = useRef<number | null>(null);
+    const savedHistoryRef = useRef<number | null>(null);
+	const gameFinishedTrackedRef = useRef(false);
 
 	const levelConfig = selectedLevel
 		? getMemoryGameLevelConfig(selectedLevel)
@@ -116,6 +124,7 @@ export const MemoryGameBoard = ({
 		setConsecutiveMatches(0);
 		setIsChecking(false);
 		savedHistoryRef.current = null;
+		gameFinishedTrackedRef.current = false;
 
 		return () => {
 			if (timeoutRef.current) {
@@ -123,6 +132,18 @@ export const MemoryGameBoard = ({
 			}
 		};
 	}, [levelContent]);
+
+	useEffect(() => {
+		if (!isFinished) {
+			gameFinishedTrackedRef.current = false;
+			return;
+		}
+
+		if (!gameFinishedTrackedRef.current) {
+			gameFinishedTrackedRef.current = true;
+			onGameFinished?.({ score, outcome: 'won' });
+		}
+	}, [isFinished, onGameFinished, score]);
 
 	useEffect(() => {
 		if (!isFinished || savedHistoryRef.current === score) {

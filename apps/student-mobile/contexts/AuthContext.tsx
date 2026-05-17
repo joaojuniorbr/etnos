@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
+import { getEmailDomain } from '@etnos/analytics';
+import {
+	resetMixpanelUserNative,
+	syncMixpanelUserNative,
+	trackPasswordRecoveryRequestedNative,
+} from '@etnos/analytics/native';
 import { authService, sessionStorage } from '@/utils';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
@@ -56,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 				if (isMounted) {
 					setUser(profile);
+					await syncMixpanelUserNative(profile);
 				}
 			} catch {
 				await sessionStorage.clearStoredAuthSession();
@@ -90,6 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			});
 
 			setUser(response.user);
+			await syncMixpanelUserNative(response.user);
 			return response.user;
 		} finally {
 			setIsLoading(false);
@@ -102,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 		try {
 			await sessionStorage.clearStoredAuthSession();
+			resetMixpanelUserNative();
 			queryClient.clear();
 			setUser(null);
 		} finally {
@@ -137,6 +146,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 		try {
 			await authService.recovery(email);
+			await trackPasswordRecoveryRequestedNative({
+				email_domain: getEmailDomain(email),
+			});
 		} finally {
 			setIsLoading(false);
 		}

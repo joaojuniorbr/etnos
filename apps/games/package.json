@@ -39,6 +39,7 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@etnos/analytics": "*",
 		"@etnos/core": "*",
 		"@etnos/services": "*",
 		"@etnos/tools": "*",

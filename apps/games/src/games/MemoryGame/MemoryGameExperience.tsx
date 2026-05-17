@@ -18,6 +18,7 @@ import {
 	getMemoryGameLevelContent,
 } from '@etnos/core';
 import { CharacterInterface } from '@etnos/types';
+import type { GameFinishedPayload } from '../game-finished.types';
 import type { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
 
 type MemoryGameExperienceProps = {
@@ -29,6 +30,8 @@ type MemoryGameExperienceProps = {
 	onPlaySound?: (sound: MemoryGameSound) => void;
 	onSaveScoreHistory?: (score: number) => Promise<void> | void;
 	onSaveScore?: (score: number) => Promise<void> | void;
+	/** Disparado assim que a partida termina (antes/independente de salvar pontuação) */
+	onGameFinished?: (payload: GameFinishedPayload) => void;
 	/** Chamado ao escolher o nível (início da partida) — API registra auto-save de início */
 	onGameSessionStart?: () => Promise<void> | void;
 	/** Chamado ao voltar ao seletor de nível (reinício) */
@@ -55,6 +58,7 @@ export const MemoryGameExperience = ({
 	onPlaySound,
 	onSaveScoreHistory,
 	onSaveScore,
+	onGameFinished,
 	onGameSessionStart,
 	onSessionReset,
 	selectedCharacter,
@@ -70,6 +74,7 @@ export const MemoryGameExperience = ({
 	const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 	const [levelContent, setLevelContent] = useState<MemoryGameCardContent[]>([]);
 	const autoSavedScoreRef = useRef<number | null>(null);
+	const gameFinishedTrackedRef = useRef(false);
 	const [npsOpen, setNpsOpen] = useState(false);
 
 	useEffect(() => {
@@ -137,6 +142,7 @@ export const MemoryGameExperience = ({
 
 	const handleRestart = () => {
 		autoSavedScoreRef.current = null;
+		gameFinishedTrackedRef.current = false;
 		setSelectedLevel(null);
 		setLevelContent([]);
 		onSessionReset?.();
@@ -145,6 +151,19 @@ export const MemoryGameExperience = ({
 	const handleSaveScore = async () => {
 		await onSaveScore?.(score);
 	};
+
+	useEffect(() => {
+		if (!isFinished) {
+			autoSavedScoreRef.current = null;
+			gameFinishedTrackedRef.current = false;
+			return;
+		}
+
+		if (!gameFinishedTrackedRef.current) {
+			gameFinishedTrackedRef.current = true;
+			onGameFinished?.({ score, outcome: 'won' });
+		}
+	}, [isFinished, onGameFinished, score]);
 
 	useEffect(() => {
 		if (!isFinished) {

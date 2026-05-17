@@ -1,6 +1,12 @@
 {
 	"$schema": "https://turborepo.com/schema.json",
 	"ui": "tui",
+	"globalPassThroughEnv": [
+		"NEXT_PUBLIC_MIXPANEL_TOKEN",
+		"EXPO_PUBLIC_MIXPANEL_TOKEN",
+		"NEXT_PUBLIC_API_URL",
+		"EXPO_PUBLIC_API_URL"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build", "build:components", "build:styles"],

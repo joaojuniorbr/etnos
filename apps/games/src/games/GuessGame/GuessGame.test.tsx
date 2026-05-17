@@ -17,6 +17,9 @@ const useUserMock = vi.fn();
 const validateAttemptMock = vi.fn();
 const finishGameMock = vi.fn();
 const gameNpsModalMock = vi.fn();
+const { trackGameFinishedMock } = vi.hoisted(() => ({
+	trackGameFinishedMock: vi.fn(),
+}));
 const playableContent = {
 	id: 'guess-1',
 	title: 'Chimarrao',
@@ -42,6 +45,10 @@ const renderWithQueryClient = (ui: React.ReactNode) => {
 		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
 	);
 };
+
+vi.mock('@etnos/analytics/web', () => ({
+	trackGameFinished: trackGameFinishedMock,
+}));
 
 vi.mock('@etnos/services', () => ({
 	guessGameContentService: {
@@ -466,6 +473,95 @@ describe('GuessGame', () => {
 		expect(screen.getAllByTestId('otp-5')[0]?.getAttribute('value')).toBe(
 			'••••',
 		);
+	});
+
+	it('dispara trackGameFinished ao vencer a rodada', async () => {
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		await waitFor(() => {
+			expect(trackGameFinishedMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					game_slug: 'guess-game',
+					character_slug: 'anita',
+					outcome: 'won',
+				}),
+			);
+		});
+	});
+
+	it('dispara trackGameFinished com outcome lost ao esgotar tentativas', async () => {
+		useGamesMock.mockReturnValue({
+			saveGameScore: vi.fn().mockResolvedValue(undefined),
+			saveGameScoreHistory: vi.fn().mockResolvedValue(undefined),
+			startGameSession: vi.fn().mockResolvedValue(null),
+			playSound: vi.fn(),
+		});
+		validateAttemptMock.mockResolvedValue({
+			isCorrect: false,
+			isSolved: false,
+			matchedIndexes: [],
+			revealedCharacters: [],
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+
+		for (let index = 0; index < 11; index += 1) {
+			await act(async () => {
+				fireEvent.change(inputs[2]!, { target: { value: 'ERRO' } });
+				fireEvent.click(screen.getByText('VERIFICAR'));
+			});
+		}
+
+		await waitFor(() => {
+			expect(trackGameFinishedMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					game_slug: 'guess-game',
+					character_slug: 'anita',
+					outcome: 'lost',
+				}),
+			);
+		});
+	});
+
+	it('não dispara trackGameFinished sem personagem ativo', async () => {
+		useCharacterMock.mockReturnValue({
+			selectedCharacter: undefined,
+		});
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: true,
+			isSolved: true,
+			matchedIndexes: [],
+			revealedCharacters: [],
+			word: 'Bomba',
+			description: 'Descricao final',
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const inputs = screen.getAllByRole('textbox');
+		await act(async () => {
+			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
+			fireEvent.click(screen.getByText('VERIFICAR'));
+		});
+
+		expect(trackGameFinishedMock).not.toHaveBeenCalled();
 	});
 
 	it('trata palavra incorreta e encerra como derrota ao acabar tentativas', async () => {

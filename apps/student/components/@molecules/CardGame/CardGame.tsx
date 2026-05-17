@@ -6,15 +6,17 @@ interface CardGameProps extends React.HTMLAttributes<HTMLDivElement> {
 	game: GameInterface;
 	character: string;
 	isAboveTheFold?: boolean;
+	onSelect?: () => void;
 }
 
 export const CardGame = ({
 	game,
 	character,
 	isAboveTheFold = false,
+	onSelect,
 	...props
 }: CardGameProps) => (
-	<Link href={game.url}>
+	<Link href={game.url} onClick={() => onSelect?.()}>
 		<div
 			className="shadow rounded overflow-hidden bg-white md:max-w-3xs w-full"
 			{...props}

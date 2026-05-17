@@ -27,6 +27,8 @@ model User {
   schoolAccesses       SchoolAccess[]
   pushTokens           UserPushToken[]
 
+  @@index([school], map: "users_school_idx")
+  @@index([notificationsEnabled], map: "users_notifications_enabled_idx")
   @@map("users")
 }
 
@@ -114,6 +116,7 @@ model GameConfig {
   character     Character @relation(fields: [characterSlug], references: [slug], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([gameSlug, characterSlug], map: "game_configs_game_slug_character_slug_key")
+  @@index([gameSlug], map: "game_configs_game_slug_idx")
   @@map("game_configs")
 }
 
@@ -126,6 +129,7 @@ model MemoryGameContent {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@index([slug], map: "memory_game_contents_slug_idx")
+  @@index([characterId], map: "memory_game_contents_character_id_idx")
   @@map("memory_game_contents")
 }
 
@@ -155,6 +159,7 @@ model GameScore {
 
   @@unique([slug, characterSlug, userId], map: "game_scores_slug_character_slug_user_id_key")
   @@index([userId], map: "game_scores_user_id_idx")
+  @@index([slug, characterSlug], map: "game_scores_slug_character_slug_idx")
   @@map("game_scores")
 }
 
@@ -173,6 +178,9 @@ model GameScoreHistory {
   @@index([userId], map: "game_score_histories_user_id_idx")
   @@index([schoolId], map: "game_score_histories_school_id_idx")
   @@index([gameSlug], map: "game_score_histories_game_slug_idx")
+  @@index([userId, status], map: "game_score_histories_user_id_status_idx")
+  @@index([userId, gameSlug, startedAt(sort: Desc)], map: "game_score_histories_user_game_started_at_idx")
+  @@index([userId, schoolId, startedAt(sort: Desc)], map: "game_score_histories_user_school_started_at_idx")
   @@map("game_score_histories")
 }
 
@@ -204,6 +212,8 @@ model Midia {
 
   @@index([userId], map: "midia_user_id_idx")
   @@index([folder], map: "midia_folder_idx")
+  @@index([userId, folder], map: "midia_user_id_folder_idx")
+  @@index([userId, createdAt(sort: Desc)], map: "midia_user_id_created_at_idx")
   @@map("midia")
 }
 
@@ -244,5 +254,6 @@ model NotificationLog {
   tokenCount  Int      @default(0) @map("token_count")
 
   @@index([sentAt(sort: Desc)], map: "notification_logs_sent_at_idx")
+  @@index([schoolId], map: "notification_logs_school_id_idx")
   @@map("notification_logs")
 }

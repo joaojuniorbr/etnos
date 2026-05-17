@@ -9,7 +9,7 @@ import {
 	Tooltip,
 } from 'recharts';
 import type { DashboardPieSliceInterface } from '@etnos/types';
-import { DASHBOARD_PIE_COLORS } from '../../types/admin-performance';
+import { DASHBOARD_PIE_COLORS } from './constants';
 
 interface DashboardPieChartProps {
 	slices: DashboardPieSliceInterface[];

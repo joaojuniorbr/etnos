@@ -1,8 +1,9 @@
 'use client';
 
-import { api, useAuth } from '@etnos/tools';
+import { useAuth } from '@etnos/tools';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Form, Image, Input, message, Select, Spin } from 'antd';
+import { api } from '@etnos/services';
 
 type SchoolPublic = { id: string; name: string; code?: string | null };
 

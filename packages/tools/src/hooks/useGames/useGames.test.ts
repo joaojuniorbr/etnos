@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGames } from './';
 import { message } from 'antd';
-import { scoreGamesService } from '../../services';
+import { scoreGamesService } from '@etnos/services';
 
 class MockAudio {
 	src: string;
@@ -24,7 +24,7 @@ vi.mock('antd', () => ({
 	},
 }));
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	scoreGamesService: {
 		saveScore: vi.fn(),
 		saveScoreHistory: vi.fn(),

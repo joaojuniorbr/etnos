@@ -6,9 +6,9 @@ import {
 	useGuessGameContent,
 	useGuessGamePlayableContent,
 } from './useGuessGameContent';
-import { guessGameContentService } from '../../services';
+import { guessGameContentService } from '@etnos/services';
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	guessGameContentService: {
 		getContent: vi.fn(),
 		getPlayableContent: vi.fn(),

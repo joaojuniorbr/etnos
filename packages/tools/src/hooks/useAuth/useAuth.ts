@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { errorMessage } from '../../helpers/errorMessage';
-import { api } from '../../helpers/api';
 import {
+	api,
 	AUTH_TOKEN_STORAGE_KEY,
 	clearStoredAuthSession,
 	saveStoredAuthSession,
 	updateAuthActivity,
-} from '../../helpers/authSession';
+} from '@etnos/services';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserProfileInterface } from '@etnos/types';
 

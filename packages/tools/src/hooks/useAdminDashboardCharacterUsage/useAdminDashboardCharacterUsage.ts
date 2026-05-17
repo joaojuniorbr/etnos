@@ -1,8 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { AdminDashboardCharacterUsageInterface } from '@etnos/types';
-import { schoolService } from '../../services';
+import {
+	ADMIN_DASHBOARD_ALL_SCHOOLS,
+	type AdminDashboardCharacterUsageInterface,
+} from '@etnos/types';
+import { schoolService } from '@etnos/services';
 
 export const useAdminDashboardCharacterUsage = (
 	gameSlug: string,
@@ -19,7 +22,8 @@ export const useAdminDashboardCharacterUsage = (
 		queryFn: () =>
 			schoolService.getDashboardCharacterUsage({
 				gameSlug,
-				schoolId: schoolId === 'all' ? undefined : schoolId,
+				schoolId:
+					schoolId === ADMIN_DASHBOARD_ALL_SCHOOLS ? undefined : schoolId,
 			}),
 		enabled: options?.enabled !== false && Boolean(gameSlug),
 	});

@@ -1,15 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
-import { schoolService, useCharacter } from '@etnos/tools';
-import {
-	GameNameEnum,
-	GamesEnum,
-	type UserRankingInterface,
-} from '@etnos/types';
-import { UserRanking } from '../UserRanking';
+import { useCharacter, useSchoolUsersRanking } from '@etnos/tools';
+import { GameNameEnum, GamesEnum } from '@etnos/types';
+import { UserRanking } from '..';
 
 interface SchoolRankingProps {
 	schoolId: string;
@@ -41,22 +36,12 @@ export const SchoolRanking = ({ schoolId }: SchoolRankingProps) => {
 	const selectedCharacterSlug =
 		selectedCharacter === 'all' ? undefined : selectedCharacter;
 
-	const { data: ranking = [], isLoading } = useQuery<UserRankingInterface[]>({
-		queryKey: [
-			'schools',
-			'users-ranking',
-			schoolId,
-			selectedGameSlug ?? 'all',
-			selectedCharacterSlug ?? 'all',
-		],
-		queryFn: () =>
-			schoolService.getUsersRankingBySchool(
-				schoolId,
-				selectedGameSlug,
-				selectedCharacterSlug,
-			),
-		enabled: Boolean(schoolId),
-	});
+	const { data: ranking = [], isLoading } = useSchoolUsersRanking(
+		schoolId,
+		selectedGameSlug,
+		selectedCharacterSlug,
+		{ enabled: Boolean(schoolId) },
+	);
 
 	return (
 		<Spin spinning={isLoading}>

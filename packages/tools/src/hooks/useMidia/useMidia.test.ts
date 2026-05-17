@@ -2,11 +2,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useMidia } from './useMidia';
 import { createWrapper } from '../../test';
-import { midiaService } from '../../services';
+import { midiaService } from '@etnos/services';
 
 const mockId = 'user-123';
 
-vi.mock('../../services', async () => ({
+vi.mock('@etnos/services', async () => ({
 	midiaService: {
 		getMidia: vi.fn(),
 		getFolders: vi.fn(),

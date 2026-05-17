@@ -2,7 +2,7 @@
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { MidiaInterface } from '@etnos/types';
-import { midiaService } from '../../services';
+import { midiaService } from '@etnos/services';
 
 export const useMidia = (
 	userId?: string,

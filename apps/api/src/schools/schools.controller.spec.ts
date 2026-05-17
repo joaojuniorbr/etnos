@@ -142,6 +142,15 @@ describe('SchoolsController', () => {
     expect(result.topCharacterName).toBe('Anita');
   });
 
+  it('deve usar gameSlug padrao no uso de personagens', async () => {
+    await controller.getDashboardCharacterUsage(undefined, 'school-1');
+
+    expect(service.getDashboardCharacterUsageForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: 'school-1',
+    });
+  });
+
   it('deve retornar NPS do dashboard', async () => {
     const result = await controller.getDashboardNps('memory-game');
 
@@ -152,12 +161,17 @@ describe('SchoolsController', () => {
     expect(result.viewMode).toBe('by_school');
   });
 
+  it('deve usar gameSlug padrao no NPS', async () => {
+    await controller.getDashboardNps(undefined, 'school-1');
+
+    expect(service.getDashboardNpsForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: 'school-1',
+    });
+  });
+
   it('deve retornar top usuarios do dashboard admin com parametros default', async () => {
-    const result = await controller.getDashboardTopUsers(
-      'memory-game',
-      undefined,
-      undefined,
-    );
+    const result = await controller.getDashboardTopUsers('memory-game');
 
     expect(service.getTopUsersForGameForAdmin).toHaveBeenCalledWith({
       gameSlug: 'memory-game',
@@ -174,6 +188,34 @@ describe('SchoolsController', () => {
       gameSlug: 'memory-game',
       schoolId: 'school-1',
       limit: 5,
+    });
+  });
+
+  it('deve usar gameSlug padrao e normalizar limite invalido no top usuarios', async () => {
+    await controller.getDashboardTopUsers(undefined, undefined, 'abc');
+
+    expect(service.getTopUsersForGameForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: undefined,
+      limit: 10,
+    });
+  });
+
+  it('deve limitar limite minimo e maximo no top usuarios', async () => {
+    await controller.getDashboardTopUsers('memory-game', undefined, '0');
+
+    expect(service.getTopUsersForGameForAdmin).toHaveBeenCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: undefined,
+      limit: 1,
+    });
+
+    await controller.getDashboardTopUsers('memory-game', undefined, '99');
+
+    expect(service.getTopUsersForGameForAdmin).toHaveBeenLastCalledWith({
+      gameSlug: 'memory-game',
+      schoolId: undefined,
+      limit: 50,
     });
   });
 

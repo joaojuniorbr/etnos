@@ -3,65 +3,27 @@
 import { useState } from 'react';
 import { Button, Card, Popconfirm, Table, message } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { notificationsService, useAuth } from '@etnos/tools';
+import {
+	useAuth,
+	useNotificationMutations,
+	useNotificationTemplates,
+} from '@etnos/tools';
 import type { NotificationTemplateInterface } from '@etnos/types';
-import { useNotificacoes } from '../../@contexts/NotificacoesContext';
-import { TemplateDrawer } from '../../@molecules/TemplateDrawer';
+import { useNotificacoes } from '../../@contexts';
+import { TemplateDrawer } from '../../@molecules';
 
 export const TemplatesPanel = () => {
 	const { user } = useAuth();
 	const isAdmin = user?.role?.includes('admin');
 	const { sendForm } = useNotificacoes();
-	const queryClient = useQueryClient();
+	const { createTemplate, updateTemplate, deleteTemplate } =
+		useNotificationMutations();
 
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [editingTemplate, setEditingTemplate] =
 		useState<NotificationTemplateInterface | null>(null);
 
-	const { data: templates = [], isLoading } = useQuery<
-		NotificationTemplateInterface[]
-	>({
-		queryKey: ['notifications', 'templates'],
-		queryFn: () => notificationsService.getTemplates(),
-	});
-
-	const createMutation = useMutation({
-		mutationFn: (values: { title: string; message: string }) =>
-			notificationsService.createTemplate(values),
-		onSuccess: () => {
-			setDrawerOpen(false);
-			void queryClient.invalidateQueries({
-				queryKey: ['notifications', 'templates'],
-			});
-			void message.success('Template criado com sucesso.');
-		},
-		onError: () => void message.error('Erro ao criar template.'),
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: (values: { title: string; message: string }) =>
-			notificationsService.updateTemplate(editingTemplate!.id, values),
-		onSuccess: () => {
-			setEditingTemplate(null);
-			void queryClient.invalidateQueries({
-				queryKey: ['notifications', 'templates'],
-			});
-			void message.success('Template atualizado com sucesso.');
-		},
-		onError: () => void message.error('Erro ao atualizar template.'),
-	});
-
-	const deleteMutation = useMutation({
-		mutationFn: (id: string) => notificationsService.deleteTemplate(id),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['notifications', 'templates'],
-			});
-			void message.success('Template removido.');
-		},
-		onError: () => void message.error('Erro ao remover template.'),
-	});
+	const { data: templates = [], isLoading } = useNotificationTemplates();
 
 	const handleApply = (template: NotificationTemplateInterface) => {
 		sendForm.setFieldsValue({
@@ -93,15 +55,21 @@ export const TemplatesPanel = () => {
 							/>
 							<Popconfirm
 								title="Remover template?"
-								onConfirm={() => deleteMutation.mutate(record.id)}
+								onConfirm={() =>
+									deleteTemplate.mutate(record.id, {
+										onSuccess: () => message.success('Template removido.'),
+										onError: () =>
+											message.error('Erro ao remover template.'),
+									})
+								}
 							>
 								<Button
 									size="small"
 									danger
 									icon={<DeleteOutlined />}
 									loading={
-										deleteMutation.isPending &&
-										deleteMutation.variables === record.id
+										deleteTemplate.isPending &&
+										deleteTemplate.variables === record.id
 									}
 								/>
 							</Popconfirm>
@@ -142,9 +110,15 @@ export const TemplatesPanel = () => {
 				title="Novo Template"
 				submitLabel="Salvar template"
 				onClose={() => setDrawerOpen(false)}
-				loading={createMutation.isPending}
-				onFinish={(values: { title: string; message: string }) =>
-					createMutation.mutate(values)
+				loading={createTemplate.isPending}
+				onFinish={(values) =>
+					createTemplate.mutate(values, {
+						onSuccess: () => {
+							setDrawerOpen(false);
+							message.success('Template criado com sucesso.');
+						},
+						onError: () => message.error('Erro ao criar template.'),
+					})
 				}
 			/>
 
@@ -153,9 +127,18 @@ export const TemplatesPanel = () => {
 				title="Editar Template"
 				submitLabel="Atualizar template"
 				onClose={() => setEditingTemplate(null)}
-				loading={updateMutation.isPending}
-				onFinish={(values: { title: string; message: string }) =>
-					updateMutation.mutate(values)
+				loading={updateTemplate.isPending}
+				onFinish={(values) =>
+					updateTemplate.mutate(
+						{ id: editingTemplate!.id, payload: values },
+						{
+							onSuccess: () => {
+								setEditingTemplate(null);
+								message.success('Template atualizado com sucesso.');
+							},
+							onError: () => message.error('Erro ao atualizar template.'),
+						},
+					)
 				}
 				initialValues={{
 					title: editingTemplate?.title,

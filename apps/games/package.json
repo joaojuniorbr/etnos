@@ -39,6 +39,9 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@etnos/core": "*",
+		"@etnos/services": "*",
+		"@etnos/tools": "*",
 		"@etnos/types": "*",
 		"antd": "^6.1.0",
 		"react": "19.2.0",
@@ -46,7 +49,6 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.1",
-		"@etnos/tools": "*",
 		"@etnos/ui": "*",
 		"@tailwindcss/postcss": "^4.1.17",
 		"@types/node": "^24.10.1",

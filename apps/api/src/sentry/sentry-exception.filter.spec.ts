@@ -21,11 +21,16 @@ describe('SentryExceptionFilter', () => {
       .spyOn(BaseExceptionFilter.prototype, 'catch')
       .mockImplementation(jest.fn());
 
-    withScope.mockImplementation(((callback: (scope: unknown) => void) => {
-      if (typeof callback === 'function') {
+    (withScope as jest.Mock).mockImplementation(
+      (
+        callback: (scope: {
+          setTag: typeof setTag;
+          setExtra: typeof setExtra;
+        }) => void,
+      ) => {
         callback({ setTag, setExtra });
-      }
-    }) as never);
+      },
+    );
 
     return {
       setTag,

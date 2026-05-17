@@ -18,7 +18,7 @@ const {
 	resetFieldsMock: vi.fn(),
 }));
 
-vi.mock('@etnos/tools', () => ({
+vi.mock('@etnos/services', () => ({
 	api: {
 		post: apiPostMock,
 	},
@@ -37,11 +37,15 @@ vi.mock('../../@atoms', () => ({
 		htmlType?: 'button' | 'submit' | 'reset';
 		block?: boolean;
 		loading?: boolean;
-	}) => (
-		<button type={htmlType ?? 'button'} {...props}>
-			{children}
-		</button>
-	),
+	}) => {
+		const { block: _block, loading: _loading, type: _type, ...rest } = props;
+
+		return (
+			<button type={htmlType ?? 'submit'} {...rest}>
+				{children}
+			</button>
+		);
+	},
 }));
 
 vi.mock('antd', async () => {

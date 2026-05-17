@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	createMemoryGameDeck,
+	getMemoryGameLevelConfig,
+	resolveMemoryGameTurn,
+} from '@etnos/core';
 import type {
 	MemoryGameCard,
 	MemoryGameCardContent,
 	MemoryGameLevelConfig,
 	MemoryGameSound,
 } from './memory-game.types';
-import {
-	createMemoryGameDeck,
-	getMemoryGameLevelConfig,
-	resolveMemoryGameTurn,
-} from './memory-game.utils';
 
 type UseMemoryGameProps = {
 	content: MemoryGameCardContent[];

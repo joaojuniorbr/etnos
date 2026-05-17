@@ -1,12 +1,12 @@
 'use client';
 
 import { Button, Descriptions, Modal, Tag, Typography } from 'antd';
+import type { NotificationTargetType } from '@etnos/types';
 import {
-	useNotificacoes,
 	targetTypeColors,
 	targetTypeLabels,
-	type NotificationTargetType,
-} from '../../@contexts/NotificacoesContext';
+	useNotificacoes,
+} from '../../@contexts';
 
 export const NotificationPreviewModal = () => {
 	const { sendForm, schoolOptions, previewModalOpen, setPreviewModalOpen } =
@@ -54,8 +54,8 @@ export const NotificationPreviewModal = () => {
 
 				{values.schoolId && (
 					<Descriptions.Item label="Escola">
-						{schoolOptions.find((s) => s.value === values.schoolId)?.label ??
-							values.schoolId}
+						{schoolOptions.find((school) => school.value === values.schoolId)
+							?.label ?? values.schoolId}
 					</Descriptions.Item>
 				)}
 

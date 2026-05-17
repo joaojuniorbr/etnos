@@ -9,7 +9,7 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
-import type { SchoolAverageChartRow } from '../../types/admin-performance';
+import type { SchoolAverageChartRow } from '@etnos/types';
 
 interface SchoolAverageBarChartProps {
 	data: SchoolAverageChartRow[];

@@ -613,6 +613,22 @@ describe('SchoolsService', () => {
       expect(prismaService.character.findMany).toHaveBeenCalledTimes(1);
     });
 
+    it('ordena papeis do viewer ao montar chave de cache de acesso', async () => {
+      prismaService.user.findUnique.mockResolvedValueOnce(
+        createAuthenticatedProfile({
+          roles: ['school', 'admin'],
+        }),
+      );
+
+      const result = await service.getGameAccessBySchool(
+        'firebase-user-1',
+        '1',
+      );
+
+      expect(result.viewerRoles).toEqual(['school', 'admin']);
+      expect(result.canEdit).toBe(true);
+    });
+
     it('retorna configuracao customizada de jogos e personagens da escola', async () => {
       prismaService.schoolEnabledGame.findMany.mockResolvedValueOnce([
         { gameSlug: 'guess-game' },
@@ -952,7 +968,7 @@ describe('SchoolsService', () => {
       prismaService.user.findMany.mockResolvedValueOnce([
         createUserEntity({
           id: 'user-without-firebase',
-          firebaseUid: undefined as unknown as string,
+          firebaseUid: undefined,
           school: '2',
         }),
       ]);
@@ -2053,6 +2069,23 @@ describe('SchoolsService', () => {
     });
   });
 
+  describe('buildDashboardPieSlices', () => {
+    it('retorna percentual zero quando total ponderado for zero', () => {
+      const slices = (
+        service as unknown as {
+          buildDashboardPieSlices: (
+            entries: Array<{ key: string; label: string; value: number }>,
+          ) => Array<{ percentage: number }>;
+        }
+      ).buildDashboardPieSlices([
+        { key: 'a', label: 'A', value: 5 },
+        { key: 'b', label: 'B', value: -5 },
+      ]);
+
+      expect(slices).toEqual([expect.objectContaining({ percentage: 0 })]);
+    });
+  });
+
   describe('getDashboardCharacterUsageForAdmin', () => {
     it('agrega partidas por personagem', async () => {
       prismaService.gameScoreHistory.groupBy.mockResolvedValueOnce([
@@ -2071,6 +2104,69 @@ describe('SchoolsService', () => {
       expect(result.topCharacterSlug).toBe('anita');
       expect(result.totalPlays).toBe(10);
       expect(result.slices).toHaveLength(2);
+    });
+
+    it('rejeita jogo invalido', async () => {
+      await expect(
+        service.getDashboardCharacterUsageForAdmin({
+          gameSlug: 'invalid-game',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('filtra por escola quando schoolId for informado', async () => {
+      prismaService.school.findUnique.mockResolvedValueOnce(createSchool());
+      prismaService.gameScoreHistory.groupBy.mockResolvedValueOnce([
+        { characterSlug: 'anita', _count: { _all: 3 } },
+      ]);
+      prismaService.character.findMany.mockResolvedValueOnce([
+        { slug: 'anita', name: 'Anita' },
+      ]);
+
+      await service.getDashboardCharacterUsageForAdmin({
+        gameSlug: 'memory-game',
+        schoolId: ' 1 ',
+      });
+
+      expect(prismaService.gameScoreHistory.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            gameSlug: 'memory-game',
+            schoolId: '1',
+          }),
+        }),
+      );
+    });
+
+    it('retorna valores nulos quando nao houver partidas', async () => {
+      prismaService.gameScoreHistory.groupBy.mockResolvedValueOnce([]);
+      prismaService.character.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardCharacterUsageForAdmin({
+        gameSlug: 'memory-game',
+      });
+
+      expect(result.topCharacterSlug).toBeNull();
+      expect(result.topCharacterName).toBeNull();
+      expect(result.totalPlays).toBe(0);
+      expect(result.slices).toEqual([]);
+    });
+
+    it('usa slug do personagem quando nome nao estiver cadastrado', async () => {
+      prismaService.gameScoreHistory.groupBy.mockResolvedValueOnce([
+        { characterSlug: 'personagem-x', _count: { _all: 4 } },
+      ]);
+      prismaService.character.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardCharacterUsageForAdmin({
+        gameSlug: 'memory-game',
+      });
+
+      expect(result.slices[0]).toMatchObject({
+        key: 'personagem-x',
+        label: 'personagem-x',
+        percentage: 100,
+      });
     });
   });
 
@@ -2109,6 +2205,104 @@ describe('SchoolsService', () => {
 
       expect(result.viewMode).toBe('by_rating');
       expect(result.slices).toHaveLength(2);
+    });
+
+    it('rejeita jogo invalido', async () => {
+      await expect(
+        service.getDashboardNpsForAdmin({ gameSlug: 'invalid-game' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('usa rotulo padrao para nota desconhecida', async () => {
+      prismaService.school.findUnique.mockResolvedValueOnce(createSchool());
+      prismaService.gameNpsResponse.groupBy.mockResolvedValueOnce([
+        { rating: 9, _count: { _all: 1 } },
+      ]);
+
+      const result = await service.getDashboardNpsForAdmin({
+        gameSlug: 'memory-game',
+        schoolId: '1',
+      });
+
+      expect(result.slices[0].label).toBe('Nota 9');
+    });
+
+    it('retorna media nula quando escola nao tiver respostas de NPS', async () => {
+      prismaService.school.findUnique.mockResolvedValueOnce(createSchool());
+      prismaService.gameNpsResponse.groupBy.mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardNpsForAdmin({
+        gameSlug: 'memory-game',
+        schoolId: '1',
+      });
+
+      expect(result.totalResponses).toBe(0);
+      expect(result.averageRating).toBeNull();
+    });
+
+    it('retorna media nula no NPS global sem respostas', async () => {
+      prismaService.gameNpsResponse.groupBy.mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardNpsForAdmin({
+        gameSlug: 'memory-game',
+      });
+
+      expect(result.totalResponses).toBe(0);
+      expect(result.averageRating).toBeNull();
+      expect(prismaService.school.findMany).not.toHaveBeenCalled();
+    });
+
+    it('usa fallback quando escola do NPS global nao for encontrada', async () => {
+      prismaService.gameNpsResponse.groupBy.mockResolvedValueOnce([
+        {
+          schoolId: 'missing-school',
+          _count: { _all: 2 },
+          _avg: { rating: 4.5 },
+        },
+        {
+          schoolId: null,
+          _count: { _all: 1 },
+          _avg: { rating: 3 },
+        },
+      ]);
+      prismaService.school.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardNpsForAdmin({
+        gameSlug: 'memory-game',
+      });
+
+      expect(result.viewMode).toBe('by_school');
+      expect(result.slices).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: 'missing-school',
+            label: 'missing-school',
+          }),
+          expect.objectContaining({
+            key: 'unknown',
+            label: 'Sem escola',
+          }),
+        ]),
+      );
+    });
+
+    it('trata media ausente no agrupamento global de NPS', async () => {
+      prismaService.gameNpsResponse.groupBy.mockResolvedValueOnce([
+        {
+          schoolId: '1',
+          _count: { _all: 2 },
+          _avg: { rating: null },
+        },
+      ]);
+      prismaService.school.findMany.mockResolvedValueOnce([
+        createSchool({ id: '1', name: 'IFPR' }),
+      ]);
+
+      const result = await service.getDashboardNpsForAdmin({
+        gameSlug: 'memory-game',
+      });
+
+      expect(result.averageRating).toBe(0);
     });
   });
 
@@ -2211,6 +2405,70 @@ describe('SchoolsService', () => {
       );
       expect(result).toHaveLength(1);
       expect(result[0].totalScore).toBe(99);
+    });
+
+    it('retorna vazio quando nao houver pontuacoes positivas', async () => {
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'firebase-a', _sum: { score: 0 } },
+        { userId: 'firebase-b', _sum: { score: null } },
+      ]);
+
+      const result = await service.getTopUsersForGameForAdmin({
+        gameSlug: 'memory-game',
+        limit: 10,
+      });
+
+      expect(result).toEqual([]);
+      expect(prismaService.user.findMany).not.toHaveBeenCalled();
+    });
+
+    it('ignora usuarios sem cadastro ao montar ranking global', async () => {
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'firebase-a', _sum: { score: 40 } },
+        { userId: 'firebase-missing', _sum: { score: 20 } },
+      ]);
+      prismaService.user.findMany.mockResolvedValueOnce([
+        createUserEntity({
+          id: 'u1',
+          firebaseUid: 'firebase-a',
+          school: null,
+        }),
+      ]);
+
+      const result = await service.getTopUsersForGameForAdmin({
+        gameSlug: 'memory-game',
+        limit: 10,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        uid: 'firebase-a',
+        totalScore: 40,
+        schoolName: null,
+      });
+      expect(prismaService.school.findMany).not.toHaveBeenCalled();
+    });
+
+    it('retorna schoolName nulo quando escola do usuario nao for encontrada', async () => {
+      prismaService.gameScore.groupBy.mockResolvedValueOnce([
+        { userId: 'firebase-a', _sum: { score: 25 } },
+      ]);
+      prismaService.user.findMany.mockResolvedValueOnce([
+        createUserEntity({
+          id: 'u1',
+          firebaseUid: 'firebase-a',
+          school: 'missing-school',
+        }),
+      ]);
+      prismaService.school.findMany.mockResolvedValueOnce([]);
+
+      const result = await service.getTopUsersForGameForAdmin({
+        gameSlug: 'memory-game',
+        limit: 10,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].schoolName).toBeNull();
     });
   });
 });

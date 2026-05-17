@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	Breadcrumb,
 	Button,
@@ -11,18 +10,23 @@ import {
 	Input,
 	Select,
 	Spin,
-	Tag,
 	Table,
 	Tabs,
 	Typography,
 	message,
 } from 'antd';
-import { schoolService, useAuth } from '@etnos/tools';
-import { type SchoolInterface, type SchoolUserInterface } from '@etnos/types';
-
+import {
+	useAuth,
+	useManagedSchools,
+	useSchoolAccessUsers,
+	useSchoolMutations,
+	useSchools,
+} from '@etnos/tools';
+import type { SchoolInterface } from '@etnos/types';
 import { DeleteOutlined, PlusOutlined, CopyOutlined } from '@ant-design/icons';
 import { Title } from '@etnos/ui';
 import {
+	SchoolAccessPanel,
 	SchoolGames,
 	SchoolRanking,
 	SchoolUsers,
@@ -36,18 +40,20 @@ export default function EscolasPage() {
 	const [form] = Form.useForm();
 
 	const { user } = useAuth();
-	const queryClient = useQueryClient();
+	const {
+		createSchool,
+		deleteSchool,
+		updateSchoolField,
+		addSchoolAccessUser,
+		removeSchoolAccessUser,
+	} = useSchoolMutations();
 
 	const isAdmin = user?.role?.includes('admin');
 	const isTeacherProfile = user?.role?.includes('teacher') && !isAdmin;
 	const isSchoolProfile = user?.role?.includes('school') && !isAdmin;
 	const isSchoolViewerProfile = isSchoolProfile || isTeacherProfile;
 
-	const toggleDrawer = () => setOpen(!open);
-
-	const { data: schools = [], isLoading: isLoadingSchools } = useQuery({
-		queryKey: ['schools', 'admin'],
-		queryFn: () => schoolService.getAll(),
+	const { data: schools = [], isLoading: isLoadingSchools } = useSchools({
 		enabled: isAdmin,
 	});
 
@@ -57,11 +63,7 @@ export default function EscolasPage() {
 			: schools[0]?.id;
 
 	const { data: managedSchools = [], isLoading: isLoadingManagedSchools } =
-		useQuery({
-			queryKey: ['schools', 'me', 'managed'],
-			queryFn: () => schoolService.getManagedSchools(),
-			enabled: isSchoolViewerProfile,
-		});
+		useManagedSchools({ enabled: isSchoolViewerProfile });
 
 	const effectiveManagedSchoolId =
 		selectedSchoolId &&
@@ -73,101 +75,31 @@ export default function EscolasPage() {
 		managedSchools.find((school) => school.id === effectiveManagedSchoolId) ??
 		null;
 
-	const {
-		data: schoolAccessUsers = [],
-		isLoading: isLoadingSchoolAccessUsers,
-	} = useQuery<SchoolUserInterface[]>({
-		queryKey: ['schools', 'admin', 'access-users', effectiveSelectedSchoolId],
-		queryFn: () =>
-			schoolService.getAccessUsersBySchool(effectiveSelectedSchoolId as string),
-		enabled: isAdmin && !!effectiveSelectedSchoolId,
-	});
-
-	const createSchoolMutation = useMutation({
-		mutationFn: (values: SchoolInterface) => schoolService.create(values),
-		onSuccess: () => {
-			form.resetFields();
-			setOpen(false);
-			void queryClient.invalidateQueries({ queryKey: ['schools', 'admin'] });
-			message.success('Escola criada com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao criar escola');
-		},
-	});
-
-	const deleteSchoolMutation = useMutation({
-		mutationFn: (id: string) => schoolService.delete(id),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ['schools', 'admin'] });
-			message.success('Escola excluida com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao excluir escola');
-		},
-	});
-
-	const updateSchoolMutation = useMutation({
-		mutationFn: ({
-			id,
-			field,
-			value,
-		}: {
-			id: string;
-			field: string;
-			value: string;
-		}) => schoolService.update(id, { [field]: value }),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ['schools', 'admin'] });
-			message.success('Campo atualizado com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao atualizar campo');
-		},
-	});
-
-	const addSchoolAccessMutation = useMutation({
-		mutationFn: ({ schoolId, email }: { schoolId: string; email: string }) =>
-			schoolService.addAccessUserToSchool(schoolId, email),
-		onSuccess: () => {
-			setSchoolAccessEmail('');
-			void queryClient.invalidateQueries({
-				queryKey: ['schools', 'admin', 'access-users'],
-			});
-			message.success('Usuário vinculado à escola com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao vincular usuário à escola');
-		},
-	});
-
-	const removeSchoolAccessMutation = useMutation({
-		mutationFn: ({ schoolId, userId }: { schoolId: string; userId: string }) =>
-			schoolService.removeAccessUserFromSchool(schoolId, userId),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['schools', 'admin', 'access-users'],
-			});
-			message.success('Acesso removido com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao remover acesso da escola');
-		},
-	});
+	const { data: schoolAccessUsers = [], isLoading: isLoadingSchoolAccessUsers } =
+		useSchoolAccessUsers(effectiveSelectedSchoolId ?? '', {
+			enabled: isAdmin && Boolean(effectiveSelectedSchoolId),
+		});
 
 	const isLoading =
 		isLoadingSchools ||
 		isLoadingManagedSchools ||
 		isLoadingSchoolAccessUsers ||
-		createSchoolMutation.isPending ||
-		deleteSchoolMutation.isPending ||
-		updateSchoolMutation.isPending ||
-		addSchoolAccessMutation.isPending ||
-		removeSchoolAccessMutation.isPending;
+		createSchool.isPending ||
+		deleteSchool.isPending ||
+		updateSchoolField.isPending ||
+		addSchoolAccessUser.isPending ||
+		removeSchoolAccessUser.isPending;
 
 	const handleCreateFinish = (values: SchoolInterface) => {
-		if (createSchoolMutation.isPending) return;
-		createSchoolMutation.mutate(values);
+		if (createSchool.isPending) return;
+		createSchool.mutate(values, {
+			onSuccess: () => {
+				form.resetFields();
+				setOpen(false);
+				message.success('Escola criada com sucesso');
+			},
+			onError: () => message.error('Erro ao criar escola'),
+		});
 	};
 
 	const handleAddSchoolAccess = () => {
@@ -175,10 +107,19 @@ export default function EscolasPage() {
 			message.error('Selecione uma escola e informe um e-mail válido.');
 			return;
 		}
-		addSchoolAccessMutation.mutate({
-			schoolId: effectiveSelectedSchoolId,
-			email: schoolAccessEmail.trim(),
-		});
+		addSchoolAccessUser.mutate(
+			{
+				schoolId: effectiveSelectedSchoolId,
+				email: schoolAccessEmail.trim(),
+			},
+			{
+				onSuccess: () => {
+					setSchoolAccessEmail('');
+					message.success('Usuário vinculado à escola com sucesso');
+				},
+				onError: () => message.error('Erro ao vincular usuário à escola'),
+			},
+		);
 	};
 
 	const handleRemoveSchoolAccess = (userId?: string) => {
@@ -186,10 +127,13 @@ export default function EscolasPage() {
 			message.error('Não foi possível identificar o vínculo para remoção.');
 			return;
 		}
-		removeSchoolAccessMutation.mutate({
-			schoolId: effectiveSelectedSchoolId,
-			userId,
-		});
+		removeSchoolAccessUser.mutate(
+			{ schoolId: effectiveSelectedSchoolId, userId },
+			{
+				onSuccess: () => message.success('Acesso removido com sucesso'),
+				onError: () => message.error('Erro ao remover acesso da escola'),
+			},
+		);
 	};
 
 	const handleCopySchoolCode = (schoolCode: string) => {
@@ -245,91 +189,17 @@ export default function EscolasPage() {
 			label: 'Usuarios da escola',
 			children: effectiveSelectedSchoolId ? (
 				<div className="flex flex-col gap-10">
-					<div>
-						<div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-							<div>
-								<Title className="mb-1">Acessos ao painel da escola</Title>
-								<p className="text-slate-600 text-sm">
-									Defina quais perfis com role <code>school</code> podem
-									visualizar a escola selecionada. Se o e-mail ainda não
-									existir, o usuário será cadastrado automaticamente.
-								</p>
-							</div>
-
-							<div className="flex w-full flex-col gap-2 md:max-w-xl md:flex-row">
-								<Input
-									placeholder="email@escola.com"
-									value={schoolAccessEmail}
-									onChange={(event) => setSchoolAccessEmail(event.target.value)}
-								/>
-								<Button
-									type="primary"
-									onClick={handleAddSchoolAccess}
-									loading={addSchoolAccessMutation.isPending}
-									disabled={!effectiveSelectedSchoolId}
-								>
-									Adicionar e-mail
-								</Button>
-							</div>
-						</div>
-
-						<Table
-							rowKey="uid"
-							pagination={{ pageSize: 8 }}
-							dataSource={schoolAccessUsers}
-							columns={[
-								{
-									title: 'Usuário',
-									render: (_, record: SchoolUserInterface) =>
-										record.childName ||
-										record.parentName ||
-										record.email ||
-										'-',
-								},
-								{
-									title: 'E-mail',
-									dataIndex: 'email',
-									render: (value: string | null | undefined) => value || '-',
-								},
-								{
-									title: 'Perfis',
-									dataIndex: 'roles',
-									render: (roles: string[] | undefined) =>
-										roles?.length ? (
-											<div className="flex flex-wrap gap-1">
-												{roles.map((role) => (
-													<Tag key={role}>{role}</Tag>
-												))}
-											</div>
-										) : (
-											'-'
-										),
-								},
-								{
-									title: 'Ações',
-									key: 'action',
-									render: (_, record: SchoolUserInterface) => (
-										<Button
-											danger
-											onClick={() => handleRemoveSchoolAccess(record.id)}
-											loading={
-												removeSchoolAccessMutation.isPending &&
-												removeSchoolAccessMutation.variables?.userId ===
-													record.id
-											}
-										>
-											Remover
-										</Button>
-									),
-								},
-							]}
-							locale={{
-								emptyText:
-									'Nenhum perfil school foi vinculado à escola selecionada.',
-							}}
-						/>
-					</div>
-
+					<SchoolAccessPanel
+						schoolAccessEmail={schoolAccessEmail}
+						onSchoolAccessEmailChange={setSchoolAccessEmail}
+						onAddAccess={handleAddSchoolAccess}
+						isAdding={addSchoolAccessUser.isPending}
+						isRemoving={removeSchoolAccessUser.isPending}
+						removingUserId={removeSchoolAccessUser.variables?.userId}
+						users={schoolAccessUsers}
+						onRemoveAccess={handleRemoveSchoolAccess}
+						disabled={!effectiveSelectedSchoolId}
+					/>
 					<SchoolUsers schoolId={effectiveSelectedSchoolId} />
 				</div>
 			) : null,
@@ -378,11 +248,15 @@ export default function EscolasPage() {
 								<Typography.Text
 									editable={{
 										onChange(value) {
-											updateSchoolMutation.mutate({
-												id: record.id,
-												field: 'name',
-												value,
-											});
+											updateSchoolField.mutate(
+												{ id: record.id, field: 'name', value },
+												{
+													onSuccess: () =>
+														message.success('Campo atualizado com sucesso'),
+													onError: () =>
+														message.error('Erro ao atualizar campo'),
+												},
+											);
 										},
 									}}
 								>
@@ -397,13 +271,13 @@ export default function EscolasPage() {
 							render: (id: string) => (
 								<div className="flex flex-col gap-2">
 									<button
+										type="button"
 										onClick={() => handleCopySchoolCode(id)}
 										className="flex items-center gap-2 text-slate-600 text-xs py-1 rounded border border-slate-200 w-36 justify-center"
 									>
 										<CopyOutlined />
 										Link para cadastro
 									</button>
-
 									<div className="text-sm text-slate-800 font-medium">{id}</div>
 								</div>
 							),
@@ -427,7 +301,13 @@ export default function EscolasPage() {
 								<Button
 									danger
 									icon={<DeleteOutlined />}
-									onClick={() => deleteSchoolMutation.mutate(id)}
+									onClick={() =>
+										deleteSchool.mutate(id, {
+											onSuccess: () =>
+												message.success('Escola excluida com sucesso'),
+											onError: () => message.error('Erro ao excluir escola'),
+										})
+									}
 								/>
 							),
 						},
@@ -465,13 +345,13 @@ export default function EscolasPage() {
 				<FloatButton
 					type="primary"
 					icon={<PlusOutlined />}
-					onClick={toggleDrawer}
+					onClick={() => setOpen((current) => !current)}
 				/>
 
 				<Drawer
 					open={open}
 					title="Adicionar Escola"
-					onClose={toggleDrawer}
+					onClose={() => setOpen(false)}
 					destroyOnHidden
 				>
 					<Form layout="vertical" form={form} onFinish={handleCreateFinish}>
@@ -504,8 +384,8 @@ export default function EscolasPage() {
 							type="primary"
 							htmlType="submit"
 							block
-							loading={createSchoolMutation.isPending}
-							disabled={createSchoolMutation.isPending}
+							loading={createSchool.isPending}
+							disabled={createSchool.isPending}
 						>
 							Salvar
 						</Button>

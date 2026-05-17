@@ -1,8 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { AdminDashboardNpsInterface } from '@etnos/types';
-import { schoolService } from '../../services';
+import {
+	ADMIN_DASHBOARD_ALL_SCHOOLS,
+	type AdminDashboardNpsInterface,
+} from '@etnos/types';
+import { schoolService } from '@etnos/services';
 
 export const useAdminDashboardNps = (
 	gameSlug: string,
@@ -14,7 +17,8 @@ export const useAdminDashboardNps = (
 		queryFn: () =>
 			schoolService.getDashboardNps({
 				gameSlug,
-				schoolId: schoolId === 'all' ? undefined : schoolId,
+				schoolId:
+					schoolId === ADMIN_DASHBOARD_ALL_SCHOOLS ? undefined : schoolId,
 			}),
 		enabled: options?.enabled !== false && Boolean(gameSlug),
 	});

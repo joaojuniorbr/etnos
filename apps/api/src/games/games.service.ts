@@ -23,10 +23,15 @@ export class GamesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   private isMissingGuessGameContentTable(error: unknown) {
-    return (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2021'
-    );
+    if (
+      !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+      error.code !== 'P2021'
+    ) {
+      return false;
+    }
+
+    const table = error.meta?.table;
+    return typeof table === 'string' && table.includes('guess_game_content');
   }
 
   private async getUserSchoolId(userId: string) {

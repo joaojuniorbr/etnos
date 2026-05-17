@@ -10,11 +10,12 @@ import {
 	Input,
 	Select,
 } from 'antd';
-import { scoreGamesService, useAuth, useSchools } from '@etnos/tools';
+import { useAuth, useSchools } from '@etnos/tools';
 import { GameNameEnum, type ScoreInterface } from '@etnos/types';
 import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { AvatarPickerDrawer, PasswordForm } from '@/components/@molecules';
+import { scoreGamesService } from '@etnos/services';
 
 export const ProfilePage = () => {
 	const [form] = Form.useForm();

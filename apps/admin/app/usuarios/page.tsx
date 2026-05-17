@@ -1,7 +1,6 @@
 'use client';
 
 import { useDeferredValue, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
 	Breadcrumb,
 	Input,
@@ -13,12 +12,18 @@ import {
 	message,
 } from 'antd';
 import type { SelectProps } from 'antd';
-import type {
-	AdminUserInterface,
-	UpdateAdminUserPayload,
-	UserRole,
+import {
+	ADMIN_DASHBOARD_ALL_SCHOOLS,
+	type AdminUserInterface,
+	type UpdateAdminUserPayload,
+	type UserRole,
 } from '@etnos/types';
-import { schoolService, usersService, useAuth } from '@etnos/tools';
+import {
+	useAdminUsers,
+	useAuth,
+	useSchools,
+	useUpdateAdminUserMutation,
+} from '@etnos/tools';
 import { AuthProtected, Title } from '@etnos/ui';
 
 const roleLabels: Record<UserRole, string> = {
@@ -50,64 +55,40 @@ const renderRoleTag = (tagProps: RoleTagRenderProps) => (
 );
 
 export default function UsuariosPage() {
-	const [selectedSchoolId, setSelectedSchoolId] = useState<string>('all');
+	const [selectedSchoolId, setSelectedSchoolId] = useState<string>(
+		ADMIN_DASHBOARD_ALL_SCHOOLS,
+	);
 	const [onlyPushEnabled, setOnlyPushEnabled] = useState(false);
 	const [search, setSearch] = useState('');
 	const deferredSearch = useDeferredValue(search.trim());
-	const queryClient = useQueryClient();
 	const { user } = useAuth();
+	const updateUserMutation = useUpdateAdminUserMutation();
 
-	const { data: schools = [], isLoading: isLoadingSchools } = useQuery({
-		queryKey: ['schools', 'admin'],
-		queryFn: () => schoolService.getAll(),
-	});
-
-	const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-		queryKey: [
-			'users',
-			'admin',
-			selectedSchoolId,
-			onlyPushEnabled,
-			deferredSearch || 'all',
-		],
-		queryFn: () =>
-			usersService.getAll({
-				schoolId: selectedSchoolId === 'all' ? undefined : selectedSchoolId,
-				search: deferredSearch || undefined,
-				hasPushToken: onlyPushEnabled,
-			}),
-	});
-
-	const updateUserMutation = useMutation({
-		mutationFn: ({
-			id,
-			payload,
-		}: {
-			id: string;
-			payload: UpdateAdminUserPayload;
-		}) => usersService.update(id, payload),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
-			message.success('Usuário atualizado com sucesso.');
-		},
-		onError: () => {
-			message.error('Erro ao atualizar usuário.');
-		},
+	const { data: schools = [], isLoading: isLoadingSchools } = useSchools();
+	const { data: users = [], isLoading: isLoadingUsers } = useAdminUsers({
+		schoolId:
+			selectedSchoolId === ADMIN_DASHBOARD_ALL_SCHOOLS
+				? undefined
+				: selectedSchoolId,
+		search: deferredSearch || undefined,
+		hasPushToken: onlyPushEnabled,
 	});
 
 	const updateUser = (id: string, payload: UpdateAdminUserPayload) => {
-		if (updateUserMutation.isPending) {
-			return;
-		}
-
-		updateUserMutation.mutate({ id, payload });
+		if (updateUserMutation.isPending) return;
+		updateUserMutation.mutate(
+			{ id, payload },
+			{
+				onSuccess: () => message.success('Usuário atualizado com sucesso.'),
+				onError: () => message.error('Erro ao atualizar usuário.'),
+			},
+		);
 	};
 
-	const isCurrentUser = (record: AdminUserInterface) =>
-		record.uid === user?.uid;
+	const isCurrentUser = (record: AdminUserInterface) => record.uid === user?.uid;
 
 	const schoolOptions = [
-		{ value: 'all', label: 'Todas as escolas' },
+		{ value: ADMIN_DASHBOARD_ALL_SCHOOLS, label: 'Todas as escolas' },
 		...schools.map((school) => ({
 			value: school.id,
 			label: school.name,
@@ -249,11 +230,7 @@ export default function UsuariosPage() {
 										options={roleOptions}
 										className="w-full"
 										disabled={isCurrentUser(record)}
-										onChange={(roles) =>
-											updateUser(record.id, {
-												roles,
-											})
-										}
+										onChange={(roles) => updateUser(record.id, { roles })}
 										tagRender={renderRoleTag}
 									/>
 								),

@@ -80,6 +80,9 @@ vi.mock('@etnos/tools', () => ({
 	useAuth: () => mockUseAuth,
 	useGames: () => mockUseGames,
 	useCharacter: () => mockUseCharacter,
+}));
+
+vi.mock('@etnos/services', () => ({
 	schoolService: {
 		getMyGameAccess: mockGetMyGameAccess,
 	},

@@ -11,11 +11,14 @@ import { ImageMultipleUpload } from './ImageMultipleUpload';
 let beforeUploadRef: (file: File) => void;
 let onRemoveRef: ((file: UploadFile) => void) | undefined;
 
-vi.mock('@etnos/tools', () => ({
+vi.mock('@etnos/services', () => ({
 	midiaService: {
 		uploadImage: vi.fn(),
 		deleteMidiaFromUrl: vi.fn(),
 	},
+}));
+
+vi.mock('@etnos/tools', () => ({
 	getRandomIndex: vi.fn().mockReturnValue(0),
 }));
 
@@ -71,8 +74,8 @@ vi.mock('antd', async () => {
 	};
 });
 
-import { midiaService } from '@etnos/tools';
 import { message, UploadFile } from 'antd';
+import { midiaService } from '@etnos/services';
 
 describe('<ImageMultipleUpload />', () => {
 	const userId = 'user-123';

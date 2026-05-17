@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Empty, Spin } from 'antd';
-import { schoolService, useCharacter, useGames } from '@etnos/tools';
+import { useCharacter, useGames } from '@etnos/tools';
 import { CardGame } from '@/components/@molecules';
+import { schoolService } from '@etnos/services';
 
 export const GameSelect = () => {
 	const { selectedCharacter, selectCharacter } = useCharacter({

@@ -1,6 +1,6 @@
 'use client';
 
-import { scoreGamesService } from '../../services';
+import { scoreGamesService } from '@etnos/services';
 import { message } from 'antd';
 import { GameNameEnum, GamesEnum } from '@etnos/types';
 

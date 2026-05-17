@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Upload, message, Image, Spin } from 'antd';
 
 import { RiAddLine } from 'react-icons/ri';
+import { midiaService } from '@etnos/services';
 
-import { midiaService } from '@etnos/tools';
 
 interface ImageUploadProps {
 	userId: string;

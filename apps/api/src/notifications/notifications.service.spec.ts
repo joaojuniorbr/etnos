@@ -3,7 +3,9 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as Sentry from '@sentry/nestjs';
+import { PrismaService } from 'src/prisma';
 import { NotificationsService } from './notifications.service';
 import { ExpoPushService } from './expo-push.service';
 import { NotificationTargetType } from './dto/send-notification.dto';
@@ -32,9 +34,9 @@ jest.mock('@sentry/nestjs', () => ({
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let prismaService: any;
-  let expoPushService: jest.Mocked<Pick<ExpoPushService, 'sendToTokens'>>;
+  let expoPushService: { sendToTokens: jest.Mock };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     prismaService = {
       user: {
         findUnique: jest.fn(),
@@ -68,10 +70,16 @@ describe('NotificationsService', () => {
     expoPushService = {
       sendToTokens: jest.fn(),
     };
-    service = new NotificationsService(
-      prismaService,
-      expoPushService as unknown as ExpoPushService,
-    );
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        NotificationsService,
+        { provide: PrismaService, useValue: prismaService },
+        { provide: ExpoPushService, useValue: expoPushService },
+      ],
+    }).compile();
+
+    service = module.get(NotificationsService);
     jest.clearAllMocks();
   });
 

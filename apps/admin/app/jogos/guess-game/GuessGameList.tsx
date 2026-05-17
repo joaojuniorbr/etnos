@@ -1,6 +1,10 @@
 'use client';
 
-import { guessGameContentService, useCharacter } from '@etnos/tools';
+import {
+	useCharacter,
+	useGuessGameContent,
+	useGuessGameContentMutations,
+} from '@etnos/tools';
 import type {
 	CharacterInterface,
 	GuessGameContentInterface,
@@ -8,7 +12,6 @@ import type {
 import { ImageLibrary, Title, useUser } from '@etnos/ui';
 import { Button, Drawer, Form, Input, Modal, Spin, Table, message } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
@@ -24,44 +27,13 @@ export const GuessGameList = () => {
 	const { data: characters = [], isLoading: isLoadingCharacters } =
 		useCharacter();
 	const { user } = useUser();
-	const queryClient = useQueryClient();
+	const characterSlug = selectedCharacter?.slug ?? '';
 
-	const { data: content = [], isLoading: isLoadingContent } = useQuery({
-		queryKey: ['guess-game-content', selectedCharacter?.slug],
-		queryFn: () =>
-			guessGameContentService.getContent(selectedCharacter?.slug as string),
-		enabled: !!selectedCharacter?.slug,
-	});
+	const { data: content = [], isLoading: isLoadingContent } =
+		useGuessGameContent(characterSlug);
 
-	const saveMutation = useMutation({
-		mutationFn: (payload: GuessGameContentInterface) =>
-			guessGameContentService.saveContent(payload),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['guess-game-content', selectedCharacter?.slug],
-			});
-			setIsFormOpen(false);
-			setEditingItem(null);
-			form.resetFields();
-			message.success('Conteúdo salvo com sucesso.');
-		},
-		onError: () => {
-			message.error('Erro ao salvar conteúdo.');
-		},
-	});
-
-	const deleteMutation = useMutation({
-		mutationFn: (id: string) => guessGameContentService.deleteContent(id),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['guess-game-content', selectedCharacter?.slug],
-			});
-			message.success('Conteúdo removido com sucesso.');
-		},
-		onError: () => {
-			message.error('Erro ao remover conteúdo.');
-		},
-	});
+	const { saveContent, deleteContent } =
+		useGuessGameContentMutations(characterSlug);
 
 	const openCharacterEditor = (character: CharacterInterface) => {
 		setSelectedCharacter(character);
@@ -106,19 +78,30 @@ export const GuessGameList = () => {
 			return;
 		}
 
-		if (saveMutation.isPending) {
+		if (saveContent.isPending) {
 			return;
 		}
 
-		saveMutation.mutate({
-			id: editingItem?.id,
-			title: values.title.trim(),
-			word: values.word.trim(),
-			tips: values.tips.map((tip) => tip.trim()).filter(Boolean),
-			imageUrl: values.imageUrl?.trim() || null,
-			description: values.description.trim(),
-			characterSlug: selectedCharacter.slug,
-		});
+		saveContent.mutate(
+			{
+				id: editingItem?.id,
+				title: values.title.trim(),
+				word: values.word.trim(),
+				tips: values.tips.map((tip) => tip.trim()).filter(Boolean),
+				imageUrl: values.imageUrl?.trim() || null,
+				description: values.description.trim(),
+				characterSlug: selectedCharacter.slug,
+			},
+			{
+				onSuccess: () => {
+					setIsFormOpen(false);
+					setEditingItem(null);
+					form.resetFields();
+					message.success('Conteúdo salvo com sucesso.');
+				},
+				onError: () => message.error('Erro ao salvar conteúdo.'),
+			},
+		);
 	};
 
 	const handleSelectImage = (url: string) => {
@@ -140,8 +123,8 @@ export const GuessGameList = () => {
 			spinning={
 				isLoadingCharacters ||
 				isLoadingContent ||
-				saveMutation.isPending ||
-				deleteMutation.isPending
+				saveContent.isPending ||
+				deleteContent.isPending
 			}
 		>
 			<Title className="mb-4 mt-6">Jogo Adivinhe</Title>
@@ -280,7 +263,14 @@ export const GuessGameList = () => {
 										<Button
 											danger
 											icon={<DeleteOutlined />}
-											onClick={() => deleteMutation.mutate(item.id as string)}
+											onClick={() =>
+												deleteContent.mutate(item.id as string, {
+													onSuccess: () =>
+														message.success('Conteúdo removido com sucesso.'),
+													onError: () =>
+														message.error('Erro ao remover conteúdo.'),
+												})
+											}
 										/>
 									</div>
 								),
@@ -406,8 +396,8 @@ export const GuessGameList = () => {
 						<Button
 							type="primary"
 							htmlType="submit"
-							loading={saveMutation.isPending}
-							disabled={saveMutation.isPending}
+							loading={saveContent.isPending}
+							disabled={saveContent.isPending}
 						>
 							Salvar
 						</Button>

@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { GamesEnum } from '@etnos/types';
-import { guessGameContentService } from '../../services';
+import { guessGameContentService } from '@etnos/services';
 
 export const useGuessGameContent = (characterSlug: string) =>
 	useQuery({

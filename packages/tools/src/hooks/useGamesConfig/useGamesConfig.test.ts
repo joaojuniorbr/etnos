@@ -1,10 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { createWrapper } from '../../test';
-import { configGamesService } from '../../services';
+import { configGamesService } from '@etnos/services';
 import { useGamesConfig } from './useGamesConfig';
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	configGamesService: {
 		getByGame: vi.fn(),
 	},

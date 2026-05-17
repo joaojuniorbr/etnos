@@ -5,9 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Button, Spin } from 'antd';
 
 import { CharacterCard } from '@etnos/ui';
-import { schoolService, useCharacter } from '@etnos/tools';
+import { useCharacter } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
 import { useRouter } from 'next/navigation';
+import { schoolService } from '@etnos/services';
 
 export const CharacterSelect = () => {
 	const router = useRouter();

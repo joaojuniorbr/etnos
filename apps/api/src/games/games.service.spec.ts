@@ -428,10 +428,6 @@ describe('GamesService', () => {
   });
 
   it('deve relançar erro P2021 quando a tabela ausente não for a do guess game', async () => {
-    jest
-      .spyOn(service as never, 'isMissingGuessGameContentTable')
-      .mockReturnValue(false as never);
-
     prismaService.guessGameContent.findMany.mockRejectedValueOnce(
       makeKnownRequestError('public.memory_game_contents'),
     );
@@ -442,10 +438,6 @@ describe('GamesService', () => {
   });
 
   it('deve relançar erro P2021 quando o Prisma não informar meta.table', async () => {
-    jest
-      .spyOn(service as never, 'isMissingGuessGameContentTable')
-      .mockReturnValue(false as never);
-
     prismaService.guessGameContent.findMany.mockRejectedValueOnce(
       makeKnownRequestError(),
     );

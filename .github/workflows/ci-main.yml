@@ -197,6 +197,9 @@ jobs:
           name: coverage-reports
           path: .
 
+      - name: Fix LCOV paths for Sonar
+        run: node scripts/fix-lcov-paths.mjs
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

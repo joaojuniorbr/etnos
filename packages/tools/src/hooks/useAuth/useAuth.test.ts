@@ -6,7 +6,7 @@ import { message } from 'antd';
 import {
 	AUTH_EXPIRES_AT_STORAGE_KEY,
 	AUTH_REFRESH_TOKEN_STORAGE_KEY,
-} from '../../helpers/authSession';
+} from '@etnos/services';
 
 const { mockApiGet, mockApiPost, mockErrorMessage } = vi.hoisted(() => ({
 	mockApiGet: vi.fn(),
@@ -45,8 +45,8 @@ vi.stubGlobal('localStorage', {
 	}),
 });
 
-vi.mock('../../helpers/api', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('../../helpers/api')>();
+vi.mock('@etnos/services', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@etnos/services')>();
 
 	return {
 		...actual,
@@ -54,15 +54,6 @@ vi.mock('../../helpers/api', async (importOriginal) => {
 			get: mockApiGet,
 			post: mockApiPost,
 		},
-	};
-});
-
-vi.mock('../../helpers/authSession', async (importOriginal) => {
-	const actual =
-		await importOriginal<typeof import('../../helpers/authSession')>();
-
-	return {
-		...actual,
 		updateAuthActivity: updateAuthActivityMock,
 	};
 });

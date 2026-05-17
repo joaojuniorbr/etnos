@@ -1,10 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useMemoryGameContent } from './useMemoryGameContent';
-import { memoryGameContentService } from '../../services';
+import { memoryGameContentService } from '@etnos/services';
 import { createWrapper } from '../../test';
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	memoryGameContentService: {
 		getMemoryGameImages: vi.fn(),
 	},

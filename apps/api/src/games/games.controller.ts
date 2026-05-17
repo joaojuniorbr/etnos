@@ -10,11 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
-import type {
-  MemoryGameContentInterface,
-  GuessGameContentInterface,
-  ScoreHistory,
-} from '@etnos/types';
+import { ScoreHistory } from '@etnos/types';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -155,9 +151,7 @@ export class GamesController {
   @ApiOperation({ summary: 'Salva conteúdo do jogo da memória' })
   @ApiBody({ type: SaveMemoryGameContentDto })
   async saveMemoryGameContent(@Body() data: SaveMemoryGameContentDto) {
-    return this.gamesService.saveMemoryGameContent(
-      data as MemoryGameContentInterface,
-    );
+    return this.gamesService.saveMemoryGameContent(data);
   }
 
   @Post('guess')
@@ -165,9 +159,7 @@ export class GamesController {
   @ApiOperation({ summary: 'Salva conteúdo do jogo adivinhe' })
   @ApiBody({ type: SaveGuessGameContentDto })
   async saveGuessGameContent(@Body() data: SaveGuessGameContentDto) {
-    return this.gamesService.saveGuessGameContent(
-      data as GuessGameContentInterface,
-    );
+    return this.gamesService.saveGuessGameContent(data);
   }
 
   @Delete('memory/:id')

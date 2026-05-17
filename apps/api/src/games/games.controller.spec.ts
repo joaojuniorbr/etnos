@@ -255,7 +255,7 @@ describe('GamesController', () => {
       {
         slug: 'memory-game',
         characterSlug: 'char-1',
-        score: undefined as unknown as number,
+        score: undefined,
       },
     );
 

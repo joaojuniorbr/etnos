@@ -1,11 +1,11 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useCharacter } from './useCharacter';
 import type { CharacterInterface } from '@etnos/types';
-import { charactersService } from '../../services';
+import { charactersService } from '@etnos/services';
 import { vi } from 'vitest';
 import { createWrapper } from '../../test';
 
-vi.mock('../../services', async () => ({
+vi.mock('@etnos/services', async () => ({
 	charactersService: {
 		getCharacters: vi.fn(),
 		getCharacterBySlug: vi.fn(),

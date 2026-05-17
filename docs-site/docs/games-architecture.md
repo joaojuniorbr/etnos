@@ -107,8 +107,8 @@ um conjunto de imagens cadastrado no admin e transforma isso em tabuleiro.
 - `MemoryGame.tsx`: ponto de integração entre hooks, score, configuração e UI.
 - `MemoryGameExperience.tsx`: renderiza placar, grid de cartas e tela final.
 - `useMemoryGame.ts`: gerencia estado do tabuleiro, pares, movimentos e score.
-- `memory-game.utils.ts`: utilitários de preparação e embaralhamento das cartas.
-- `memory-game.types.ts`: contratos locais da feature.
+- `@etnos/core`: utilitários compartilhados de preparação, embaralhamento e pontuação das cartas.
+- `memory-game.types.ts`: contratos locais da feature (`MemoryGameSound` e reexport dos tipos do core).
 
 ### Fluxo do jogo da memória
 

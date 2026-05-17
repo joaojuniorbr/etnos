@@ -4,6 +4,20 @@
   "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./entities": {
+      "types": "./src/entities/index.ts",
+      "default": "./src/entities/index.ts"
+    },
+    "./games": {
+      "types": "./src/games/index.ts",
+      "default": "./src/games/index.ts"
+    }
+  },
   "scripts": {
     "check-types": "tsc --noEmit"
   },

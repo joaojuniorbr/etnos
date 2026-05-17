@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const cwd = process.cwd();
 const envFilePath = join(cwd, '.env.sonar');
@@ -39,6 +40,19 @@ if (!env.SONAR_TOKEN) {
 		'SONAR_TOKEN nao encontrado. Defina no ambiente ou em .env.sonar na raiz do projeto.',
 	);
 	process.exit(1);
+}
+
+const fixLcovPathsScript = join(
+	fileURLToPath(new URL('.', import.meta.url)),
+	'fix-lcov-paths.mjs',
+);
+const fixLcovResult = spawnSync(process.execPath, [fixLcovPathsScript], {
+	cwd,
+	stdio: 'inherit',
+});
+
+if (fixLcovResult.status !== 0) {
+	process.exit(fixLcovResult.status ?? 1);
 }
 
 const scannerBin = join(cwd, 'node_modules', '.bin', 'sonar-scanner');

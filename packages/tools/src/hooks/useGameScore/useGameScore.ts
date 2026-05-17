@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { scoreGamesService } from '../../services';
+import { scoreGamesService } from '@etnos/services';
 
 export const useGameScore = (
 	userId: string,

@@ -1,10 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGameScore } from './useGameScore';
-import { scoreGamesService } from '../../services';
+import { scoreGamesService } from '@etnos/services';
 import { createWrapper } from '../../test';
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	scoreGamesService: {
 		getFromGameScore: vi.fn(),
 	},

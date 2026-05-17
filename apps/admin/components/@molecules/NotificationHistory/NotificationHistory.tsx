@@ -1,16 +1,11 @@
 'use client';
 
 import { Card, Table, Tag } from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { notificationsService } from '@etnos/tools';
-import type { NotificationLogInterface } from '@etnos/types';
+import { useNotificationHistory } from '@etnos/tools';
+import type { NotificationTargetType } from '@etnos/types';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
-import {
-	targetTypeColors,
-	targetTypeLabels,
-	type NotificationTargetType,
-} from '../../@contexts/NotificacoesContext';
+import { targetTypeColors, targetTypeLabels } from '../../@contexts';
 
 dayjs.locale('pt-br');
 
@@ -55,12 +50,7 @@ const columns = [
 ];
 
 export const NotificationHistory = () => {
-	const { data: history = [], isLoading } = useQuery<
-		NotificationLogInterface[]
-	>({
-		queryKey: ['notifications', 'history'],
-		queryFn: () => notificationsService.getHistory(),
-	});
+	const { data: history = [], isLoading } = useNotificationHistory();
 
 	return (
 		<Card>

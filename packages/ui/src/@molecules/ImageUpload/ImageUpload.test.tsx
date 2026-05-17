@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ImageUpload } from './ImageUpload';
 
-vi.mock('@etnos/tools', () => ({
+vi.mock('@etnos/services', () => ({
 	midiaService: {
 		uploadImage: vi.fn(),
 	},
@@ -50,8 +50,8 @@ vi.mock('antd', async () => {
 	};
 });
 
-import { midiaService } from '@etnos/tools';
 import { message } from 'antd';
+import { midiaService } from '@etnos/services';
 
 describe('<ImageUpload />', () => {
 	const userId = 'user-123';

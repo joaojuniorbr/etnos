@@ -103,6 +103,50 @@ describe('instrument', () => {
     });
   });
 
+  it('não deve inicializar o Sentry em desenvolvimento', async () => {
+    const init = jest.fn();
+    const nodeProfilingIntegration = jest.fn();
+
+    process.env.SENTRY_DSN = 'https://dsn.example';
+    process.env.NODE_ENV = 'development';
+
+    jest.doMock('@sentry/nestjs', () => ({
+      init,
+    }));
+
+    jest.doMock('@sentry/profiling-node', () => ({
+      nodeProfilingIntegration,
+    }));
+
+    await import('./instrument');
+
+    expect(init).not.toHaveBeenCalled();
+    expect(nodeProfilingIntegration).not.toHaveBeenCalled();
+  });
+
+  it('não deve inicializar o Sentry sem SENTRY_DSN fora de desenvolvimento', async () => {
+    const init = jest.fn();
+
+    process.env.NODE_ENV = 'production';
+    process.env.SENTRY_DSN = '';
+
+    jest.doMock('node:fs', () => ({
+      existsSync: jest.fn(() => false),
+    }));
+
+    jest.doMock('@sentry/nestjs', () => ({
+      init,
+    }));
+
+    jest.doMock('@sentry/profiling-node', () => ({
+      nodeProfilingIntegration: jest.fn(),
+    }));
+
+    await import('./instrument');
+
+    expect(init).not.toHaveBeenCalled();
+  });
+
   it('deve usar fallback para sendDefaultPii quando env não estiver definida', async () => {
     const init = jest.fn();
     const integration = { name: 'profiling' };

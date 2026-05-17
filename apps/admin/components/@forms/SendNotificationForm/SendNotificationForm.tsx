@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Select, message } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { notificationsService, useAuth, usersService } from '@etnos/tools';
-import type { SendNotificationPayload } from '@etnos/types';
 import {
-	useNotificacoes,
-	type NotificationTargetType,
-} from '../../@contexts/NotificacoesContext';
+	useAuth,
+	useNotificationRecipientsCount,
+	useNotificationUserSearch,
+} from '@etnos/tools';
+import type {
+	NotificationTargetType,
+	SendNotificationPayload,
+} from '@etnos/types';
+import { useNotificacoes } from '../../@contexts';
 
 export const SendNotificationForm = () => {
 	const { user } = useAuth();
@@ -25,42 +28,42 @@ export const SendNotificationForm = () => {
 		isSending,
 		onSend,
 	} = useNotificacoes();
+
 	const schoolId = Form.useWatch('schoolId', sendForm);
 	const userId = Form.useWatch('userId', sendForm);
 
-	const { data: users = [], isFetching: isFetchingUsers } = useQuery({
-		queryKey: ['users', 'search', userSearch, 'push'],
-		queryFn: () =>
-			usersService.getAll({ search: userSearch, hasPushToken: true }),
-		enabled: selectedTargetType === 'INDIVIDUAL' && userSearch.length >= 2,
-	});
-
-	const canFetchRecipientsCount =
-		selectedTargetType === 'GLOBAL' ||
-		(selectedTargetType === 'SCHOOL' && Boolean(schoolId)) ||
-		(selectedTargetType === 'INDIVIDUAL' && Boolean(userId));
-
-	const { data: recipientsCount, isFetching: isFetchingRecipientsCount } =
-		useQuery({
-			queryKey: [
-				'notifications',
-				'recipients-count',
-				selectedTargetType,
-				schoolId ?? 'none',
-				userId ?? 'none',
-			],
-			queryFn: () =>
-				notificationsService.countRecipients({
-					targetType: selectedTargetType,
-					...(schoolId ? { schoolId } : {}),
-					...(userId ? { userId } : {}),
-				}),
-			enabled: canFetchRecipientsCount,
+	const { data: users = [], isFetching: isFetchingUsers } =
+		useNotificationUserSearch(userSearch, {
+			enabled: selectedTargetType === 'INDIVIDUAL',
 		});
 
-	const userOptions = users.map((u) => ({
-		value: u.id,
-		label: `${u.childName || u.email || u.id} · apto para push`,
+	const recipientsPayload = useMemo(() => {
+		if (selectedTargetType === 'GLOBAL') {
+			return { targetType: selectedTargetType as NotificationTargetType };
+		}
+		if (selectedTargetType === 'SCHOOL' && schoolId) {
+			return {
+				targetType: selectedTargetType as NotificationTargetType,
+				schoolId,
+			};
+		}
+		if (selectedTargetType === 'INDIVIDUAL' && userId) {
+			return {
+				targetType: selectedTargetType as NotificationTargetType,
+				userId,
+			};
+		}
+		return null;
+	}, [selectedTargetType, schoolId, userId]);
+
+	const { data: recipientsCount, isFetching: isFetchingRecipientsCount } =
+		useNotificationRecipientsCount(recipientsPayload, {
+			enabled: Boolean(recipientsPayload),
+		});
+
+	const userOptions = users.map((entry) => ({
+		value: entry.id,
+		label: `${entry.childName || entry.email || entry.id} · apto para push`,
 	}));
 
 	const targetTypeOptions = [
@@ -72,7 +75,7 @@ export const SendNotificationForm = () => {
 	];
 
 	useEffect(() => {
-		const targetType = isAdmin ? 'GLOBAL' : 'SCHOOL';
+		const targetType: NotificationTargetType = isAdmin ? 'GLOBAL' : 'SCHOOL';
 		setSelectedTargetType(targetType);
 		sendForm.setFieldValue('targetType', targetType);
 	}, [isAdmin, sendForm, setSelectedTargetType]);
@@ -119,7 +122,7 @@ export const SendNotificationForm = () => {
 	}
 
 	let recipientsAlertDescription: string;
-	if (!canFetchRecipientsCount) {
+	if (!recipientsPayload) {
 		recipientsAlertDescription =
 			'Selecione o público para calcular quantas pessoas podem receber a notificação.';
 	} else if (isFetchingRecipientsCount) {
@@ -168,7 +171,9 @@ export const SendNotificationForm = () => {
 				>
 					<Select
 						options={targetTypeOptions}
-						onChange={(v) => setSelectedTargetType(v as NotificationTargetType)}
+						onChange={(value) =>
+							setSelectedTargetType(value as NotificationTargetType)
+						}
 					/>
 				</Form.Item>
 
@@ -213,7 +218,7 @@ export const SendNotificationForm = () => {
 				<div className="mb-4">
 					<Alert
 						showIcon
-						type={canFetchRecipientsCount ? 'info' : 'warning'}
+						type={recipientsPayload ? 'info' : 'warning'}
 						description={recipientsAlertDescription}
 					/>
 				</div>

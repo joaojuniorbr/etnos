@@ -1,10 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { UserRankingInterface } from '@etnos/types';
-import { schoolService } from '../../services';
-
-const ALL_SCHOOLS = 'all';
+import {
+	ADMIN_DASHBOARD_ALL_SCHOOLS,
+	type UserRankingInterface,
+} from '@etnos/types';
+import { schoolService } from '@etnos/services';
 
 export const useAdminPerformanceTopUsers = (
 	gameSlug: string,
@@ -22,7 +23,7 @@ export const useAdminPerformanceTopUsers = (
 			limit,
 		],
 		queryFn: async () => {
-			if (schoolId === ALL_SCHOOLS) {
+			if (schoolId === ADMIN_DASHBOARD_ALL_SCHOOLS) {
 				return schoolService.getDashboardTopUsers({ gameSlug, limit });
 			}
 

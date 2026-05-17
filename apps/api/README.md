@@ -38,6 +38,8 @@ FIREBASE_PRIVATE_KEY=
 FIREBASE_STORAGE_BUCKET=
 FIREBASE_CHECK_REVOKED_TOKENS=false
 SENTRY_DSN=
+
+O Sentry fica **desligado em `NODE_ENV=development`**, mesmo com `SENTRY_DSN` definido. Em staging/produção, configure o DSN para habilitar traces, profiling e captura de erros.
 ```
 
 ## Swagger

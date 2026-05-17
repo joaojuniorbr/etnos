@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MobileMenu } from './MobileMenu';
-import type { UserProfileInterface } from '@etnos/types';
 
 const meta: Meta<typeof MobileMenu> = {
 	title: 'UI/@molecules/MobileMenu',
@@ -33,6 +32,6 @@ export const LoggedUser: Story = {
 			email: 'iara@etnos.com',
 			childName: 'Iara Curumim',
 			uid: '123',
-		} as UserProfileInterface,
+		},
 	},
 };

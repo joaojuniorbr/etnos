@@ -4,9 +4,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSchoolRanking } from './useSchoolRanking';
-import { schoolService } from '../../services';
+import { schoolService } from '@etnos/services';
 
-vi.mock('../../services', () => ({
+vi.mock('@etnos/services', () => ({
 	schoolService: {
 		getRanking: vi.fn(),
 	},

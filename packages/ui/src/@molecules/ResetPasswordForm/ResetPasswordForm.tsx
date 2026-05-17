@@ -1,7 +1,7 @@
 import { Form, Input, message } from 'antd';
 import { Button } from '../../@atoms';
 import { useMutation } from '@tanstack/react-query';
-import { api } from '@etnos/tools';
+import { api } from '@etnos/services';
 
 interface ResetPasswordFormProps {
 	onSubmit: () => void;

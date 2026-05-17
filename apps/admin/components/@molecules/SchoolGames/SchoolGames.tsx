@@ -1,15 +1,13 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Spin, message } from 'antd';
-import { schoolService, useAuth } from '@etnos/tools';
+import { useAuth, useSchoolGameAccess, useSchoolMutations } from '@etnos/tools';
 import {
 	GameNameEnum,
 	GamesEnum,
-	type SchoolGameAccessInterface,
 	type UpdateSchoolGameAccessPayload,
 } from '@etnos/types';
-import { SchoolGameAccess } from '../SchoolGameAccess';
+import { SchoolGameAccess } from '..';
 
 interface SchoolGamesProps {
 	schoolId: string;
@@ -18,7 +16,7 @@ interface SchoolGamesProps {
 
 export const SchoolGames = ({ schoolId, schoolName }: SchoolGamesProps) => {
 	const { user } = useAuth();
-	const queryClient = useQueryClient();
+	const { updateSchoolGameAccess } = useSchoolMutations();
 
 	const isAdmin = user?.role?.includes('admin');
 	const isTeacherProfile = user?.role?.includes('teacher') && !isAdmin;
@@ -28,26 +26,23 @@ export const SchoolGames = ({ schoolId, schoolName }: SchoolGamesProps) => {
 		label: GameNameEnum[gameSlug],
 	}));
 
-	const { data: schoolGameAccess, isLoading } =
-		useQuery<SchoolGameAccessInterface>({
-			queryKey: ['schools', 'game-access', schoolId],
-			queryFn: () => schoolService.getGameAccessBySchool(schoolId),
-			enabled: Boolean(schoolId),
-		});
-
-	const updateMutation = useMutation({
-		mutationFn: (payload: UpdateSchoolGameAccessPayload) =>
-			schoolService.updateGameAccessBySchool(schoolId, payload),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: ['schools', 'game-access'],
-			});
-			message.success('Configuração da escola atualizada com sucesso');
-		},
-		onError: () => {
-			message.error('Erro ao atualizar configuração da escola');
-		},
+	const { data: schoolGameAccess, isLoading } = useSchoolGameAccess(schoolId, {
+		enabled: Boolean(schoolId),
 	});
+
+	const handleSave = (payload: UpdateSchoolGameAccessPayload) => {
+		updateSchoolGameAccess.mutate(
+			{ schoolId, payload },
+			{
+				onSuccess: () => {
+					message.success('Configuração da escola atualizada com sucesso');
+				},
+				onError: () => {
+					message.error('Erro ao atualizar configuração da escola');
+				},
+			},
+		);
+	};
 
 	if (isLoading) return <Spin className="mt-4 block" />;
 	if (!schoolGameAccess) return null;
@@ -63,13 +58,10 @@ export const SchoolGames = ({ schoolId, schoolName }: SchoolGamesProps) => {
 			hasCustomGames={schoolGameAccess.hasCustomGames}
 			hasCustomCharacters={schoolGameAccess.hasCustomCharacters}
 			canEdit={canEdit}
-			isSaving={updateMutation.isPending}
-			onSave={(payload) => updateMutation.mutate(payload)}
+			isSaving={updateSchoolGameAccess.isPending}
+			onSave={handleSave}
 			onResetToDefault={() =>
-				updateMutation.mutate({
-					enabledGameSlugs: [],
-					enabledCharacterSlugs: [],
-				})
+				handleSave({ enabledGameSlugs: [], enabledCharacterSlugs: [] })
 			}
 		/>
 	);

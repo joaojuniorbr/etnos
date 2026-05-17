@@ -2,13 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Image, Spin } from 'antd';
-import { charactersService } from '@etnos/tools';
 import type {
 	CharacterInterface,
 	MidiaInterface,
 	UserProfileInterface,
 } from '@etnos/types';
 import { useState } from 'react';
+import { charactersService } from '@etnos/services';
 
 interface AvatarPickerDrawerProps {
 	user: UserProfileInterface;

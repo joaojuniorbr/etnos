@@ -12,13 +12,13 @@ import Image from 'next/image';
 import { FinishGame, GameNpsModal, ScoreHighlight } from '../../components';
 import { MemoryGameLevelSelector } from './MemoryGameLevelSelector';
 import { useMemoryGame } from './useMemoryGame';
-import { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
-import { CharacterInterface } from '@etnos/types';
 import {
 	getAvailableMemoryGameLevels,
 	getMemoryGameLevelConfig,
 	getMemoryGameLevelContent,
-} from './memory-game.utils';
+} from '@etnos/core';
+import { CharacterInterface } from '@etnos/types';
+import type { MemoryGameCardContent, MemoryGameSound } from './memory-game.types';
 
 type MemoryGameExperienceProps = {
 	content: MemoryGameCardContent[];

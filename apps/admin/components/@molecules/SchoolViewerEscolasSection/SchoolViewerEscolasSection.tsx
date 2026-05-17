@@ -4,7 +4,7 @@ import { Breadcrumb, Select, Spin, Tabs, type TabsProps } from 'antd';
 import { Title } from '@etnos/ui';
 import { type SchoolInterface } from '@etnos/types';
 
-import { SchoolData } from '../SchoolData';
+import { SchoolData } from '..';
 
 export type SchoolViewerEscolasSectionProps = Readonly<{
 	isLoading: boolean;

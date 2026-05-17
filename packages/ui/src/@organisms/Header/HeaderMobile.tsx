@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MobileMenu } from '../../@molecules';
 import { useUser } from '../../context';
-import { schoolService, useAuth, useCharacter } from '@etnos/tools';
+import { useAuth, useCharacter } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
 import { Image, Modal } from 'antd';
+import { schoolService } from '@etnos/services';
 
 export const HeaderMobile = () => {
 	const [open, setOpen] = useState(false);

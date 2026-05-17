@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@etnos/games": "*",
+		"@etnos/services": "*",
 		"@etnos/tools": "*",
 		"@etnos/ui": "*",
 		"dayjs": "^1.11.18",

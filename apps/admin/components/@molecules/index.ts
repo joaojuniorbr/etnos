@@ -1,4 +1,4 @@
-export * from './AdminPerformanceDashboard';
+export * from './SchoolAccessPanel';
 export * from './SchoolData';
 export * from './SchoolGameAccess';
 export * from './SchoolGames';

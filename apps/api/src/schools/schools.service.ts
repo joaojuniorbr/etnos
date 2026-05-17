@@ -42,8 +42,12 @@ export class SchoolsService {
     private readonly gamesService: GamesService,
   ) {}
 
-  private getAvailableGameSlugs() {
+  private getAvailableGameSlugs(): string[] {
     return [...AVAILABLE_GAME_SLUGS];
+  }
+
+  private isAvailableGameSlug(gameSlug: string) {
+    return this.getAvailableGameSlugs().includes(gameSlug);
   }
 
   private getUserRankingLabel(
@@ -284,11 +288,17 @@ export class SchoolsService {
     );
   }
 
+  private sortStringsAlphabetically(values: string[]) {
+    return [...values].sort((left, right) => left.localeCompare(right));
+  }
+
   private async buildSchoolGameAccess(
     schoolId: string,
     viewerRoles: string[],
   ): Promise<SchoolGameAccessInterface> {
-    const cacheKey = `${schoolId}:${[...viewerRoles].sort().join(',')}`;
+    const cacheKey = `${schoolId}:${this.sortStringsAlphabetically(
+      viewerRoles,
+    ).join(',')}`;
     const cached = this.gameAccessCache.get(cacheKey);
 
     if (cached && cached.expiresAt > Date.now()) {
@@ -987,7 +997,7 @@ export class SchoolsService {
     const { gameSlug, limit } = options;
     const schoolId = options.schoolId?.trim() || undefined;
 
-    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+    if (!this.isAvailableGameSlug(gameSlug)) {
       throw new BadRequestException('Jogo invalido para o ranking.');
     }
 
@@ -1010,9 +1020,7 @@ export class SchoolsService {
       by: ['userId'],
       where: {
         slug: gameSlug,
-        ...(schoolUserUids?.length
-          ? { userId: { in: schoolUserUids } }
-          : {}),
+        ...(schoolUserUids?.length ? { userId: { in: schoolUserUids } } : {}),
       },
       _sum: {
         score: true,
@@ -1059,7 +1067,9 @@ export class SchoolsService {
       ...new Set(
         users
           .map((user) => user.school)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+          .filter(
+            (id): id is string => typeof id === 'string' && id.length > 0,
+          ),
       ),
     ];
 
@@ -1084,7 +1094,7 @@ export class SchoolsService {
       }
 
       const schoolName: string | null = user.school
-        ? (schoolNameById.get(user.school) ?? null)
+        ? schoolNameById.get(user.school) ?? null
         : null;
 
       rows.push({
@@ -1130,7 +1140,7 @@ export class SchoolsService {
     const { gameSlug } = options;
     const schoolId = options.schoolId?.trim() || undefined;
 
-    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+    if (!this.isAvailableGameSlug(gameSlug)) {
       throw new BadRequestException('Jogo invalido para o uso de personagens.');
     }
 
@@ -1183,7 +1193,7 @@ export class SchoolsService {
     const { gameSlug } = options;
     const schoolId = options.schoolId?.trim() || undefined;
 
-    if (!this.getAvailableGameSlugs().some((slug) => slug === gameSlug)) {
+    if (!this.isAvailableGameSlug(gameSlug)) {
       throw new BadRequestException('Jogo invalido para o NPS.');
     }
 
@@ -1271,7 +1281,7 @@ export class SchoolsService {
       .map((row) => ({
         key: row.schoolId ?? 'unknown',
         label: row.schoolId
-          ? (schoolNameById.get(row.schoolId) ?? row.schoolId)
+          ? schoolNameById.get(row.schoolId) ?? row.schoolId
           : 'Sem escola',
         value: row._count._all,
       }))

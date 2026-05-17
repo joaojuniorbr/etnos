@@ -393,7 +393,7 @@ describe('AuthService', () => {
           createdAt: new Date('2026-03-15T00:00:00.000Z'),
           updatedAt: new Date('2026-03-15T01:00:00.000Z'),
         });
-      prismaService.user.update.mockResolvedValueOnce({} as never);
+      prismaService.user.update.mockResolvedValueOnce({});
 
       const result = await service.updateProfile('user-123', {
         parentName: 'Novo Nome',
@@ -432,7 +432,7 @@ describe('AuthService', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-      prismaService.user.update.mockResolvedValueOnce({} as never);
+      prismaService.user.update.mockResolvedValueOnce({});
 
       await service.updateProfile('user-123', {
         parentName: 'Novo Nome',
@@ -467,7 +467,7 @@ describe('AuthService', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-      prismaService.user.update.mockResolvedValueOnce({} as never);
+      prismaService.user.update.mockResolvedValueOnce({});
 
       await service.updateProfile('user-123', {
         photoURL: 'https://avatar.test/image.png',
@@ -505,7 +505,7 @@ describe('AuthService', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-      prismaService.user.update.mockResolvedValueOnce({} as never);
+      prismaService.user.update.mockResolvedValueOnce({});
 
       const result = await service.updateProfile('user-123', {
         notificationsEnabled: false,

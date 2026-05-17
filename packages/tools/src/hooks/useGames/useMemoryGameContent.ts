@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { GamesEnum } from '@etnos/types';
-import { memoryGameContentService } from '../../services';
+import { memoryGameContentService } from '@etnos/services';
 
 export const useMemoryGameContent = (characterSlug: string) =>
 	useQuery({

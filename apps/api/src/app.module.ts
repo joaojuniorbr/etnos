@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { ConfigModule } from '@nestjs/config';
+import { isSentryEnabled } from './sentry/sentry.config';
 import { AuthModule } from './auth';
 import { FirebaseModule } from './firebase';
 import { GamesModule } from './games/games.module';
@@ -35,10 +36,14 @@ import { APP_FILTER } from '@nestjs/core';
   ],
   controllers: [],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
+    ...(isSentryEnabled()
+      ? [
+          {
+            provide: APP_FILTER,
+            useClass: SentryGlobalFilter,
+          },
+        ]
+      : []),
   ],
 })
 export class AppModule {}

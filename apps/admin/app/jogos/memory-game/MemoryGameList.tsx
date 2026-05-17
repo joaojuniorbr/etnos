@@ -1,10 +1,11 @@
 'use client';
 
+import { configGamesService } from '@etnos/services';
 import {
-	configGamesService,
-	memoryGameContentService,
 	useCharacter,
 	useGamesConfig,
+	useMemoryGameEditorContent,
+	useMemoryGameContentMutations,
 } from '@etnos/tools';
 import {
 	type CharacterInterface,
@@ -20,52 +21,43 @@ import { useState } from 'react';
 
 export const MemoryGameList = () => {
 	const [characterEdit, setCharacterEdit] = useState<CharacterInterface>();
-
 	const [openLibrary, setOpenLibrary] = useState(false);
 	const [character, setCharacter] = useState<CharacterInterface>();
 
-	const [contentEdit, setContentEdit] =
-		useState<MemoryGameContentInterface[]>();
-	const { data, isLoading } = useCharacter();
-
+	const { data: characters = [], isLoading: isLoadingCharacters } =
+		useCharacter();
 	const { user } = useUser();
 
 	const { data: gamesConfig, refetch: refetchGamesConfig } = useGamesConfig(
 		GamesEnum.MEMORY_GAME,
 	);
 
-	const { getContent, saveContent, deleteContent } = memoryGameContentService;
+	const characterSlug = character?.slug ?? '';
+	const { data: content = [], isLoading: isLoadingContent } =
+		useMemoryGameEditorContent(characterSlug, {
+			enabled: Boolean(characterSlug),
+		});
 
-	const toggleOpenLibrary = () => setOpenLibrary(!openLibrary);
+	const { saveContent, deleteContent } =
+		useMemoryGameContentMutations(characterSlug);
 
-	const refetch = (item?: CharacterInterface) => {
-		if (character || item) {
-			getContent((character || item)!.slug).then((content) =>
-				setContentEdit(content),
-			);
-		}
-	};
+	const toggleOpenLibrary = () => setOpenLibrary((current) => !current);
 
 	const openEdit = (item: CharacterInterface) => {
 		setCharacter(item);
-		refetch(item);
 	};
 
-	const onSelectContent = async (url: string) => {
-		if (character) {
-			await saveContent({
-				url,
-				slug: character.slug,
-				idCharacter: character.id,
-			});
-
-			refetch();
-		}
+	const onSelectContent = (url: string) => {
+		if (!character) return;
+		saveContent.mutate({
+			url,
+			slug: character.slug,
+			idCharacter: character.id,
+		});
 	};
 
-	const onDeleteContent = async (item: MemoryGameContentInterface) => {
-		await deleteContent(item.id);
-		refetch();
+	const onDeleteContent = (item: MemoryGameContentInterface) => {
+		deleteContent.mutate(item.id);
 	};
 
 	const openEditImageCover = (item: CharacterInterface) => {
@@ -74,30 +66,35 @@ export const MemoryGameList = () => {
 
 	const onCloseImageCover = () => {
 		setCharacterEdit(undefined);
-		refetchGamesConfig();
+		void refetchGamesConfig();
 	};
 
-	const imageCoverUrl = (characterSlug: string) => {
+	const imageCoverUrl = (slug: string) => {
 		const config = gamesConfig?.find(
-			(item: ConfigGamesInterface) => item.characterSlug === characterSlug,
+			(item: ConfigGamesInterface) => item.characterSlug === slug,
 		);
 		return config?.imageCoverUrl;
 	};
 
 	const onSelecImageCover = async (url: string) => {
-		if (characterEdit) {
-			await configGamesService.save({
-				gameSlug: GamesEnum.MEMORY_GAME,
-				characterSlug: characterEdit.slug,
-				imageCoverUrl: url,
-			});
-
-			onCloseImageCover();
-		}
+		if (!characterEdit) return;
+		await configGamesService.save({
+			gameSlug: GamesEnum.MEMORY_GAME,
+			characterSlug: characterEdit.slug,
+			imageCoverUrl: url,
+		});
+		onCloseImageCover();
 	};
 
 	return (
-		<Spin spinning={isLoading}>
+		<Spin
+			spinning={
+				isLoadingCharacters ||
+				isLoadingContent ||
+				saveContent.isPending ||
+				deleteContent.isPending
+			}
+		>
 			<Title className="mb-4 mt-6">Jogo da Memória</Title>
 
 			<div className="border border-slate-200 border-b-0">
@@ -108,7 +105,7 @@ export const MemoryGameList = () => {
 						{
 							title: 'Imagem',
 							width: 100,
-							render: (item) => (
+							render: (item: CharacterInterface) => (
 								<Image
 									src={imageCoverUrl(item.slug) || item.imageUrl}
 									alt={item.name}
@@ -125,19 +122,19 @@ export const MemoryGameList = () => {
 						},
 						{
 							width: 100,
-							render: (item) => (
+							render: (item: CharacterInterface) => (
 								<Button type="primary" onClick={() => openEdit(item)}>
 									Editar Conteúdo
 								</Button>
 							),
 						},
 					]}
-					dataSource={data}
+					dataSource={characters}
 				/>
 			</div>
 
 			<Modal
-				open={!!character}
+				open={Boolean(character)}
 				title={`Editar conteúdo de ${character?.name}`}
 				onCancel={() => setCharacter(undefined)}
 				footer={null}
@@ -148,12 +145,13 @@ export const MemoryGameList = () => {
 				</Button>
 
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-5">
-					{contentEdit?.map((item) => (
+					{content.map((item) => (
 						<div
 							key={item.id}
 							className="border border-slate-200 relative rounded overflow-hidden"
 						>
 							<button
+								type="button"
 								className="absolute top-0 right-0 text-xl cursor-pointer"
 								onClick={() => onDeleteContent(item)}
 							>
@@ -167,7 +165,7 @@ export const MemoryGameList = () => {
 
 			<Drawer
 				size="large"
-				open={!!characterEdit}
+				open={Boolean(characterEdit)}
 				placement="bottom"
 				title={`Selecione uma imagem para ${characterEdit?.name}`}
 				onClose={onCloseImageCover}
@@ -193,7 +191,7 @@ export const MemoryGameList = () => {
 					folder={`games/${character?.slug}`}
 					onSelect={onSelectContent}
 					limitPage={16}
-					itemsSelected={contentEdit?.map((item) => item.url)}
+					itemsSelected={content.map((item) => item.url)}
 				/>
 			</Drawer>
 		</Spin>

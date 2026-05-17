@@ -7,6 +7,13 @@ import { config as loadEnv } from 'dotenv';
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = resolve(currentDir, '..');
 const envPath = resolve(packageDir, '.env');
+const safePath = '/usr/bin:/bin:/usr/sbin:/sbin';
+const k6BinaryPaths = [
+	'/usr/local/bin/k6',
+	'/opt/homebrew/bin/k6',
+	'/usr/bin/k6',
+	'/bin/k6',
+];
 
 if (existsSync(envPath)) {
 	loadEnv({ path: envPath });
@@ -31,9 +38,21 @@ if (useGrafana) {
 
 k6Args.push(...args);
 
-const result = spawnSync('k6', k6Args, {
+const k6BinaryPath = k6BinaryPaths.find((binaryPath) => existsSync(binaryPath));
+
+if (!k6BinaryPath) {
+	console.error(
+		`k6 executable not found. Expected one of: ${k6BinaryPaths.join(', ')}`,
+	);
+	process.exit(1);
+}
+
+const result = spawnSync(k6BinaryPath, k6Args, {
 	cwd: packageDir,
-	env: process.env,
+	env: {
+		...process.env,
+		PATH: safePath,
+	},
 	stdio: 'inherit',
 });
 

@@ -1,3 +1,12 @@
+export const ADMIN_DASHBOARD_ALL_SCHOOLS = 'all' as const;
+
+export type SchoolAverageChartRow = {
+	key: string;
+	name: string;
+	fullName: string;
+	media: number;
+};
+
 export interface DashboardPieSliceInterface {
 	key: string;
 	label: string;

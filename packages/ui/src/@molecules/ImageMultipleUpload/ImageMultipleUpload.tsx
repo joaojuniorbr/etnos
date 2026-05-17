@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { getRandomIndex, midiaService } from '@etnos/tools';
+import { getRandomIndex } from '@etnos/tools';
+import { midiaService } from '@etnos/services';
 
 interface ImageMultipleUploadProps {
 	userId: string;

@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Select } from 'antd';
-import { schoolService, useGames } from '@etnos/tools';
+import { useGames } from '@etnos/tools';
+import { schoolService } from '@etnos/services';
 
 interface GameFilterProps {
 	value?: string;

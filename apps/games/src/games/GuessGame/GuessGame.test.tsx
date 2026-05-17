@@ -43,10 +43,13 @@ const renderWithQueryClient = (ui: React.ReactNode) => {
 	);
 };
 
-vi.mock('@etnos/tools', () => ({
+vi.mock('@etnos/services', () => ({
 	guessGameContentService: {
 		validateAttempt: (...args: unknown[]) => validateAttemptMock(...args),
 	},
+}));
+
+vi.mock('@etnos/tools', () => ({
 	useCharacter: (...args: unknown[]) => useCharacterMock(...args),
 	useGuessGamePlayableContent: (...args: unknown[]) =>
 		useGuessGamePlayableContentMock(...args),

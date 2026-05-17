@@ -31,7 +31,7 @@ describe('PrismaService', () => {
     const service = new PrismaService();
     const connectSpy = jest
       .spyOn(service, '$connect')
-      .mockResolvedValue(undefined as never);
+      .mockResolvedValue(undefined);
 
     await service.onModuleInit();
 
@@ -44,7 +44,7 @@ describe('PrismaService', () => {
     const service = new PrismaService();
     const connectSpy = jest
       .spyOn(service, '$connect')
-      .mockResolvedValue(undefined as never);
+      .mockResolvedValue(undefined);
 
     await service.onModuleInit();
 
@@ -55,7 +55,7 @@ describe('PrismaService', () => {
     const service = new PrismaService();
     const disconnectSpy = jest
       .spyOn(service, '$disconnect')
-      .mockResolvedValue(undefined as never);
+      .mockResolvedValue(undefined);
 
     await service.onModuleDestroy();
 
@@ -66,10 +66,10 @@ describe('PrismaService', () => {
     process.env.DATABASE_URL = 'postgresql://local:test@localhost:5432/test';
 
     const service = new PrismaService();
-    jest.spyOn(service, '$connect').mockResolvedValue(undefined as never);
+    jest.spyOn(service, '$connect').mockResolvedValue(undefined);
     const disconnectSpy = jest
       .spyOn(service, '$disconnect')
-      .mockResolvedValue(undefined as never);
+      .mockResolvedValue(undefined);
 
     await service.onModuleInit();
     await service.onModuleDestroy();

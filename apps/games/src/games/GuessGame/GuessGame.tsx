@@ -1,8 +1,8 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
+import { guessGameContentService } from '@etnos/services';
 import {
-	guessGameContentService,
 	useCharacter,
 	useGames,
 	useGameScore,

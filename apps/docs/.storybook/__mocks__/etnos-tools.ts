@@ -46,17 +46,40 @@ export const useMyGameAccess = () => ({
 });
 
 export const useMidia = () => ({
-	data: { pages: [{ items: [] }] },
+	data: {
+		pages: [
+			{
+				data: [
+					{
+						id: 'midia-1',
+						url: 'https://picsum.photos/seed/etnos-storybook/400',
+					},
+					{
+						id: 'midia-2',
+						url: 'https://picsum.photos/seed/etnos-storybook-2/400',
+					},
+				],
+				nextCursor: undefined,
+			},
+		],
+	},
 	hasNextPage: false,
 	isFetchingNextPage: false,
 	isLoading: false,
 	isRefetching: false,
-	folders: [],
+	folders: [
+		{ folder: 'storybook', count: 2 },
+		{ folder: 'avatars', count: 5 },
+	],
+	uncategorizedCount: 1,
 	isLoadingFolders: false,
 	refetchFolders: noopAsync,
 	refetch: noopAsync,
 	fetchNextPage: noopAsync,
 	deleteMidia: noopAsync,
+	deleteMidiaFromUrl: noopAsync,
+	updateMidiaFolder: noopAsync,
+	isUpdatingFolder: false,
 });
 
 export const useGames = () => ({

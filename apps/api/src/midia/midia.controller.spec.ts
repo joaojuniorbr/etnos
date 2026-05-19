@@ -17,6 +17,7 @@ describe('MidiaController', () => {
     saveMidia: jest.fn().mockResolvedValue({ id: 'midia-1' }),
     deleteMidiaById: jest.fn().mockResolvedValue(true),
     deleteMidiaFromUrl: jest.fn().mockResolvedValue(true),
+    updateMidiaFolder: jest.fn().mockResolvedValue({ id: 'midia-1', folder: 'library' }),
   };
 
   const req = { user: { uid: 'user-1' } };
@@ -89,14 +90,26 @@ describe('MidiaController', () => {
   it('deve listar mídias do usuário', async () => {
     const result = await controller.getMidia(req, '10', '1', 'folder');
 
-    expect(service.getMidia).toHaveBeenCalledWith('user-1', 10, 1, 'folder');
+    expect(service.getMidia).toHaveBeenCalledWith(
+      'user-1',
+      10,
+      1,
+      'folder',
+      false,
+    );
     expect(result).toEqual({ data: [], nextCursor: undefined });
   });
 
   it('deve listar mídias usando limit/page padrão', async () => {
     await controller.getMidia(req);
 
-    expect(service.getMidia).toHaveBeenCalledWith('user-1', 10, 1, undefined);
+    expect(service.getMidia).toHaveBeenCalledWith(
+      'user-1',
+      10,
+      1,
+      undefined,
+      false,
+    );
   });
 
   it('deve listar pastas', async () => {
@@ -108,14 +121,26 @@ describe('MidiaController', () => {
   it('deve listar todas as mídias para admin', async () => {
     const result = await controller.getAllMidia('20', '3', 'library');
 
-    expect(service.getMidia).toHaveBeenCalledWith(undefined, 20, 3, 'library');
+    expect(service.getMidia).toHaveBeenCalledWith(
+      undefined,
+      20,
+      3,
+      'library',
+      false,
+    );
     expect(result).toEqual({ data: [], nextCursor: undefined });
   });
 
   it('deve listar todas as mídias para admin com paginação padrão', async () => {
     await controller.getAllMidia();
 
-    expect(service.getMidia).toHaveBeenCalledWith(undefined, 10, 1, undefined);
+    expect(service.getMidia).toHaveBeenCalledWith(
+      undefined,
+      10,
+      1,
+      undefined,
+      false,
+    );
   });
 
   it('deve listar todas as pastas para admin', async () => {
@@ -190,5 +215,55 @@ describe('MidiaController', () => {
     const result = await controller.deleteByBody(req, {} as any);
 
     expect(result).toBe(false);
+  });
+
+  it('deve atualizar pasta da mídia', async () => {
+    const result = await controller.updateFolder(req, 'midia-1', {
+      folder: 'library',
+    });
+
+    expect(service.updateMidiaFolder).toHaveBeenCalledWith(
+      'midia-1',
+      'library',
+      'user-1',
+    );
+    expect(result).toEqual({ id: 'midia-1', folder: 'library' });
+  });
+
+  it('deve atualizar pasta da mídia como admin', async () => {
+    const result = await controller.adminUpdateFolder('midia-1', {
+      folder: 'games',
+    });
+
+    expect(service.updateMidiaFolder).toHaveBeenCalledWith('midia-1', 'games');
+    expect(result).toEqual({ id: 'midia-1', folder: 'library' });
+  });
+
+  it('deve listar mídias sem pasta quando uncategorized for true', async () => {
+    await controller.getMidia(req, '10', '1', undefined, 'true');
+
+    expect(service.getMidia).toHaveBeenCalledWith(
+      'user-1',
+      10,
+      1,
+      undefined,
+      true,
+    );
+  });
+
+  it('deve lançar NotFoundException ao atualizar pasta inexistente', async () => {
+    mockMidiaService.updateMidiaFolder.mockResolvedValueOnce(null);
+
+    await expect(
+      controller.updateFolder(req, 'missing', { folder: 'library' }),
+    ).rejects.toThrow('Mídia não encontrada');
+  });
+
+  it('deve lançar NotFoundException ao atualizar pasta inexistente como admin', async () => {
+    mockMidiaService.updateMidiaFolder.mockResolvedValueOnce(null);
+
+    await expect(
+      controller.adminUpdateFolder('missing', { folder: 'library' }),
+    ).rejects.toThrow('Mídia não encontrada');
   });
 });

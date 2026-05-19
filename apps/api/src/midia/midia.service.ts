@@ -94,11 +94,28 @@ export class MidiaService {
     limitNumber: number,
     page = 1,
     folder?: string,
+    uncategorized?: boolean,
   ) {
     const where = {
       ...(userId ? { userId } : {}),
-      ...(folder ? { folder } : {}),
+      ...(uncategorized ? { folder: null } : {}),
+      ...(folder && !uncategorized ? { folder } : {}),
     };
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        firebaseUid: userId,
+      },
+      select: {
+        roles: true,
+      },
+    });
+
+    const isAdmin = user?.roles?.includes('admin');
+
+    if (isAdmin) {
+      where.userId = undefined;
+    }
 
     const skip = (Math.max(page, 1) - 1) * limitNumber;
     const [data, total] = await Promise.all([
@@ -195,21 +212,74 @@ export class MidiaService {
   }
 
   async getFolders(userId?: string) {
-    const grouped = await this.prismaService.midia.groupBy({
-      by: ['folder'],
+    const baseWhere = userId ? { userId } : {};
+
+    const user = await this.prismaService.user.findUnique({
       where: {
-        ...(userId ? { userId } : {}),
-        folder: { not: null },
+        firebaseUid: userId,
       },
-      _count: { _all: true },
+      select: {
+        roles: true,
+      },
     });
 
-    return grouped
+    const isAdmin = user?.roles?.includes('admin');
+
+    if (isAdmin) {
+      baseWhere.userId = undefined;
+    }
+
+    const [grouped, uncategorizedCount] = await Promise.all([
+      this.prismaService.midia.groupBy({
+        by: ['folder'],
+        where: {
+          ...baseWhere,
+          folder: { not: null },
+        },
+        _count: { _all: true },
+      }),
+      this.prismaService.midia.count({
+        where: {
+          ...baseWhere,
+          folder: null,
+        },
+      }),
+    ]);
+
+    const folders = grouped
       .filter((row) => row.folder)
       .map((row) => ({
         folder: row.folder,
         count: row._count._all,
       }))
       .sort((a, b) => a.folder.localeCompare(b.folder, 'pt-BR'));
+
+    return { folders, uncategorizedCount };
+  }
+
+  async updateMidiaFolder(
+    id: string,
+    folder: string | null | undefined,
+    userId?: string,
+  ) {
+    const item = await this.prismaService.midia.findUnique({
+      where: { id },
+    });
+
+    if (!item) {
+      return null;
+    }
+
+    if (userId && item.userId !== userId) {
+      return null;
+    }
+
+    const normalizedFolder =
+      typeof folder === 'string' && folder.trim() ? folder.trim() : null;
+
+    return this.prismaService.midia.update({
+      where: { id },
+      data: { folder: normalizedFolder },
+    });
   }
 }

@@ -1,5 +1,9 @@
 import { api } from '../api';
-import type { MidiaInterface } from '@etnos/types';
+import {
+	MIDIA_UNCATEGORIZED_FOLDER,
+	type MidiaFoldersResponse,
+	type MidiaInterface,
+} from '@etnos/types';
 
 export const midiaService = {
 	getPathFromUrl(url: string): string {
@@ -47,12 +51,20 @@ export const midiaService = {
 		}
 
 		const page = cursor ?? 1;
+		const uncategorized = folder === MIDIA_UNCATEGORIZED_FOLDER;
+
+		const folderParams: Record<string, string | boolean> = {};
+		if (uncategorized) {
+			folderParams.uncategorized = true;
+		} else if (folder) {
+			folderParams.folder = folder;
+		}
 
 		const response = await api.get(showAll ? '/midia/admin' : '/midia', {
 			params: {
 				limit: limitNumber,
 				page,
-				folder,
+				...folderParams,
 			},
 		});
 
@@ -80,11 +92,25 @@ export const midiaService = {
 			.then((res) => res.data);
 	},
 
-	getFolders(userId: string, showAll?: boolean) {
-		if (!userId) return Promise.resolve([]);
+	getFolders(userId: string, showAll?: boolean): Promise<MidiaFoldersResponse> {
+		if (!userId) {
+			return Promise.resolve({ folders: [], uncategorizedCount: 0 });
+		}
 
 		return api
 			.get(showAll ? '/midia/admin/folders' : '/midia/folders')
 			.then((res) => res.data);
+	},
+
+	updateMidiaFolder(
+		id: string,
+		folder: string | null | undefined,
+		showAll?: boolean,
+	) {
+		const path = showAll
+			? `/midia/admin/${id}/folder`
+			: `/midia/${id}/folder`;
+
+		return api.patch(path, { folder }).then((res) => res.data);
 	},
 };

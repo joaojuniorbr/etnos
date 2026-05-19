@@ -1,7 +1,7 @@
 'use client';
 
 import { Breadcrumb } from 'antd';
-import { AuthProtected, ImageLibrary, Title, useUser } from '@etnos/ui';
+import { AuthProtected, MidiaManager, Title, useUser } from '@etnos/ui';
 
 export default function MidiasPage() {
 	const { user } = useUser();
@@ -27,7 +27,7 @@ export default function MidiasPage() {
 
 				<Title className="mb-4 mt-6">Mídias</Title>
 
-				<ImageLibrary user={user!} folder="library" limitPage={24} showAll />
+				<MidiaManager user={user!} uploadFolder="library" limitPage={24} showAll />
 			</div>
 		</AuthProtected>
 	);

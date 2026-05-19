@@ -12,6 +12,7 @@ vi.mock('@etnos/services', async () => ({
 		getFolders: vi.fn(),
 		deleteMidia: vi.fn(),
 		deleteMidiaFromUrl: vi.fn(),
+		updateMidiaFolder: vi.fn(),
 	},
 }));
 
@@ -26,10 +27,13 @@ describe('useMidia', () => {
 			nextCursor: undefined,
 		} as any);
 
-		vi.mocked(midiaService.getFolders).mockResolvedValueOnce([
-			'Folder A',
-			'Folder B',
-		] as any);
+		vi.mocked(midiaService.getFolders).mockResolvedValueOnce({
+			folders: [
+				{ folder: 'Folder A', count: 1 },
+				{ folder: 'Folder B', count: 2 },
+			],
+			uncategorizedCount: 1,
+		});
 
 		const { result } = renderHook(() => useMidia(mockId), {
 			wrapper: createWrapper(),
@@ -47,7 +51,11 @@ describe('useMidia', () => {
 			false,
 		);
 
-		expect(result.current.folders).toEqual(['Folder A', 'Folder B']);
+		expect(result.current.folders).toEqual([
+			{ folder: 'Folder A', count: 1 },
+			{ folder: 'Folder B', count: 2 },
+		]);
+		expect(result.current.uncategorizedCount).toBe(1);
 	});
 
 	it('busca próxima página quando fetchNextPage é chamado', async () => {
@@ -63,7 +71,10 @@ describe('useMidia', () => {
 				nextCursor: undefined,
 			} as any);
 
-		vi.mocked(midiaService.getFolders).mockResolvedValue([]);
+		vi.mocked(midiaService.getFolders).mockResolvedValue({
+			folders: [],
+			uncategorizedCount: 0,
+		});
 
 		const { result } = renderHook(() => useMidia(mockId), {
 			wrapper: createWrapper(),
@@ -115,9 +126,10 @@ describe('useMidia', () => {
 			nextCursor: undefined,
 		} as any);
 
-		vi.mocked(midiaService.getFolders).mockResolvedValueOnce([
-			{ folder: 'library', count: 2 },
-		] as any);
+		vi.mocked(midiaService.getFolders).mockResolvedValueOnce({
+			folders: [{ folder: 'library', count: 2 }],
+			uncategorizedCount: 0,
+		});
 
 		const { result } = renderHook(() => useMidia(mockId, 12, 'library', true), {
 			wrapper: createWrapper(),
@@ -135,6 +147,39 @@ describe('useMidia', () => {
 			true,
 		);
 		expect(midiaService.getFolders).toHaveBeenCalledWith(mockId, true);
+	});
+
+	it('atualiza pasta da mídia e invalida cache', async () => {
+		vi.mocked(midiaService.getMidia).mockResolvedValue({
+			data: [{ id: '1', url: 'img.png' }],
+			nextCursor: undefined,
+		} as any);
+
+		vi.mocked(midiaService.getFolders).mockResolvedValue({
+			folders: [{ folder: 'library', count: 1 }],
+			uncategorizedCount: 0,
+		});
+
+		vi.mocked(midiaService.updateMidiaFolder).mockResolvedValueOnce({
+			id: '1',
+			folder: 'library',
+		} as any);
+
+		const { result } = renderHook(() => useMidia(mockId), {
+			wrapper: createWrapper(),
+		});
+
+		await waitFor(() => {
+			expect(result.current.data).toBeDefined();
+		});
+
+		await result.current.updateMidiaFolder({ id: '1', folder: 'library' });
+
+		expect(midiaService.updateMidiaFolder).toHaveBeenCalledWith(
+			'1',
+			'library',
+			false,
+		);
 	});
 
 	it('encaminha remoções para o modo administrativo quando showAll estiver ativo', () => {

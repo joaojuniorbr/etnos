@@ -59,7 +59,7 @@ describe('@organisms/StudentDashboard', () => {
 		render(<StudentDashboard data={mockStudentDashboard} />);
 
 		fireEvent.click(
-			screen.getByRole('button', { name: /Jogar Jogo da Memória/i }),
+			screen.getByRole('link', { name: /Jogar Jogo da Memória/i }),
 		);
 
 		expect(trackGameSelected).toHaveBeenCalledWith({
@@ -87,7 +87,7 @@ describe('@organisms/StudentDashboard', () => {
 		).toBeInTheDocument();
 
 		fireEvent.click(
-			screen.getByRole('button', { name: /Jogar Jogo da Memória/i }),
+			screen.getByRole('link', { name: /Jogar Jogo da Memória/i }),
 		);
 
 		expect(trackGameSelected).toHaveBeenCalledWith({

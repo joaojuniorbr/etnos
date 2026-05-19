@@ -1,6 +1,8 @@
 'use client';
 
-import type {
+import Link from 'next/link';
+import {
+	GameUrlEnum,
 	CharacterInterface,
 	StudentDashboardInterface,
 } from '@etnos/types';
@@ -37,6 +39,10 @@ export const StudentDashboard = ({ data }: StudentDashboardProps) => {
 	const { selectCharacter } = useCharacter({
 		fetchList: false,
 	});
+
+	const getGameUrl = (slug: string) => {
+		return `/estudante/jogos/${GameUrlEnum[slug as keyof typeof GameUrlEnum]}?personagem=${data.culturalGuide?.slug}`;
+	};
 
 	return (
 		<div className="ui:flex ui:flex-col ui:gap-6 ui:py-6 ui:md:py-10">
@@ -94,7 +100,8 @@ export const StudentDashboard = ({ data }: StudentDashboardProps) => {
 				<SectionPanel title="Jogos disponíveis">
 					<div className="ui:grid ui:grid-cols-2 ui:gap-4">
 						{data.availableGames.map((game) => (
-							<button
+							<Link
+								href={getGameUrl(game.slug)}
 								key={game.slug}
 								className="ui:w-full ui:flex ui:flex-col ui:rounded ui:overflow-hidden ui:border ui:border-slate-200"
 								onClick={() =>
@@ -117,7 +124,7 @@ export const StudentDashboard = ({ data }: StudentDashboardProps) => {
 								<div className="ui:px-2 ui:py-4 ui:text-center ui:text-xs ui:font-bold ui:text-primary">
 									{game.name}
 								</div>
-							</button>
+							</Link>
 						))}
 					</div>
 				</SectionPanel>

@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+	render,
+	screen,
+	fireEvent,
+	waitFor,
+	within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useMidia } from '@etnos/tools';
 
 import { ImageLibrary } from './ImageLibrary';
 import type { UserProfileInterface } from '@etnos/types';
@@ -10,32 +17,35 @@ const mockFetchNextPage = vi.fn();
 const mockRefetch = vi.fn();
 const mockRefetchFolders = vi.fn();
 
-vi.mock('@etnos/tools', () => ({
-	useMidia: vi.fn(() => ({
-		data: {
-			pages: [
-				{
-					data: [
-						{ id: '1', url: 'http://image/1.png' },
-						{ id: '2', url: 'http://image/2.png' },
-					],
-				},
-			],
-		},
-		hasNextPage: true,
-		isFetchingNextPage: false,
-		isLoading: false,
-		isRefetching: false,
-		folders: [
-			{ folder: 'avatars', count: 2 },
-			{ folder: 'posts', count: 5 },
+const defaultUseMidiaReturn = {
+	data: {
+		pages: [
+			{
+				data: [
+					{ id: '1', url: 'http://image/1.png' },
+					{ id: '2', url: 'http://image/2.png' },
+				],
+			},
 		],
-		isLoadingFolders: false,
-		refetch: mockRefetch,
-		refetchFolders: mockRefetchFolders,
-		fetchNextPage: mockFetchNextPage,
-		deleteMidia: mockDeleteMidia,
-	})),
+	},
+	hasNextPage: true,
+	isFetchingNextPage: false,
+	isLoading: false,
+	isRefetching: false,
+	folders: [
+		{ folder: 'avatars', count: 2 },
+		{ folder: 'posts', count: 5 },
+	],
+	uncategorizedCount: 3,
+	isLoadingFolders: false,
+	refetch: mockRefetch,
+	refetchFolders: mockRefetchFolders,
+	fetchNextPage: mockFetchNextPage,
+	deleteMidia: mockDeleteMidia,
+};
+
+vi.mock('@etnos/tools', () => ({
+	useMidia: vi.fn(),
 	midiaService: {
 		uploadImage: vi.fn(),
 		deleteMidiaFromUrl: vi.fn(),
@@ -68,6 +78,7 @@ const userMock = {
 describe('<ImageLibrary />', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(useMidia).mockReturnValue(defaultUseMidiaReturn as never);
 	});
 
 	it('renderiza imagens da biblioteca', () => {
@@ -116,6 +127,52 @@ describe('<ImageLibrary />', () => {
 		fireEvent.click(screen.getByText(/carregar mais/i));
 
 		expect(mockFetchNextPage).toHaveBeenCalled();
+	});
+
+	it('limpa filtro de pasta para ver todas as imagens', async () => {
+		const user = userEvent.setup();
+
+		render(<ImageLibrary user={userMock} />);
+
+		const select = screen.getByTestId('select-folder');
+		await user.click(within(select).getByRole('combobox'));
+		await user.click(await screen.findByText('avatars (2)'));
+
+		const clearButton = select.querySelector('.ant-select-clear');
+		expect(clearButton).toBeTruthy();
+		fireEvent.mouseDown(clearButton!);
+
+		await waitFor(() => {
+			expect(
+				select.querySelector('.ant-select-content-has-value'),
+			).not.toBeInTheDocument();
+		});
+	});
+
+	it('oculta opção sem pasta quando não houver mídias sem pasta', () => {
+		vi.mocked(useMidia).mockReturnValue({
+			...defaultUseMidiaReturn,
+			uncategorizedCount: 0,
+		} as never);
+
+		render(<ImageLibrary user={userMock} />);
+
+		expect(screen.queryByText(/Sem pasta/i)).not.toBeInTheDocument();
+	});
+
+	it('fecha drawer de upload', async () => {
+		const user = userEvent.setup();
+
+		render(<ImageLibrary user={userMock} folder="games" />);
+
+		await user.click(screen.getByRole('button', { name: /inserir imagens/i }));
+		expect(screen.getByText('Adicionar Imagens')).toBeInTheDocument();
+
+		await user.click(screen.getByRole('button', { name: 'Close' }));
+
+		await waitFor(() => {
+			expect(screen.queryByText('Adicionar Imagens')).not.toBeInTheDocument();
+		});
 	});
 
 	it('altera a pasta selecionada', async () => {

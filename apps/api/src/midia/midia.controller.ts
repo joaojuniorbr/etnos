@@ -3,7 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -30,6 +32,7 @@ import {
 import { MidiaService } from './midia.service';
 import { DeleteMidiaDto } from './dto/delete-midia.dto';
 import { MidiaDto } from './dto/midia.dto';
+import { UpdateMidiaFolderDto } from './dto/update-midia-folder.dto';
 import { AdminRoleGuard, RequestUserOwnershipGuard } from 'src/common';
 
 @ApiTags('Mídia')
@@ -96,17 +99,24 @@ export class MidiaController {
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'folder', required: false, example: 'games/luigi' })
+  @ApiQuery({
+    name: 'uncategorized',
+    required: false,
+    description: 'Quando true, lista apenas mídias sem pasta',
+  })
   async getMidia(
     @Req() req,
     @Query('limit') limit?: string,
     @Query('page') page?: string,
     @Query('folder') folder?: string,
+    @Query('uncategorized') uncategorized?: string,
   ) {
     return this.midiaService.getMidia(
       req.user.uid,
       Number(limit || 10),
       Number(page || 1),
       folder,
+      uncategorized === 'true',
     );
   }
 
@@ -116,16 +126,23 @@ export class MidiaController {
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'folder', required: false, example: 'games/luigi' })
+  @ApiQuery({
+    name: 'uncategorized',
+    required: false,
+    description: 'Quando true, lista apenas mídias sem pasta',
+  })
   async getAllMidia(
     @Query('limit') limit?: string,
     @Query('page') page?: string,
     @Query('folder') folder?: string,
+    @Query('uncategorized') uncategorized?: string,
   ) {
     return this.midiaService.getMidia(
       undefined,
       Number(limit || 10),
       Number(page || 1),
       folder,
+      uncategorized === 'true',
     );
   }
 
@@ -158,6 +175,44 @@ export class MidiaController {
       ...body,
       userId: req.user.uid,
     });
+  }
+
+  @Patch('admin/:id/folder')
+  @UseGuards(AuthGuard('firebase-auth'), AdminRoleGuard)
+  @ApiOperation({ summary: 'Atualiza a pasta de uma mídia (admin)' })
+  @ApiParam({ name: 'id', required: true })
+  async adminUpdateFolder(
+    @Param('id') id: string,
+    @Body() body: UpdateMidiaFolderDto,
+  ) {
+    const updated = await this.midiaService.updateMidiaFolder(id, body.folder);
+
+    if (!updated) {
+      throw new NotFoundException('Mídia não encontrada');
+    }
+
+    return updated;
+  }
+
+  @Patch(':id/folder')
+  @ApiOperation({ summary: 'Atualiza a pasta de uma mídia' })
+  @ApiParam({ name: 'id', required: true })
+  async updateFolder(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() body: UpdateMidiaFolderDto,
+  ) {
+    const updated = await this.midiaService.updateMidiaFolder(
+      id,
+      body.folder,
+      req.user.uid,
+    );
+
+    if (!updated) {
+      throw new NotFoundException('Mídia não encontrada');
+    }
+
+    return updated;
   }
 
   @Delete('by-url')

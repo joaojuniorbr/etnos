@@ -4,6 +4,7 @@ const { apiMock } = vi.hoisted(() => ({
 	apiMock: {
 		get: vi.fn(),
 		post: vi.fn(),
+		patch: vi.fn(),
 		delete: vi.fn(),
 	},
 }));
@@ -12,6 +13,7 @@ vi.mock('../api', () => ({
 	api: apiMock,
 }));
 
+import { MIDIA_UNCATEGORIZED_FOLDER } from '@etnos/types';
 import { midiaService } from './midia.service';
 
 describe('midiaService', () => {
@@ -108,7 +110,6 @@ describe('midiaService', () => {
 			params: {
 				limit: 20,
 				page: 1,
-				folder: undefined,
 			},
 		});
 	});
@@ -195,29 +196,87 @@ describe('midiaService', () => {
 	it('deve retornar lista vazia de pastas quando não houver userId', async () => {
 		const result = await midiaService.getFolders('');
 
-		expect(result).toEqual([]);
+		expect(result).toEqual({ folders: [], uncategorizedCount: 0 });
 		expect(apiMock.get).not.toHaveBeenCalled();
 	});
 
 	it('deve buscar pastas quando userId existir', async () => {
 		apiMock.get.mockResolvedValueOnce({
-			data: [{ folder: 'games', count: 1 }],
+			data: {
+				folders: [{ folder: 'games', count: 1 }],
+				uncategorizedCount: 2,
+			},
 		});
 
 		const result = await midiaService.getFolders('user-1');
 
 		expect(apiMock.get).toHaveBeenCalledWith('/midia/folders');
-		expect(result).toEqual([{ folder: 'games', count: 1 }]);
+		expect(result).toEqual({
+			folders: [{ folder: 'games', count: 1 }],
+			uncategorizedCount: 2,
+		});
 	});
 
 	it('deve buscar pastas no endpoint admin quando showAll estiver ativo', async () => {
 		apiMock.get.mockResolvedValueOnce({
-			data: [{ folder: 'library', count: 3 }],
+			data: {
+				folders: [{ folder: 'library', count: 3 }],
+				uncategorizedCount: 0,
+			},
 		});
 
 		const result = await midiaService.getFolders('user-1', true);
 
 		expect(apiMock.get).toHaveBeenCalledWith('/midia/admin/folders');
-		expect(result).toEqual([{ folder: 'library', count: 3 }]);
+		expect(result).toEqual({
+			folders: [{ folder: 'library', count: 3 }],
+			uncategorizedCount: 0,
+		});
+	});
+
+	it('deve filtrar mídias sem pasta quando folder for uncategorized', async () => {
+		apiMock.get.mockResolvedValueOnce({ data: { data: [], nextCursor: undefined } });
+
+		await midiaService.getMidia(
+			'user-1',
+			10,
+			1,
+			MIDIA_UNCATEGORIZED_FOLDER,
+			false,
+		);
+
+		expect(apiMock.get).toHaveBeenCalledWith('/midia', {
+			params: {
+				limit: 10,
+				page: 1,
+				uncategorized: true,
+			},
+		});
+	});
+
+	it('deve atualizar pasta da mídia no endpoint admin', async () => {
+		apiMock.patch.mockResolvedValueOnce({
+			data: { id: '1', folder: 'library' },
+		});
+
+		const result = await midiaService.updateMidiaFolder('1', 'library', true);
+
+		expect(apiMock.patch).toHaveBeenCalledWith('/midia/admin/1/folder', {
+			folder: 'library',
+		});
+		expect(result).toEqual({ id: '1', folder: 'library' });
+	});
+
+	it('deve atualizar pasta da mídia no endpoint do usuário', async () => {
+		apiMock.patch.mockResolvedValueOnce({
+			data: { id: '1', folder: 'games' },
+		});
+
+		const result = await midiaService.updateMidiaFolder('1', 'games');
+
+		expect(apiMock.patch).toHaveBeenCalledWith('/midia/1/folder', {
+			folder: 'games',
+		});
+		expect(result).toEqual({ id: '1', folder: 'games' });
 	});
 });

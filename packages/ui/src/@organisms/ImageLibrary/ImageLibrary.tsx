@@ -1,7 +1,11 @@
 'use client';
 
 import { useMidia } from '@etnos/tools';
-import type { MidiaInterface, UserProfileInterface } from '@etnos/types';
+import {
+	MIDIA_UNCATEGORIZED_FOLDER,
+	type MidiaInterface,
+	type UserProfileInterface,
+} from '@etnos/types';
 import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
 import { Image, Button, Spin, Drawer, Popconfirm, Select } from 'antd';
 import { useState } from 'react';
@@ -15,11 +19,6 @@ interface ImageLibraryProps {
 	itemsSelected?: string[];
 	onSelect?: (url: string) => void;
 	showAll?: boolean;
-}
-
-interface MidiaFolder {
-	folder: string;
-	count: number;
 }
 
 export const ImageLibrary = ({
@@ -40,6 +39,7 @@ export const ImageLibrary = ({
 		isLoading,
 		isRefetching,
 		folders,
+		uncategorizedCount,
 		isLoadingFolders,
 		refetchFolders,
 		refetch,
@@ -55,9 +55,20 @@ export const ImageLibrary = ({
 		setOpenUpload(!openUpload);
 	};
 
-	const onSelectFolder = (folder: string) => {
-		setSelectFolder(folder);
-	};
+	const folderOptions = [
+		...(uncategorizedCount > 0
+			? [
+					{
+						value: MIDIA_UNCATEGORIZED_FOLDER,
+						label: `Sem pasta (${uncategorizedCount})`,
+					},
+				]
+			: []),
+		...folders.map((item) => ({
+			value: item.folder,
+			label: `${item.folder} (${item.count})`,
+		})),
+	];
 
 	const isOnSelect = !!onSelect;
 
@@ -80,12 +91,13 @@ export const ImageLibrary = ({
 				</Button>
 
 				<Select
-					options={folders?.map((item: MidiaFolder) => ({
-						value: item.folder,
-						label: `${item.folder} (${item.count})`,
-					}))}
-					placeholder="Selecione uma pasta"
-					onChange={onSelectFolder}
+					allowClear
+					className="ui:min-w-[220px]"
+					options={folderOptions}
+					placeholder="Todas as imagens"
+					value={selectFolder}
+					onChange={setSelectFolder}
+					onClear={() => setSelectFolder(undefined)}
 					data-testid="select-folder"
 				/>
 			</div>

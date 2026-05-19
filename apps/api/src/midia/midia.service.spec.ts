@@ -18,6 +18,10 @@ describe('MidiaService', () => {
       delete: jest.Mock;
       deleteMany: jest.Mock;
       groupBy: jest.Mock;
+      update: jest.Mock;
+    };
+    user: {
+      findUnique: jest.Mock;
     };
   };
 
@@ -30,6 +34,10 @@ describe('MidiaService', () => {
       delete: jest.fn(),
       deleteMany: jest.fn(),
       groupBy: jest.fn(),
+      update: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
     },
   };
 
@@ -61,6 +69,10 @@ describe('MidiaService', () => {
     service = module.get<MidiaService>(MidiaService);
     prismaService = module.get(PrismaService);
     jest.clearAllMocks();
+    mockPrismaService.user.findUnique.mockResolvedValue({
+      roles: ['user'],
+    });
+    mockFile.delete.mockResolvedValue(undefined);
   });
 
   it('deve extrair path da URL estilo firebase /o/', () => {
@@ -195,6 +207,7 @@ describe('MidiaService', () => {
   });
 
   it('deve listar todas as mídias quando userId não for informado', async () => {
+    mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
     mockPrismaService.midia.findMany.mockResolvedValue([
       { id: '1', url: 'u1' },
     ]);
@@ -211,6 +224,23 @@ describe('MidiaService', () => {
     expect(result).toEqual({
       data: [{ id: '1', url: 'u1' }],
       nextCursor: undefined,
+    });
+  });
+
+  it('deve listar mídias de todos os usuários quando solicitante for admin', async () => {
+    mockPrismaService.user.findUnique.mockResolvedValueOnce({
+      roles: ['admin'],
+    });
+    mockPrismaService.midia.findMany.mockResolvedValueOnce([]);
+    mockPrismaService.midia.count.mockResolvedValueOnce(0);
+
+    await service.getMidia('admin-1', 10, 1);
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: {},
+      skip: 0,
+      take: 10,
+      orderBy: { createdAt: 'desc' },
     });
   });
 
@@ -399,11 +429,26 @@ describe('MidiaService', () => {
     expect(result).toBe(true);
   });
 
-  it('deve montar pastas com contagem ordenada e ignorar sem pasta', async () => {
+  it('deve filtrar mídias sem pasta quando uncategorized for true', async () => {
+    mockPrismaService.midia.findMany.mockResolvedValueOnce([]);
+    mockPrismaService.midia.count.mockResolvedValueOnce(0);
+
+    await service.getMidia('user-1', 10, 1, undefined, true);
+
+    expect(prismaService.midia.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', folder: null },
+      skip: 0,
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+    });
+  });
+
+  it('deve montar pastas com contagem ordenada e total sem pasta', async () => {
     mockPrismaService.midia.groupBy.mockResolvedValue([
       { folder: 'B', _count: { _all: 2 } },
       { folder: 'A', _count: { _all: 1 } },
     ]);
+    mockPrismaService.midia.count.mockResolvedValueOnce(3);
 
     const result = await service.getFolders('user-1');
 
@@ -415,16 +460,27 @@ describe('MidiaService', () => {
       },
       _count: { _all: true },
     });
-    expect(result).toEqual([
-      { folder: 'A', count: 1 },
-      { folder: 'B', count: 2 },
-    ]);
+    expect(prismaService.midia.count).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        folder: null,
+      },
+    });
+    expect(result).toEqual({
+      folders: [
+        { folder: 'A', count: 1 },
+        { folder: 'B', count: 2 },
+      ],
+      uncategorizedCount: 3,
+    });
   });
 
   it('deve listar pastas sem filtrar por usuário no modo admin', async () => {
+    mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
     mockPrismaService.midia.groupBy.mockResolvedValue([
       { folder: 'games', _count: { _all: 1 } },
     ]);
+    mockPrismaService.midia.count.mockResolvedValueOnce(0);
 
     const result = await service.getFolders();
 
@@ -435,6 +491,92 @@ describe('MidiaService', () => {
       },
       _count: { _all: true },
     });
-    expect(result).toEqual([{ folder: 'games', count: 1 }]);
+    expect(result).toEqual({
+      folders: [{ folder: 'games', count: 1 }],
+      uncategorizedCount: 0,
+    });
+  });
+
+  it('deve listar pastas de todos os usuários quando solicitante for admin', async () => {
+    mockPrismaService.user.findUnique.mockResolvedValueOnce({
+      roles: ['admin'],
+    });
+    mockPrismaService.midia.groupBy.mockResolvedValueOnce([
+      { folder: 'library', _count: { _all: 2 } },
+    ]);
+    mockPrismaService.midia.count.mockResolvedValueOnce(1);
+
+    const result = await service.getFolders('admin-1');
+
+    expect(prismaService.midia.groupBy).toHaveBeenCalledWith({
+      by: ['folder'],
+      where: {
+        folder: { not: null },
+      },
+      _count: { _all: true },
+    });
+    expect(result).toEqual({
+      folders: [{ folder: 'library', count: 2 }],
+      uncategorizedCount: 1,
+    });
+  });
+
+  it('deve atualizar pasta da mídia', async () => {
+    mockPrismaService.midia.findUnique.mockResolvedValueOnce({
+      id: 'midia-1',
+      userId: 'user-1',
+      folder: 'uploads',
+    });
+    mockPrismaService.midia.update.mockResolvedValueOnce({
+      id: 'midia-1',
+      folder: 'library',
+    });
+
+    const result = await service.updateMidiaFolder('midia-1', 'library', 'user-1');
+
+    expect(prismaService.midia.update).toHaveBeenCalledWith({
+      where: { id: 'midia-1' },
+      data: { folder: 'library' },
+    });
+    expect(result).toEqual({ id: 'midia-1', folder: 'library' });
+  });
+
+  it('deve remover pasta da mídia quando folder for vazio', async () => {
+    mockPrismaService.midia.findUnique.mockResolvedValueOnce({
+      id: 'midia-1',
+      userId: 'user-1',
+      folder: 'library',
+    });
+    mockPrismaService.midia.update.mockResolvedValueOnce({
+      id: 'midia-1',
+      folder: null,
+    });
+
+    await service.updateMidiaFolder('midia-1', '', 'user-1');
+
+    expect(prismaService.midia.update).toHaveBeenCalledWith({
+      where: { id: 'midia-1' },
+      data: { folder: null },
+    });
+  });
+
+  it('deve retornar null ao atualizar pasta de mídia inexistente', async () => {
+    mockPrismaService.midia.findUnique.mockResolvedValueOnce(null);
+
+    const result = await service.updateMidiaFolder('missing', 'library', 'user-1');
+
+    expect(result).toBeNull();
+  });
+
+  it('deve retornar null ao atualizar pasta de outro usuário', async () => {
+    mockPrismaService.midia.findUnique.mockResolvedValueOnce({
+      id: 'midia-1',
+      userId: 'other-user',
+    });
+
+    const result = await service.updateMidiaFolder('midia-1', 'library', 'user-1');
+
+    expect(result).toBeNull();
+    expect(prismaService.midia.update).not.toHaveBeenCalled();
   });
 });

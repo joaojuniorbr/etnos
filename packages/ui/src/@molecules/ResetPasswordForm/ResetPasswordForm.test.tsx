@@ -28,7 +28,7 @@ vi.mock('@tanstack/react-query', () => ({
 	useMutation: (options: unknown) => useMutationMock(options),
 }));
 
-vi.mock('../../@atoms', () => ({
+vi.mock('@ui/@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,

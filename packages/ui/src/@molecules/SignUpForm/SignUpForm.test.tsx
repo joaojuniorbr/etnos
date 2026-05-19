@@ -14,7 +14,7 @@ vi.mock('@etnos/tools', () => ({
 	formatPhoneBR: (value: string) => formatPhoneBRMock(value),
 }));
 
-vi.mock('../../@atoms', () => ({
+vi.mock('@ui/@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,

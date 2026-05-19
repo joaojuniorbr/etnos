@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MobileMenu } from '../../@molecules';
-import { useUser } from '../../context';
+import { CharacterSelect, MobileMenu } from '@ui/@molecules';
+import { useUser } from '@ui/context';
 import { useAuth, useCharacter, useMyGameAccess } from '@etnos/tools';
 import type { CharacterInterface } from '@etnos/types';
-import { Image, Modal } from 'antd';
+import { Modal, Spin } from 'antd';
 
 export const HeaderMobile = () => {
 	const [open, setOpen] = useState(false);
@@ -22,7 +22,8 @@ export const HeaderMobile = () => {
 	const { selectedCharacter, data, selectCharacter } = useCharacter({
 		fetchList: openCharacter,
 	});
-	const { data: gameAccess } = useMyGameAccess();
+	const { data: gameAccess, isLoading: isLoadingGameAccess } =
+		useMyGameAccess();
 	const enabledCharacters = data?.filter((character) =>
 		gameAccess?.enabledCharacterSlugs?.includes(character.slug),
 	);
@@ -37,8 +38,8 @@ export const HeaderMobile = () => {
 		}
 	}, [gameAccess, selectCharacter, selectedCharacter?.slug]);
 
-	const handleCharacter = (slug: string) => {
-		selectCharacter(slug);
+	const handleCharacter = (character: CharacterInterface) => {
+		selectCharacter(character.slug);
 	};
 
 	const onLogout = async () => {
@@ -64,36 +65,13 @@ export const HeaderMobile = () => {
 				footer={null}
 				onCancel={toggleCharacter}
 			>
-				<div className="ui:flex ui:flex-col ui:gap-2">
-					{enabledCharacters?.map((character: CharacterInterface) => (
-						<button
-							key={character.slug}
-							className={`
-								ui:flex ui:items-center ui:gap-2 ui:border ui:p-2 ui:rounded ui:cursor-pointer  
-								${selectedCharacter?.slug === character.slug ? 'ui:border-primary' : 'ui:border-slate-200'}
-							`}
-							onClick={() => handleCharacter(character.slug)}
-							aria-label={`Selecionar Personagem: ${character.name}`}
-						>
-							<div className="ui:w-26">
-								<Image
-									src={
-										character.imageUrl ||
-										`/images/character/md/${character.slug}.png`
-									}
-									alt={character.name}
-									preview={false}
-								/>
-							</div>
-							<div className="ui:flex ui:flex-col">
-								<div className="ui:text-sm ui:font-bold ui:text-primary ui:uppercase">
-									{character.name}
-								</div>
-								<div className="ui:text-xs">{character.description}</div>
-							</div>
-						</button>
-					))}
-				</div>
+				<Spin spinning={isLoadingGameAccess}>
+					<CharacterSelect
+						characters={enabledCharacters}
+						selectedCharacter={selectedCharacter}
+						onSelect={handleCharacter}
+					/>
+				</Spin>
 			</Modal>
 		</>
 	);

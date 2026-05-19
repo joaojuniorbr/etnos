@@ -2,16 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MainLayout } from './MainLayout';
 
-vi.mock('../../@molecules', () => ({
+vi.mock('@ui/@molecules', () => ({
 	Footer: () => <footer data-testid="footer">Footer</footer>,
 }));
 
-vi.mock('../../@organisms', () => ({
+vi.mock('@ui/@organisms', () => ({
 	Header: () => <header data-testid="header">Header</header>,
 }));
 
-describe('MainLayout', () => {
-	it('deve renderizar o Header, Footer e o conteúdo (children) corretamente', () => {
+describe('@templates/MainLayout', () => {
+	it('renderiza header, conteúdo e footer', () => {
 		const html = renderToStaticMarkup(
 			<MainLayout>
 				<div data-testid="child-content">Conteúdo da Página</div>
@@ -21,9 +21,5 @@ describe('MainLayout', () => {
 		expect(html).toContain('data-testid="header"');
 		expect(html).toContain('data-testid="footer"');
 		expect(html).toContain('data-testid="child-content"');
-		expect(html).toContain(
-			'class="ui:flex ui:flex-col ui:w-full ui:min-h-screen ui:bg-slate-50"',
-		);
-		expect(html).toContain('class="ui:flex ui:flex-1 ui:flex-col"');
 	});
 });

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { NotFound } from './NotFound';
-import { UserProvider } from '../../context';
+import { UserProvider } from '@ui/context';
 
 const meta: Meta<typeof NotFound> = {
 	title: 'UI/@molecules/NotFound',

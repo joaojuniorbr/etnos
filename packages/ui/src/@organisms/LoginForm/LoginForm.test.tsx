@@ -12,7 +12,7 @@ vi.mock('@etnos/tools', () => ({
 	useAuth: () => useAuthMock(),
 }));
 
-vi.mock('../../@atoms', () => ({
+vi.mock('@ui/@atoms', () => ({
 	Button: ({
 		children,
 		htmlType,
@@ -29,7 +29,7 @@ vi.mock('../../@atoms', () => ({
 	},
 }));
 
-vi.mock('../../@molecules', () => ({
+vi.mock('@ui/@molecules', () => ({
 	ResetPasswordForm: ({ onSubmit }: { onSubmit: () => void }) => (
 		<div>
 			<button type="button" onClick={onSubmit}>

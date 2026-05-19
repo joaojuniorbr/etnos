@@ -1,6 +1,6 @@
 import { formatPhoneBR, useAuth } from '@etnos/tools';
 import { DatePicker, Divider, Form, Input, message, Select, Spin } from 'antd';
-import { Button } from '../../@atoms';
+import { Button } from '@ui/@atoms';
 import dayjs from 'dayjs';
 
 interface SchoolOption {

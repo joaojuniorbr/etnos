@@ -1,4 +1,5 @@
 export * from './useAuth';
+export * from './useStudentDashboard';
 export * from './useCharacter';
 export * from './useGameScore';
 export * from './useGames';

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { NotFound } from './NotFound';
-import { UserProvider } from '../../context';
+import { UserProvider } from '@ui/context';
 import { useAuth } from '@etnos/tools';
 
 vi.mock('@etnos/tools', () => ({

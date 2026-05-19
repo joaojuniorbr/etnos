@@ -1,6 +1,7 @@
 export * from './api';
 export * from './authSession';
 export * from './characters';
+export * from './dashboard';
 export * from './games';
 export * from './midia';
 export * from './notifications';

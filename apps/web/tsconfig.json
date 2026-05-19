@@ -10,7 +10,8 @@
 			"@components": ["./components/index.ts"],
 			"@components/*": ["./components/*"],
 			"@etnos/common": ["./common"],
-			"@etnos/hooks": ["./hooks"]
+			"@etnos/hooks": ["./hooks"],
+			"@ui/*": ["../../packages/ui/src/*"]
 		}
 	},
 	"include": [

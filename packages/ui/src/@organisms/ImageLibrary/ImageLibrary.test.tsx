@@ -42,7 +42,7 @@ vi.mock('@etnos/tools', () => ({
 	},
 }));
 
-vi.mock('../../@molecules', () => {
+vi.mock('@ui/@molecules', () => {
 	return {
 		ImageMultipleUpload: ({
 			onUpload,

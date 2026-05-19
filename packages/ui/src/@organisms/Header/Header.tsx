@@ -3,7 +3,7 @@
 import { Button } from 'antd';
 import { HeaderMobile } from './HeaderMobile';
 import { useAuth } from '@etnos/tools';
-import { useUser } from '../../context';
+import { useUser } from '@ui/context';
 
 export const Header = () => {
 	const { user } = useUser();

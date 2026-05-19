@@ -1,5 +1,5 @@
 import { Form, Input, message } from 'antd';
-import { Button } from '../../@atoms';
+import { Button } from '@ui/@atoms';
 import { useMutation } from '@tanstack/react-query';
 import { getEmailDomain } from '@etnos/analytics';
 import { trackPasswordRecoveryRequested } from '@etnos/analytics/web';

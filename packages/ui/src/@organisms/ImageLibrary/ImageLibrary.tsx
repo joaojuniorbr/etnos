@@ -6,7 +6,7 @@ import { RiDeleteBinLine, RiImageLine } from 'react-icons/ri';
 import { Image, Button, Spin, Drawer, Popconfirm, Select } from 'antd';
 import { useState } from 'react';
 
-import { ImageMultipleUpload } from '../../@molecules';
+import { ImageMultipleUpload } from '@ui/@molecules';
 
 interface ImageLibraryProps {
 	folder?: string;

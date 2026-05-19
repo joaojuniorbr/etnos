@@ -2,8 +2,8 @@
 
 import { useAuth } from '@etnos/tools';
 import { Divider, Form, Input, message, Modal, Spin } from 'antd';
-import { Button } from '../../@atoms';
-import { ResetPasswordForm } from '../../@molecules';
+import { Button } from '@ui/@atoms';
+import { ResetPasswordForm } from '@ui/@molecules';
 import { useState } from 'react';
 
 interface LoginFormProps {

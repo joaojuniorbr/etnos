@@ -5,6 +5,7 @@ import { isSentryEnabled } from './sentry/sentry.config';
 import { AuthModule } from './auth';
 import { FirebaseModule } from './firebase';
 import { GamesModule } from './games/games.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { CharactersModule } from './characters/characters.module';
 import { PublicModule } from './public/public.module';
 import { EmailModule } from './email/email.module';
@@ -27,6 +28,7 @@ import { APP_FILTER } from '@nestjs/core';
     AuthModule,
     FirebaseModule,
     GamesModule,
+    DashboardModule,
     CharactersModule,
     SchoolsModule,
     PublicModule,

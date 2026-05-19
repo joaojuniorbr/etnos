@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { HeaderMobile } from './HeaderMobile';
-import { createWrapper } from '../../test/setup';
+import { createWrapper } from '@ui/test/setup';
 
 const {
 	mockUser,
@@ -83,7 +83,7 @@ vi.mock('@etnos/tools', () => ({
 	useMyGameAccess: () => mockUseMyGameAccess(),
 }));
 
-vi.mock('../../context', () => ({
+vi.mock('@ui/context', () => ({
 	useUser: () => mockUseUser,
 }));
 

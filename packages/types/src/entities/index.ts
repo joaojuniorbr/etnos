@@ -9,3 +9,4 @@ export * from './school-ranking';
 export * from './school-user';
 export * from './user-ranking';
 export * from './admin-dashboard-analytics';
+export * from './student-dashboard';

@@ -99,6 +99,7 @@ export class MidiaService {
       ...(userId ? { userId } : {}),
       ...(folder ? { folder } : {}),
     };
+
     const skip = (Math.max(page, 1) - 1) * limitNumber;
     const [data, total] = await Promise.all([
       this.prismaService.midia.findMany({

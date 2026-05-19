@@ -2,15 +2,31 @@ import React from 'react';
 
 import type { StorybookConfig } from '@storybook/react-vite';
 
-import { dirname } from 'path';
-
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
 
 function getAbsolutePath(value: string): any {
-	return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+	return path.dirname(
+		fileURLToPath(import.meta.resolve(`${value}/package.json`)),
+	);
 }
+
+const storybookDir = path.dirname(fileURLToPath(import.meta.url));
+const uiSrc = path.resolve(storybookDir, '../../../packages/ui/src');
+
+const toAliasArray = (
+	alias: Record<string, string> | Array<{ find: string | RegExp; replacement: string }> | undefined,
+) => {
+	if (!alias) return [];
+	if (Array.isArray(alias)) return alias;
+
+	return Object.entries(alias).map(([find, replacement]) => ({
+		find,
+		replacement,
+	}));
+};
 
 const config: StorybookConfig = {
 	stories: [
@@ -55,24 +71,53 @@ const config: StorybookConfig = {
 		config.plugins = [...(config.plugins ?? []), tailwindcss()];
 		config.resolve = {
 			...config.resolve,
-			alias: {
-				...config.resolve?.alias,
-				'next/image': fileURLToPath(
-					new URL('./__mocks__/next-image.mock.tsx', import.meta.url),
-				),
-				'firebase/app': fileURLToPath(
-					new URL('./__mocks__/firebaseApp.ts', import.meta.url),
-				),
-				'firebase/auth': fileURLToPath(
-					new URL('./__mocks__/firebaseAuth.ts', import.meta.url),
-				),
-				'firebase/firestore': fileURLToPath(
-					new URL('./__mocks__/firebaseFirestore.ts', import.meta.url),
-				),
-				'firebase/storage': fileURLToPath(
-					new URL('./__mocks__/firebaseStorage.ts', import.meta.url),
-				),
-			},
+			alias: [
+				{
+					find: '@ui/',
+					replacement: `${uiSrc}/`,
+				},
+				...toAliasArray(config.resolve?.alias),
+				{
+					find: '@etnos/tools',
+					replacement: path.join(storybookDir, '__mocks__/etnos-tools.ts'),
+				},
+				{
+					find: '@etnos/analytics/web',
+					replacement: path.join(
+						storybookDir,
+						'__mocks__/etnos-analytics-web.ts',
+					),
+				},
+				{
+					find: 'next/image',
+					replacement: path.join(
+						storybookDir,
+						'__mocks__/next-image.mock.tsx',
+					),
+				},
+				{
+					find: 'firebase/app',
+					replacement: path.join(storybookDir, '__mocks__/firebaseApp.ts'),
+				},
+				{
+					find: 'firebase/auth',
+					replacement: path.join(storybookDir, '__mocks__/firebaseAuth.ts'),
+				},
+				{
+					find: 'firebase/firestore',
+					replacement: path.join(
+						storybookDir,
+						'__mocks__/firebaseFirestore.ts',
+					),
+				},
+				{
+					find: 'firebase/storage',
+					replacement: path.join(
+						storybookDir,
+						'__mocks__/firebaseStorage.ts',
+					),
+				},
+			],
 		};
 		return config;
 	},

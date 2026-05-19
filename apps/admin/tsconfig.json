@@ -7,7 +7,8 @@
 			}
 		],
 		"paths": {
-			"@etnos/components": ["./components"]
+			"@etnos/components": ["./components"],
+			"@ui/*": ["../../packages/ui/src/*"]
 		}
 	},
 	"include": [

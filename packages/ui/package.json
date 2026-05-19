@@ -30,7 +30,9 @@
 		"lint": "eslint src --max-warnings 0",
 		"test": "vitest --coverage --watch=false",
 		"test:dev": "vitest --watch --coverage",
-		"test:ui": "vitest --ui --coverage"
+		"test:ui": "vitest --ui --coverage",
+		"storybook": "yarn --cwd ../../apps/docs dev",
+		"storybook:build": "yarn --cwd ../../apps/docs build-storybook"
 	},
 	"devDependencies": {
 		"@etnos/eslint-config": "*",

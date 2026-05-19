@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface CardGameProps extends React.HTMLAttributes<HTMLDivElement> {
 	game: GameInterface;
 	character: string;
+	coverUrl?: string | null;
 	isAboveTheFold?: boolean;
 	onSelect?: () => void;
 }
@@ -12,17 +13,22 @@ interface CardGameProps extends React.HTMLAttributes<HTMLDivElement> {
 export const CardGame = ({
 	game,
 	character,
+	coverUrl,
 	isAboveTheFold = false,
 	onSelect,
 	...props
-}: CardGameProps) => (
+}: CardGameProps) => {
+	const imageSrc =
+		coverUrl ?? `/games/${game.slug}/cover/${character}.jpg`;
+
+	return (
 	<Link href={game.url} onClick={() => onSelect?.()}>
 		<div
 			className="shadow rounded overflow-hidden bg-white md:max-w-3xs w-full"
 			{...props}
 		>
 			<Image
-				src={`/games/${game.slug}/cover/${character}.jpg`}
+				src={imageSrc}
 				alt={game.name}
 				width={256}
 				height={256}
@@ -36,4 +42,5 @@ export const CardGame = ({
 			</dl>
 		</div>
 	</Link>
-);
+	);
+};

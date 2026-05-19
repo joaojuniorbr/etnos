@@ -12,8 +12,8 @@ import 'dayjs/locale/pt-br';
 
 dayjs.locale('pt-br');
 
-import { Footer } from '../../@molecules';
-import { Header } from '../../@organisms';
+import { Footer } from '@ui/@molecules';
+import { Header } from '@ui/@organisms';
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 	return (

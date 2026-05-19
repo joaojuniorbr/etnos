@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Header } from './Header';
 
 const mockUseUser = vi.fn();
-vi.mock('../../context', () => ({
+vi.mock('@ui/context', () => ({
 	useUser: () => mockUseUser(),
 }));
 

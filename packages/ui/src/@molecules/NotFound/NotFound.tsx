@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { Button } from '../../@atoms';
-import { useUser } from '../../context';
+import { Button } from '@ui/@atoms';
+import { useUser } from '@ui/context';
 
 export const NotFound = () => {
 	const { user } = useUser();

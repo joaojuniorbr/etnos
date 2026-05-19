@@ -13,7 +13,8 @@ import type {
 import { CacheKeys, CACHE_TTL_MS, CacheService } from 'src/cache';
 import { PrismaService } from 'src/prisma';
 
-const GAME_SLUGS = ['memory-game', 'guess-game'] as const;
+import { GAME_SLUGS } from './games.catalog';
+
 const GAME_SLUG = {
   MEMORY_GAME: 'memory-game',
   GUESS_GAME: 'guess-game',

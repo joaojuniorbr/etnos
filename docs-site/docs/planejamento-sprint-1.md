@@ -33,7 +33,7 @@ Tarefa: Desenvolver Fluxo de Cadastro de Usuário (já finalizada)
 
 Data em que foi concluída: 13 de março de 2026, às 15:32
 
-### Observações:
+### Observações referente ao desenvolvimento da tarefa:
 
 - Realizados os testes de cadastro: validação dos campos obrigatórios;
 - Armazenamento dos dados do usuário cadastrado no Fire Base Authentication sendo realizado perfeitamente;
@@ -45,7 +45,7 @@ Tarefa: Configurar Proteção de Rotas e Middleware (já finalizada)
 
 Data em que foi concluída: 13 de março de 2026, às 20:58
 
-### Observações:
+### Observações referente ao desenvolvimento da tarefa::
 
 - Correção necessária: Ao tentar acessar á página usando a url https://etnos.vercel.app/jogos, o usuário que não está logado/autenticado no sistema, não está sendo redirecionado para a página de login e após ajustes realizados no código, a configuração de rotas foi corrigida;
 - O usuário logado não consegue acessar a página de cadastro novamente;
@@ -57,7 +57,7 @@ Tarefa: Garantir Responsividade Mínima e Feedback Visual
 
 Data em que foi concluída: 13 de março de 2026, às 20:58
 
-### Observações:
+### Observações referente ao desenvolvimento da tarefa::
 
 - A aplicação foi acessada de dois aparelhos celulares diferentes e está responsiva e com a visualização devida.
 

@@ -8,7 +8,7 @@ Tarefa: Implementar Login de Usuários (já finalizada)
 
 Data em que foi concluída: 12 de março de 2026, às 20:06
 
-### Observações referente ao desenvolvimento da tarefa:
+#### Observações referente ao desenvolvimento da tarefa:
 
 - Realizado teste de login cadastrando usuário e logando com a conta do Google;
 - Realizado teste de login utilizando credenciais inválidas e confirmado o aparecimento da mensagem de erro: "Email ou senha inválidos";
@@ -23,7 +23,7 @@ Tarefa: Implementar Landing Page e Conteúdo Público (já finalizada)
 
 Data em que foi concluída: 12 de março de 2026, às 20:23
 
-### Observações referente ao desenvolvimento da tarefa:
+#### Observações referente ao desenvolvimento da tarefa:
 
 - Realizado o teste de carregamento da página e a exibição das informações necessárias (sobre, objetivos e como funciona, bem como botão COMECE AGORA (para redirecionar para a tela de login) - funções em perfeito funcionamento.
 
@@ -33,7 +33,7 @@ Tarefa: Desenvolver Fluxo de Cadastro de Usuário (já finalizada)
 
 Data em que foi concluída: 13 de março de 2026, às 15:32
 
-### Observações referente ao desenvolvimento da tarefa:
+#### Observações referente ao desenvolvimento da tarefa:
 
 - Realizados os testes de cadastro: validação dos campos obrigatórios;
 - Armazenamento dos dados do usuário cadastrado no Fire Base Authentication sendo realizado perfeitamente;
@@ -45,7 +45,7 @@ Tarefa: Configurar Proteção de Rotas e Middleware (já finalizada)
 
 Data em que foi concluída: 13 de março de 2026, às 20:58
 
-### Observações referente ao desenvolvimento da tarefa::
+#### Observações referente ao desenvolvimento da tarefa::
 
 - Correção necessária: Ao tentar acessar á página usando a url https://etnos.vercel.app/jogos, o usuário que não está logado/autenticado no sistema, não está sendo redirecionado para a página de login e após ajustes realizados no código, a configuração de rotas foi corrigida;
 - O usuário logado não consegue acessar a página de cadastro novamente;
@@ -57,7 +57,7 @@ Tarefa: Garantir Responsividade Mínima e Feedback Visual
 
 Data em que foi concluída: 13 de março de 2026, às 20:58
 
-### Observações referente ao desenvolvimento da tarefa::
+#### Observações referente ao desenvolvimento da tarefa::
 
 - A aplicação foi acessada de dois aparelhos celulares diferentes e está responsiva e com a visualização devida.
 

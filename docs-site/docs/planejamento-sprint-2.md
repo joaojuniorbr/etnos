@@ -83,5 +83,6 @@ Algumas tarefas com atraso na validação, o que pode atrapalhar quando uma tare
 - Implementar Seleção de Personagem: 4 dias após o vencimento, mas fechada no último dia da sprint.
 
 No geral, mesmo com os atrasos, as 7 tarefas foram fechadas dentro do prazo limite da sprint.
+
 Algumas atividades adiantadas (Jogos e RFs com prazo em abril, já concluídos), o que indica uma folga para a sprint seguinte.
 

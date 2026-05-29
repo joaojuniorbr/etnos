@@ -1,5 +1,4 @@
 # SPRINT 1 - (02/03/2026 - 15/03/2026)
-
 Registro histórico da sprint 1 do ciclo 2026.
 
 ## 1. Implementar Login de Usuários

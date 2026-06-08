@@ -46,6 +46,30 @@ const renderWithQueryClient = (ui: React.ReactNode) => {
 	);
 };
 
+const submitLetter = async (letter: string) => {
+	const input = screen.getByTestId('guess-game-letter-input');
+
+	await act(async () => {
+		fireEvent.change(input, { target: { value: letter } });
+		fireEvent.click(screen.getByText('Tentar letra'));
+	});
+};
+
+const submitWord = async (word: string) => {
+	const section = screen.getByTestId('guess-game-word-section');
+
+	for (const char of word) {
+		await act(async () => {
+			section.focus();
+			fireEvent.keyDown(section, { key: char });
+		});
+	}
+
+	await act(async () => {
+		fireEvent.click(screen.getByText('Chutar palavra'));
+	});
+};
+
 vi.mock('@etnos/analytics/web', () => ({
 	trackGameFinished: trackGameFinishedMock,
 }));
@@ -68,64 +92,9 @@ vi.mock('@etnos/ui', () => ({
 	useUser: () => useUserMock(),
 }));
 
-vi.mock('antd', () => {
-	const Button = ({
-		children,
-		onClick,
-		disabled,
-	}: {
-		children: React.ReactNode;
-		onClick?: () => void;
-		disabled?: boolean;
-	}) => (
-		<button onClick={onClick} disabled={disabled}>
-			{children}
-		</button>
-	);
-
-	const InputOtp = ({
-		value,
-		onChange,
-		length,
-		disabled,
-		formatter,
-	}: {
-		value?: string;
-		onChange?: (value: string) => void;
-		length?: number;
-		disabled?: boolean;
-		formatter?: (value: string) => string;
-	}) => (
-		<input
-			data-testid={`otp-${length ?? 0}`}
-			value={value ?? ''}
-			disabled={disabled}
-			onChange={(event) =>
-				onChange?.(
-					formatter ? formatter(event.target.value) : event.target.value,
-				)
-			}
-		/>
-	);
-
-	const Image = ({
-		src,
-		alt,
-	}: {
-		src?: string;
-		alt?: string;
-	}) => <img src={src} alt={alt} />;
-
-	return {
-		Button,
-		Divider: () => <hr />,
-		Image,
-		Input: { OTP: InputOtp },
-		Spin: ({ children }: { children: React.ReactNode }) => (
-			<div>{children}</div>
-		),
-	};
-});
+vi.mock('antd', () => ({
+	Spin: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 
 vi.mock('../../components', () => ({
 	FinishGame: (props: unknown) => {
@@ -146,18 +115,6 @@ vi.mock('../../components', () => ({
 			</div>
 		);
 	},
-	ScoreHighlight: ({
-		label,
-		score,
-	}: {
-		label: string;
-		score: React.ReactNode;
-	}) => (
-		<div>
-			<span>{label}</span>
-			<span>{score}</span>
-		</div>
-	),
 }));
 
 describe('GuessGame', () => {
@@ -191,12 +148,11 @@ describe('GuessGame', () => {
 	it('renderiza conteúdo inicial e revela dica', () => {
 		renderWithQueryClient(<GuessGame />);
 
-		expect(screen.getByText('Jogo Adivinhe a Palavra')).toBeTruthy();
-		expect(screen.getByText('Recorde')).toBeTruthy();
-		expect(screen.getByText('400')).toBeTruthy();
+		expect(screen.getByText('Dicas')).toBeTruthy();
+		expect(screen.getByText('5 letras')).toBeTruthy();
 		expect(screen.getByRole('img').getAttribute('src')).toBe('/imagem.jpg');
 
-		fireEvent.click(screen.getByText('Pedir uma dica'));
+		fireEvent.click(screen.getByText(/Pedir uma dica/));
 
 		expect(screen.getByText('Uso para beber chimarrão.')).toBeTruthy();
 	});
@@ -234,10 +190,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'x' } });
-		});
+		await submitLetter('x');
 
 		expect(validateAttemptMock).toHaveBeenCalledWith(
 			{
@@ -248,15 +201,14 @@ describe('GuessGame', () => {
 			expect.any(Object),
 		);
 		expect(playSound).toHaveBeenCalledWith('error');
-		expect(screen.getByText('9')).toBeTruthy();
+		expect(screen.getByText('Vidas restantes: 9')).toBeTruthy();
 	});
 
 	it('ignora tentativa de letra vazia', async () => {
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
 		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: '' } });
+			fireEvent.click(screen.getByText('Tentar letra'));
 		});
 
 		expect(validateAttemptMock).not.toHaveBeenCalled();
@@ -271,10 +223,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'x' } });
-		});
+		await submitLetter('x');
 
 		expect(validateAttemptMock).not.toHaveBeenCalled();
 	});
@@ -298,11 +247,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		expect(validateAttemptMock).toHaveBeenCalledWith(
 			{
@@ -358,17 +303,9 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		});
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'o' } });
-		});
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOLA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitLetter('b');
+		await submitLetter('o');
+		await submitWord('BOLA');
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleSaveScore: () => Promise<void>;
@@ -431,20 +368,10 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		});
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'o' } });
-		});
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'm' } });
-		});
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'a' } });
-		});
+		await submitLetter('b');
+		await submitLetter('o');
+		await submitLetter('m');
+		await submitLetter('a');
 
 		expect(validateAttemptMock).toHaveBeenLastCalledWith(
 			{
@@ -468,14 +395,9 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[1]!, { target: { value: 'b' } });
-		});
+		await submitLetter('b');
 
-		expect(screen.getAllByTestId('otp-5')[0]?.getAttribute('value')).toBe(
-			'••••',
-		);
+		expect(screen.getByTestId('word-display-0').textContent).toBe('');
 	});
 
 	it('dispara trackGameFinished ao vencer a rodada', async () => {
@@ -490,11 +412,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		await waitFor(() => {
 			expect(trackGameFinishedMock).toHaveBeenCalledWith(
@@ -523,13 +441,8 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-
 		for (let index = 0; index < 11; index += 1) {
-			await act(async () => {
-				fireEvent.change(inputs[2]!, { target: { value: 'ERRO' } });
-				fireEvent.click(screen.getByText('VERIFICAR'));
-			});
+			await submitWord('ERRAX');
 		}
 
 		await waitFor(() => {
@@ -558,11 +471,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		expect(trackGameFinishedMock).not.toHaveBeenCalled();
 	});
@@ -584,13 +493,8 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-
 		for (let index = 0; index < 11; index += 1) {
-			await act(async () => {
-				fireEvent.change(inputs[2]!, { target: { value: 'ERRO' } });
-				fireEvent.click(screen.getByText('VERIFICAR'));
-			});
+			await submitWord('ERRAX');
 		}
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
@@ -605,7 +509,7 @@ describe('GuessGame', () => {
 		renderWithQueryClient(<GuessGame />);
 
 		await act(async () => {
-			fireEvent.click(screen.getByText('VERIFICAR'));
+			fireEvent.click(screen.getByText('Chutar palavra'));
 		});
 
 		expect(validateAttemptMock).not.toHaveBeenCalled();
@@ -622,17 +526,11 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		expect(screen.getByText('A palavra correta é:')).toBeTruthy();
 		expect(
-			screen
-				.getByText('A palavra correta é:')
-				.parentElement?.querySelector('span:last-child')?.textContent,
+			screen.getByText('A palavra correta é:').nextElementSibling?.textContent,
 		).toBe('');
 	});
 
@@ -664,10 +562,8 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
 		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
+			fireEvent.click(screen.getByText('Chutar palavra'));
 		});
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
@@ -705,15 +601,11 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		expect(screen.queryByRole('img')).toBeNull();
+		expect(screen.queryByRole('img', { name: 'Chimarrao' })).toBeNull();
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
-		expect(screen.queryByText('O que e isso?')).toBeNull();
+		expect(screen.queryByText('O que é isso?')).toBeNull();
 	});
 
 	it('toca erro quando não houver conteúdo para exibir dicas', () => {
@@ -732,7 +624,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		fireEvent.click(screen.getByText('Pedir uma dica'));
+		fireEvent.click(screen.getByText(/Pedir uma dica/));
 
 		expect(playSound).toHaveBeenCalledWith('error');
 	});
@@ -768,11 +660,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleRestart: () => Promise<void>;
@@ -829,11 +717,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleSaveScore: () => Promise<void>;
@@ -879,11 +763,7 @@ describe('GuessGame', () => {
 			expect(startGameSession).toHaveBeenCalledWith('guess-game', 'anita'),
 		);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		await waitFor(() =>
 			expect(saveGameScoreHistory).toHaveBeenCalledWith(
@@ -922,11 +802,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleSaveScore: () => Promise<void>;
@@ -969,11 +845,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame characterSlug="anita" />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		const props = finishGameMock.mock.calls.at(-1)?.[0] as {
 			handleSaveScore: () => Promise<void>;
@@ -1008,11 +880,7 @@ describe('GuessGame', () => {
 
 		renderWithQueryClient(<GuessGame />);
 
-		const inputs = screen.getAllByRole('textbox');
-		await act(async () => {
-			fireEvent.change(inputs[2]!, { target: { value: 'BOMBA' } });
-			fireEvent.click(screen.getByText('VERIFICAR'));
-		});
+		await submitWord('BOMBA');
 
 		fireEvent.click(screen.getByText('close nps'));
 

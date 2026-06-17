@@ -8,7 +8,7 @@ O roadMap do projeto Etnos pode ser visualizado em [roadmap](./files/roadmap.pdf
 
 ## Entregas por sprint
 
-Status de referência: consolidado até a versão `1.8.0` da plataforma.
+Status de referência: consolidado até a versão `1.20.0` da plataforma.
 
 ### Sprint 1 (2/3 – 15/3)
 

@@ -8,12 +8,13 @@ Pacote base de integração do app mobile com a API do Etnos.
 - serviços de domínio em `src/services`:
   - `auth.service`
   - `characters.service`
-  - `memory-game.service`
+  - `memory-game.service` (jogo da memória — Adivinhe é apenas web hoje)
   - `notifications.service`
   - `school.service`
   - `score-games.service`
 - storage de sessão em `src/storage/session-storage.ts`;
-- utilitários de jogo da memória em `src/memory-game`.
+- utilitários de jogo da memória em `src/memory-game`;
+- analytics via `@etnos/analytics/native` no app mobile.
 
 ## Scripts
 

@@ -25,7 +25,8 @@ Site institucional e porta de entrada pública.
 Portal autenticado do estudante.
 
 - seleção de personagem e jogos;
-- perfil e onboarding escolar;
+- dashboard na home (`useStudentDashboard`);
+- perfil, histórico e onboarding escolar;
 - renderização de `@etnos/games`;
 - analytics (`appName: student`).
 
@@ -69,7 +70,8 @@ Resumo completo em [Pacotes compartilhados](packages-overview.md).
 | Pacote                       | Papel                              |
 | ---------------------------- | ---------------------------------- |
 | `packages/ui`                | Design system e `AppProviders` web |
-| `packages/tools`             | Hooks e HTTP para apps Next        |
+| `packages/services`          | Clientes HTTP e serviços de domínio |
+| `packages/tools`             | Hooks React Query para apps Next   |
 | `packages/core`              | Cliente HTTP e sessão mobile       |
 | `packages/types`             | Contratos TypeScript               |
 | `packages/analytics`         | Mixpanel web/native                |

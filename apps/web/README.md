@@ -15,7 +15,7 @@ escola.
 - Next.js 16 + React 19 + TypeScript
 - Tailwind CSS 4 + Ant Design
 - Firebase Web SDK
-- `@etnos/ui`, `@etnos/tools`
+- `@etnos/ui`, `@etnos/tools`, `@etnos/analytics`
 - Vercel Analytics e Speed Insights
 
 ## Scripts
@@ -41,7 +41,8 @@ yarn dev
 Criar `apps/web/.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_MIXPANEL_TOKEN=
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=

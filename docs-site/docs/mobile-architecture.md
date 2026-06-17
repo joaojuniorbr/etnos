@@ -51,16 +51,19 @@ A API valida se o personagem está habilitado para a escola do estudante
 
 ## Jogos no mobile
 
-| Jogo               | Rota                           | Integração                                  |
-| ------------------ | ------------------------------ | ------------------------------------------- |
-| Jogo da memória    | `app/games/memory.tsx`         | `MemoryGameBoard` + API de score/histórico  |
-| Amotion (adivinhe) | rotas em `app/(app)/games.tsx` | navegação + `@etnos/games` quando aplicável |
+| Jogo            | Rota                   | Status        |
+| --------------- | ---------------------- | ------------- |
+| Jogo da memória | `app/games/memory.tsx` | Implementado  |
+| Adivinhe        | —                      | Apenas web    |
 
-Eventos de analytics:
+O app lista os jogos em `app/(app)/games.tsx`; hoje apenas a memória abre tela
+jogável. O Adivinhe está disponível em `apps/student` (portal web).
+
+Eventos de analytics no mobile:
 
 - `game_selected` ao escolher o jogo;
 - `game_finished` ao terminar a partida na UI;
-- `game_session_completed` ao persistir pontuação no backend.
+- `game_session_completed` ao persistir pontuação (memória).
 
 ## Notificações push
 

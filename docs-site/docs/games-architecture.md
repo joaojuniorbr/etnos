@@ -6,12 +6,13 @@ Os jogos do Etnos foram organizados para separar bem experiência visual, regras
 do jogo, integração com API e persistência. Hoje essa parte passa por sete áreas
 principais do monorepo:
 
-- `apps/student`: entrega a experiência jogável para o estudante.
-- `apps/admin`: permite configurar conteúdo e capas dos jogos.
-- `apps/student-mobile`: app nativo que consome jogos e score.
-- `apps/games`: biblioteca React com os jogos reutilizaveis.
-- `apps/api`: expõe endpoints autenticados para configuração, conteúdo e score.
-- `packages/tools`: hooks e services que conectam frontend e API.
+- `apps/student`: entrega a experiência jogável para o estudante (web).
+- `apps/student-mobile`: jogo da memória no app nativo.
+- `apps/admin`: configura conteúdo, capas e palavras dos jogos.
+- `apps/games`: biblioteca React com os jogos reutilizáveis.
+- `apps/api`: expõe endpoints autenticados para configuração, conteúdo, validação e score.
+- `packages/tools`: hooks React Query que conectam UI e `@etnos/services`.
+- `packages/services`: clientes HTTP de jogos, score, escolas e mídia.
 - `packages/types`: enums e interfaces compartilhadas entre apps e pacotes.
 
 ## Fluxo geral
@@ -23,14 +24,15 @@ principais do monorepo:
 ### `apps/student`
 
 O portal do estudante controla navegação, breadcrumb e contexto da experiência.
-As paginas de jogos ficam em `app/jogos` e delegam a renderizacao para o
-componente `Games`, que decide qual jogo da biblioteca deve ser exibido.
+As páginas de jogos ficam em `app/jogos` e delegam a renderização para
+`@etnos/games`.
 
 Responsabilidades principais:
 
 - selecionar o tipo de jogo pela rota;
 - recuperar o personagem via query string;
-- renderizar o layout da experiência no contexto do estudante.
+- renderizar o layout da experiência no contexto do estudante;
+- respeitar habilitação por escola (`useMyGameAccess`).
 
 ### `apps/games`
 
@@ -48,24 +50,20 @@ Hoje a biblioteca exporta:
 Assim, o `student` consome um jogo pronto sem duplicar lógica de pontuação,
 feedback visual ou integração com score.
 
-### `packages/tools`
+### `packages/tools` e `packages/services`
 
-Faz a ponte entre UI e backend. Nessa camada ficam:
-
-- hooks de consulta como `useGameScore`, `useGamesConfig` e
-  `useMemoryGameContent`;
-- services HTTP como `scoreGamesService`, `configGamesService` e
-  `memoryGameContentService`;
-- utilitários de experiência, incluindo listagem dos jogos e reprodução de sons.
+- **`@etnos/services`**: funções HTTP (`guessGameContentService`,
+  `scoreGamesService`, `memoryGameContentService`, etc.).
+- **`@etnos/tools`**: hooks (`useGames`, `useGameScore`, `useGuessGamePlayableContent`,
+  `useMemoryGameContent`, `useMyGameAccess`) que encapsulam React Query.
 
 ### `apps/admin`
 
-O painel administrativo cuida do lado editorial dos jogos. No caso do jogo da
-memória, o admin consegue:
+O painel administrativo cuida do lado editorial dos jogos:
 
-- definir a imagem de capa por personagem;
-- selecionar as imagens que formam o baralho;
-- remover itens de conteúdo cadastrados.
+- **Memória**: capa por personagem, imagens do baralho (`app/jogos/jogo-da-memoria`).
+- **Adivinhe**: palavras, dicas e imagens (`app/jogos/guess-game`).
+- habilitação de jogos e personagens por escola.
 
 ### `apps/api`
 
@@ -73,33 +71,32 @@ Centraliza as regras de persistência. A controller `games.controller.ts` oferec
 endpoints para:
 
 - configuração de capa por jogo e personagem;
-- cadastro e remoção de conteúdo do jogo da memória;
-- consulta e gravacao de pontuacoes;
+- conteúdo e validação do **Adivinhe** (`guess/*`, `guess/validate`);
+- cadastro e remoção de conteúdo do **jogo da memória**;
+- consulta e gravação de pontuações e histórico;
 - coleta de NPS ao final dos jogos com `POST /games/nps`;
 - listagem de imagens formatadas para o frontend.
 
 ## Como o score funciona
 
-O score do jogo da memória fica vinculado a três dimensões:
+O score fica vinculado a três dimensões: **jogo**, **personagem** e **usuário**.
 
-- jogo;
-- personagem;
-- usuário.
+- **Recorde** em `game_scores`: atualizado via `POST /games/score` quando a
+  pontuação supera o melhor resultado (`upsert`).
+- **Histórico** em `game_score_histories`: cada partida via `POST /games/score/history`,
+  associada à sessão iniciada com `startGameSession`.
 
-Na API, a gravação é feita com `upsert`, o que simplifica a atualização do
-recorde do estudante sem criar duplicidade para a mesma combinação.
+Nas bibliotecas de jogos, o histórico e o recorde são disparados ao final da
+partida (auto-save em `GuessGameExperience` e `MemoryGameExperience`).
 
 ## Relação com o admin
 
-O jogo da memória depende diretamente do painel administrativo:
+| Jogo | Sem conteúdo no admin |
+| :--- | :--- |
+| Memória | Sem cartas para montar o tabuleiro |
+| Adivinhe | Sem palavra jogável para o personagem |
 
-- se o admin altera a capa, o verso das cartas muda no frontend;
-- se o admin adiciona ou remove imagens, o conjunto de pares muda no jogo;
-- sem conteúdo configurado para um personagem, o frontend fica sem cartas para
-  montar a partida.
-
-Essa separação deixa a curadoria do conteúdo no admin e a experiência jogável
-no student, cada um no seu papel.
+Alterações no admin refletem na próxima rodada carregada pelo estudante.
 
 ## Analytics de jogos
 
@@ -130,7 +127,7 @@ pode acessar.
 
 ## Jogos da plataforma
 
-Hoje a arquitetura cobre dois desafios:
-
-- `guess-game` (Amotion) — conteúdo em `guess_game_contents`
-- [`memory-game`](/etnos/games-architecture/memory-game) — conteúdo em `memory_game_contents` + `game_configs`
+| Slug | Documentação | Conteúdo |
+| :--- | :--- | :--- |
+| `guess-game` | [Adivinhe](guess-game.md) | `guess_game_contents` |
+| `memory-game` | [Jogo da memória](memory-game.md) | `memory_game_contents` + `game_configs` |

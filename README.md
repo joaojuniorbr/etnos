@@ -6,8 +6,8 @@ Plataforma educacional com jogos culturais para estudantes do ensino
 fundamental, organizada em monorepo com apps web/mobile, API e pacotes
 compartilhados.
 
-[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](./CHANGELOG.md)
-![Node](https://img.shields.io/badge/Node-%3E%3D20-green)
+[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](./CHANGELOG.md)
+![Node](https://img.shields.io/badge/Node-%3E%3D18-green)
 ![Yarn](https://img.shields.io/badge/Yarn-1.22.19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue)
 ![License](https://img.shields.io/badge/license-UNLICENSED-lightgray)
@@ -17,21 +17,22 @@ compartilhados.
 ### Apps
 
 - `apps/web`: site institucional, login e cadastro.
-- `apps/student`: portal web do estudante com jogos e perfil.
+- `apps/student`: portal web do estudante com jogos, dashboard e perfil.
 - `apps/student-mobile`: app nativo Expo (iOS, Android e Web).
-- `apps/admin`: painel administrativo para conteúdo e operação.
+- `apps/admin`: painel administrativo para conteúdo, escolas e operação.
 - `apps/api`: API NestJS com Prisma, Firebase e Swagger.
 - `apps/games`: biblioteca React de jogos reutilizáveis.
 - `apps/docs`: Storybook dos componentes visuais.
 
 ### Packages
 
+- `packages/services`: clientes HTTP e serviços de domínio (auth, jogos, escolas, mídia).
 - `packages/core`: cliente HTTP e serviços compartilhados para o mobile.
-- `packages/tools`: hooks, serviços e helpers para apps web.
+- `packages/tools`: hooks React Query e helpers para apps web.
 - `packages/ui`: biblioteca de componentes e estilos compartilhados.
 - `packages/types`: contratos e entidades compartilhadas.
 - `packages/analytics`: integração Mixpanel (web e mobile).
-- `packages/performance`: testes de carga com k6.
+- `packages/performance`: testes de carga com k6 e stack local Grafana/Prometheus.
 - `packages/tailwind-config`: estilos e config comum de Tailwind/PostCSS.
 - `packages/typescript-config`: presets de `tsconfig` do monorepo.
 - `packages/eslint-config`: presets de lint reutilizáveis.
@@ -40,13 +41,22 @@ compartilhados.
 
 - `docs-site`: documentação técnica (MkDocs → GitHub Pages).
 - `AGENTS.md`: convenções para agentes (analytics, eventos Mixpanel).
+- `RELEASE.md`: versionamento com semantic-release.
 
 ## Funcionalidades atuais
 
-- `guess-game`: jogo de adivinhação com dicas e score.
-- `memory-game`: jogo da memória por personagem, com capa, cartas e recorde.
-- onboarding pós-login com vínculo do estudante à escola.
-- cadastro simplificado por link/código da escola.
+- **guess-game** (Adivinhe): dicas, tentativas por letra ou palavra inteira, teclado
+  nas caixinhas, validação no backend, score e NPS.
+- **memory-game**: jogo da memória por personagem, níveis de dificuldade, capa,
+  cartas configuráveis e recorde.
+- **dashboard do estudante**: resumo de progresso e atividades recentes na home.
+- **dashboard de performance (admin)**: métricas de uso, NPS e ranking.
+- **onboarding pós-login** com vínculo do estudante à escola.
+- **cadastro simplificado** por link/código da escola.
+- **histórico de atividades** e pontuações por jogo/personagem.
+- **notificações push** no app mobile e envio pelo painel admin.
+- **avaliação (NPS)** após partidas nos jogos web.
+- **analytics Mixpanel** em web, student, admin e mobile.
 
 ## Stack principal
 
@@ -54,11 +64,13 @@ compartilhados.
 - Mobile: React Native, Expo, Expo Router e React Query.
 - Backend: NestJS, Prisma, PostgreSQL, Firebase Auth/Storage e Sentry.
 - Monorepo: Yarn Workspaces e Turborepo.
-- Testes: Vitest, Testing Library, Jest e Playwright.
+- Testes: Vitest e Testing Library (apps e pacotes); Jest na API.
+
+![Etnos](./docs-site/docs/files/arquitetura.png)
 
 ## Requisitos
 
-- Node.js >= 20
+- Node.js >= 18 (recomendado LTS 20+)
 - Yarn >= 1.22.19
 
 ## Primeiros passos
@@ -80,7 +92,7 @@ Variáveis de pacotes compartilhados (ex.: Mixpanel em `@etnos/analytics`) usam 
 Exemplo frontend:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3333
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
 NEXT_PUBLIC_MIXPANEL_TOKEN=your_mixpanel_project_token
 NEXT_PUBLIC_FIREBASE_API_KEY=your_key
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
@@ -89,6 +101,7 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
 Mobile (`apps/student-mobile/.env`):
 
 ```env
+EXPO_PUBLIC_API_URL=http://localhost:8080/api
 EXPO_PUBLIC_MIXPANEL_TOKEN=your_mixpanel_project_token
 ```
 
@@ -98,7 +111,7 @@ Exemplo API:
 
 ```env
 NODE_ENV=development
-PORT=3333
+PORT=8080
 DATABASE_URL=postgres://...
 DIRECT_URL=postgres://...
 FIREBASE_PROJECT_ID=your_project
@@ -119,7 +132,7 @@ Endpoints locais principais:
 - `http://localhost:3000`: web
 - `http://localhost:3001`: admin
 - `http://localhost:3002`: student
-- `http://localhost:8080/api`: api (porta padrão NestJS; Swagger em `/docs`)
+- `http://localhost:8080/api`: API (porta padrão; Swagger em `/docs`)
 - `http://localhost:6006`: Storybook
 
 Mobile:
@@ -128,27 +141,40 @@ Mobile:
 yarn workspace @etnos/student-mobile dev
 ```
 
+Documentação MkDocs (local):
+
+```bash
+cd docs-site && mkdocs serve
+```
+
 ## Scripts úteis
 
 ```bash
-yarn dev
-yarn build
-yarn lint
-yarn test
-yarn check-types
+yarn dev              # sobe apps em paralelo (Turborepo)
+yarn build            # build de todos os workspaces
+yarn lint             # ESLint
+yarn test             # Vitest/Jest conforme o workspace
+yarn check-types      # tsc --noEmit
+yarn format           # Prettier
+yarn commit           # commit no padrão conventional (Commitizen)
+yarn release          # semantic-release (CI na main)
+yarn sonar            # análise SonarCloud local
 ```
 
 ## Fluxo de jogos (resumo)
 
-1. estudante acessa um jogo no `apps/student` ou `apps/student-mobile`;
-2. renderização vem de `@etnos/games` (web) e integrações de `@etnos/core`/`@etnos/tools`;
-3. API (`apps/api`) retorna configuração e persiste score/NPS;
-4. `apps/admin` mantém conteúdo, capas e mídias.
+1. estudante acessa um jogo no `apps/student` ou `apps/student-mobile` (memória);
+2. renderização vem de `@etnos/games` (web) e integrações de `@etnos/tools` / `@etnos/services`;
+3. API (`apps/api`) valida tentativas, retorna conteúdo e persiste score/histórico/NPS;
+4. `apps/admin` mantém conteúdo, capas, mídias e habilitação por escola.
+
+Detalhes: [arquitetura dos jogos](docs-site/docs/games-architecture.md).
 
 ## Documentação
 
 - [Documentação técnica (MkDocs)](https://joaojuniorbr.github.io/etnos/) — arquitetura, banco, analytics, performance
-- Local: `cd docs-site && mkdocs serve`
+- [Processo de release](./RELEASE.md)
+- [Changelog](./CHANGELOG.md)
 
 ## Links
 

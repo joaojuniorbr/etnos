@@ -11,6 +11,8 @@ brasileira de forma lúdica, visual e acessível.
 O projeto está organizado como **monorepo** com aplicações web, app nativo
 (Expo), painel administrativo, API NestJS e pacotes compartilhados.
 
+Versão atual da plataforma: **1.9.0** (ver [CHANGELOG](https://github.com/joaojuniorbr/etnos/blob/main/CHANGELOG.md)).
+
 ## Objetivo pedagógico
 
 - promover respeito às diferenças étnico-raciais;
@@ -41,8 +43,19 @@ recordes.
 
 ### Jogos
 
-- **Adivinhe**: descobrir uma palavra com apoio de dicas.
-- **Jogo da Memória**: encontrar pares visuais do personagem selecionado.
+- **[Adivinhe](guess-game.md)**: descobrir uma palavra com dicas, letras e chute
+  pela palavra inteira (portal web).
+- **[Jogo da Memória](memory-game.md)**: encontrar pares visuais do personagem
+  (web e app mobile).
+
+## Funcionalidades da plataforma
+
+- dashboard do estudante com resumo de progresso;
+- painel admin com gestão de escolas, usuários, mídia e jogos;
+- dashboard de performance e NPS no admin;
+- histórico de pontuações e atividades;
+- notificações push no app mobile;
+- analytics Mixpanel em todos os apps de produto.
 
 ## Mapa da documentação
 
@@ -52,7 +65,7 @@ recordes.
 | :--- | :--- |
 | [Monorepo](monorepo-architecture.md) | Apps, pacotes, fluxo entre camadas |
 | [App mobile](mobile-architecture.md) | Expo, rotas, auth e jogos no nativo |
-| [Pacotes compartilhados](packages-overview.md) | `ui`, `tools`, `core`, `analytics`, etc. |
+| [Pacotes compartilhados](packages-overview.md) | `ui`, `tools`, `services`, `core`, `analytics`, etc. |
 | [Autenticação](auth-architecture.md) | Firebase Auth + perfil no Postgres |
 | [Analytics](analytics-architecture.md) | Mixpanel, eventos e identidade |
 | [Mídia](media-architecture.md) | Upload, Storage e tabela `midia` |
@@ -63,6 +76,8 @@ recordes.
 | Guia | Conteúdo |
 | :--- | :--- |
 | [Jogos](games-architecture.md) | Biblioteca `@etnos/games`, score e admin |
+| [Adivinhe](guess-game.md) | Regras, UI, API e pontuação |
+| [Jogo da memória](memory-game.md) | Baralho, níveis e fluxo |
 | [Arquitetura de dados](database-architecture.md) | Postgres, Prisma, Firebase |
 | [Modelagem](data-model.md) | Tabelas, relações e índices |
 

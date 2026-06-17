@@ -13,7 +13,7 @@ As peças principais desse fluxo são:
 - `apps/api`, que valida o token e busca o perfil do usuário;
 - `packages/tools/useAuth`, que organiza login, cadastro, logout e perfil no
   frontend;
-- `packages/tools/authSession`, que guarda a sessão local e faz o refresh do
+- `packages/services/authSession`, que guarda a sessão local e faz o refresh do
   token;
 - `packages/ui/AuthProtected`, que protege as áreas autenticadas.
 - `apps/student-mobile`, que reutiliza os mesmos contratos via `@etnos/core`.

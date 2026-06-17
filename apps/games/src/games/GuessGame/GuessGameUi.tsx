@@ -1,15 +1,18 @@
 'use client';
 
-import { RiLightbulbLine } from 'react-icons/ri';
+import { RiImage2Line, RiLightbulbLine } from 'react-icons/ri';
 
 type GuessGameCardProps = {
 	children: React.ReactNode;
 	className?: string;
 };
 
-export const GuessGameCard = ({ children, className = '' }: GuessGameCardProps) => (
+export const GuessGameCard = ({
+	children,
+	className = '',
+}: GuessGameCardProps) => (
 	<section
-		className={`rounded-2xl bg-white p-4 shadow-sm ${className}`}
+		className={`rounded bg-white p-4 border border-slate-200 ${className}`}
 	>
 		{children}
 	</section>
@@ -24,9 +27,7 @@ export const GuessGameSectionTitle = ({
 	children,
 	className = '',
 }: GuessGameSectionTitleProps) => (
-	<h2
-		className={`mb-3 text-xs font-bold uppercase tracking-wide text-[#8b7355] ${className}`}
-	>
+	<h2 className={`mb-3 text-xs font-bold uppercase tracking-wide ${className}`}>
 		{children}
 	</h2>
 );
@@ -50,7 +51,7 @@ export const GuessGamePrimaryButton = ({
 		type={type}
 		onClick={onClick}
 		disabled={disabled}
-		className={`rounded-xl bg-[#a99e91] px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-[#9a8f82] disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+		className={`rounded bg-primary px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
 	>
 		{children}
 	</button>
@@ -75,7 +76,7 @@ export const GuessGameSecondaryButton = ({
 		type="button"
 		onClick={onClick}
 		disabled={disabled}
-		className={`inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4cdc0] bg-white px-4 py-2.5 text-sm font-semibold text-[#6b5f52] transition hover:bg-[#faf8f4] disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+		className={`inline-flex items-center justify-center gap-2 rounded border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
 	>
 		{icon}
 		{children}
@@ -114,11 +115,9 @@ export const LetterBox = ({
 			type="button"
 			data-testid={testId}
 			onClick={onClick}
-			className={`inline-flex items-center justify-center rounded-xl border-2 bg-white font-bold text-[#4a4036] transition ${letterBoxSizeClasses[size]} ${
-				isActive
-					? 'border-[#f0ad4e] shadow-[0_0_0_1px_#f0ad4e]'
-					: 'border-[#e8e2d8]'
-			} ${onClick ? 'cursor-pointer hover:border-[#f0ad4e]' : 'cursor-default'}`}
+			className={`inline-flex items-center justify-center rounded border-2 bg-white font-bold text-primary transition ${letterBoxSizeClasses[size]} ${
+				isActive ? 'border-secondary' : 'border-slate-200'
+			} ${onClick ? 'cursor-pointer hover:border-secondary' : 'cursor-default'}`}
 			aria-label={isEmpty ? 'Caixa vazia' : `Letra ${displayValue}`}
 		>
 			{displayValue}
@@ -143,7 +142,7 @@ export const LetterBoxesRow = ({
 	onBoxClick,
 	testIdPrefix = 'letter-box',
 }: LetterBoxesRowProps) => (
-	<div className="flex flex-wrap items-center justify-center gap-2">
+	<div className="flex flex-wrap items-center justify-center gap-3">
 		{letters.map((letter, index) => {
 			const isMasked = letter === maskChar || letter === '';
 			return (
@@ -170,23 +169,23 @@ export const MaskedWordPreview = ({
 	wordLength,
 	revealedCount,
 }: MaskedWordPreviewProps) => (
-	<div className="rounded-xl bg-[#ebe6dc] px-4 py-3">
-		<p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8b7355]">
+	<div className="rounded bg-slate-100 p-4">
+		<p className="mb-4 text-sm font-bold uppercase tracking-wide text-primary">
 			Palavra
 		</p>
-		<div className="flex flex-wrap items-center gap-2">
+		<div className="flex flex-wrap items-bottom gap-2">
 			{Array.from({ length: wordLength }, (_, index) => (
 				<span
 					key={`dash-${index}`}
 					className={`text-xl font-bold ${
-						index < revealedCount ? 'text-[#4a4036]' : 'text-[#f0ad4e]'
+						index < revealedCount ? 'text-primary' : 'text-secondary'
 					}`}
 				>
 					{index < revealedCount ? '•' : '—'}
 				</span>
 			))}
-			<span className="text-sm text-[#8b7355]">
-				{wordLength} {wordLength === 1 ? 'letra' : 'letras'}
+			<span className="text-xs text-primary">
+				<strong>{wordLength}</strong> {wordLength === 1 ? 'letra' : 'letras'}
 			</span>
 		</div>
 	</div>
@@ -197,8 +196,11 @@ type HintItemProps = {
 };
 
 export const HintItem = ({ text }: HintItemProps) => (
-	<div className="flex items-start gap-2 text-sm text-[#4a4036]">
-		<RiLightbulbLine className="mt-0.5 shrink-0 text-xl text-[#f0ad4e]" aria-hidden />
+	<div className="flex items-center gap-2 text-sm text-primary">
+		<RiLightbulbLine
+			className="mt-0.5 shrink-0 text-xl text-secondary"
+			aria-hidden
+		/>
 		<span>{text}</span>
 	</div>
 );
@@ -220,20 +222,18 @@ export const ImagePlaceholderCard = ({
 				<img
 					src={imageUrl}
 					alt={alt ?? title ?? 'Ilustração do jogo'}
-					className="max-h-[280px] w-full rounded-xl object-contain"
+					className="max-h-[280px] w-full rounded object-contain"
 				/>
 			</GuessGameCard>
 		);
 	}
 
 	return (
-		<GuessGameCard className="flex h-full min-h-[220px] flex-col items-center justify-center gap-3 bg-[repeating-linear-gradient(135deg,#e8e4dc_0,#e8e4dc_12px,#f0ece4_12px,#f0ece4_24px)] p-6">
-			<span className="text-5xl" role="img" aria-label="Ilustração pendente">
-				🎨
-			</span>
+		<GuessGameCard className="flex h-full flex-col items-center justify-center gap-2 p-6">
+			<RiImage2Line className="text-8xl text-secondary" />
 			{title ? (
-				<p className="max-w-xs rounded-lg bg-white/90 px-3 py-2 text-center text-xs text-[#6b5f52] shadow-sm">
-					imagem: {title}
+				<p className="text-sm text-primary">
+					Imagem: <strong className="uppercase">{title}</strong>
 				</p>
 			) : null}
 		</GuessGameCard>

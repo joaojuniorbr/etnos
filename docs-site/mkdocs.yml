@@ -2,12 +2,15 @@ site_name: Etnos
 site_url: https://joaojuniorbr.github.io/etnos
 
 theme:
-  name: shadcn
-  show_title: true
+  name: material
   language: pt-BR
-  pygments_style:
-    light: shadcn-light
-    dark: github-dark
+  font:
+    text: IBM Plex Sans
+    code: Fira Code
+  features:
+    - navigation.expand
+    - search.highlight
+    - search.suggest
 
 plugins:
   - search
@@ -26,6 +29,7 @@ nav:
   - Jogos:
       - Arquitetura dos jogos: games-architecture.md
       - Jogos educacionais:
+          - Adivinhe: guess-game.md
           - Jogo da memória: memory-game.md
   - Banco de Dados:
       - Arquitetura de dados: database-architecture.md
@@ -34,6 +38,7 @@ nav:
       - Testes de performance: performance-tests.md
   - Entregas:
       - Relatório 2026:
+          - Relatório Final 2026: relatorio-final-2026.md
           - Relatório Interdisciplinar 2026: relatorio-interdisciplinar-2026.md
           - Sprint 01: planejamento-sprint-1.md
           - Sprint 02: planejamento-sprint-2.md

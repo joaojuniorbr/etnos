@@ -29,7 +29,7 @@ yarn prisma:migrate:deploy
 
 ```env
 NODE_ENV=development
-PORT=3333
+PORT=8080
 DATABASE_URL=
 DIRECT_URL=
 FIREBASE_PROJECT_ID=
@@ -38,33 +38,34 @@ FIREBASE_PRIVATE_KEY=
 FIREBASE_STORAGE_BUCKET=
 FIREBASE_CHECK_REVOKED_TOKENS=false
 SENTRY_DSN=
+```
 
 O Sentry fica **desligado em `NODE_ENV=development`**, mesmo com `SENTRY_DSN` definido. Em staging/produção, configure o DSN para habilitar traces, profiling e captura de erros.
-```
 
 ## Swagger
 
-Com a API local em `3333`, a documentação fica em:
+Com a API local na porta padrão (`8080`):
 
-- `http://localhost:3333/docs`
+- **Swagger UI:** `http://localhost:8080/docs`
+- **Base da API:** `http://localhost:8080/api`
+
+Se `PORT=3333` no `.env`, ajuste as URLs para `http://localhost:3333`.
 
 ## Métricas
 
-Com a API local em `8080`, as métricas Prometheus ficam em:
-
-- `http://localhost:8080/api/metrics`
+- `http://localhost:8080/api/metrics` (Prometheus)
 
 Essas métricas alimentam a stack local de Grafana/Prometheus em `packages/performance`.
 
 ## Performance e observabilidade
 
-Por padrão, a validação do Firebase ID token não consulta revogação remota a cada request (`FIREBASE_CHECK_REVOKED_TOKENS=false`). Isso evita uma chamada externa por rota autenticada durante navegação normal. Se precisar validar tokens revogados em cada requisição, configure:
+Por padrão, a validação do Firebase ID token não consulta revogação remota a cada request (`FIREBASE_CHECK_REVOKED_TOKENS=false`). Para validar tokens revogados em cada requisição:
 
 ```env
 FIREBASE_CHECK_REVOKED_TOKENS=true
 ```
 
-Logs de anomalia do teste de carga para o Sentry ficam desligados por padrão para não gerar milhares de eventos durante k6. Para ligar temporariamente:
+Logs de anomalia do teste de carga para o Sentry ficam desligados por padrão:
 
 ```env
 SENTRY_LOAD_TEST_ANOMALY_LOGS=true
@@ -84,13 +85,24 @@ SENTRY_LOAD_TEST_ANOMALY_LOGS=true
 
 - `GET /games`
 - `GET /games/:gameSlug`
+- `GET /games/config/:gameSlug/:characterSlug`
+- `POST /games/config`
 - `POST /games/score`
+- `POST /games/score/history`
 - `GET /games/score`
+- `GET /games/score/history`
 - `GET /games/score/:slug/:characterSlug`
 - `POST /games/nps`
+- `GET /games/nps/:slug`
 - `GET /games/memory/:characterSlug`
 - `GET /games/memory/images/:characterSlug`
 - `POST /games/memory`
+- `DELETE /games/memory/:id`
+- `GET /games/guess/:characterSlug`
+- `GET /games/guess/play/:characterSlug`
+- `POST /games/guess`
+- `POST /games/guess/validate`
+- `DELETE /games/guess/:id`
 
 ### Midia
 
@@ -104,7 +116,6 @@ SENTRY_LOAD_TEST_ANOMALY_LOGS=true
 ## Referências no monorepo
 
 - schema e migrations: `apps/api/prisma/`
-- DTO NPS: `apps/api/src/games/dto/save-game-nps.dto.ts`
 - arquitetura: `docs-site/docs/games-architecture.md`
 - banco/modelagem: `docs-site/docs/database-architecture.md`,
   `docs-site/docs/data-model.md`

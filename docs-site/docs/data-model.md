@@ -17,7 +17,7 @@ do schema é `apps/api/prisma/schema.prisma`.
 | `characters`                | Catálogo de personagens culturais         |
 | `game_configs`              | Capa/config visual por jogo e personagem  |
 | `memory_game_contents`      | Cartas do jogo da memória                 |
-| `guess_game_contents`       | Palavras e dicas do Amotion               |
+| `guess_game_contents`       | Palavras e dicas do Adivinhe              |
 | `game_scores`               | Recorde atual por usuário/jogo/personagem |
 | `game_score_histories`      | Histórico de partidas                     |
 | `game_nps_responses`        | Feedback NPS pós-jogo                     |

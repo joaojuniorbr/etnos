@@ -59,7 +59,7 @@ Propriedades comuns em todos os eventos: `app_name`, `platform`.
 | `character_selected`          | Escolha de personagem                                                   | `useCharacter` (web); `CharacterSelectionContext` (mobile)       |
 | `game_selected`               | Escolha de jogo                                                         | `GameSelect` / `CardGame` (web); `games.tsx` (mobile)            |
 | `game_finished`               | Partida concluída na UI (vitória/derrota), sem depender de salvar score | `MemoryGameExperience`, `GuessGameExperience`, `MemoryGameBoard` |
-| `game_session_completed`      | Pontuação persistida (`saveGameScoreHistory`)                           | `useGames` (web); `memory.tsx` (mobile)                          |
+| `game_session_completed`      | Pontuação persistida (`saveGameScoreHistory`)                           | `useGames` (web); `memory.tsx` (mobile — apenas memória)               |
 | `password_recovery_requested` | “Esqueci minha senha” enviado com sucesso                               | `useAuth`, `ResetPasswordForm`, `AuthContext` (mobile)           |
 
 ### Propriedades por evento
@@ -69,7 +69,7 @@ Propriedades comuns em todos os eventos: `app_name`, `platform`.
 | `sign_up_completed`           | `sign_up_method`, `email_domain`                                         |
 | `character_selected`          | `character_slug`, `character_name`                                       |
 | `game_selected`               | `game_slug`, `game_name`, `character_slug`, `character_name`             |
-| `game_finished`               | `game_slug`, `game_name`, `score`, `outcome` (`won` / `lost` no Amotion) |
+| `game_finished`               | `game_slug`, `game_name`, `score`, `outcome` (`won` / `lost` no Adivinhe) |
 | `game_session_completed`      | `game_slug`, `game_name`, `score`, `character_slug`                      |
 | `password_recovery_requested` | `email_domain`                                                           |
 

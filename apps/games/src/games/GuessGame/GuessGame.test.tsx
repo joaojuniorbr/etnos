@@ -55,18 +55,34 @@ const submitLetter = async (letter: string) => {
 	});
 };
 
-const submitWord = async (word: string) => {
+const pressWordSectionKey = async (key: string) => {
 	const section = screen.getByTestId('guess-game-word-section');
 
+	await act(async () => {
+		section.focus();
+		fireEvent.keyDown(section, { key });
+	});
+};
+
+const submitWord = async (word: string) => {
 	for (const char of word) {
-		await act(async () => {
-			section.focus();
-			fireEvent.keyDown(section, { key: char });
-		});
+		await pressWordSectionKey(char);
 	}
 
 	await act(async () => {
 		fireEvent.click(screen.getByText('Chutar palavra'));
+	});
+};
+
+const clickBackspaceButton = async () => {
+	await act(async () => {
+		fireEvent.click(screen.getByText('← Apagar'));
+	});
+};
+
+const clickWordAttemptBox = async (index: number) => {
+	await act(async () => {
+		fireEvent.click(screen.getByTestId(`word-attempt-${index}`));
 	});
 };
 
@@ -149,12 +165,44 @@ describe('GuessGame', () => {
 		renderWithQueryClient(<GuessGame />);
 
 		expect(screen.getByText('Dicas')).toBeTruthy();
-		expect(screen.getByText('5 letras')).toBeTruthy();
 		expect(screen.getByRole('img').getAttribute('src')).toBe('/imagem.jpg');
 
 		fireEvent.click(screen.getByText(/Pedir uma dica/));
 
 		expect(screen.getByText('Uso para beber chimarrão.')).toBeTruthy();
+	});
+
+	it('usa singular na prévia quando a palavra tem uma letra', () => {
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: {
+				...playableContent,
+				wordLength: 1,
+			},
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		expect(document.body.textContent).toMatch(/1\s+letra/);
+	});
+
+	it('usa alt padrão na imagem quando título e alt não forem informados', () => {
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: {
+				...playableContent,
+				title: undefined,
+				imageUrl: '/sem-titulo.jpg',
+			},
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		expect(screen.getByRole('img').getAttribute('alt')).toBe(
+			'Ilustração do jogo',
+		);
 	});
 
 	it('usa slug vazio quando nao houver prop nem personagem selecionado', () => {
@@ -512,6 +560,147 @@ describe('GuessGame', () => {
 			fireEvent.click(screen.getByText('Chutar palavra'));
 		});
 
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('ignora chute de palavra quando o conteúdo não carregou', async () => {
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: null,
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		await act(async () => {
+			fireEvent.click(screen.getByText('Chutar palavra'));
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('submete letra ao pressionar Enter no input', async () => {
+		validateAttemptMock.mockResolvedValueOnce({
+			isCorrect: false,
+			isSolved: false,
+			matchedIndexes: [],
+			revealedCharacters: [],
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		const input = screen.getByTestId('guess-game-letter-input');
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: 'x' } });
+			fireEvent.keyDown(input, { key: 'Enter' });
+		});
+
+		expect(validateAttemptMock).toHaveBeenCalledWith(
+			{
+				contentId: 'guess-1',
+				guess: 'X',
+				type: 'letter',
+			},
+			expect.any(Object),
+		);
+	});
+
+	it('ignora Enter no input de letra vazio', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		const input = screen.getByTestId('guess-game-letter-input');
+
+		await act(async () => {
+			fireEvent.keyDown(input, { key: 'Enter' });
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('apaga a letra da caixa ativa com backspace no teclado', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('B');
+		await pressWordSectionKey('O');
+		await clickWordAttemptBox(1);
+		await pressWordSectionKey('Backspace');
+
+		expect(screen.getByTestId('word-attempt-1').textContent).toBe('');
+	});
+
+	it('apaga a letra anterior quando a caixa ativa está vazia', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('B');
+		await pressWordSectionKey('Backspace');
+
+		expect(screen.getByTestId('word-attempt-0').textContent).toBe('');
+	});
+
+	it('não altera tentativa ao apagar com todas as caixas vazias', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('Backspace');
+
+		expect(screen.getByTestId('word-attempt-0').textContent).toBe('');
+	});
+
+	it('apaga letra com o botão Apagar', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('B');
+		await clickBackspaceButton();
+
+		expect(screen.getByTestId('word-attempt-0').textContent).toBe('');
+	});
+
+	it('seleciona caixa ao clicar na tentativa de palavra', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await clickWordAttemptBox(2);
+
+		expect(screen.getByTestId('word-attempt-2').className).toContain(
+			'border-secondary',
+		);
+	});
+
+	it('ignora teclas inválidas na seção de palavra', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('1');
+
+		expect(screen.getByTestId('word-attempt-0').textContent).toBe('');
+	});
+
+	it('ignora teclas diferentes de Enter no input de letra', async () => {
+		renderWithQueryClient(<GuessGame />);
+
+		const input = screen.getByTestId('guess-game-letter-input');
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: 'x' } });
+			fireEvent.keyDown(input, { key: 'Tab' });
+		});
+
+		expect(validateAttemptMock).not.toHaveBeenCalled();
+	});
+
+	it('ignora digitação na seção de palavra quando wordLength é zero', async () => {
+		useGuessGamePlayableContentMock.mockReturnValue({
+			data: {
+				...playableContent,
+				wordLength: 0,
+			},
+			isLoading: false,
+			refetch: vi.fn(),
+		});
+
+		renderWithQueryClient(<GuessGame />);
+
+		await pressWordSectionKey('A');
+
+		expect(screen.queryByTestId('word-attempt-0')).toBeNull();
 		expect(validateAttemptMock).not.toHaveBeenCalled();
 	});
 

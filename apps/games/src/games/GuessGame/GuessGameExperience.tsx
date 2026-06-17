@@ -32,8 +32,8 @@ import {
 const CHARACTER_DEFAULT = '•';
 const TOTAL_GUESS = 10;
 
-const getMaskedWord = (wordLength?: number) =>
-	CHARACTER_DEFAULT.repeat(wordLength ?? 0);
+const getMaskedWord = (wordLength = 0) =>
+	CHARACTER_DEFAULT.repeat(wordLength);
 
 const splitWordSlots = (value: string, length: number) => {
 	const chars = value.split('');
@@ -113,7 +113,8 @@ export const GuessGameExperience = ({
 
 	const wordLength = content?.wordLength ?? 0;
 	const displayedGuesses = guesses || getMaskedWord(wordLength);
-	const revealedLettersCount = getGuessGameRevealedLettersCount(displayedGuesses);
+	const revealedLettersCount =
+		getGuessGameRevealedLettersCount(displayedGuesses);
 	const attemptSlots = splitWordSlots(attempt, wordLength);
 	const displayedGuessLetters = displayedGuesses.split('');
 
@@ -269,19 +270,22 @@ export const GuessGameExperience = ({
 		letterInputRef.current?.focus();
 	};
 
-	const updateAttemptAtIndex = useCallback((index: number, char: string) => {
-		setAttempt((current) => {
-			const nextSlots = splitWordSlots(current, wordLength);
-			nextSlots[index] = char;
-			return joinWordSlots(nextSlots);
-		});
+	const updateAttemptAtIndex = useCallback(
+		(index: number, char: string) => {
+			setAttempt((current) => {
+				const nextSlots = splitWordSlots(current, wordLength);
+				nextSlots[index] = char;
+				return joinWordSlots(nextSlots);
+			});
 
-		if (char && index < wordLength - 1) {
-			const nextIndex = index + 1;
-			activeAttemptIndexRef.current = nextIndex;
-			setActiveAttemptIndex(nextIndex);
-		}
-	}, [wordLength]);
+			if (char && index < wordLength - 1) {
+				const nextIndex = index + 1;
+				activeAttemptIndexRef.current = nextIndex;
+				setActiveAttemptIndex(nextIndex);
+			}
+		},
+		[wordLength],
+	);
 
 	const handleAttemptBackspace = useCallback(() => {
 		const currentIndex = activeAttemptIndexRef.current;
@@ -402,7 +406,7 @@ export const GuessGameExperience = ({
 
 	return (
 		<Spin spinning={isLoading || isValidating || isSavingScore}>
-			<div className="mx-auto w-full max-w-4xl space-y-4 rounded-3xl bg-[#f2eee4] p-4 sm:p-6">
+			<div className="mx-auto w-full max-w-4xl space-y-4">
 				{canShowNps && npsGameSlug && npsCharacterSlug && onSubmitGameNps ? (
 					<GameNpsModal
 						open={npsOpen}
@@ -417,10 +421,10 @@ export const GuessGameExperience = ({
 					<>
 						<GuessGameCard>
 							<div className="text-center">
-								<p className="mb-2 text-sm uppercase text-[#8b7355]">
+								<p className="mb-2 text-sm uppercase text-primary">
 									A palavra correta é:
 								</p>
-								<p className="text-3xl font-bold uppercase text-[#4a4036] underline decoration-[#f0ad4e] decoration-2 underline-offset-4">
+								<p className="text-3xl font-bold uppercase text-primary underline decoration-secondary decoration-2 underline-offset-4">
 									{solvedWord}
 								</p>
 							</div>
@@ -429,7 +433,7 @@ export const GuessGameExperience = ({
 						{solvedDescription ? (
 							<GuessGameCard>
 								<GuessGameSectionTitle>O que é isso?</GuessGameSectionTitle>
-								<p className="leading-relaxed text-[#4a4036]">
+								<p className="leading-relaxed text-primary">
 									{solvedDescription}
 								</p>
 							</GuessGameCard>
@@ -448,22 +452,23 @@ export const GuessGameExperience = ({
 						<div className="grid gap-4 md:grid-cols-2">
 							<GuessGameCard>
 								<GuessGameSectionTitle>Dicas</GuessGameSectionTitle>
-
 								<div className="space-y-3">
 									{visibleTips.length > 0 ? (
-										<div className="space-y-2 border-b border-[#ebe6dc] pb-3">
+										<div className="space-y-3 border-b border-slate-200 pb-4">
 											{visibleTips.map((tip) => (
 												<HintItem key={tip} text={tip} />
 											))}
 										</div>
 									) : (
-										<p className="text-sm text-[#8b7355]">
+										<p className="text-sm text-primary">
 											Peça uma dica para começar.
 										</p>
 									)}
 
 									<GuessGameSecondaryButton
-										icon={<RiLightbulbLine className="text-lg text-[#f0ad4e]" />}
+										icon={
+											<RiLightbulbLine className="text-lg text-secondary" />
+										}
 										onClick={getTips}
 										disabled={!!content && countTips >= content.tips.length}
 										className="w-full"
@@ -496,14 +501,16 @@ export const GuessGameExperience = ({
 								testIdPrefix="word-display"
 							/>
 							{livesLeft < TOTAL_GUESS ? (
-								<p className="mt-3 text-center text-xs text-[#8b7355]">
+								<p className="mt-3 text-center text-xs text-primary">
 									Vidas restantes: {livesLeft}
 								</p>
 							) : null}
 						</GuessGameCard>
 
 						<GuessGameCard>
-							<GuessGameSectionTitle>1 . Tentar uma letra</GuessGameSectionTitle>
+							<GuessGameSectionTitle>
+								1 . Tentar uma letra
+							</GuessGameSectionTitle>
 							<div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
 								<input
 									ref={letterInputRef}
@@ -513,9 +520,7 @@ export const GuessGameExperience = ({
 									maxLength={1}
 									value={letterInput}
 									onChange={(event) =>
-										setLetterInput(
-											event.target.value.slice(-1).toUpperCase(),
-										)
+										setLetterInput(event.target.value.slice(-1).toUpperCase())
 									}
 									onKeyDown={(event) => {
 										if (event.key === 'Enter') {
@@ -523,7 +528,7 @@ export const GuessGameExperience = ({
 											handleLetterSubmit();
 										}
 									}}
-									className="flex h-14 w-14 shrink-0 items-center justify-center self-center rounded-xl border-2 border-[#e8e2d8] bg-white text-center text-2xl font-bold uppercase text-[#4a4036] outline-none focus:border-[#f0ad4e] focus:shadow-[0_0_0_1px_#f0ad4e] sm:self-stretch"
+									className="flex h-14 w-14 shrink-0 items-center justify-center self-center rounded border-2 border-slate-200 bg-white text-center text-2xl font-bold uppercase text-primary outline-none focus:border-secondary focus:shadow-sm sm:self-stretch"
 									aria-label="Letra para tentar"
 								/>
 								<GuessGamePrimaryButton
@@ -553,9 +558,9 @@ export const GuessGameExperience = ({
 									activeIndex={activeAttemptIndex}
 									size="small"
 									onBoxClick={(index) => {
-									activeAttemptIndexRef.current = index;
-									setActiveAttemptIndex(index);
-								}}
+										activeAttemptIndexRef.current = index;
+										setActiveAttemptIndex(index);
+									}}
 									testIdPrefix="word-attempt"
 								/>
 
@@ -577,7 +582,7 @@ export const GuessGameExperience = ({
 									</GuessGamePrimaryButton>
 								</div>
 
-								<p className="mt-3 text-center text-xs text-red-600">
+								<p className="mt-3 text-center text-xs text-slate-600">
 									Errar o chute também custa 1 vida!
 								</p>
 							</GuessGameCard>

@@ -17,23 +17,38 @@ Design system web: componentes Atomic Design, `AppProviders`, `MainLayout`,
 - integra `MixpanelProvider` para apps Next;
 - usa Ant Design + Tailwind conforme o app.
 
+### `@etnos/services`
+
+Clientes HTTP e serviços de domínio usados pelos hooks web e, em parte, pelo
+mobile:
+
+| Módulo | Exemplos |
+| :--- | :--- |
+| `authSession` | Sessão e token Firebase |
+| `games` | `guessGameContentService`, `memoryGameContentService`, `scoreGamesService` |
+| `school` | Escolas, onboarding, habilitação de jogos |
+| `users`, `characters`, `midia`, `notifications`, `dashboard` | Demais domínios |
+
+É a camada preferida para **novas chamadas HTTP**; os hooks em `@etnos/tools`
+consomem estes serviços.
+
 ### `@etnos/tools`
 
-Hooks e serviços para apps web:
+Hooks React Query e helpers para apps web:
 
-| Área        | Exemplos                                           |
-| ----------- | -------------------------------------------------- |
-| Auth        | `useAuth`, `authSession`                           |
-| Personagens | `useCharacter`                                     |
-| Jogos       | `useGames`, `useGameScore`, `useMemoryGameContent` |
-| Escolas     | serviços de escola e onboarding                    |
-
-É a camada preferida para novas integrações HTTP no frontend web.
+| Área | Exemplos |
+| :--- | :--- |
+| Auth | `useAuth` |
+| Personagens | `useCharacter` |
+| Jogos | `useGames`, `useGameScore`, `useGuessGamePlayableContent`, `useMemoryGameContent`, `useMyGameAccess` |
+| Dashboard | `useStudentDashboard`, `useAdminPerformanceDashboard` |
+| Escolas / admin | `useSchools`, `useManagedSchools`, `useAdminUsers` |
+| Notificações | `useNotificationTemplates`, `useNotificationMutations` |
 
 ### `@etnos/core`
 
 Cliente HTTP, storage de sessão e serviços usados pelo **mobile**. Espelha parte
-do que `tools` faz na web, adaptado ao React Native.
+do que `tools` + `services` fazem na web, adaptado ao React Native.
 
 ### `@etnos/types`
 
@@ -44,10 +59,15 @@ Fonte única para alinhar API e frontends.
 
 SDK Mixpanel unificado (web e native). Ver [Analytics](analytics-architecture.md).
 
-### `@etnos/games`
+## Biblioteca de jogos (`apps/games`)
 
-Biblioteca React de jogos (`GuessGame`, `MemoryGame`, modais de NPS e placar).
-Consumida por `student`; lógica de rede fica em `tools` ou no host.
+Pacote workspace `@etnos/games` — **não** fica em `packages/`, mas é consumido
+como dependência interna:
+
+- `GuessGame`, `MemoryGame`, `FinishGame`, `GameNpsModal`, `ScoreHighlight`;
+- integração de rede via hooks do host (`@etnos/tools` na web).
+
+Ver [Arquitetura dos jogos](games-architecture.md).
 
 ## Pacotes de infraestrutura
 
@@ -66,6 +86,7 @@ Testes de carga com **k6** (não é dependência de runtime dos apps). Ver
 
 - importar pacotes pelo nome `@etnos/<pacote>`;
 - tipos de domínio novos entram primeiro em `@etnos/types`;
+- HTTP novo: serviço em `@etnos/services`, hook em `@etnos/tools` (web) ou `@etnos/core` (mobile);
 - eventos de analytics passam por `@etnos/analytics`, nunca pelo SDK direto;
 - apps Next que usam pacotes com `NEXT_PUBLIC_*` precisam de
   `transpilePackages` no `next.config.ts`.

@@ -6,11 +6,13 @@ um conjunto de imagens cadastrado no admin e transforma isso em tabuleiro.
 
 ## Componentes principais
 
-- `MemoryGame.tsx`: ponto de integração entre hooks, score, configuração e UI.
-- `MemoryGameExperience.tsx`: renderiza placar, grid de cartas e tela final.
-- `useMemoryGame.ts`: gerencia estado do tabuleiro, pares, movimentos e score.
-- `@etnos/core`: utilitários compartilhados de preparação, embaralhamento e pontuação das cartas.
-- `memory-game.types.ts`: contratos locais da feature (`MemoryGameSound` e reexport dos tipos do core).
+| Arquivo | Papel |
+| :--- | :--- |
+| `MemoryGame.tsx` | Integração com hooks, score, sessão, NPS e analytics |
+| `MemoryGameExperience.tsx` | Placar, grid de cartas, níveis e tela final |
+| `MemoryGameLevelSelector.tsx` | Escolha de dificuldade (pares / tempo) |
+| `useMemoryGame.ts` | Estado do tabuleiro, pares, movimentos e pontuação |
+| `@etnos/core` | Utilitários de preparação, embaralhamento e pontuação (mobile) |
 
 ## Fluxo do jogo da memória
 
@@ -42,3 +44,37 @@ Campos relevantes:
 - `slug`
 - `url`
 - `idCharacter`
+
+## Níveis de dificuldade
+
+O estudante escolhe o nível antes de iniciar (`MemoryGameLevelSelector`). Cada
+nível define quantidade de pares e impacto na pontuação final.
+
+## Pontuação e persistência
+
+- pontos por par encontrado e bônus conforme nível e movimentos;
+- ao terminar, `MemoryGameExperience` salva recorde e histórico automaticamente;
+- `GameNpsModal` pode ser exibido após vitória;
+- sons de flip, erro e conclusão via `playSound` do host.
+
+## Analytics
+
+| Evento | Momento |
+| :--- | :--- |
+| `game_selected` | Escolha do jogo |
+| `game_finished` | Partida encerrada na UI |
+| `game_session_completed` | Histórico gravado no backend |
+
+## Onde roda
+
+| Plataforma | Integração |
+| :--- | :--- |
+| Web (`apps/student`) | `@etnos/games` + `@etnos/tools` |
+| Mobile (`apps/student-mobile`) | `MemoryGameBoard` + `@etnos/core` |
+
+## Admin
+
+Em `apps/admin`, a equipe define capa e imagens do baralho por personagem.
+Sem conteúdo configurado, o frontend não monta cartas para a partida.
+
+Mais contexto: [Arquitetura dos jogos](games-architecture.md).

@@ -32,8 +32,7 @@ import {
 const CHARACTER_DEFAULT = '•';
 const TOTAL_GUESS = 10;
 
-const getMaskedWord = (wordLength = 0) =>
-	CHARACTER_DEFAULT.repeat(wordLength);
+const getMaskedWord = (wordLength = 0) => CHARACTER_DEFAULT.repeat(wordLength);
 
 const splitWordSlots = (value: string, length: number) => {
 	const chars = value.split('');
@@ -75,6 +74,7 @@ type GuessGameExperienceProps = {
 };
 
 export const GuessGameExperience = ({
+	bestScore = 0,
 	content,
 	isLoading = false,
 	isValidating = false,
@@ -420,7 +420,10 @@ export const GuessGameExperience = ({
 				{isFinished ? (
 					<>
 						<GuessGameCard>
-							<div className="text-center">
+							<div
+								className="text-center"
+								data-aria-label={`Palavra correta - Seu recorde é de ${bestScore} pontos`}
+							>
 								<p className="mb-2 text-sm uppercase text-primary">
 									A palavra correta é:
 								</p>

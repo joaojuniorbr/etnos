@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Text } from 'react-native';
@@ -68,7 +68,7 @@ export default function GamesPage() {
 						character_slug: selectedCharacterSlug,
 						game_name: game.name,
 					});
-					router.push(game.url as '/games/memory');
+					router.push(game.url as Href);
 				}}
 			/>
 		));

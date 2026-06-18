@@ -69,22 +69,16 @@ describe('@organisms/StudentDashboard', () => {
 		});
 	});
 
-	it('renderiza estado sem guia, atividade vazia e analytics sem personagem', () => {
+	it('dispara analytics com character_slug vazio quando o guia não tiver slug', () => {
 		const data = {
-			...mockStudentDashboardWithoutGuide,
-			recentActivity: [],
+			...mockStudentDashboard,
+			culturalGuide: {
+				...mockStudentDashboard.culturalGuide!,
+				slug: undefined,
+			},
 		};
 
 		render(<StudentDashboard data={data} />);
-
-		expect(
-			screen.getByText(/Escolha um personagem para começar/i),
-		).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				/Nenhuma atividade recente. Jogue para ver seu histórico aqui./i,
-			),
-		).toBeInTheDocument();
 
 		fireEvent.click(
 			screen.getByRole('link', { name: /Jogar Jogo da Memória/i }),
@@ -95,6 +89,28 @@ describe('@organisms/StudentDashboard', () => {
 			character_slug: '',
 			game_name: 'Jogo da Memória',
 		});
+	});
+
+	it('renderiza estado sem guia, atividade vazia e analytics sem personagem', () => {
+		const data = {
+			...mockStudentDashboardWithoutGuide,
+			recentActivity: [],
+		};
+
+		render(<StudentDashboard data={data} />);
+
+		expect(
+			screen.getAllByText(/Escolha um personagem para começar/i),
+		).toHaveLength(2);
+		expect(
+			screen.getByText(
+				/Nenhuma atividade recente. Jogue para ver seu histórico aqui./i,
+			),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('link', { name: /Jogar Jogo da Memória/i }),
+		).not.toBeInTheDocument();
+		expect(trackGameSelected).not.toHaveBeenCalled();
 	});
 
 	it('abre o modal e seleciona um personagem', () => {

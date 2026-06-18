@@ -9,7 +9,7 @@ import { notificationsService } from '@/utils';
 const getProjectId = (): string | null =>
 	process.env.EXPO_PUBLIC_PROJECT_ID ?? null;
 
-const normalizeHref = (value: unknown): Href | null => {
+const normalizeHref = (value: unknown) => {
 	if (typeof value !== 'string' || !value.trim()) {
 		return null;
 	}
@@ -17,15 +17,13 @@ const normalizeHref = (value: unknown): Href | null => {
 	const route = value.trim();
 
 	if (route.startsWith('/')) {
-		return route as Href;
+		return route;
 	}
 
-	return `/${route}` as Href;
+	return `/${route}`;
 };
 
-const getNotificationHref = (
-	response: Notifications.NotificationResponse,
-): Href | null => {
+const getNotificationHref = (response: Notifications.NotificationResponse) => {
 	const data = response.notification.request.content.data ?? {};
 
 	return (
@@ -45,7 +43,7 @@ const handleNotificationResponse = (
 	const href = getNotificationHref(response);
 
 	if (href) {
-		router.push(href);
+		router.push(href as Href);
 	}
 };
 

@@ -87,3 +87,15 @@ Modelo completo: `apps/student-mobile/.env.example`.
 ```bash
 yarn workspace @etnos/student-mobile dev
 ```
+
+## Build
+
+O app tem script `build` no workspace (`expo export` para Android e iOS). A
+saída fica em `apps/student-mobile/dist` e entra no `yarn build` da raiz via
+Turborepo (`dependsOn: ^build` constrói `@etnos/core` antes).
+
+```bash
+yarn workspace @etnos/student-mobile build
+```
+
+Binários nativos (APK/IPA) continuam no EAS (`apps/student-mobile/eas.json`).

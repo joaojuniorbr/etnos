@@ -9,6 +9,7 @@
 		"android": "expo start --android",
 		"ios": "expo start --ios",
 		"web": "expo start --web",
+		"build": "expo export --platform android --platform ios --output-dir dist",
 		"lint": "expo lint",
 		"check-types": "tsc --noEmit",
 		"eas-build-post-install": "cd ../.. && yarn workspace @etnos/core build"

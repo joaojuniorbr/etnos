@@ -19,11 +19,22 @@ yarn start
 yarn android
 yarn ios
 yarn web
+yarn build
 yarn lint
 yarn check-types
 ```
 
-Script especial para build EAS:
+O `yarn build` gera o bundle de produção (Android e iOS) em `dist/` via
+`expo export`. Ele entra no `yarn build` da raiz do monorepo (Turborepo), que
+primeiro constrói `@etnos/core`.
+
+Na raiz:
+
+```bash
+yarn workspace @etnos/student-mobile build
+```
+
+Script especial para build EAS (binário nativo na nuvem):
 
 ```bash
 yarn eas-build-post-install

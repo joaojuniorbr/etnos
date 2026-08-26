@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWrapper } from '../../test/common';
 import { getStoredAuthToken, useAuth } from './useAuth';
+import { CHARACTER_STORAGE_KEY } from '../useCharacter';
 import { message } from 'antd';
 import {
 	AUTH_EXPIRES_AT_STORAGE_KEY,
@@ -128,6 +129,42 @@ describe('useAuth', () => {
 		expect(mockApiGet).toHaveBeenCalledWith('/auth/profile');
 		expect(result.current.user?.parentName).toBe('Joao');
 		expect(result.current.isLoggedIn).toBe(true);
+		expect(localStorage.getItem(CHARACTER_STORAGE_KEY)).toBe('');
+	});
+
+	it('salva o personagem do perfil quando nenhum está no localStorage', async () => {
+		authenticateForProfile();
+		mockApiGet.mockResolvedValueOnce({
+			data: {
+				uid: '123',
+				email: 'test@test.com',
+				avatarCharacterSlug: 'anita',
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
+
+		expect(localStorage.getItem(CHARACTER_STORAGE_KEY)).toBe('anita');
+	});
+
+	it('não sobrescreve personagem já salvo no localStorage ao carregar perfil', async () => {
+		authenticateForProfile();
+		localStorage.setItem(CHARACTER_STORAGE_KEY, 'iara');
+		mockApiGet.mockResolvedValueOnce({
+			data: {
+				uid: '123',
+				email: 'test@test.com',
+				avatarCharacterSlug: 'anita',
+			},
+		});
+
+		const { result } = renderUseAuth();
+
+		await waitFor(() => expect(result.current.isProfileLoading).toBe(false));
+
+		expect(localStorage.getItem(CHARACTER_STORAGE_KEY)).toBe('iara');
 	});
 
 	it('retorna null quando window não está disponível', () => {

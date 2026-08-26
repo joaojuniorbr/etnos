@@ -9,7 +9,7 @@ import { QUERY_STALE_TIME } from '../../constants/query-cache';
 import { characterKeys } from '../../query-keys';
 import { charactersService } from '@etnos/services';
 
-const CHARACTER_STORAGE_KEY = 'selectedCharacter';
+export const CHARACTER_STORAGE_KEY = 'selectedCharacter';
 const CHARACTER_CHANGE_EVENT = 'etnos:selected-character-change';
 
 type UseCharacterOptions = {

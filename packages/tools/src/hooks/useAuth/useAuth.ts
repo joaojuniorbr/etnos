@@ -27,6 +27,7 @@ import {
 	signInWithPopup,
 	type Auth,
 } from 'firebase/auth';
+import { CHARACTER_STORAGE_KEY } from '../useCharacter';
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -79,6 +80,15 @@ export const useAuth = () => {
 				const profile = (await api
 					.get(`/auth/profile`)
 					.then((res) => res.data)) as UserProfileInterface;
+
+				const character = localStorage.getItem(CHARACTER_STORAGE_KEY);
+
+				if (!character) {
+					localStorage.setItem(
+						CHARACTER_STORAGE_KEY,
+						profile?.avatarCharacterSlug ?? '',
+					);
+				}
 
 				return profile;
 			} catch (error) {

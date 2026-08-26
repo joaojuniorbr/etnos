@@ -74,7 +74,7 @@ describe('@organisms/StudentDashboard', () => {
 			...mockStudentDashboard,
 			culturalGuide: {
 				...mockStudentDashboard.culturalGuide!,
-				slug: undefined,
+				slug: '',
 			},
 		};
 

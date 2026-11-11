@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import { Empty, Spin } from 'antd';
 import { trackGameSelected } from '@etnos/analytics/web';
-import { useCharacter, useGames, useMyGameAccess } from '@etnos/tools';
+import { useCharacter, useGames, useGamesConfig, useMyGameAccess } from '@etnos/tools';
+import { type ConfigGamesInterface, GamesEnum } from '@etnos/types';
 import { CardGame } from '@/components/@molecules';
 
 export const GameSelect = () => {
@@ -11,6 +12,10 @@ export const GameSelect = () => {
 		fetchList: false,
 	});
 	const { data: gameAccess, isLoading } = useMyGameAccess();
+	const { data: memoryGameConfigs = [], isLoading: isLoadingMemoryGameConfigs } =
+		useGamesConfig(GamesEnum.MEMORY_GAME);
+	const { data: guessGameConfigs = [], isLoading: isLoadingGuessGameConfigs } =
+		useGamesConfig(GamesEnum.GUESS_GAME);
 
 	const { allGames } = useGames();
 	const enabledGames = allGames.filter((game) =>
@@ -27,7 +32,7 @@ export const GameSelect = () => {
 		}
 	}, [gameAccess, selectCharacter, selectedCharacter?.slug]);
 
-	if (isLoading) {
+	if (isLoading || isLoadingMemoryGameConfigs || isLoadingGuessGameConfigs) {
 		return <Spin />;
 	}
 
@@ -41,6 +46,17 @@ export const GameSelect = () => {
 		);
 	}
 
+	const getGameCover = (gameSlug: string, characterSlug: string) => {
+		const configList =
+			gameSlug === GamesEnum.MEMORY_GAME ? memoryGameConfigs : guessGameConfigs;
+
+		const gameConfig = configList.find(
+			(item: ConfigGamesInterface) => item.characterSlug === characterSlug,
+		);
+
+		return gameConfig?.imageCoverUrl ?? selectedCharacter.imageUrl ?? null;
+	};
+
 	return (
 		<div className="flex flex-col md:flex-row justify-center gap-4">
 			{enabledGames.map((game, index) => (
@@ -51,6 +67,7 @@ export const GameSelect = () => {
 						url: game.url + `?personagem=${selectedCharacter.slug}`,
 					}}
 					character={selectedCharacter.slug}
+					coverUrl={getGameCover(game.slug, selectedCharacter.slug)}
 					isAboveTheFold={index === 0}
 					onSelect={() =>
 						trackGameSelected({

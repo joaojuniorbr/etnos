@@ -240,6 +240,19 @@ export class GamesService {
   async saveConfig(data: ConfigGamesInterface) {
     const id = `${data.gameSlug}_${data.characterSlug}`;
 
+    const existingConfig = await this.prismaService.gameConfig.findUnique({
+      where: {
+        gameSlug_characterSlug: {
+          gameSlug: data.gameSlug,
+          characterSlug: data.characterSlug,
+        },
+      },
+    });
+
+    const mergedConfig = {
+      imageCoverUrl: data.imageCoverUrl ?? existingConfig?.imageCoverUrl ?? null,
+    };
+
     await this.prismaService.gameConfig.upsert({
       where: {
         gameSlug_characterSlug: {
@@ -251,10 +264,10 @@ export class GamesService {
         id,
         gameSlug: data.gameSlug,
         characterSlug: data.characterSlug,
-        imageCoverUrl: data.imageCoverUrl,
+        ...mergedConfig,
       },
       update: {
-        imageCoverUrl: data.imageCoverUrl,
+        ...mergedConfig,
       },
     });
 
@@ -262,7 +275,9 @@ export class GamesService {
 
     return {
       id,
-      ...data,
+      gameSlug: data.gameSlug,
+      characterSlug: data.characterSlug,
+      ...mergedConfig,
     };
   }
 

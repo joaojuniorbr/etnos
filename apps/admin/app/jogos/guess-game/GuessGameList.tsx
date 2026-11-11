@@ -1,13 +1,17 @@
 'use client';
 
+import { configGamesService } from '@etnos/services';
 import {
 	useCharacter,
+	useGamesConfig,
 	useGuessGameContent,
 	useGuessGameContentMutations,
 } from '@etnos/tools';
-import type {
-	CharacterInterface,
-	GuessGameContentInterface,
+import {
+	GamesEnum,
+	type CharacterInterface,
+	type ConfigGamesInterface,
+	type GuessGameContentInterface,
 } from '@etnos/types';
 import { ImageLibrary, Title, useUser } from '@etnos/ui';
 import { Button, Drawer, Form, Input, Modal, Spin, Table, message } from 'antd';
@@ -16,6 +20,40 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 export const GuessGameList = () => {
+	const [coverCharacter, setCoverCharacter] =
+		useState<CharacterInterface | null>(null);
+	const [isSavingCover, setIsSavingCover] = useState(false);
+	const {
+		data: gamesConfig = [],
+		isLoading: isLoadingConfig,
+		refetch: refetchConfig,
+	} = useGamesConfig(GamesEnum.GUESS_GAME);
+
+	const getCoverUrl = (character: CharacterInterface) =>
+		gamesConfig.find(
+			(config: ConfigGamesInterface) => config.characterSlug === character.slug,
+		)?.imageCoverUrl || character.imageUrl;
+
+	const handleSelectCover = async (url: string) => {
+		if (!coverCharacter || isSavingCover) return;
+
+		setIsSavingCover(true);
+		try {
+			await configGamesService.save({
+				gameSlug: GamesEnum.GUESS_GAME,
+				characterSlug: coverCharacter.slug,
+				imageCoverUrl: url,
+			});
+			await refetchConfig();
+			setCoverCharacter(null);
+			message.success('Capa salva com sucesso.');
+		} catch {
+			message.error('Erro ao salvar a capa. Tente novamente.');
+		} finally {
+			setIsSavingCover(false);
+		}
+	};
+
 	const [selectedCharacter, setSelectedCharacter] =
 		useState<CharacterInterface | null>(null);
 	const [editingItem, setEditingItem] =
@@ -122,6 +160,7 @@ export const GuessGameList = () => {
 		<Spin
 			spinning={
 				isLoadingCharacters ||
+				isLoadingConfig ||
 				isLoadingContent ||
 				saveContent.isPending ||
 				deleteContent.isPending
@@ -140,12 +179,12 @@ export const GuessGameList = () => {
 					dataSource={characters}
 					columns={[
 						{
-							title: 'Imagem',
+							title: 'Capa',
 							width: 96,
 							render: (item: CharacterInterface) =>
-								item.imageUrl ? (
+								getCoverUrl(item) ? (
 									<Image
-										src={item.imageUrl}
+										src={getCoverUrl(item)!}
 										alt={item.name}
 										width={64}
 										height={64}
@@ -167,19 +206,44 @@ export const GuessGameList = () => {
 						},
 						{
 							title: 'Ações',
-							width: 180,
+							width: 280,
 							render: (item: CharacterInterface) => (
-								<Button
-									type="primary"
-									onClick={() => openCharacterEditor(item)}
-								>
-									Editar conteúdo
-								</Button>
+								<div className="flex flex-wrap gap-2">
+									<Button onClick={() => setCoverCharacter(item)}>
+										Editar capa
+									</Button>
+									<Button
+										type="primary"
+										onClick={() => openCharacterEditor(item)}
+									>
+										Editar conteúdo
+									</Button>
+								</div>
 							),
 						},
 					]}
 				/>
 			</div>
+
+			<Drawer
+				open={!!coverCharacter}
+				onClose={() => {
+					if (!isSavingCover) setCoverCharacter(null);
+				}}
+				title={`Selecione a capa do Adivinhe para ${coverCharacter?.name ?? ''}`}
+				size="large"
+				placement="bottom"
+				destroyOnHidden
+			>
+				<Spin spinning={isSavingCover}>
+					<ImageLibrary
+						user={user ?? undefined}
+						folder={`games/${coverCharacter?.slug}`}
+						onSelect={handleSelectCover}
+						limitPage={16}
+					/>
+				</Spin>
+			</Drawer>
 
 			<Modal
 				open={!!selectedCharacter}

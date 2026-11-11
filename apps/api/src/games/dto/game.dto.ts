@@ -12,5 +12,6 @@ export class GameDto implements ConfigGamesInterface {
   characterSlug: string;
 
   @ApiProperty({ example: 'https://example.com/image.jpg' })
-  imageCoverUrl: string;
+  imageCoverUrl?: string | null;
+
 }

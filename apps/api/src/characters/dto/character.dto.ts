@@ -24,6 +24,20 @@ export class CharacterDto implements CharacterInterface {
   imageUrl?: string;
 
   @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'Imagem de sucesso do personagem em todos os jogos',
+  })
+  imageSuccessUrl?: string | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'Imagem de erro do personagem em todos os jogos',
+  })
+  imageErrorUrl?: string | null;
+
+  @ApiProperty({
     type: [String],
     required: false,
     example: ['https://storage.googleapis.com/example/avatar-1.png'],

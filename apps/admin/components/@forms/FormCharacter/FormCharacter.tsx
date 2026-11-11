@@ -17,6 +17,8 @@ import type { CharacterInterface, UserProfileInterface } from '@etnos/types';
 import { useEffect, useState } from 'react';
 import { RiDeleteBinLine } from 'react-icons/ri';
 
+type CharacterImageField = 'imageUrl' | 'imageSuccessUrl' | 'imageErrorUrl';
+
 interface FormCharacterProps {
 	user?: UserProfileInterface;
 	data?: CharacterInterface;
@@ -30,10 +32,27 @@ export const FormCharacter = ({
 	isLoading,
 	onSubmit,
 }: FormCharacterProps) => {
-	const [openLibrary, setOpenLibrary] = useState<boolean>(false);
+	const [libraryField, setLibraryField] = useState<CharacterImageField | null>(
+		null,
+	);
 
 	const [form] = Form.useForm();
 	const imageUrl = Form.useWatch('imageUrl', form);
+	const imageSuccessUrl = Form.useWatch('imageSuccessUrl', form);
+	const imageErrorUrl = Form.useWatch('imageErrorUrl', form);
+	const imageFields: {
+		name: CharacterImageField;
+		label: string;
+		value?: string;
+	}[] = [
+		{ name: 'imageUrl', label: 'Imagem do personagem', value: imageUrl },
+		{
+			name: 'imageSuccessUrl',
+			label: 'Imagem de sucesso',
+			value: imageSuccessUrl,
+		},
+		{ name: 'imageErrorUrl', label: 'Imagem de erro', value: imageErrorUrl },
+	];
 	const slug = Form.useWatch('slug', form);
 	const avatarFolder = slug ? `avatar/${slug}` : 'avatar/__pending__';
 
@@ -51,8 +70,10 @@ export const FormCharacter = ({
 	};
 
 	const handleSelectImage = (url: string) => {
-		form.setFieldValue('imageUrl', url);
-		setOpenLibrary(false);
+		if (libraryField) {
+			form.setFieldValue(libraryField, url);
+		}
+		setLibraryField(null);
 	};
 
 	const handleOnSubmit = (values: CharacterInterface) => {
@@ -79,8 +100,6 @@ export const FormCharacter = ({
 		message.error('Não foi possível excluir o avatar.');
 	};
 
-	const toggleLibrary = () => setOpenLibrary(!openLibrary);
-
 	useEffect(() => {
 		if (data) {
 			form.setFieldsValue(data);
@@ -91,28 +110,58 @@ export const FormCharacter = ({
 		<Spin spinning={isLoading}>
 			<Drawer
 				size="large"
-				open={openLibrary}
+				open={libraryField !== null}
 				placement="bottom"
-				title="Selecione uma imagem"
-				onClose={() => toggleLibrary()}
+				title={`Selecione: ${imageFields.find((field) => field.name === libraryField)?.label ?? 'imagem'}`}
+				onClose={() => setLibraryField(null)}
 			>
 				<ImageLibrary user={user} onSelect={handleSelectImage} limitPage={16} />
 			</Drawer>
 
 			<Form layout="vertical" form={form} onFinish={handleOnSubmit}>
-				<Form.Item name="imageUrl" label="Imagem:" rules={[{ required: true }]}>
-					<div className="flex flex-col gap-2">
-						{imageUrl && (
-							<div className="w-40">
-								<Image src={imageUrl} className="border border-slate-200" />
-							</div>
-						)}
-
-						<Button onClick={toggleLibrary} size="small" htmlType="button">
-							{imageUrl ? 'Alterar Imagem' : 'Selecionar Imagem'}
-						</Button>
-					</div>
-				</Form.Item>
+				<Typography.Paragraph>
+					As imagens de sucesso e erro são usadas em todos os jogos deste
+					personagem. Enquanto não forem escolhidas, serão usadas as imagens
+					padrão.
+				</Typography.Paragraph>
+				{imageFields.map(({ name, label, value }) => (
+					<Form.Item key={name} label={label} required={name === 'imageUrl'}>
+						<Form.Item
+							name={name}
+							rules={[{ required: name === 'imageUrl' }]}
+							noStyle
+						>
+							<Input hidden />
+						</Form.Item>
+						<div className="flex flex-col gap-2">
+							{value && (
+								<div className="w-40">
+									<Image
+										src={value}
+										alt={label}
+										className="border border-slate-200"
+									/>
+								</div>
+							)}
+							<Button
+								onClick={() => setLibraryField(name)}
+								size="small"
+								htmlType="button"
+							>
+								{value ? 'Alterar imagem' : 'Selecionar imagem'}
+							</Button>
+							{value && name !== 'imageUrl' && (
+								<Button
+									onClick={() => form.setFieldValue(name, null)}
+									size="small"
+									htmlType="button"
+								>
+									Usar imagem padrão
+								</Button>
+							)}
+						</div>
+					</Form.Item>
+				))}
 
 				<Form.Item
 					name="name"

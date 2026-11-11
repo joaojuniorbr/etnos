@@ -223,6 +223,8 @@ describe('GamesService', () => {
   });
 
   it('deve salvar configuração de jogo com id composto', async () => {
+    prismaService.gameConfig.findUnique.mockResolvedValueOnce(null);
+
     await service.saveConfig({
       gameSlug: 'memory-game',
       characterSlug: 'maria',

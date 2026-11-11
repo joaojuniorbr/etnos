@@ -84,7 +84,7 @@ export const MemoryGameBoard = ({
 	const [score, setScore] = useState(0);
 	const [consecutiveMatches, setConsecutiveMatches] = useState(0);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const savedHistoryRef = useRef<number | null>(null);
+	const savedHistoryRef = useRef<number | null>(null);
 	const gameFinishedTrackedRef = useRef(false);
 
 	const levelConfig = selectedLevel
@@ -312,6 +312,18 @@ export const MemoryGameBoard = ({
 		contentNode = (
 			<SectionCard>
 				<Text style={tw`text-3xl font-black text-primary`}>Parabéns!</Text>
+				{character?.slug && (
+					<Image
+						source={{
+							uri:
+								character.imageSuccessUrl ||
+								`https://etnos.online/games/success/${character.slug}.jpg`,
+						}}
+						accessibilityLabel={`Sucesso: ${character.name}`}
+						contentFit="contain"
+						style={tw`w-full max-w-80 aspect-square mx-auto rounded`}
+					/>
+				)}
 				<Text style={tw`mt-3 text-base leading-6 text-stone-700`}>
 					Você concluiu o desafio e pode salvar sua melhor pontuação.
 				</Text>

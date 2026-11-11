@@ -73,6 +73,8 @@ model Character {
   imageUrl         String?                  @map("image_url")
   createdAt        DateTime                 @default(now()) @map("created_at")
   updatedAt        DateTime                 @updatedAt @map("updated_at")
+  imageSuccessUrl  String?                  @map("image_success_url")
+  imageErrorUrl    String?                  @map("image_error_url")
   gameConfigs      GameConfig[]
   enabledBySchools SchoolEnabledCharacter[]
 
@@ -112,7 +114,7 @@ model GameConfig {
   id            String    @id @default(cuid())
   gameSlug      String    @map("game_slug") @db.VarChar(255)
   characterSlug String    @map("character_slug") @db.VarChar(255)
-  imageCoverUrl String    @map("image_cover_url")
+  imageCoverUrl String?   @map("image_cover_url")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   character     Character @relation(fields: [characterSlug], references: [slug], onDelete: Restrict, onUpdate: Cascade)

@@ -131,6 +131,8 @@ export class CharactersService {
         region: character.region,
         description: character.description,
         imageUrl: character.imageUrl,
+        imageSuccessUrl: character.imageSuccessUrl,
+        imageErrorUrl: character.imageErrorUrl,
       },
     });
 
@@ -157,6 +159,8 @@ export class CharactersService {
         region: character.region,
         description: character.description,
         imageUrl: character.imageUrl,
+        imageSuccessUrl: character.imageSuccessUrl,
+        imageErrorUrl: character.imageErrorUrl,
       },
     });
 

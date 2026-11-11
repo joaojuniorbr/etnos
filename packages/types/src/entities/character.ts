@@ -5,5 +5,7 @@ export interface CharacterInterface {
 	description: string;
 	slug: string;
 	imageUrl?: string;
+	imageSuccessUrl?: string | null;
+	imageErrorUrl?: string | null;
 	avatarUrls?: string[];
 }

@@ -85,4 +85,50 @@ describe('FinishGame', () => {
 			(screen.getByText('Salvar Pontuação') as HTMLButtonElement).disabled,
 		).toBe(true);
 	});
+
+	it('prioriza imagens configuradas para sucesso e derrota', () => {
+		render(
+			<>
+				<FinishGame
+					handleRestart={vi.fn()}
+					handleSaveScore={vi.fn()}
+					isLoading={false}
+					selectedCharacter={{
+						imageSuccessUrl: 'https://cdn.exemplo.com/success-anita.jpg',
+						imageErrorUrl: 'https://cdn.exemplo.com/error-anita.jpg',
+						slug: 'anita',
+						name: 'Anita',
+						description: 'Gaúcha',
+						id: '1',
+						imageUrl: '/games/success/anita.jpg',
+						region: 'Sul',
+					}}
+				/>
+				<FinishGame
+					handleRestart={vi.fn()}
+					handleSaveScore={vi.fn()}
+					isLoading={false}
+					isLoser
+					selectedCharacter={{
+						imageSuccessUrl: 'https://cdn.exemplo.com/success-anita.jpg',
+						imageErrorUrl: 'https://cdn.exemplo.com/error-anita.jpg',
+						slug: 'anita',
+						name: 'Anita',
+						description: 'Gaúcha',
+						id: '1',
+						imageUrl: '/games/success/anita.jpg',
+						region: 'Sul',
+					}}
+				/>
+			</>,
+		);
+
+		const images = screen.getAllByAltText('Anita');
+		expect(images[0]?.getAttribute('src')).toBe(
+			'https://cdn.exemplo.com/success-anita.jpg',
+		);
+		expect(images[1]?.getAttribute('src')).toBe(
+			'https://cdn.exemplo.com/error-anita.jpg',
+		);
+	});
 });

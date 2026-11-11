@@ -25,6 +25,8 @@ describe('CharactersService', () => {
     region: 'Asia',
     description: 'Descrição do personagem',
     avatarUrls: ['https://avatar.test/1.png'],
+    imageSuccessUrl: 'https://avatar.test/success.png',
+    imageErrorUrl: 'https://avatar.test/error.png',
   };
 
   const mockPrismaService = {
@@ -184,6 +186,8 @@ describe('CharactersService', () => {
         region: mockCharacter.region,
         description: mockCharacter.description,
         imageUrl: undefined,
+        imageSuccessUrl: mockCharacter.imageSuccessUrl,
+        imageErrorUrl: mockCharacter.imageErrorUrl,
       },
     });
     expect(result).toEqual(mockCharacter);
@@ -215,9 +219,23 @@ describe('CharactersService', () => {
         region: mockCharacter.region,
         description: mockCharacter.description,
         imageUrl: undefined,
+        imageSuccessUrl: mockCharacter.imageSuccessUrl,
+        imageErrorUrl: mockCharacter.imageErrorUrl,
       },
     });
     expect(result?.name).toBe('Atualizado');
+  });
+
+  it('deve permitir restaurar as imagens padrão sem afetar o outro resultado', async () => {
+    await service.update({ ...mockCharacter, imageSuccessUrl: null });
+
+    expect(prismaService.character.update).toHaveBeenCalledWith({
+      where: { id: mockCharacter.id },
+      data: expect.objectContaining({
+        imageSuccessUrl: null,
+        imageErrorUrl: mockCharacter.imageErrorUrl,
+      }),
+    });
   });
 
   it('deve retornar null ao atualizar quando slug conflitar com outro id', async () => {

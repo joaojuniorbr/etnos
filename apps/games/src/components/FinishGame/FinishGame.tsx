@@ -28,7 +28,13 @@ export const FinishGame = ({
 		{selectedCharacter?.slug && (
 			<div className="flex justify-center">
 				<Image
-					src={`/games/${isLoser ? 'error' : 'success'}/${selectedCharacter.slug}.jpg`}
+					src={
+						isLoser
+							? selectedCharacter.imageErrorUrl ||
+								`/games/error/${selectedCharacter.slug}.jpg`
+							: selectedCharacter.imageSuccessUrl ||
+								`/games/success/${selectedCharacter.slug}.jpg`
+					}
 					width={400}
 					height={400}
 					alt={selectedCharacter.name}

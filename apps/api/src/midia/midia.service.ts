@@ -102,14 +102,16 @@ export class MidiaService {
       ...(folder && !uncategorized ? { folder } : {}),
     };
 
-    const user = await this.prismaService.user.findUnique({
-      where: {
-        firebaseUid: userId,
-      },
-      select: {
-        roles: true,
-      },
-    });
+    const user = userId
+      ? await this.prismaService.user.findUnique({
+          where: {
+            firebaseUid: userId,
+          },
+          select: {
+            roles: true,
+          },
+        })
+      : null;
 
     const isAdmin = user?.roles?.includes('admin');
 
@@ -214,14 +216,16 @@ export class MidiaService {
   async getFolders(userId?: string) {
     const baseWhere = userId ? { userId } : {};
 
-    const user = await this.prismaService.user.findUnique({
-      where: {
-        firebaseUid: userId,
-      },
-      select: {
-        roles: true,
-      },
-    });
+    const user = userId
+      ? await this.prismaService.user.findUnique({
+          where: {
+            firebaseUid: userId,
+          },
+          select: {
+            roles: true,
+          },
+        })
+      : null;
 
     const isAdmin = user?.roles?.includes('admin');
 

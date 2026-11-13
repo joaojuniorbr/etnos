@@ -1,3 +1,108 @@
+# [1.10.0](https://github.com/joaojuniorbr/etnos/compare/v1.9.0...v1.10.0) (2026-11-13)
+
+### admin
+
+#### ✨ Features (Novidades)
+
+* [CU-86afq06kr] Nova dashboard do admin com analise de performance ([81fa6e2](https://github.com/joaojuniorbr/etnos/commit/81fa6e20d1711106244374e01a1e8b958819ad6a))
+
+### build
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajuste no build das tools ([b10276f](https://github.com/joaojuniorbr/etnos/commit/b10276fe60de60f3f8b76d212fb3719d0fb6d088))
+
+### dashboard
+
+#### 🐛 Bug Fixes (Correções)
+
+* ajusta o erro que ocorria quando nao foi selecionado um personagem ([e023f98](https://github.com/joaojuniorbr/etnos/commit/e023f9857aef2684cbd300774190e1a72c7fd4d7))
+
+### documentacao
+
+#### 📝 Documentação
+
+* ajustes_sprint_3 ([bee5be2](https://github.com/joaojuniorbr/etnos/commit/bee5be27c886de0a95659911636319593fc50ece))
+* documentacao sprint3 ([ffce291](https://github.com/joaojuniorbr/etnos/commit/ffce29184bda66174799aacabcd8ba8ba6334a31))
+
+### documentaçao
+
+#### 📝 Documentação
+
+* mudança do tema ([1de3e2b](https://github.com/joaojuniorbr/etnos/commit/1de3e2b75f4c22a29d86d877b219141d2d874338))
+
+### documentação
+
+#### 📝 Documentação
+
+* atualização no tema de documentação ([6f01569](https://github.com/joaojuniorbr/etnos/commit/6f0156986c241a05a92f36756f5b7cafe6b71190))
+* [CU-86afq0774] Atualização da Documentação Técnica ([7e0dde3](https://github.com/joaojuniorbr/etnos/commit/7e0dde323a0990a5ecf1d6f18038ed0df5aa45ca))
+
+### estudante
+
+#### ✨ Features (Novidades)
+
+* [CU-86ahjcjx1] Nova area do estudante na web ([a763bcc](https://github.com/joaojuniorbr/etnos/commit/a763bcc97320a7a5a53bdcb8857c449e2ab30bd5))
+
+### geral
+
+#### ✨ Features (Novidades)
+
+* adicionada a gestão de conteudo de sucesso e de todo conteudo que ainda ficava hard code ([3ca946f](https://github.com/joaojuniorbr/etnos/commit/3ca946f8ffd25979440269b9d8cb514893366c73))
+* novas imagens de sucesso e erro ([f368d6f](https://github.com/joaojuniorbr/etnos/commit/f368d6fb02efa2ffed9e5bfed4da043a8d32b0b7))
+* novo personagem ([0279a9a](https://github.com/joaojuniorbr/etnos/commit/0279a9a1861627d2321314971e79161fb1d286d5))
+
+#### 🐛 Bug Fixes (Correções)
+
+* corrige o tipo do slug no teste do dashboard ([55158bd](https://github.com/joaojuniorbr/etnos/commit/55158bd2cd0d952133604e3a8a040cca9b600f73))
+* adiciona o localStorage do personagem quando é feito o login ([7d5a58a](https://github.com/joaojuniorbr/etnos/commit/7d5a58a9e8ce0418f5cb038b55a41ee56d6d1164))
+
+#### 📝 Documentação
+
+* documentacao final ([a0be99c](https://github.com/joaojuniorbr/etnos/commit/a0be99cd8a52f63601d3ca53aea7c94579d5f319))
+* atualização da documentação ([65b49fd](https://github.com/joaojuniorbr/etnos/commit/65b49fd54b1e4b48d8f8be6eb8114683e0eb1f4d))
+* espaçamento sprint 1 ([2a37102](https://github.com/joaojuniorbr/etnos/commit/2a371020b152ecb8cd5d38cde3e2610220bf4bc7))
+* sprints 4 e 5 ([45af7a2](https://github.com/joaojuniorbr/etnos/commit/45af7a2696f94ed82bc3d3d5eef452e64a925c74))
+* fundamentacao ([b5e8888](https://github.com/joaojuniorbr/etnos/commit/b5e88888c36a8496b105d4319be32bf4bcea319e))
+* submissao relatorios e fundamentacao ([3f69d31](https://github.com/joaojuniorbr/etnos/commit/3f69d31632cb6b9f485aa3a6ec6fa4cbecaa40e7))
+* formatacao texto sprint 2 ([3da69c2](https://github.com/joaojuniorbr/etnos/commit/3da69c250cbbcb059e83b252e341df25b9f69cbf))
+
+#### ✅ Testes
+
+* ajustes nos testes de midias ([702f163](https://github.com/joaojuniorbr/etnos/commit/702f163dd72117809c1b6d97a4f2d216c90dc6d0))
+
+### jogo adivinhe
+
+#### 🔨 Refatoração
+
+* atualização da interface do jogo de adivinhas ([a28bae4](https://github.com/joaojuniorbr/etnos/commit/a28bae4a0c108b2f43debd659f6242470ddd2d32))
+
+### midia
+
+#### ✨ Features (Novidades)
+
+* nova página de organização de imagens ([9b82450](https://github.com/joaojuniorbr/etnos/commit/9b824509d1f83fe38c593eb8649d9290411e8390))
+
+### padrao
+
+#### ⚡ Performance
+
+* [CU-86ahhd4hp] Implementar o Mixpanel na aplicação ([dee692d](https://github.com/joaojuniorbr/etnos/commit/dee692d0110f1155dcfa0e66aeafc9699841b88d))
+* [CU-86ahdtwdm] Implementar camada de cache ([97c798f](https://github.com/joaojuniorbr/etnos/commit/97c798f784d169e97ff3a473892ae68f62e1b497))
+
+#### 🔨 Refatoração
+
+* [CU-86afq06mc] Reduzir concorrência de queries ([605a69c](https://github.com/joaojuniorbr/etnos/commit/605a69cf2672dd9c53f9eb2df0c8ff13144d27d2))
+* [CU-86ahdtvwt] Implementar Prisma Singleton ([a83cd1f](https://github.com/joaojuniorbr/etnos/commit/a83cd1ffc7338074b700365ea1f0f62611d40e87))
+* [CU-86afq06yn] Ajustes do sonar cloud para coverage e qualidade do código ([3f89e33](https://github.com/joaojuniorbr/etnos/commit/3f89e331bf65056a57cd4cced70fc789b28fae6b))
+* [CU-86afq06yn] Padronização e ajustes na qualidade do código ([57d1e88](https://github.com/joaojuniorbr/etnos/commit/57d1e88f15e7dacbc442faff18e6a94c0679c99a))
+
+### performance
+
+#### ⚡ Performance
+
+* criaçao do teste de performance ([c46a3bd](https://github.com/joaojuniorbr/etnos/commit/c46a3bd9f9e6f4d2f62ec8c7adfbac33c314ce97))
+
 # [1.9.0](https://github.com/joaojuniorbr/etnos/compare/v1.8.0...v1.9.0) (2026-05-07)
 
 ### avaliação

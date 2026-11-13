@@ -89,8 +89,19 @@ recordes.
 
 ### Entregas acadêmicas
 
-Planejamento de sprints (2026) e entregas históricas (2025) na seção **Entregas**
-do menu.
+As produções acadêmicas de 2026 estão disponíveis em Markdown, com os PDFs
+originais para download em cada página:
+
+| Documento | Conteúdo |
+| :--- | :--- |
+| [Resumo IX SEPIN 2026](2026-sepin-resumo.md) | Proposta, objetivos, metodologia e resultados do ETNOS |
+| [Resumo V WIPEX 2026](2026-wipex-resumo.md) | Síntese do percurso de desenvolvimento, em português e inglês |
+| [Artigo V WIPEX 2026](2026-wipex-artigo.md) | Fundamentação, metodologia, resultados e continuidade do Projeto Interdisciplinar III |
+| [Relatório SCITEC 2026](2026-scitec-relatorio.md) | Apresentação pública, comentários recebidos e possibilidades de aplicação |
+| [Plano de Negócio 2026](2026-plano-de-negocio.md) | Mercado, marketing, operação, projeções financeiras e análise estratégica |
+
+O planejamento de sprints (2026) e as entregas históricas (2025) também estão
+na seção **Entregas** do menu.
 
 ## Links úteis
 

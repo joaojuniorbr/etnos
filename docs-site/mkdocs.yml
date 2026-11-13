@@ -54,6 +54,13 @@ nav:
   - Qualidade:
       - Testes de performance: performance-tests.md
   - Entregas:
+      - 2026:
+          - Resumo IX SEPIN: 2026-sepin-resumo.md
+          - V WIPEX:
+              - Resumo: 2026-wipex-resumo.md
+              - Artigo (Projeto Interdisciplinar III): 2026-wipex-artigo.md
+          - Relatório SCITEC: 2026-scitec-relatorio.md
+          - Plano de Negócio: 2026-plano-de-negocio.md
       - Relatório 2026:
           - Relatório Final 2026: relatorio-final-2026.md
           - Relatório Interdisciplinar 2026: relatorio-interdisciplinar-2026.md

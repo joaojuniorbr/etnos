@@ -69,7 +69,7 @@ describe('MidiaService', () => {
     service = module.get<MidiaService>(MidiaService);
     prismaService = module.get(PrismaService);
     jest.clearAllMocks();
-    mockPrismaService.user.findUnique.mockResolvedValue({
+    mockPrismaService.user.findUnique.mockReset().mockResolvedValue({
       roles: ['user'],
     });
     mockFile.delete.mockResolvedValue(undefined);
@@ -207,7 +207,6 @@ describe('MidiaService', () => {
   });
 
   it('deve listar todas as mídias quando userId não for informado', async () => {
-    mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
     mockPrismaService.midia.findMany.mockResolvedValue([
       { id: '1', url: 'u1' },
     ]);
@@ -215,6 +214,7 @@ describe('MidiaService', () => {
 
     const result = await service.getMidia(undefined, 10, 1);
 
+    expect(prismaService.user.findUnique).not.toHaveBeenCalled();
     expect(prismaService.midia.findMany).toHaveBeenCalledWith({
       where: {},
       skip: 0,
@@ -236,12 +236,17 @@ describe('MidiaService', () => {
 
     await service.getMidia('admin-1', 10, 1);
 
+    expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      where: { firebaseUid: 'admin-1' },
+      select: { roles: true },
+    });
     expect(prismaService.midia.findMany).toHaveBeenCalledWith({
       where: {},
       skip: 0,
       take: 10,
       orderBy: { createdAt: 'desc' },
     });
+    expect(prismaService.midia.count).toHaveBeenCalledWith({ where: {} });
   });
 
   it('deve usar page=1 por padrão quando não informado', async () => {
@@ -476,7 +481,6 @@ describe('MidiaService', () => {
   });
 
   it('deve listar pastas sem filtrar por usuário no modo admin', async () => {
-    mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
     mockPrismaService.midia.groupBy.mockResolvedValue([
       { folder: 'games', _count: { _all: 1 } },
     ]);
@@ -484,6 +488,7 @@ describe('MidiaService', () => {
 
     const result = await service.getFolders();
 
+    expect(prismaService.user.findUnique).not.toHaveBeenCalled();
     expect(prismaService.midia.groupBy).toHaveBeenCalledWith({
       by: ['folder'],
       where: {
@@ -508,12 +513,19 @@ describe('MidiaService', () => {
 
     const result = await service.getFolders('admin-1');
 
+    expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      where: { firebaseUid: 'admin-1' },
+      select: { roles: true },
+    });
     expect(prismaService.midia.groupBy).toHaveBeenCalledWith({
       by: ['folder'],
       where: {
         folder: { not: null },
       },
       _count: { _all: true },
+    });
+    expect(prismaService.midia.count).toHaveBeenCalledWith({
+      where: { folder: null },
     });
     expect(result).toEqual({
       folders: [{ folder: 'library', count: 2 }],
